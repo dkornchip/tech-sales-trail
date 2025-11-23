@@ -705,11 +705,14 @@
     const randomEvents=(state,setPending,maxFires=2)=>{
       let s={...state};
       let firedCount=0;
-      const fire=(prob,fn)=>{
+      let modalQueued=false;
+      const fire=(prob,fn,{modal=false}={})=>{
         if(firedCount>=maxFires)return;
+        if(modal && modalQueued)return;
         if(Math.random()<prob){
           s=fn(s);
           firedCount++;
+          if(modal)modalQueued=true;
         }
       };
 
@@ -756,7 +759,7 @@
           ]
         });
         return st;
-      });
+      },{modal:true});
 
       fire(0.14,st=>{
         const candidate=st.deals.find(d=>d.stage===1||d.stage===2);
@@ -804,7 +807,7 @@
           ]
         });
         return st;
-      });
+      },{modal:true});
 
       fire(0.12,st=>{
         st.product=clamp(st.product-12,0,100);
