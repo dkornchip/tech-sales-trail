@@ -1,5 +1,8 @@
 # Changelog
 
+## v0.2.1 – Polish (2025-11-24)
+- Prevented overlapping modal random events from overwriting each other; now only the first decision event triggers per week.
+
 ## v0.2 – One-Quarter Alpha (2025-11-23)
 - Switched from multi-quarter sim to a single, high-stakes quarter.
 - Added “jacket repo” financial failure ending (warning at -$1,000, repo at -$1,500).
