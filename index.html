@@ -2,95 +2,383 @@
 <html lang="en">
 <head>
   <meta charset="utf-8"/>
-  <title>Tech Sales Trail — React (v3.2)</title>
+  <title>Tech Sales Trail</title>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <style>
-    /* ====== Midnight Sales War Room Theme ====== */
     :root{
-      --bg:#071225; --panel:#0a1730; --panel-2:#09142a; --text:#e9f2ff; --muted:#9fb6db;
-      --accent:#1f7aff; --accent-2:#19a8ff; --good:#35d394; --warn:#ffd166; --bad:#ff6b6b;
-      --chip:#0f1e3b; --btn:#0e2348; --btn-hover:#112e5e; --border:#16315a; --ink:#acc8ff;
+      --bg:#020617;
+      --panel:#0a1730;
+      --panel-2:#071324;
+      --text:#e9f2ff;
+      --muted:#9fb6db;
+      --accent:#1f7aff;
+      --accent-2:#19a8ff;
+      --good:#4ade80;
+      --warn:#facc15;
+      --bad:#fb7185;
+      --chip:#0f1e3b;
+      --btn:#0e2348;
+      --btn-hover:#132e5f;
+      --border:#16315a;
+      --ink:#bfdbfe;
     }
-    *{box-sizing:border-box} html,body{height:100%}
+    *{box-sizing:border-box}
+    html,body{height:100%}
     body{
       margin:0;
       font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+      font-size:14px;
       background:
-        radial-gradient(1200px 800px at 15% -10%, rgba(31,122,255,0.35) 0, transparent 60%),
-        radial-gradient(900px 700px at 110% 120%, rgba(25,168,255,0.22) 0, transparent 65%),
-        linear-gradient(135deg,#030614 0,#050b1f 45%,#02030a 100%),
-        repeating-linear-gradient(135deg, rgba(255,255,255,0.028) 0, rgba(255,255,255,0.028) 1px, transparent 1px, transparent 9px);
-      background-attachment: fixed;
+        radial-gradient(1400px 900px at 0% 0%, rgba(31,122,255,0.28) 0, transparent 60%),
+        radial-gradient(1300px 900px at 100% 100%, rgba(25,168,255,0.22) 0, transparent 65%),
+        repeating-linear-gradient(135deg, rgba(255,255,255,0.03) 0, rgba(255,255,255,0.03) 1px, transparent 1px, transparent 8px),
+        linear-gradient(135deg,#030617 0,#050b1f 45%,#02030a 100%);
+      background-attachment:fixed;
       color:var(--text);
     }
-    .container{max-width:1200px;padding:20px;margin:0 auto}
-    header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
-    .title{display:flex;align-items:baseline;gap:10px}
-    .title h1{margin:0;font-size:24px;letter-spacing:.3px}
-    .chip{background:linear-gradient(180deg,var(--chip),#0c1833);border:1px solid var(--border);
-      padding:8px 12px;border-radius:999px;color:var(--muted);font-size:12px;display:inline-flex;gap:8px;align-items:center}
-    .grid{display:grid;gap:14px;grid-template-columns:1.25fr .9fr}
-    @media (max-width:1024px){.grid{grid-template-columns:1fr}}
-    .panel{background:linear-gradient(180deg,var(--panel),var(--panel-2));border:1px solid var(--border);
-      border-radius:14px;padding:16px;box-shadow:0 0 0 1px rgba(255,255,255,.03) inset,0 10px 30px rgba(0,0,0,.28)}
-    h2{font-size:16px;margin:0 0 12px 0;font-weight:700;color:#dce9ff}
-    .stats{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
-    @media (max-width:1200px){.stats{grid-template-columns:repeat(3,1fr)}}
-    .stat{background:#0b1a39;border:1px solid var(--border);border-radius:10px;padding:10px;min-height:64px;display:flex;flex-direction:column;gap:6px}
-    .stat .label{color:var(--muted);font-size:11px;letter-spacing:.3px}
-    .stat .value{font-size:18px;font-weight:700}
-    .bar{width:100%;height:8px;background:#0a1730;border:1px solid var(--border);border-radius:999px;overflow:hidden}
-    .bar>div{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-2))}
-    .bar.good>div{background:linear-gradient(90deg,#4be38b,#38bfa0)}
-    .bar.warn>div{background:linear-gradient(90deg,#ffd166,#ffb347)}
-    .bar.bad>div{background:linear-gradient(90deg,#ff6b6b,#f94144)}
-    .row{display:flex;align-items:center;gap:8px}
-    .row.wrap{flex-wrap:wrap}
-    .row.center{justify-content:center}
-    .row.right{justify-content:flex-end}
-    .row.between{justify-content:space-between}
-    .tag{font-size:11px;padding:4px 8px;border-radius:999px;background:#0b1a39;border:1px solid var(--border);color:var(--muted)}
-    .actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-    @media (max-width:800px){.actions{grid-template-columns:1fr}}
-    .btn{
-      border-radius:10px;border:1px solid var(--border);background:var(--btn);color:var(--text);
-      padding:10px 12px;font-size:13px;text-align:left;cursor:pointer;display:block;width:100%;
-      box-shadow:0 0 0 1px rgba(255,255,255,.02) inset,0 8px 24px rgba(0,0,0,.35);transition:background .12s,transform .08s,box-shadow .12s,border-color .12s
+    .container{
+      max-width:1100px;
+      margin:0 auto;
+      padding:12px 10px 16px;
     }
-    .btn .title{font-weight:600;font-size:13px;margin-bottom:3px}
-    .btn .desc{font-size:12px;color:var(--muted)}
-    .btn:hover:not(:disabled){background:var(--btn-hover);border-color:#2761c9;transform:translateY(-1px);box-shadow:0 10px 26px rgba(0,0,0,.5)}
-    .btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
-    .btn.primary{background:linear-gradient(180deg,#1c3a7a,#112e5e);border-color:#224a96}
-    .btn.success{background:linear-gradient(180deg,#174b37,#0e3327);border-color:#1f5f47}
-    .btn.ghost{background:transparent;border-color:var(--border)}
-    .kbd{font-size:11px;border:1px solid var(--border);padding:2px 6px;border-radius:6px;background:#0b1a39;color:var(--muted)}
-    .sep{height:1px;background:var(--border);margin:10px 0}
-    .badge-row{display:flex;gap:6px;flex-wrap:wrap}
-    .badge{font-size:11px;padding:6px 8px;background:#0d1f44;border:1px solid var(--border);border-radius:8px;color:#c7dbff}
-    .tiny{font-size:11px;color:var(--muted)} .spacer{height:6px} .mono{font-family:ui-monospace,Menlo,Consolas,"Courier New",monospace}
-    .log{height:320px;overflow:auto;background:#0b1a39;border:1px solid var(--border);
-      border-radius:10px;padding:10px;font-size:13px}
-    .log p{margin:0 0 8px 0}.log .muted{color:var(--muted)}
-    .deal-list{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-    @media (max-width:1200px){.deal-list{grid-template-columns:1fr}}
-    .deal{background:#0b1a39;border:1px solid var(--border);border-radius:10px;padding:10px;display:grid;grid-template-columns:1fr auto;gap:6px}
-    .deal .name{font-weight:700}.deal small{color:var(--muted)}
-    .pill{padding:4px 8px;border-radius:999px;font-size:11px;border:1px solid var(--border);background:#091735}
-    .pill.stage{color:#cde1ff}.pill.value{color:#9ff0c8}.pill.prob{color:#ffe0ae}
-    .footer{display:flex;gap:8px;align-items:center;justify-content:flex-end;margin-top:10px}
-    .cutbox{background:#061737;border:1px solid var(--border);border-radius:10px;padding:10px;white-space:pre;font-size:11px;line-height:1.3;color:var(--ink);
-      font-family:ui-monospace,Menlo,Consolas,"Courier New",monospace;overflow:auto;max-height:220px}
-    dialog{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);margin:0;border:1px solid var(--border);border-radius:14px;padding:0;background:#070f26;color:var(--text);width:min(480px,94vw);box-shadow:0 18px 40px rgba(0,0,0,.7)}
-    dialog::backdrop{background:rgba(2,5,15,.65);backdrop-filter:blur(4px)}
-    dialog .d-header{padding:14px 16px;border-bottom:1px solid var(--border)}
-    dialog .d-body{padding:16px}
-    dialog .d-footer{padding:12px 16px;display:flex;gap:8px;justify-content:flex-end;border-top:1px solid var(--border)}
-    .cutscene{margin:0}
+    header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:8px;
+    }
+    .title{
+      display:flex;
+      align-items:baseline;
+      gap:8px;
+    }
+    .title h1{
+      margin:0;
+      font-size:21px;
+      letter-spacing:.15px;
+    }
+    .chip{
+      background:linear-gradient(180deg,var(--chip),#071630);
+      border:1px solid var(--border);
+      padding:6px 10px;
+      border-radius:999px;
+      color:var(--muted);
+      font-size:11px;
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      white-space:nowrap;
+    }
+    .chip strong{color:#e5eeff}
+    .row{
+      display:flex;
+      align-items:center;
+      gap:6px;
+    }
+    .row.wrap{flex-wrap:wrap}
+    .row.between{justify-content:space-between}
+    .row.right{justify-content:flex-end}
+    .grid{
+      display:grid;
+      grid-template-columns:1.2fr 0.9fr;
+      gap:10px;
+    }
+    @media (max-width:1024px){
+      .grid{grid-template-columns:1fr}
+    }
+    .panel{
+      background:linear-gradient(180deg,var(--panel),var(--panel-2));
+      border-radius:12px;
+      border:1px solid var(--border);
+      padding:12px;
+      box-shadow:0 0 0 1px rgba(255,255,255,0.03) inset,0 10px 30px rgba(0,0,0,0.6);
+    }
+    h2{
+      margin:0 0 8px 0;
+      font-size:14px;
+      color:#dbe8ff;
+    }
+    .stats{
+      display:grid;
+      grid-template-columns:repeat(6,1fr);
+      gap:6px;
+    }
+    @media (max-width:1200px){
+      .stats{grid-template-columns:repeat(3,1fr)}
+    }
+    .stat{
+      background:#071530;
+      border-radius:9px;
+      border:1px solid var(--border);
+      padding:7px 8px;
+      min-height:52px;
+      display:flex;
+      flex-direction:column;
+      gap:3px;
+    }
+    .stat .label{
+      font-size:11px;
+      color:var(--muted);
+      letter-spacing:.2px;
+    }
+    .stat .value{
+      font-size:17px;
+      font-weight:600;
+    }
+    .stat .sub{
+      font-size:11px;
+      color:var(--muted);
+    }
+    .bar{
+      width:100%;
+      height:5px;
+      border-radius:999px;
+      background:#050b1c;
+      border:1px solid var(--border);
+      overflow:hidden;
+    }
+    .bar>div{
+      height:100%;
+      border-radius:999px;
+      background:linear-gradient(90deg,var(--accent),var(--accent-2));
+    }
+    .bar.good>div{background:linear-gradient(90deg,var(--good),#22c55e)}
+    .bar.warn>div{background:linear-gradient(90deg,var(--warn),#f97316)}
+    .bar.bad>div{background:linear-gradient(90deg,var(--bad),#ef4444)}
+    .kbd{
+      font-size:11px;
+      padding:2px 6px;
+      border-radius:6px;
+      border:1px solid var(--border);
+      background:#071530;
+      color:var(--muted);
+      font-family:ui-monospace,Menlo,Consolas,monospace;
+      white-space:nowrap;
+    }
+    .badge-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+    }
+    .badge{
+      font-size:11px;
+      padding:4px 7px;
+      border-radius:8px;
+      background:#0b1a39;
+      border:1px solid var(--border);
+      color:#c7dbff;
+      white-space:nowrap;
+    }
+    .tiny{
+      font-size:11px;
+      color:var(--muted);
+    }
+    .sep{
+      height:1px;
+      background:var(--border);
+      margin:8px 0;
+    }
+    .actions{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:7px;
+    }
+    @media (max-width:768px){
+      .actions{grid-template-columns:1fr}
+    }
+    .btn{
+      border-radius:9px;
+      border:1px solid var(--border);
+      background:var(--btn);
+      color:var(--text);
+      padding:8px 10px;
+      font-size:13px;
+      text-align:left;
+      cursor:pointer;
+      display:block;
+      width:100%;
+      box-shadow:0 0 0 1px rgba(255,255,255,0.02) inset,0 7px 22px rgba(0,0,0,0.55);
+      transition:background .12s,transform .08s,box-shadow .12s,border-color .12s;
+    }
+    .btn .title{
+      font-weight:600;
+      font-size:13px;
+      margin-bottom:2px;
+    }
+    .btn .desc{
+      font-size:12px;
+      color:var(--muted);
+    }
+    .btn:hover:not(:disabled){
+      background:var(--btn-hover);
+      border-color:#2759c7;
+      transform:translateY(-1px);
+      box-shadow:0 11px 28px rgba(0,0,0,0.7);
+    }
+    .btn:disabled{
+      opacity:.45;
+      cursor:not-allowed;
+      box-shadow:none;
+    }
+    .btn.primary{
+      background:linear-gradient(180deg,#1c3a7a,#122955);
+      border-color:#2850a4;
+    }
+    .btn.ghost{
+      background:transparent;
+      border-color:var(--border);
+      box-shadow:none;
+    }
+    .btn.success{
+      background:linear-gradient(180deg,#14532d,#052e16);
+      border-color:#166534;
+    }
+    .log{
+      height:300px;
+      overflow:auto;
+      background:#050b1c;
+      border-radius:9px;
+      border:1px solid var(--border);
+      padding:8px;
+      font-size:13px;
+    }
+    .log p{
+      margin:0 0 5px 0;
+    }
+    .log .muted{
+      color:var(--muted);
+    }
+    .deal-list{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:7px;
+      max-height:220px;
+      overflow-y:auto;
+      padding-right:4px;
+    }
+    @media (max-width:1200px){
+      .deal-list{grid-template-columns:1fr}
+    }
+    .deal{
+      background:#050b1c;
+      border-radius:9px;
+      border:1px solid var(--border);
+      padding:7px 8px;
+      display:flex;
+      flex-direction:column;
+      gap:3px;
+    }
+    .deal-header{
+      display:flex;
+      justify-content:space-between;
+      gap:6px;
+      align-items:center;
+    }
+    .deal-title{
+      font-size:13px;
+      font-weight:600;
+    }
+    .pill-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:3px;
+    }
+    .pill{
+      font-size:11px;
+      padding:3px 7px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:#071530;
+      color:var(--muted);
+      white-space:nowrap;
+    }
+    .pill.stage{color:#cde1ff}
+    .pill.value{color:#a5f3fc}
+    .pill.mood-happy{border-color:var(--good);color:#bbf7d0}
+    .pill.mood-curious{border-color:var(--accent);color:#bae6fd}
+    .pill.mood-neutral{border-color:var(--border);color:var(--muted)}
+    .pill.mood-skeptical{border-color:var(--bad);color:#fecaca}
+    .deal-footer{
+      display:flex;
+      justify-content:space-between;
+      font-size:11px;
+      color:var(--muted);
+      margin-top:2px;
+    }
+    .footer{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      margin-top:8px;
+      flex-wrap:wrap;
+    }
+    .cutbox{
+      background:#061737;
+      border-radius:10px;
+      border:1px solid var(--border);
+      padding:8px;
+      height:200px;
+      overflow:auto;
+      font-family:ui-monospace,Menlo,Consolas,"Courier New",monospace;
+      font-size:11px;
+      line-height:1.25;
+      color:var(--ink);
+      white-space:pre;
+    }
+    dialog{
+      position:fixed;
+      top:50%;
+      left:50%;
+      transform:translate(-50%,-50%);
+      margin:0;
+      border-radius:12px;
+      border:1px solid var(--border);
+      padding:0;
+      background:#050b1c;
+      color:var(--text);
+      width:min(520px,94vw);
+      box-shadow:0 18px 42px rgba(0,0,0,0.85);
+    }
+    dialog::backdrop{
+      background:rgba(3,6,20,0.72);
+      backdrop-filter:blur(4px);
+    }
+    dialog .d-header{
+      padding:10px 14px;
+      border-bottom:1px solid var(--border);
+      font-weight:600;
+      font-size:14px;
+    }
+    dialog .d-body{
+      padding:12px 14px;
+    }
+    dialog .d-footer{
+      padding:8px 14px 10px;
+      border-top:1px solid var(--border);
+      display:flex;
+      justify-content:flex-end;
+      gap:6px;
+    }
+    .cutscene{margin:0;}
   </style>
 </head>
 <body>
-  <div id="root"></div>
+  <div class="container">
+    <header>
+      <div class="title">
+        <h1>🧭 Tech Sales Trail</h1>
+        <span class="chip">Matt, 25 • SDR @ <strong>Shitcorp</strong></span>
+      </div>
+      <div class="row">
+        <button id="new-game" class="btn ghost">New Game</button>
+        <button id="save" class="btn ghost">Save</button>
+        <button id="load" class="btn ghost">Load</button>
+      </div>
+    </header>
+    <div id="root"></div>
+  </div>
 
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
@@ -99,55 +387,102 @@
   <script type="text/babel">
     const { useState, useEffect, useRef } = React;
 
+    const QUARTER_WEEKS = 13;
+    const MAX_QUARTERS = 1;
+    const SAVE_KEY = "tst-save-v4-2";
+    const AUTOSAVE_KEY = "tst-autosave-v4-2";
+
     const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));
     const rand=(a,b)=>Math.random()*(b-a)+a;
     const randi=(a,b)=>Math.floor(rand(a,b+1));
     const choice=(arr)=>arr[Math.floor(Math.random()*arr.length)];
     const money=(n)=>"$"+Math.round(n).toLocaleString();
     const pct=(p)=>Math.round(p*100);
-    const now=()=>new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-    const idGen=(()=>{let i=0; return ()=> (++i).toString(36)+"-"+Date.now().toString(36).slice(-4)})();
+    const now=()=>new Date().toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
+    const idGen=(()=>{let i=0;return()=> (++i).toString(36)+"-"+Date.now().toString(36).slice(-4)})();
 
-    const Stat=({label,value,sub,bar,kind})=>{
-      let barClass=""; if(kind) barClass=kind;
-      return (
+    const STAGE_NAMES=["Lead","Qualified","Demoed","Proposal","Closing"];
+    const MOODS=["skeptical","neutral","curious","happy"];
+
+    const ACCOUNT_NAMES=[
+      "Acme Quantum","NebulaSoft","Feral Unicorn","DataRamen","ByteBazaar","Nimbus Forge",
+      "YakStack","HyperLobster","Pinecone Pizza","Mojo Metrics","Slothly AI","Cobalt Circus",
+      "Orbit Orchard","Cosmic Bagel","Spicy API","Tesseract Tea","GigaGarden","Marmot Systems",
+      "Cronut Cloud","Obsidian Harbor","Parallax Donuts","Velvet Glacier","Ghost Pepper Labs",
+      "Mythic Compass","Obelisk Systems","Carbon Jellyfish","Mirrorwave Media","Static Llama",
+      "Caffeine Cathedral","Infinite Wasabi","Aurora Churros","Neon Narwhal","Quasar Laundry",
+      "Monolith Karaoke","Origami Fortress","Ruby Iguana","Saffron Nebula","Lottery Lagoon",
+      "Circuit Sashimi","Helix Orchard","Glacier Lantern","Paper Tiger Rail","Mosaic Marmot",
+      "Golem Bistro","Vespertine Motel","Polaris Tacos","Kintsugi Metrics","Chimera Hardware",
+      "Murmur Harbor","Lantern Algebra","Cryptic Custard","Midnight Otter","Velvet Switchboard",
+      "Oracle Dumpling","Oblique Wombat","Cerulean Vineyard","Signal Pagoda"
+    ];
+
+    const getQuarterInfo=(week)=>{
+      const quarter=Math.floor((week-1)/QUARTER_WEEKS)+1;
+      const weekInQuarter=((week-1)%QUARTER_WEEKS)+1;
+      return{quarter,weekInQuarter};
+    };
+
+    const Stat=({label,value,sub,barValue,barKind})=>{
+      let cls="bar";
+      if(barKind)cls+=" "+barKind;
+      return(
         <div className="stat">
           <div className="label">{label}</div>
           <div className="value">{value}</div>
-          {sub && <div className="tiny">{sub}</div>}
-          {bar && <div className={"bar "+(barClass||"")}><div style={{width:bar.value+"%"}}/></div>}
+          {sub && <div className="sub">{sub}</div>}
+          {typeof barValue==="number" && (
+            <div className={cls}>
+              <div style={{width:clamp(barValue,0,100)+"%"}}/>
+            </div>
+          )}
         </div>
       );
     };
 
-    const DealCard=({deal})=>(
-      <div className="deal" style={{borderColor:"#16315a"}}>
-        <div>
-          <div className="name">{deal.account}</div>
-          <small style={{color:"#a6bfeb"}}>Mood: {deal.mood} • Age: {deal.age}w</small>
+    const DealCard=({deal})=>{
+      const stageName=STAGE_NAMES[deal.stage]||"Unknown";
+      const moodClass="pill mood-"+deal.mood;
+      return(
+        <div className="deal">
+          <div className="deal-header">
+            <div className="deal-title">{deal.account}</div>
+            <div className="pill-row">
+              <span className="pill stage">{stageName}</span>
+              <span className={moodClass}>{deal.mood}</span>
+            </div>
+          </div>
+          <div className="deal-footer">
+            <span className="pill value">{money(deal.value)}</span>
+            <span>Age: {deal.age}w {deal.probNote && <span className="tiny">({deal.probNote})</span>}</span>
+          </div>
         </div>
-        <div className="row right">
-          <span className="pill stage">{deal.stage}</span>
-          <span className="pill value">{money(deal.value)}</span>
-          <span className="pill prob">{deal.probNote||"–"}</span>
-        </div>
-      </div>
-    );
+      );
+    };
 
     const Modal=({open,title,children,actions})=>{
-      const ref=useRef();
+      const ref=useRef(null);
       useEffect(()=>{
-        if(!ref.current) return;
-        if(open) ref.current.showModal();
-        else if(ref.current.open) ref.current.close();
+        if(!ref.current)return;
+        if(open){
+          if(!ref.current.open)ref.current.showModal();
+        }else{
+          if(ref.current.open)ref.current.close();
+        }
       },[open]);
-      return (
-        <dialog ref={ref} onCancel={(e)=>e.preventDefault()}>
-          <div className="d-header"><strong>{title}</strong></div>
+      return(
+        <dialog ref={ref} onCancel={e=>e.preventDefault()}>
+          <div className="d-header">{title}</div>
           <div className="d-body">{children}</div>
           <div className="d-footer">
-            {actions?.map((a,i)=>(
-              <button key={i} className={"btn "+(a.className||"ghost")} onClick={a.onClick} autoFocus={i===0}>
+            {actions && actions.map((a,i)=>(
+              <button
+                key={i}
+                className={"btn "+(a.className||"ghost")}
+                onClick={a.onClick}
+                autoFocus={i===0}
+              >
                 {a.label}
               </button>
             ))}
@@ -156,789 +491,1175 @@
       );
     };
 
-    const Cutscene=({frames=[], speed=120, play=false})=>{
-      const [i,setI]=useState(0);
+    const Cutscene=({frames,speed,play})=>{
+      const[index,setIndex]=useState(0);
       useEffect(()=>{
-        if(!play||!frames.length){ setI(0); return; }
-        setI(0);
-        let idx=0;
-        const id=setInterval(()=>{ idx=(idx+1)%frames.length; setI(idx); }, speed);
-        return ()=> clearInterval(id);
+        if(!play||!frames||frames.length===0){
+          setIndex(0);
+          return;
+        }
+        setIndex(0);
+        let i=0;
+        const id=setInterval(()=>{
+          i=(i+1)%frames.length;
+          setIndex(i);
+        },speed);
+        return()=>clearInterval(id);
       },[play,frames,speed]);
-      return <div className="cutbox"><pre className="cutscene">{frames[i]||""}</pre></div>;
+      return(
+        <div className="cutbox">
+          <pre className="cutscene">{frames && frames[index]||""}</pre>
+        </div>
+      );
     };
 
     const newGame=()=>({
-      week:1,maxWeeks:13,
-      slots:5,maxSlots:5,restedThisWeek:false,
-      energy:95,stress:28,
+      week:1,
+      maxQuarters:MAX_QUARTERS,
+      quartersSurvived:0,
+      slots:5,
+      maxSlots:5,
+      restedThisWeek:false,
+      energy:95,
+      stress:28,
       skills:{prospect:45,discovery:35,demo:30,negotiate:25},
-      reputation:40,manager:50,product:60,
-      cash:1200,quota:120000,meetings:0,
-      pipeline:0,closedWon:0,discounts:0,
-      deals:[],logs:[],
-      pip:false,fired:false,burnedOut:false,win:false,
+      reputation:40,
+      manager:50,
+      product:60,
+      cash:1200,
+      quota:120000,
+      closedWon:0,
+      closedQuarter:0,
+      discounts:0,
+      pipeline:0,
+      deals:[],
+      logs:[],
+      pip:false,
+      pipLevel:0,
+      fired:false,
+      burnedOut:false,
+      win:false,
+      missed:false,
+      repo:false,
+      repoWarned:false,
       modifiers:{conversion:0,discount:0,expiresIn:0},
-      achievements:[], runId:idGen(),
-      used:{prospect:false,cadence:false,discovery:false,demo:false,propose:false,close:false,network:false,recharge:false}
+      achievements:[],
+      runId:idGen(),
+      used:{
+        prospect:false,
+        cadence:false,
+        discovery:false,
+        demo:false,
+        propose:false,
+        close:false,
+        network:false,
+        recharge:false
+      }
     });
 
-    const log=(s,msg,kind="info")=>{
+    const log=(state,msg,kind="info")=>{
       const entry={id:idGen(),t:now(),msg,kind};
-      return {...s,logs:[entry,...s.logs].slice(0,120)};
+      return{...state,logs:[entry,...state.logs].slice(0,220)};
     };
 
-    const addAchievement=(s,key,label)=>{
-      if(s.achievements.some(a=>a.key===key)) return s;
-      return log({...s,achievements:[...s.achievements,{key,label}]},"🏅 Achievement unlocked: "+label);
+    const addAchievement=(state,key,label)=>{
+      if(state.achievements.some(a=>a.key===key))return state;
+      const next={...state,achievements:[...state.achievements,{key,label}]};
+      return log(next,`🏅 Achievement unlocked: ${label}`);
     };
 
-    const STAGES=["Lead","Discovery","Demo","Proposal","Commit"];
-
-    const makeDeal=(s,{warm=false,big=false}={})=>{
-      const base=big? rand(22000,58000) : rand(5000,24000);
-      const repMod=0.7+0.6*(s.reputation/100);
-      return {
+    const makeDeal=(state,{warm=false,big=false}={})=>{
+      const base=big?randi(22000,58000):randi(5000,24000);
+      const repMult=0.7+0.6*(state.reputation/100);
+      const mood=warm
+        ?(Math.random()<0.6?"curious":"neutral")
+        :(Math.random()<0.25?"skeptical":"neutral");
+      return{
         id:idGen(),
-        account: choice([
-          "Acme","Globex","Initech","Umbrella","Stark",
-          "Wayne","Tyrell","Hooli","Wonka","Cyberdyne"
-        ])+" "+randi(1,999),
-        value: Math.round(base*repMod),
+        account:choice(ACCOUNT_NAMES),
+        value:Math.round(base*repMult),
         stage:0,
-        mood: warm? choice(["curious","neutral"]):choice(["neutral","skeptical"]),
+        mood,
         probNote:"",
         age:0
       };
     };
 
-    const tryCloseSome=(s,tag="🧾 Negotiations")=>{
-      let ns={...s};
-      const toTry=ns.deals.filter(d=>d.stage>=3);
-      if(!toTry.length) return log(ns,`${tag}: nothing to close yet.`,"muted");
-      let closed=0,sum=0,disc=0;
-      ns.deals=ns.deals.map(d=>{
-        if(d.stage<3) return d;
-        let chance=clamp(
-          0.10
-          +0.33*(ns.skills.negotiate/100)
-          +0.10*(ns.skills.discovery/100)
-          +0.09*(ns.manager/100)
-          +0.10*(ns.reputation/100)
-          +0.10*(ns.product/100)
-          -0.28*(ns.stress/100)
-          +(ns.modifiers.conversion||0)
-          +(d.stage>=4?0.05:0)
-          +(d.mood==="happy"?0.08:0)
-          -(d.mood==="skeptical"?0.06:0),
-          0.04,0.88
-        );
+    const checkRepo=(state)=>{
+      let s={...state};
+      if(s.cash<=-1500 && !s.repo && !s.fired && !s.burnedOut && !s.win && !s.missed){
+        s.repo=true;
+        s=log(s,"🧥 Collections repossessed your President’s Club jacket. That was the last flex you had.","bad");
+      }else if(s.cash<=-1000 && !s.repo && !s.repoWarned){
+        s.repoWarned=true;
+        s=log(s,"⚠️ Cash below -$1,000. Finance is side-eyeing your jacket as collateral.","warn");
+      }
+      return s;
+    };
+
+    const ageAndGhost=(state)=>{
+      let s={...state};
+      s.deals=s.deals
+        .filter(d=>{
+          const tooOld=d.age>6 && d.stage<2 && Math.random()<0.25;
+          const ghosted=d.mood==="skeptical" && Math.random()<0.15;
+          if(tooOld||ghosted){
+            s=log(s,`👻 ${d.account} went dark.`,"warn");
+            return false;
+          }
+          return true;
+        })
+        .map(d=>({...d,age:d.age+1}));
+      s.pipeline=s.deals.reduce((sum,d)=>sum+d.value,0);
+      return s;
+    };
+
+    const killDeals=(state,predicate,dropProb)=>{
+      let s={...state};
+      let lost=0,lostVal=0;
+      const kept=[];
+      for(const d of s.deals){
+        if(predicate(d) && Math.random()<dropProb){
+          lost++;
+          lostVal+=d.value;
+        }else kept.push(d);
+      }
+      s.deals=kept;
+      s.pipeline=kept.reduce((sum,d)=>sum+d.value,0);
+      if(lost>0){
+        s=log(s,`💀 Lost ${lost} deal(s) totaling ${money(lostVal)}.`,"bad");
+      }
+      return s;
+    };
+
+    const tryCloseSome=(state,label="🧾 Negotiations")=>{
+      let s={...state};
+      const candidates=s.deals.filter(d=>d.stage>=3);
+      if(candidates.length===0){
+        return log(s,`${label}: nothing ready to close.`,"muted");
+      }
+      let closedCount=0,totalWon=0,totalDiscount=0,lost=0,lostVal=0;
+      const pipPenalty=s.pip ? 0.05*(s.pipLevel||1) : 0;
+
+      const nextDeals=[];
+      for(const d of s.deals){
+        if(d.stage<3){nextDeals.push(d);continue;}
+        let chance=
+          0.05 +
+          0.26*(s.skills.negotiate/100) +
+          0.10*(s.skills.discovery/100) +
+          0.07*(s.manager/100) +
+          0.08*(s.reputation/100) +
+          0.08*(s.product/100) -
+          0.20*(s.stress/100) +
+          (s.modifiers.conversion||0) +
+          (d.stage>=4?0.05:0) +
+          (d.mood==="happy"?0.08:0) -
+          (d.mood==="skeptical"?0.06:0) -
+          pipPenalty;
+        chance=clamp(chance,0.03,0.88);
         const roll=Math.random();
         if(roll<chance){
-          const rate=ns.modifiers.discount||0;
-          const v=Math.round(d.value*(1-rate));
-          sum+=v; disc+=Math.round(d.value*rate); closed++;
-          return null;
+          const rate=s.modifiers.discount||0;
+          const net=Math.round(d.value*(1-rate));
+          totalWon+=net;
+          totalDiscount+=Math.round(d.value*rate);
+          closedCount++;
         }else{
-          const moodsOrder=["skeptical","neutral","curious","happy"];
-          let i=moodsOrder.indexOf(d.mood);
-          if(roll>0.9) i=Math.max(0,i-1);
-          return {...d,mood:moodsOrder[i],probNote:`roll ${pct(roll)}% vs ${pct(chance)}%`};
+          const loseProb=d.stage>=4?0.22:0.14;
+          if(Math.random()<loseProb){
+            lost++;
+            lostVal+=d.value;
+          }else{
+            let moodIdx=MOODS.indexOf(d.mood);
+            if(moodIdx<0)moodIdx=1;
+            if(roll>0.9 && moodIdx>0)moodIdx-=1;
+            nextDeals.push({
+              ...d,
+              mood:MOODS[moodIdx],
+              probNote:`roll ${pct(roll)}% vs ${pct(chance)}%`
+            });
+          }
         }
-      }).filter(Boolean);
-      ns.closedWon+=sum;
-      ns.cash+=Math.round(sum*0.12);
-      ns.discounts+=disc;
-      ns = closed
-        ? log(ns,`${tag}: closed ${closed} deal(s) for ${money(sum)}. Commission ${money(sum*0.12)}.`)
-        : log(ns,`${tag}: everyone said “circle back later.”`,"warn");
-      ns.pipeline=ns.deals.reduce((a,d)=>a+d.value,0);
-      if(sum>=65000) ns=addAchievement(ns,"whale","🐋 Whale Hunter");
-      if(ns.closedWon>=ns.quota) ns=addAchievement(ns,"quota","🎉 Over Quota!");
-      return ns;
-    };
+      }
+      s.deals=nextDeals;
+      s.pipeline=s.deals.reduce((sum,d)=>sum+d.value,0);
+      s.closedWon+=totalWon;
+      s.closedQuarter+=totalWon;
+      s.cash+=Math.round(totalWon*0.12);
+      s.discounts+=totalDiscount;
 
-    const ageAndGhost=(s)=>{
-      let ns={...s};
-      ns.deals=ns.deals.filter(d=>{
-        const tooOld=d.age>6 && d.stage<2 && Math.random()<0.20;
-        const ghost=d.mood==="skeptical" && Math.random()<0.10;
-        if(tooOld||ghost){ ns=log(ns,`👻 ${d.account} went dark.`,"warn"); return false; }
-        return true;
-      }).map(d=>({...d,age:d.age+1}));
-      ns.pipeline=ns.deals.reduce((a,d)=>a+d.value,0);
-      return ns;
-    };
-
-    const killDeals=(s,predicate,dropProb)=>{
-      let ns={...s}, lost=0, lostVal=0;
-      ns.deals = ns.deals.filter(d=>{
-        if(predicate(d) && Math.random()<dropProb){ lost++; lostVal+=d.value; return false; }
-        return true;
-      });
-      if(lost){ ns=log(ns,`💀 Lost ${lost} deal(s) totaling ${money(lostVal)}.`,"bad"); }
-      ns.pipeline=ns.deals.reduce((a,d)=>a+d.value,0);
-      return ns;
-    };
-
-    const cost=(s,{energy=0,slots=1,onceKey=null}={})=>{
-      if(s.fired||s.burnedOut||s.win) return [s,false,"over"];
-      if(s.slots<slots) return [s,false,"slots"];
-      if(s.energy<energy) return [s,false,"energy"];
-      if(onceKey && s[onceKey]) return [s,false,"once"];
-      let ns={...s};
-      ns.energy=clamp(ns.energy-energy,0,100);
-      ns.slots-=slots;
-      if(onceKey) ns[onceKey]=true;
-      return [ns,true,null];
+      if(closedCount>0){
+        s=log(s,`${label}: closed ${closedCount} deal(s) for ${money(totalWon)}. Commission ${money(totalWon*0.12)}.`);
+        if(totalWon>=65000)s=addAchievement(s,"whale","🐋 Whale Hunter");
+      }else{
+        s=log(s,`${label}: nobody signed. Just vibes and verbal commits.`,"warn");
+      }
+      if(lost>0){
+        s=log(s,`💀 Lost ${lost} late-stage deal(s) worth ${money(lostVal)}.`,"bad");
+      }
+      s=checkRepo(s);
+      return s;
     };
 
     const randomEvents=(state,setPending,maxFires=2)=>{
-      let ns={...state}, fired=0;
-      const fire=(prob,fn)=>{ if(fired>=maxFires) return; if(Math.random()<prob){ ns=fn(ns); fired++; } };
+      let s={...state};
+      let firedCount=0;
+      const fire=(prob,fn)=>{
+        if(firedCount>=maxFires)return;
+        if(Math.random()<prob){
+          s=fn(s);
+          firedCount++;
+        }
+      };
 
-      fire(0.22, st=>{
+      fire(0.22,st=>{
         const n=randi(2,6);
         const adds=Array.from({length:n},()=>makeDeal(st,{warm:true}));
         st.deals=[...adds,...st.deals];
-        st.pipeline=st.deals.reduce((a,d)=>a+d.value,0);
-        return log(st,`📣 Marketing “SQL Storm”: ${n} warm leads landed.`);
+        st.pipeline=st.deals.reduce((sum,d)=>sum+d.value,0);
+        return log(st,`📣 Marketing "SQL Storm": ${n} warm leads landed.`);
       });
 
-      fire(0.18, st=>{
+      fire(0.18,st=>{
         setPending({
-          title:"🧨 Competitor drops a 25% discount!",
-          body:"Match the chaos or hold the line?",
+          title:"🧨 Competitor drops a 25% discount",
+          body:"Match them and win more but cut ACV, or hold the line and protect brand?",
           options:[
-            {label:"Match (−20% this week, +close rate)",className:"primary",
+            {
+              label:"Match 20% discount (win more, earn less)",
+              className:"primary",
               action:(x)=>{
-                x.modifiers={conversion:0.12,discount:0.20,expiresIn:1};
-                return log(x,"💸 Matched. Finance is weeping. Close rate buffed for 1 week.");
-              }},
-            {label:"Hold the line (−close rate, +rep)",
+                const baseConv = x.modifiers?.conversion ?? 0;
+                x.modifiers={
+                  conversion:clamp(baseConv+0.12,-0.30,0.30),
+                  discount:0.20,
+                  expiresIn:1
+                };
+                return log(x,"💸 You matched the discount. Win-rate up, ACV down for a week.");
+              }
+            },
+            {
+              label:"Hold the line (fewer wins, stronger rep)",
+              className:"ghost",
               action:(x)=>{
+                const baseConv = x.modifiers?.conversion ?? 0;
                 x.reputation=clamp(x.reputation+4,0,100);
-                x.modifiers={conversion:-0.08,discount:0,expiresIn:1};
-                return log(x,"Held the line. Some respect it, others ghost.");
-              }}
+                x.modifiers={
+                  conversion:clamp(baseConv-0.08,-0.30,0.30),
+                  discount:0,
+                  expiresIn:1
+                };
+                return log(x,"🧱 You held pricing. Fewer closes this week; rep nudges up.","warn");
+              }
+            }
           ]
         });
         return st;
       });
 
-      fire(0.15, st=>{
-        let hit=false;
-        st.deals=st.deals.map(d=>{
-          if(!hit && (d.stage===1 || d.stage===2)){
-            hit=true;
-            return {...d,stage:Math.max(0,d.stage-1),mood:"skeptical"};
-          }
-          return d;
-        });
-        if(hit){
-          st.product=clamp(st.product-5,0,100);
-          st.stress=clamp(st.stress+4,0,100);
-          return log(st,"🛠️ SE fat-fingered prod during demo. One deal regressed. Product −5.");
-        }
-        return st;
+      fire(0.14,st=>{
+        const candidate=st.deals.find(d=>d.stage===1||d.stage===2);
+        if(!candidate)return st;
+        st.product=clamp(st.product-6,0,100);
+        st.stress=clamp(st.stress+4,0,100);
+        return log(st,`🛠️ SE fumbles a demo for ${candidate.account}. Product -6, stress +4.`,"warn");
       });
 
-      fire(0.10, st=>{
-        st.product=clamp(st.product+10,0,100);
-        st.deals=st.deals.map(d=> d.stage>=1? {...d,mood: d.mood==="skeptical"?"neutral":"happy"} : d);
-        return log(st,"🧙 SE MacGyver’d a live fix. Product +10. Prospects vibing.");
+      fire(0.12,st=>{
+        const candidate=st.deals.find(d=>d.stage>=2);
+        if(!candidate)return st;
+        st.product=clamp(st.product+8,0,100);
+        st.reputation=clamp(st.reputation+3,0,100);
+        return log(st,`🧙 SE hero save on ${candidate.account}. Product +8, rep +3.`);
       });
 
-      fire(0.09, st=>{
+      fire(0.10,st=>{
         setPending({
-          title:"🔓 Security Breach!",
-          body:"Transparency buys trust but hurts win rate; spin stings rep but may keep pipe alive.",
+          title:"🔐 Security Incident",
+          body:"A mid-market customer had a breach. Legal wants spin, CS wants transparency.",
           options:[
-            {label:"Full transparency (trust +, pipe bleeds)",className:"primary",
+            {
+              label:"Radical transparency (trust +, wins −)",
+              className:"primary",
               action:(x)=>{
                 x.reputation=clamp(x.reputation+6,0,100);
-                x.product=clamp(x.product-20,0,100);
+                x.product=clamp(x.product-18,0,100);
                 x.modifiers={conversion:-0.15,discount:0,expiresIn:2};
                 x=killDeals(x,d=>d.stage>=2,0.30);
-                return log(x,"🧯 Full transparency. Trust +, close rate − for 2w. Pipe took a beating.","warn");
-              }},
-            {label:"Spin Control (protect pipe, hurt rep)",
+                return log(x,"🧯 You told the truth. Trust builds; close rate tanks for a bit.","warn");
+              }
+            },
+            {
+              label:"Spin it (pipe saved, soul bruised)",
+              className:"ghost",
               action:(x)=>{
                 x.reputation=clamp(x.reputation-8,0,100);
-                x.product=clamp(x.product-15,0,100);
-                x.modifiers={conversion:-0.10,discount:0,expiresIn:1};
+                x.product=clamp(x.product-12,0,100);
+                x.modifiers={conversion:-0.08,discount:0,expiresIn:1};
                 x=killDeals(x,d=>d.stage>=2,0.15);
-                return log(x,"🌀 Spun it. Rep −, smaller hit to close rate. Some deals still flaked.","warn");
-              }}
+                return log(x,"🌀 You spun it. Pipe mostly intact; reputation takes a hit.","warn");
+              }
+            }
           ]
         });
         return st;
       });
 
-      fire(0.14, st=>{
-        st.product=clamp(st.product-15,0,100);
-        st.manager=clamp(st.manager-5,0,100);
-        st=killDeals(st,d=>d.stage>=2,0.15);
-        return log(st,"🌩️ Major cloud outage. Demos failed, a chunk of pipe fell off.","bad");
+      fire(0.12,st=>{
+        st.product=clamp(st.product-12,0,100);
+        st=killDeals(st,d=>d.stage>=2,0.18);
+        return log(st,"🌩️ Cloud outage nuked demos. Product -12; some mid-funnel deals bailed.","bad");
       });
 
-      fire(0.14, st=>{
-        st.modifiers={conversion:(st.modifiers.conversion||0)-0.06,discount:0,expiresIn:Math.max(1,st.modifiers.expiresIn)};
-        return log(st,"🕳️ Procurement Black Hole: −6% close rate this week.","warn");
+      fire(0.11,st=>{
+        const candidate=st.deals.find(d=>d.stage>=2);
+        if(!candidate)return st;
+        const boosted={...candidate,stage:Math.min(4,candidate.stage+1),mood:"happy"};
+        st.deals=st.deals.map(d=>d.id===candidate.id?boosted:d);
+        st.pipeline=st.deals.reduce((sum,d)=>sum+d.value,0);
+        st.reputation=clamp(st.reputation+3,0,100);
+        st.manager=clamp(st.manager+3,0,100);
+        return log(st,`🪜 Champion promoted at ${candidate.account}. Deal moves forward and gets happier.`);
       });
 
-      fire(0.10, st=>{
-        let moved=0;
-        st.deals=st.deals.map(d=> d.stage===3 && Math.random()<0.5 ? (moved++, {...d,stage:2,mood:"neutral"}) : d);
-        if(moved) st=log(st,`⚖️ Legal Review Purgatory: ${moved} proposal(s) regressed.`,"warn");
-        return st;
-      });
-
-      fire(0.12, st=>{
-        const cand=st.deals.find(d=>d.stage>=2);
-        if(cand){
-          st.deals=st.deals.map(d=> d.id===cand.id ? {...d,stage:Math.min(4,d.stage+1),mood:"happy"} : d);
-          st.reputation=clamp(st.reputation+3,0,100);
-          st.manager=clamp(st.manager+4,0,100);
-          return log(st,`🪜 Champion promoted at ${cand.account}: momentum boost.`);
-        }
-        return st;
-      });
-
-      fire(0.11, st=>{
+      fire(0.10,st=>{
         st.reputation=clamp(st.reputation+5,0,100);
-        st.modifiers={conversion:(st.modifiers.conversion||0)+0.08,discount:0,expiresIn:Math.max(1,st.modifiers.expiresIn)};
-        return log(st,"📘 New customer case study trending. +Rep, +8% close for a week.");
+        st.modifiers={
+          conversion:(st.modifiers.conversion||0)+0.08,
+          discount:st.modifiers.discount||0,
+          expiresIn:Math.max(1,st.modifiers.expiresIn||0)
+        };
+        return log(st,"📘 New case study hits LinkedIn. +Rep, +8% close chance for a bit.");
       });
 
-      fire(0.12, st=>{
+      fire(0.10,st=>{
         const n=randi(1,3);
-        const adds=Array.from({length:n},()=>({...makeDeal(st,{warm:true,big:true}),mood:"happy"}));
+        const adds=Array.from({length:n},()=>makeDeal(st,{warm:true,big:Math.random()<0.5}));
         st.deals=[...adds,...st.deals];
+        st.pipeline=st.deals.reduce((sum,d)=>sum+d.value,0);
         st.reputation=clamp(st.reputation+4,0,100);
-        st.pipeline=st.deals.reduce((a,d)=>a+d.value,0);
-        return log(st,`🐦 Viral tweet hit. ${n} inbound whale(s) showed up.`);
+        return log(st,`🐦 A meme about your product goes mildly viral. ${n} inbound whale-adjacent leads show up.`);
       });
 
-      fire(0.10, st=>{
-        st.modifiers={conversion:(st.modifiers.conversion||0)-0.12,discount:0,expiresIn:Math.max(1,st.modifiers.expiresIn)};
-        return log(st,"🥶 Budget freeze across your segment: −12% close rate.","warn");
+      fire(0.10,st=>{
+        st.modifiers={
+          conversion:(st.modifiers.conversion||0)-0.12,
+          discount:st.modifiers.discount||0,
+          expiresIn:Math.max(1,st.modifiers.expiresIn||0)
+        };
+        return log(st,"🥶 Budget freeze rumor. Close rates nerfed this week.","warn");
       });
 
-      fire(0.10, st=>{
-        if(st.energy<50){
+      fire(0.10,st=>{
+        if(st.energy<55){
           st.stress=clamp(st.stress+6,0,100);
           st.energy=clamp(st.energy-10,0,100);
-          return log(st,"🤒 Conference Crud: low energy made you sick. Stress +6, Energy −10.","warn");
+          return log(st,"🤒 Conference crud: low immune system, high regret. Stress +6, Energy −10.","warn");
         }
         return st;
       });
 
-      return ns;
+      fire(0.11,st=>{
+        if(st.manager>=35 || st.deals.length===0)return st;
+        const sorted=[...st.deals].sort((a,b)=>b.value-a.value);
+        const toSteal=sorted.slice(0,Math.min(2,sorted.length));
+        const stealIds=new Set(toSteal.map(d=>d.id));
+        let total=0;
+        st.deals=st.deals.filter(d=>{
+          if(stealIds.has(d.id)){total+=d.value;return false;}
+          return true;
+        });
+        st.pipeline=st.deals.reduce((sum,d)=>sum+d.value,0);
+        st=log(st,`📉 Manager “rebalances territories” and yanks ${toSteal.length} top deal(s) worth ${money(total)}.`,"bad");
+        return st;
+      });
+
+      fire(0.09,st=>{
+        if(st.manager<75)return st;
+        if(st.pip && Math.random()<0.6){
+          st.pip=false;
+          st.pipLevel=0;
+          return log(st,"🛡️ Your manager quietly tears up your PIP. “Reset next quarter.”");
+        }
+        const n=randi(1,3);
+        const adds=Array.from({length:n},()=>makeDeal(st,{warm:true,big:Math.random()<0.5}));
+        st.deals=[...adds,...st.deals];
+        st.pipeline=st.deals.reduce((sum,d)=>sum+d.value,0);
+        return log(st,`🛡️ Manager pulls strings for ${n} extra warm intro(s). Protection buff applied.`);
+      });
+
+      return s;
+    };
+
+    const evaluateQuarter=(state)=>{
+      let s={...state};
+      const {quarter}=getQuarterInfo(s.week);
+      const perfQ=s.quota>0 ? s.closedQuarter/s.quota : 0;
+      const coverage=s.quota>0 ? s.pipeline/s.quota : 0;
+      const mgr=s.manager;
+
+      let lines=[];
+      lines.push(`📊 Quarter ${quarter} closed at ${pct(perfQ)}% of quota.`);
+
+      if(perfQ>=1){
+        s.manager=clamp(s.manager+10,0,100);
+        s.reputation=clamp(s.reputation+5,0,100);
+        s.pip=false;
+        s.pipLevel=0;
+        lines.push("QBR: everyone just nods and lets you cook. No PIP, no drama.");
+      }else if(perfQ>=0.8){
+        s.manager=clamp(s.manager+(mgr>60?2:-3),0,100);
+        if(mgr<40){
+          if(!s.pip){
+            s.pip=true;
+            s.pipLevel=1;
+            lines.push("QBR: your manager slaps you on a soft PIP. More dashboards, more meetings.");
+          }else{
+            s.pipLevel=Math.min(2,s.pipLevel+1);
+            lines.push("QBR: PIP quietly tightens. Milestones go from insane to impossible.");
+          }
+        }else if(mgr>70){
+          lines.push("QBR: your manager shields you. “Macro headwinds” take the blame.");
+        }else{
+          lines.push("QBR: passive-aggressive comments, but you live to grind another quarter.");
+        }
+      }else{
+        let fireChance=0.25;
+        if(perfQ<0.6)fireChance+=0.25;
+        if(s.pip)fireChance+=0.20;
+        if(mgr<35)fireChance+=0.20;
+        if(coverage<0.8)fireChance+=0.10;
+        fireChance=clamp(fireChance,0.15,0.95);
+        const roll=Math.random();
+        if(roll<fireChance){
+          s.fired=true;
+          lines.push("QBR turns into a surprise exit interview. “We’re going in a different direction.”");
+        }else{
+          if(!s.pip){
+            s.pip=true;
+            s.pipLevel=1;
+            lines.push("You dodge being fired, but land on a PIP. Targets move farther away.");
+          }else{
+            s.pipLevel=Math.min(2,s.pipLevel+1);
+            lines.push("You narrowly avoid termination. PIP escalates to hard mode.");
+          }
+          s.manager=clamp(s.manager-8,0,100);
+        }
+      }
+
+      if(!s.fired && perfQ>=1 && mgr<25 && Math.random()<0.06){
+        s.fired=true;
+        lines.push("Your manager wanted you gone anyway. Politics > performance. You’re out.");
+      }
+
+      if(!s.fired && s.manager<30 && s.pipeline>0 && Math.random()<0.35){
+        const sorted=[...s.deals].sort((a,b)=>b.value-a.value);
+        const cut=sorted.slice(0,Math.min(2,sorted.length));
+        const cutIds=new Set(cut.map(d=>d.id));
+        let total=0;
+        s.deals=s.deals.filter(d=>{
+          if(cutIds.has(d.id)){total+=d.value;return false;}
+          return true;
+        });
+        s.pipeline=s.deals.reduce((sum,d)=>sum+d.value,0);
+        lines.push(`Manager “reassigns” ${cut.length} big deal(s) worth ${money(total)}. Setup-to-fail buff applied.`);
+      }
+
+      if(!s.fired && s.manager>75 && perfQ<1 && Math.random()<0.5){
+        if(s.pip){
+          s.pip=false;
+          s.pipLevel=0;
+          lines.push("Because your manager actually likes you, the PIP disappears in a puff of HR paperwork.");
+        }
+      }
+
+      s.closedQuarter=0;
+      s.quartersSurvived+=1;
+
+      if(s.quartersSurvived>=s.maxQuarters && !s.fired && !s.burnedOut && !s.repo){
+        if(perfQ>=1){
+          s.win=true;
+          lines.push("Quarter done, number hit. President’s Club ticket punched.");
+        }else if(perfQ>=0.7){
+          s.missed=true;
+          lines.push("Quarter ends with you under quota but still employed. Dignity slightly scuffed.");
+        }else{
+          s.fired=true;
+          lines.push("Quarter-end QBR: finance votes you off the island.");
+        }
+      }
+
+      let acc=s;
+      lines.forEach((line,idx)=>{
+        const kind=idx===0?"info":(idx===lines.length-1 && (s.fired||s.burnedOut||s.repo)?"bad":"warn");
+        acc=log(acc,line,kind);
+      });
+      return acc;
+    };
+
+    const cost=(state,{energy=0,slots=1,onceKey=null}={})=>{
+      if(state.fired || state.burnedOut || state.win || state.missed || state.repo) return [state,false,"over"];
+      if(state.slots<slots)return[state,false,"slots"];
+      if(state.energy<energy)return[state,false,"energy"];
+      if(onceKey && state[onceKey])return[state,false,"once"];
+      let s={...state};
+      s.energy=clamp(s.energy-energy,0,100);
+      s.slots-=slots;
+      if(onceKey)s[onceKey]=true;
+      return[s,true,null];
     };
 
     const CUTSCENES={
-      club: [
+      club:[
 `      .-========-.
       \`-:.  .:-'           PRESIDENT'S CLUB
-  _.-=========-._           Jacket secured
+  _.-=========-._          Jacket secured
  (.-:#########:-.)
   \\._\\#######/._/
     /\\#####/\\
-   /__\\###/__\\     *  *     *   *      *
-  '----\\#/----'      *   *    *    *      *`,
+   /__\\###/__\\     *   *   *    *    *
+  '----\\#/----'       You did the thing.`,
 `      .-========-.
       \`-:.  .:-'           PRESIDENT'S CLUB
-  _.-=========-._           Commission rains
+  _.-=========-._          Pipeline obliterated
  (.-:##*##*##:-.)
-  \\._\\#######/._/      *      *
-    /\\#####/\\        *   *      *    *
-   /__\\###/__\\   *      *   *      *     *
-  '----\\#/----'      *       *     *`,
-`      .-========-.
-      \`-:.  .:-'           PRESIDENT'S CLUB
-  _.-=========-._           Pipeline obliterated
- (.-:#########:-.)
-  \\._\\##***##/._/   *     *     *    *    *
-    /\\#####/\\            *     *       *
-   /__\\###/__\\     *    *    *    *       *
-  '----\\#/----'   *        *       *`
+  \\._\\#######/._/   *   *    *   *   *
+    /\\#####/\\
+   /__\\###/__\\   Commission rains like mana.
+  '----\\#/----'`
       ],
-      fired: [
+      fired:[
 `   _________
   /        /\\
  /  BOX   /  \\       YOU'RE DONE
 /______/\\/____\\      Badge deactivated
 \\      \\/      /
- \\____________/   HR reclaimed your dongles`,
+ \\____________/   HR reclaimed your dongles.`,
 `   _________
   /        /\\
- /  BOX   /  \\       THEY ESCORT YOU
-/______/\\/____\\      Laptop in hand
-\\      \\/      /     Slack already
- \\____________/      spinning the story`,
-`   _________
-  /        /\\
- /  BOX   /  \\       "WE'RE GOING IN
-/______/\\/____\\       A DIFFERENT
-\\      \\/      /      DIRECTION."
- \\____________/       (you are the direction)`
+ /  BOX   /  \\       “We’re going in
+/______/\\/____\\       a different direction.”
+\\      \\/      /
+ \\____________/       (That direction is: not you.)`
       ],
-      burnout: [
+      burnout:[
 `   (x_x)             BURNOUT
-    /|\\        Neurons filed a ticket
-    / \\        System on fire`,
+    /|\\        Neurons filed a ticket.
+    / \\        System on fire.`,
 `   (x_x)             BURNOUT
-    /|\\        Commission good
-    / \\        Cortisol better`,
-`   (x_x)             BURNOUT
-    /|\\        Inbox at 0
-    / \\        Soul at 1`
+    /|\\        You hit numbers.
+    / \\        Your soul did not.`
       ],
-      missed: [
+      missed:[
 `    .--.
  .-(    ).          BARELY MISSED
 (___.__)__)         70–99% to quota
-  ☔ drizzle         Badge kept, ego bruised`,
+  ☔ drizzle         Badge kept, ego bruised.`,
 `    .--.
  .-(    ).          BARELY MISSED
-(___.__)__)         Manager sighs in relief
-  ☔ drizzle         HR goes back to sleep`,
-`    .--.
- .-(    ).          BARELY MISSED
-(___.__)__)         Close... so close
-  ☔ drizzle         next time: whale hunt`
+(___.__)__)         Manager shrugs,
+  ☔ drizzle         HR forgets your name.`
+      ],
+      repo:[
+`     ______________
+    /             /\\
+   /  JACKET     /  \\    REPOSSESSED
+  /   RETURN    / /\\ \\   You financed
+ /_____________/ /  \\ \\  the drip
+ \\_____________\\ \\  / /  but not
+  \\\\\\\\\\\\\\\\\\\\\\\\/_/ /   the payments.
+   \\\\\\\\\\\\\\\\\\\/_/
+
+   Collections walks off
+   with your flex piece.`,
+`     ______________
+    /             /\\
+   /  JACKET     /  \\   REPOSSESSED
+  /   RETURN    / /\\ \\  Finance “can’t justify”
+ /_____________/ /  \\ \\ the expense.
+ \\_____________\\ \\  / / 
+  \\\\\\\\\\\\\\\\\\\\\\\/_/ /   HR keeps the photo
+   \\\\\\\\\\\\\\\\\\\/_/    on the wall.`
       ]
     };
 
     function Game(){
-      const [s,setS]=useState(()=> JSON.parse(localStorage.getItem("tst-save-v3-1")||"null") || newGame());
-      const [pending,setPending]=useState(null);
-      const [over,setOver]=useState(null);
-      const [asciiSpeed,setAsciiSpeed]=useState(120);
+      const createInitial=()=>{
+        const base=newGame();
+        try{
+          const raw=localStorage.getItem(SAVE_KEY)||localStorage.getItem(AUTOSAVE_KEY);
+          if(!raw)return base;
+          const parsed=JSON.parse(raw);
+          return{
+            ...base,
+            ...parsed,
+            skills:{...base.skills,...(parsed.skills||{})},
+            modifiers:{...base.modifiers,...(parsed.modifiers||{})},
+            used:{...base.used,...(parsed.used||{})},
+            repo:!!parsed.repo,
+            repoWarned:!!parsed.repoWarned
+          };
+        }catch{ return base; }
+      };
+
+      const[s,setS]=useState(createInitial);
+      const[pending,setPending]=useState(null);
+      const[over,setOver]=useState(null);
+      const[asciiSpeed,setAsciiSpeed]=useState(120);
 
       useEffect(()=>{
-        localStorage.setItem("tst-autosave-v3-1", JSON.stringify(s));
+        const ng=document.getElementById("new-game");
+        const sv=document.getElementById("save");
+        const ld=document.getElementById("load");
+        if(ng){
+          ng.onclick=()=>{
+            setS(newGame());
+            setPending(null);
+            setOver(null);
+          };
+        }
+        if(sv){
+          sv.onclick=()=>{
+            localStorage.setItem(SAVE_KEY,JSON.stringify(s));
+            alert("Run saved.");
+          };
+        }
+        if(ld){
+          ld.onclick=()=>{
+            const v=localStorage.getItem(SAVE_KEY)||localStorage.getItem(AUTOSAVE_KEY);
+            if(v){
+              try{
+                const parsed=JSON.parse(v);
+                const base=newGame();
+                const merged={
+                  ...base,
+                  ...parsed,
+                  skills:{...base.skills,...(parsed.skills||{})},
+                  modifiers:{...base.modifiers,...(parsed.modifiers||{})},
+                  used:{...base.used,...(parsed.used||{})},
+                  repo:!!parsed.repo,
+                  repoWarned:!!parsed.repoWarned
+                };
+                setS(merged);
+                setPending(null);
+                setOver(null);
+              }catch{
+                alert("Save was corrupted. Starting a new run.");
+                setS(newGame());
+                setPending(null);
+                setOver(null);
+              }
+            }else{
+              alert("No save found.");
+            }
+          };
+        }
       },[s]);
 
       useEffect(()=>{
-        if(pending) return;
-        if(s.fired||s.burnedOut||(s.week>s.maxWeeks)){
-          const type = s.burnedOut ? "burnout"
-                    : s.win ? "club"
-                    : (s.week> s.maxWeeks && s.closedWon>=s.quota*0.7) ? "missed"
-                    : "fired";
-          const title = type==="club" ? "President’s Club ✨"
-                       : type==="burnout" ? "Burnout 🧯"
-                       : type==="missed" ? "Barely Missed 😮‍💨"
-                       : "Terminated 💼";
-          const body = type==="club"
-            ? `Closed ${money(s.closedWon)} vs quota ${money(s.quota)}.`
-            : type==="burnout"
-              ? `Closed ${money(s.closedWon)} but the soul said nope.`
-              : type==="missed"
-                ? `Closed ${money(s.closedWon)} against ${money(s.quota)}. Badge kept; grind continues.`
-                : `Closed ${money(s.closedWon)}. HR reclaimed your dongles.`;
-          setOver({title,body,type});
-        } else {
-          setOver(null);
-        }
-      },[s,pending]);
+        try{
+          localStorage.setItem(AUTOSAVE_KEY,JSON.stringify(s));
+        }catch{}
+      },[s]);
 
       const salaryAndBills=(state)=>{
         let ns={...state};
         ns.cash+=1000;
-        if(ns.week===1 || ns.week===5 || ns.week===9){
+        const {weekInQuarter}=getQuarterInfo(ns.week);
+        if(weekInQuarter===1||weekInQuarter===5||weekInQuarter===9){
           ns.cash-=1600;
-          ns=log(ns,"🏠 Rent hit: -$1,600.");
+          ns=log(ns,"🏠 Rent hit: -$1,600.","warn");
         }
-        return log(ns,"💸 Salary processed: +$1,000.");
+        ns=log(ns,"💸 Salary processed: +$1,000.");
+        ns=checkRepo(ns);
+        return ns;
       };
 
-      const countStage=(deals,stage)=>deals.filter(d=>d.stage===stage).length;
+      const countStage=(deals,stageIndex)=>deals.filter(d=>d.stage===stageIndex).length;
 
       const Actions=({s,setS})=>{
         const actProspect=()=>{
-          let [ns,ok]=cost(s,{energy:25,slots:1}); if(!ok) return;
+          let[ns,ok]=cost(s,{energy:25,slots:1});
+          if(!ok)return;
           const n=randi(1,4)+(Math.random()<(s.skills.prospect/100)*0.4?1:0);
           const adds=Array.from({length:n},()=>makeDeal(s,{warm:false}));
           ns.used.prospect=true;
-          ns.meetings+=randi(0,n);
+          ns.meetings=(ns.meetings||0)+randi(0,n);
           ns.skills.prospect=clamp(ns.skills.prospect+1,0,100);
           ns.stress=clamp(ns.stress+2,0,100);
           ns.deals=[...adds,...ns.deals];
-          ns.pipeline=ns.deals.reduce((a,d)=>a+d.value,0);
+          ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
           ns=log(ns,`📞 Prospect Blitz: -25 energy • +${adds.length} leads`);
           setS(ns);
         };
 
         const actCadence=()=>{
-          let [ns,ok]=cost(s,{energy:18,slots:1}); if(!ok) return;
+          let[ns,ok]=cost(s,{energy:18,slots:1});
+          if(!ok)return;
           const n=randi(0,3);
           const adds=Array.from({length:n},()=>makeDeal(s,{warm:true}));
           ns.used.cadence=true;
-          ns.meetings+=randi(0,n);
+          ns.meetings=(ns.meetings||0)+randi(0,n);
           ns.deals=[...adds,...ns.deals];
-          ns.pipeline=ns.deals.reduce((a,d)=>a+d.value,0);
+          ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
           ns=log(ns,`✉️ Email Cadence: -18 energy • ${n} warm replies`);
           setS(ns);
         };
 
         const actDiscovery=()=>{
-          let [ns,ok]=cost(s,{energy:22,slots:1}); if(!ok) return;
+          let[ns,ok]=cost(s,{energy:22,slots:1});
+          if(!ok)return;
           ns.used.discovery=true;
-          let up=0;
-          ns.deals=ns.deals.map(d=> d.stage===0 && Math.random()<(0.35+s.skills.discovery/200)?
-            (up++,{...d,stage:1,mood:d.mood==="skeptical"?"neutral":d.mood}):d);
+          let advanced=0;
+          ns.deals=ns.deals.map(d=>{
+            if(d.stage===0 && Math.random()<(0.35+ns.skills.discovery/200)){
+              advanced++;
+              return {...d,stage:1,mood:d.mood==="skeptical"?"neutral":d.mood};
+            }
+            return d;
+          });
           ns.skills.discovery=clamp(ns.skills.discovery+2,0,100);
-          ns.pipeline=ns.deals.reduce((a,d)=>a+d.value,0);
-          ns=log(ns,`🔎 Discovery Deep Dive: -22 energy • qualified ${up}`);
+          ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
+          ns=log(ns,`🔎 Discovery Deep Dive: -22 energy • qualified ${advanced} lead(s)`);
           setS(ns);
         };
 
         const actDemo=()=>{
-          let [ns,ok]=cost(s,{energy:28,slots:1}); if(!ok) return;
+          let[ns,ok]=cost(s,{energy:28,slots:1});
+          if(!ok)return;
           ns.used.demo=true;
-          let up=0;
-          ns.deals=ns.deals.map(d=> d.stage===1 && Math.random()<(0.32+s.skills.demo/220+s.product/400)?
-            (up++,{...d,stage:2,mood:d.mood==="neutral"?"curious":d.mood}):d);
+          let advanced=0;
+          ns.deals=ns.deals.map(d=>{
+            if(d.stage===1 && Math.random()<(0.30+ns.skills.demo/220+ns.product/350)){
+              advanced++;
+              return {...d,stage:2,mood:d.mood==="neutral"?"curious":d.mood};
+            }
+            return d;
+          });
           ns.skills.demo=clamp(ns.skills.demo+2,0,100);
-          ns.pipeline=ns.deals.reduce((a,d)=>a+d.value,0);
-          ns=log(ns,`🖥️ Demo Marathon: -28 energy • advanced ${up}`);
+          ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
+          ns=log(ns,`🖥️ Demo Marathon: -28 energy • advanced ${advanced} opp(s)`);
           setS(ns);
         };
 
         const actPropose=()=>{
-          let [ns,ok]=cost(s,{energy:25,slots:1}); if(!ok) return;
+          let[ns,ok]=cost(s,{energy:25,slots:1});
+          if(!ok)return;
           ns.used.propose=true;
-          let up=0;
-          ns.deals=ns.deals.map(d=> d.stage===2 && Math.random()<0.40?
-            (up++,{...d,stage:3,mood:d.mood==="curious"?"happy":d.mood}):d);
-          ns.pipeline=ns.deals.reduce((a,d)=>a+d.value,0);
-          ns=log(ns,`📑 Proposals & Commit: -25 energy • sent ${up} proposal(s)`);
+          let advanced=0;
+          ns.deals=ns.deals.map(d=>{
+            if(d.stage===2 && Math.random()<0.38){
+              advanced++;
+              return {...d,stage:3,mood:d.mood==="curious"?"happy":d.mood};
+            }
+            return d;
+          });
+          ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
+          ns=log(ns,`📑 Proposals & Commit: -25 energy • sent ${advanced} proposal(s)`);
           setS(ns);
         };
 
         const actClose=()=>{
-          let [ns,ok]=cost(s,{energy:28,slots:1}); if(!ok) return;
+          let[ns,ok]=cost(s,{energy:28,slots:1});
+          if(!ok)return;
           ns.used.close=true;
           ns.skills.negotiate=clamp(ns.skills.negotiate+1,0,100);
-          ns=tryCloseSome(ns,"🤝 Close Deals");
+          ns=tryCloseSome(ns,"🤝 Close-Won Push");
           setS(ns);
         };
 
         const actNetwork=()=>{
-          let [ns,ok]=cost(s,{energy:16,slots:1}); if(!ok) return;
+          let[ns,ok]=cost(s,{energy:16,slots:1});
+          if(!ok)return;
+          ns.used.network=true;
           const n=randi(1,2);
           const adds=Array.from({length:n},()=>({...makeDeal(s,{warm:true}),mood:"happy"}));
-          ns.used.network=true;
           ns.reputation=clamp(ns.reputation+4,0,100);
           ns.deals=[...adds,...ns.deals];
-          ns.pipeline=ns.deals.reduce((a,d)=>a+d.value,0);
+          ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
           ns=log(ns,`🧑‍🤝‍🧑 Referrals & Social: -16 energy • +${n} high-trust lead(s)`);
           setS(ns);
         };
 
         const actRecharge=()=>{
-          let [ns,ok,err]=cost(s,{energy:0,slots:1,onceKey:"restedThisWeek"});
+          let[ns,ok,reason]=cost(s,{energy:0,slots:1,onceKey:"restedThisWeek"});
           if(!ok){
-            if(err==="once") setS(log(s,"⏱️ Recharge already used this week."));
+            if(reason==="once")setS(log(s,"⏱️ Recharge already used this week.","warn"));
             return;
           }
           ns.used.recharge=true;
           ns.energy=clamp(ns.energy+35,0,100);
           ns.stress=clamp(ns.stress-12,0,100);
-          ns=log(ns,"🧘 Recharge (once/week): +35 energy, -12 stress");
+          ns=log(ns,"🧘 Recharge: once per week reset. +35 energy, -12 stress.");
           setS(ns);
         };
 
         const actCoffee=()=>{
-          let [ns,ok]=cost(s,{energy:0,slots:1}); if(!ok) return;
+          let[ns,ok]=cost(s,{energy:0,slots:1});
+          if(!ok)return;
           ns.energy=clamp(ns.energy+18,0,100);
           ns.cash-=6;
-          ns.stress=clamp(ns.stress+7,0,100);
-          ns=log(ns,"☕ Coffee Spike: +18 energy, -$6, +7 stress");
+          ns.stress=clamp(ns.stress+9,0,100);
+          if(ns.stress>=100 && !ns.burnedOut){
+            ns.burnedOut=true;
+            ns=log(ns,"🧯 You jitter-spammed yourself into burnout mid-week.","bad");
+          }
+          ns=checkRepo(ns);
+          ns=log(ns,"☕ Quad shot: +18 energy, +9 stress, -$6.");
           setS(ns);
         };
 
         const actPolitics=()=>{
-          let [ns,ok]=cost(s,{energy:10,slots:1}); if(!ok) return;
-          ns.manager=clamp(ns.manager+4,0,100);
+          let[ns,ok]=cost(s,{energy:10,slots:1});
+          if(!ok)return;
+          ns.manager=clamp(ns.manager+8,0,100);
           ns.product=clamp(ns.product+3,0,100);
-          ns.reputation=clamp(ns.reputation-1,0,100);
-          ns=log(ns,"🗣️ Internal Politics: -10 energy • +Manager, +Product, -Rep");
+          ns.reputation=clamp(ns.reputation-4,0,100);
+          ns.stress=clamp(ns.stress+2,0,100);
+          ns=log(ns,"🏛️ Internal Politics: manager +8, product +3, rep −4. Soul slightly compromised.");
           setS(ns);
         };
 
         const actConference=()=>{
-          let [ns,ok]=cost(s,{energy:40,slots:2}); if(!ok) return;
+          let[ns,ok]=cost(s,{energy:40,slots:2});
+          if(!ok)return;
           ns.cash-=800;
           const n=randi(3,8);
           const adds=Array.from({length:n},()=>makeDeal(s,{warm:true,big:Math.random()<0.4}));
+          ns.deals=[...adds,...ns.deals];
+          ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
+          ns.stress=clamp(ns.stress+5,0,100);
           if(Math.random()<0.30){
             ns.modifiers={
               conversion:(ns.modifiers.conversion||0)+0.08,
               discount:ns.modifiers.discount||0,
-              expiresIn:Math.max(1,ns.modifiers.expiresIn)
+              expiresIn:Math.max(1,ns.modifiers.expiresIn||0)
             };
           }
-          ns.deals=[...adds,...ns.deals];
-          ns.pipeline=ns.deals.reduce((a,d)=>a+d.value,0);
-          ns.stress=clamp(ns.stress+5,0,100);
-          ns=log(ns,`🏟️ Conference Run: -40 energy, -$800 • +${n} leads (+chance of a hot whale)`);
+          ns=checkRepo(ns);
+          ns=log(ns,`🏟️ Conference Run: -40 energy, -$800 • +${n} leads, possible macro buff.`);
           setS(ns);
         };
 
-        const disabled=(needEnergy=0,needSlots=1)=> s.energy<needEnergy || s.slots<needSlots || s.fired || s.burnedOut || s.win;
+        const disabled=(needEnergy,needSlots)=>(
+          s.energy<needEnergy || s.slots<needSlots || s.fired || s.burnedOut || s.win || s.missed || s.repo
+        );
 
-        return (
+        return(
           <div className="actions">
             <button className="btn" disabled={disabled(25,1)} onClick={actProspect}>
               <div className="title">📞 Prospect Blitz</div>
-              <div className="desc">Find new leads. <strong>Cost:</strong> 25 Energy • 1 Slot</div>
+              <div className="desc">Find new leads. Cost: 25 Energy • 1 Slot</div>
             </button>
             <button className="btn" disabled={disabled(18,1)} onClick={actCadence}>
               <div className="title">✉️ Email Cadence</div>
-              <div className="desc">Warm replies & meetings. <strong>Cost:</strong> 18 Energy • 1 Slot</div>
+              <div className="desc">Warm replies and meetings. Cost: 18 Energy • 1 Slot</div>
             </button>
             <button className="btn" disabled={disabled(22,1)} onClick={actDiscovery}>
               <div className="title">🔎 Discovery Deep Dive</div>
-              <div className="desc">Qualify top-of-funnel. <strong>Cost:</strong> 22 Energy • 1 Slot</div>
+              <div className="desc">Qualify top of funnel. Cost: 22 Energy • 1 Slot</div>
             </button>
             <button className="btn" disabled={disabled(28,1)} onClick={actDemo}>
               <div className="title">🖥️ Demo Marathon</div>
-              <div className="desc">Run demos. <strong>Cost:</strong> 28 Energy • 1 Slot</div>
+              <div className="desc">Run demos. Cost: 28 Energy • 1 Slot</div>
             </button>
             <button className="btn" disabled={disabled(25,1)} onClick={actPropose}>
               <div className="title">📑 Proposals & Commit</div>
-              <div className="desc">Advance to proposal. <strong>Cost:</strong> 25 Energy • 1 Slot</div>
+              <div className="desc">Move deals to paper. Cost: 25 Energy • 1 Slot</div>
             </button>
             <button className="btn" disabled={disabled(28,1)} onClick={actClose}>
               <div className="title">🤝 Close Deals</div>
-              <div className="desc">Push late-stage opps over the line. <strong>Cost:</strong> 28 Energy • 1 Slot</div>
+              <div className="desc">Push late-stage opps over the line. Cost: 28 Energy • 1 Slot</div>
             </button>
             <button className="btn" disabled={disabled(16,1)} onClick={actNetwork}>
               <div className="title">🧑‍🤝‍🧑 Referrals & Social</div>
-              <div className="desc">High-trust intros. <strong>Cost:</strong> 16 Energy • 1 Slot</div>
+              <div className="desc">Tap your network. Cost: 16 Energy • 1 Slot</div>
             </button>
-            <button className="btn" disabled={disabled(0,1)} onClick={actConference}>
+            <button className="btn" disabled={disabled(40,2)} onClick={actConference}>
               <div className="title">🏟️ Conference Run</div>
-              <div className="desc">Chunky leads, macro buff chance. <strong>Cost:</strong> 40 Energy • 2 Slots • $800</div>
+              <div className="desc">Big swing, big leads. Cost: 40 Energy • 2 Slots • $800</div>
             </button>
             <button className="btn" disabled={disabled(0,1)} onClick={actRecharge}>
               <div className="title">🧘 Recharge</div>
-              <div className="desc">Once/week reset. <strong>Cost:</strong> 1 Slot</div>
+              <div className="desc">Once per week. Cost: 1 Slot</div>
             </button>
             <button className="btn" disabled={disabled(0,1)} onClick={actCoffee}>
-              <div className="title">☕ Coffee Spike</div>
-              <div className="desc">Short-term energy, long-term stress. <strong>Cost:</strong> 1 Slot • $6</div>
+              <div className="title">☕ Quad Shot</div>
+              <div className="desc">Borrow from tomorrow. Cost: 1 Slot • $6 • Stress +9</div>
             </button>
             <button className="btn" disabled={disabled(10,1)} onClick={actPolitics}>
               <div className="title">🏛️ Internal Politics</div>
-              <div className="desc">Manager & product boost, rep hit. <strong>Cost:</strong> 10 Energy • 1 Slot</div>
+              <div className="desc">Buff manager, tax reputation. Cost: 10 Energy • 1 Slot</div>
             </button>
           </div>
         );
       };
 
       const endWeek=()=>{
-        if(s.fired||s.burnedOut||s.win) return;
+        if(s.fired || s.burnedOut || s.win || s.missed || s.repo)return;
         let ns={...s};
 
-        if(Math.random()<0.15) ns=tryCloseSome(ns,"🕘 EOWeek Surprises");
+        if(Math.random()<0.15){
+          ns=tryCloseSome(ns,"🕘 End-of-week closes");
+        }
 
         ns=salaryAndBills(ns);
         ns=randomEvents(ns,setPending,2);
         ns=ageAndGhost(ns);
 
         const u=ns.used;
-        const didProspectish = u.prospect || u.cadence || u.network;
-        const didLateStage = u.propose || u.close;
-        const coreCombo = didProspectish && u.discovery && u.demo && didLateStage;
+        const didProspectish=u.prospect||u.cadence||u.network;
+        const didLate=u.propose||u.close;
+        const motionsHit=[
+          didProspectish,
+          u.discovery,
+          u.demo,
+          didLate
+        ].filter(Boolean).length;
+        const motionsSkipped=4-motionsHit;
 
-        let skipCount = 0;
-        if(!didProspectish) skipCount++;
-        if(!u.discovery) skipCount++;
-        if(!u.demo) skipCount++;
-        if(!u.propose) skipCount++;
-        if(!u.close) skipCount++;
-
-        if(coreCombo){
-          ns.modifiers={conversion:(ns.modifiers.conversion||0)+0.10,discount:ns.modifiers.discount||0,expiresIn:Math.max(1,ns.modifiers.expiresIn)};
-          ns=log(ns,"🧩 Full-motion week (prospect → discovery → demo → late-stage) ➜ +10% close next week.");
-        }else if(skipCount>=2 && ns.pipeline>0){
-          ns.modifiers={conversion:(ns.modifiers.conversion||0)-0.06,discount:ns.modifiers.discount||0,expiresIn:Math.max(1,ns.modifiers.expiresIn)};
-          ns=log(ns,"🪫 Motion skipped ➜ −6% close next week.","warn");
+        if(motionsHit>=3){
+          ns.modifiers={
+            conversion:(ns.modifiers.conversion||0)+0.06,
+            discount:ns.modifiers.discount||0,
+            expiresIn:Math.max(1,ns.modifiers.expiresIn||0)
+          };
+          ns=log(ns,"🧩 Coherent week: touched most of the funnel. +6% close next week.");
+        }else if(motionsSkipped>=3 && ns.pipeline>0){
+          ns.modifiers={
+            conversion:(ns.modifiers.conversion||0)-0.06,
+            discount:ns.modifiers.discount||0,
+            expiresIn:Math.max(1,ns.modifiers.expiresIn||0)
+          };
+          ns=log(ns,"🪫 Funnel neglect: deals getting weird vibes. −6% close next week.","warn");
         }
 
         if(!u.discovery && countStage(ns.deals,0)>=6){
           let lost=0;
-          ns.deals = ns.deals.filter(d=> (d.stage===0 && Math.random()<0.15)? (lost++, false) : true);
-          if(lost){
-            ns=log(ns,`🥶 Lead decay: ${lost} raw lead(s) went cold.`,"warn");
-            ns.pipeline=ns.deals.reduce((a,d)=>a+d.value,0);
+          ns.deals=ns.deals.filter(d=>{
+            if(d.stage===0 && Math.random()<0.20){lost++;return false;}
+            return true;
+          });
+          if(lost>0){
+            ns=log(ns,`🥶 Lead decay: ${lost} raw lead(s) went stale.`,`warn`);
+            ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
           }
         }
+
         if(!u.demo && countStage(ns.deals,1)>=5){
           let reg=0;
-          ns.deals = ns.deals.map(d=> (d.stage===1 && Math.random()<0.15)? (reg++, {...d,stage:0,mood:"skeptical"}) : d);
-          if(reg){
-            ns=log(ns,`🕑 Demo backlog: ${reg} qualified lead(s) went stale.`,"warn");
-            ns.pipeline=ns.deals.reduce((a,d)=>a+d.value,0);
+          ns.deals=ns.deals.map(d=>{
+            if(d.stage===1 && Math.random()<0.18){
+              reg++;
+              return {...d,stage:0,mood:"skeptical"};
+            }
+            return d;
+          });
+          if(reg>0){
+            ns=log(ns,`🕑 Demo backlog: ${reg} qualified lead(s) slid back to cold.`,`warn`);
+            ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
           }
         }
 
         ns.energy=clamp(ns.energy+15,0,100);
         ns.stress=clamp(ns.stress-4,0,100);
 
-        if(ns.modifiers.expiresIn>0){
+        if((ns.modifiers.expiresIn||0)>0){
           ns.modifiers.expiresIn-=1;
-          if(ns.modifiers.expiresIn<=0) ns.modifiers={conversion:0,discount:0,expiresIn:0};
-        }
-
-        ns.week+=1;
-        ns.slots=ns.maxSlots;
-        ns.restedThisWeek=false;
-        ns.used={prospect:false,cadence:false,discovery:false,demo:false,propose:false,close:false,network:false,recharge:false};
-
-        if(ns.week>=7 && !ns.pip){
-          const perf=ns.closedWon/ns.quota, coverage=ns.pipeline/ns.quota;
-          if(perf<0.25 && coverage<1.3){ ns.pip=true; ns=log(ns,"📄 You’re on a PIP. Milestones or HR.","bad"); }
-        }
-        if(ns.pip && ns.week===10){
-          const perf=ns.closedWon/ns.quota;
-          if(perf<0.55){ ns.fired=true; ns=log(ns,"📉 Missed PIP milestone. Box the laptop.","bad"); }
-          else { ns.pip=false; ns=log(ns,"✅ PIP passed. HR memory-holed it."); }
-        }
-
-        if(ns.stress>=100){
-          ns.burnedOut=true;
-          ns=log(ns,"🧯 Burnout: neurons filed a ticket.","bad");
-        }
-        if(ns.cash<-2000){
-          ns.fired=true;
-          ns=log(ns,"🏚️ Financial doom spiral.","bad");
-        }
-        if(ns.week>ns.maxWeeks){
-          const hit=ns.closedWon>=ns.quota;
-          ns.win=hit;
-          if(hit) ns=log(ns,"🏆 PRESIDENT'S CLUB: jacket secured.");
-          else if(ns.closedWon>=ns.quota*0.7) ns=log(ns,"😮‍💨 Barely Missed: kept badge, dodged HR.");
-          else{
-            ns.fired=true;
-            ns=log(ns,"🔚 Under 70%: pipeline parted ways with you.","bad");
+          if(ns.modifiers.expiresIn<=0){
+            ns.modifiers={conversion:0,discount:0,expiresIn:0};
           }
         }
 
-        const perfPct=Math.min(100,Math.round((ns.closedWon/ns.quota)*100));
-        ns.manager=clamp(ns.manager+(perfPct-40)/50,0,100);
+        if(ns.stress>=100 && !ns.burnedOut){
+          ns.burnedOut=true;
+          ns=log(ns,"🧯 Burnout: nervous system filed a ticket.","bad");
+        }
+
+        ns=checkRepo(ns);
+
+        const perfToDate=ns.quota>0 ? ns.closedQuarter/ns.quota : 0;
+        const drift=(perfToDate-0.5)*4;
+        ns.manager=clamp(ns.manager+drift,0,100);
+
+        const {weekInQuarter}=getQuarterInfo(ns.week);
+        if(weekInQuarter===QUARTER_WEEKS && !ns.fired && !ns.burnedOut && !ns.repo){
+          ns=evaluateQuarter(ns);
+        }
+
+        if(ns.fired || ns.burnedOut || ns.win || ns.missed || ns.repo){
+          setS(ns);
+          return;
+        }
+
+        const nextWeek=ns.week+1;
+        ns=log(ns,`📆 Week advanced to ${nextWeek}.`);
+        ns.week=nextWeek;
+        ns.slots=ns.maxSlots;
+        ns.restedThisWeek=false;
+        ns.used={
+          prospect:false,
+          cadence:false,
+          discovery:false,
+          demo:false,
+          propose:false,
+          close:false,
+          network:false,
+          recharge:false
+        };
 
         setS(ns);
       };
 
-      const handleNew=()=>{
-        setS(newGame());
-        setPending(null);
-        setOver(null);
-      };
-
-      const handleSave=()=>{
-        localStorage.setItem("tst-save-v3-1", JSON.stringify(s));
-        alert("Saved!");
-      };
-
-      const handleLoad=()=>{
-        const v=localStorage.getItem("tst-save-v3-1");
-        if(v){
-          setS(JSON.parse(v));
-          setPending(null);
-          setOver(null);
+      useEffect(()=>{
+        if(s.fired || s.burnedOut || s.win || s.missed || s.repo){
+          const type=
+            s.repo ? "repo" :
+            s.burnedOut ? "burnout" :
+            s.win ? "club" :
+            s.missed ? "missed" :
+            "fired";
+          const title=
+            type==="club" ? "President’s Club ✨" :
+            type==="burnout" ? "Burnout 🧯" :
+            type==="missed" ? "Barely Missed 😮‍💨" :
+            type==="repo" ? "Jacket Repo’d 🧥" :
+            "Terminated 💼";
+          const body=
+            type==="club"
+              ? `Closed ${money(s.closedWon)} this quarter. Number obliterated.`
+              : type==="burnout"
+                ? `Closed ${money(s.closedWon)} this quarter, but your nervous system liquidated itself.`
+                : type==="missed"
+                  ? `Closed ${money(s.closedWon)} this quarter. Badge kept; grind continues.`
+                  : type==="repo"
+                    ? `Cash went deeply negative and collections took your flex piece.`
+                    : `Closed ${money(s.closedWon)} before HR reclaimed your dongles.`;
+          setOver({title,body,type});
         }else{
-          alert("No save yet.");
+          setOver(null);
         }
+      },[s.fired,s.burnedOut,s.win,s.missed,s.repo,s.closedWon]);
+
+      const {weekInQuarter}=getQuarterInfo(s.week);
+      const hasLateDeal = s.deals.some(d=>d.stage>=3);
+
+      const tryOpportunisticClose=()=>{
+        if(!hasLateDeal){
+          setS(log(s,"🧪 No late-stage deals to hail-mary. Manager would just call that LARPing.","warn"));
+          return;
+        }
+        let[ns,ok]=cost(s,{energy:10,slots:1});
+        if(!ok)return;
+        const beforeClosed=ns.closedWon;
+        const beforePipe=ns.pipeline;
+        ns=log(ns,"🧪 Opportunistic close: you slam the phones and try to force signatures.","warn");
+        let st=tryCloseSome(ns,"🧪 Hail-Mary Close");
+        const closedDelta=st.closedWon-beforeClosed;
+        const pipeDelta=beforePipe-st.pipeline;
+        const pureLoss=Math.max(0,pipeDelta-closedDelta);
+
+        if(closedDelta<=0 && pureLoss>0){
+          st.manager=clamp(st.manager-6,0,100);
+          st.stress=clamp(st.stress+5,0,100);
+          st=log(st,"📛 Manager lights you up for reckless closing. Relationship -6, Stress +5.","bad");
+        }else if(closedDelta>0 && pureLoss>0){
+          st.manager=clamp(st.manager-2,0,100);
+          st=log(st,"😬 You closed something but scorched the rest of the pipe. Manager -2.");
+        }else if(closedDelta>0 && pureLoss===0){
+          st.manager=clamp(st.manager+3,0,100);
+          st=log(st,"✅ Threaded the needle. Big win, no collateral damage. Manager +3.");
+        }
+
+        setS(st);
       };
 
-      return (
-        <div className="container">
-          <header>
-            <div className="title">
-              <h1>🧭 Tech Sales Trail</h1>
-              <span className="chip">Matt, 25 • SDR @ <strong>Shitcorp</strong></span>
-            </div>
-            <div className="row">
-              <button className="btn ghost" onClick={handleNew}>New Game</button>
-              <button className="btn ghost" onClick={handleSave}>Save</button>
-              <button className="btn ghost" onClick={handleLoad}>Load</button>
-            </div>
-          </header>
+      const opportunisticDisabled=(
+        s.slots<=0 || s.fired || s.burnedOut || s.win || s.missed || s.repo || !hasLateDeal
+      );
 
+      return(
+        <>
           <div className="grid">
             <div className="panel">
-              <div className="row" style={{justifyContent:"space-between", marginBottom:10}}>
+              <div className="row between" style={{marginBottom:8}}>
                 <h2>Quarter Map</h2>
                 <div className="row">
-                  <span className="kbd">Wk {s.week}/{s.maxWeeks}</span>
+                  <span className="kbd">Week {weekInQuarter}/{QUARTER_WEEKS}</span>
+                  <span className="kbd">Turn {s.week}</span>
                   <span className="kbd">Slots {s.slots}/{s.maxSlots}</span>
-                  <span className="kbd mono">Run {s.runId.slice(0,5)}</span>
+                  <span className="kbd">Run {s.runId.slice(0,5)}</span>
                 </div>
               </div>
-
               <div className="stats">
-                <Stat label="Energy" value={`${s.energy}/100`} bar={{value:s.energy}} kind={s.energy>50?"good":s.energy>25?"warn":"bad"}/>
-                <Stat label="Stress" value={`${s.stress}/100`} bar={{value:s.stress}} kind={s.stress<40?"good":s.stress<70?"warn":"bad"}/>
-                <Stat label="Cash" value={money(s.cash)} sub="Salary + commission"/>
-                <Stat label="Pipeline" value={money(s.pipeline)} sub={`${s.deals.length} live deals`}/>
-                <Stat label="Closed" value={money(s.closedWon)} sub={`${pct(s.closedWon/s.quota)}% of quota`}/>
-                <Stat label="Manager" value={s.manager} bar={{value:s.manager}}/>
-                <Stat label="Prospecting" value={s.skills.prospect} bar={{value:s.skills.prospect}}/>
-                <Stat label="Discovery" value={s.skills.discovery} bar={{value:s.skills.discovery}}/>
-                <Stat label="Demo" value={s.skills.demo} bar={{value:s.skills.demo}}/>
-                <Stat label="Negotiation" value={s.skills.negotiate} bar={{value:s.skills.negotiate}}/>
-                <Stat label="Reputation" value={s.reputation} bar={{value:s.reputation}}/>
-                <Stat label="Product" value={s.product} sub="Stability vibes" bar={{value:s.product}}/>
+                <Stat label="Energy" value={`${s.energy}/100`} barValue={s.energy} barKind={s.energy>50?"good":s.energy>25?"warn":"bad"} />
+                <Stat label="Stress" value={`${s.stress}/100`} barValue={s.stress} barKind={s.stress<40?"good":s.stress<70?"warn":"bad"} />
+                <Stat label="Cash" value={money(s.cash)} sub="Salary + commission" />
+                <Stat label="Pipeline" value={money(s.pipeline)} sub={`${s.deals.length} live deals`} />
+                <Stat label="Closed (Q)" value={money(s.closedQuarter)} sub={`${pct(s.closedQuarter/s.quota)}% of quota`} />
+                <Stat label="Manager" value={s.manager} barValue={s.manager} />
+                <Stat label="Prospecting" value={s.skills.prospect} barValue={s.skills.prospect} />
+                <Stat label="Discovery" value={s.skills.discovery} barValue={s.skills.discovery} />
+                <Stat label="Demo" value={s.skills.demo} barValue={s.skills.demo} />
+                <Stat label="Negotiation" value={s.skills.negotiate} barValue={s.skills.negotiate} />
+                <Stat label="Reputation" value={s.reputation} barValue={s.reputation} />
+                <Stat label="Product" value={s.product} sub="How cursed the stack is" barValue={s.product} />
               </div>
-
               <div className="sep"></div>
-
-              <Actions s={s} setS={setS}/>
-
+              <Actions s={s} setS={setS} />
               <div className="footer">
-                <div className="badge-row" style={{marginRight:"auto"}}>
-                  {s.pip && <span className="badge">📄 On PIP</span>}
+                <div className="badge-row">
+                  <span className="badge">Total Closed: {money(s.closedWon)}</span>
+                  <span className="badge">Quota: {money(s.quota)}</span>
+                  {s.pip && <span className="badge">📄 PIP L{(s.pipLevel||1)}</span>}
                   {s.modifiers.discount>0 && <span className="badge">🧾 Discount Mode</span>}
                   {s.modifiers.conversion!==0 && <span className="badge">🎲 Conversion Mod</span>}
                   {s.restedThisWeek && <span className="badge">🧘 Rested</span>}
-                  {s.achievements.map(a=><span key={a.key} className="badge">{a.label}</span>)}
+                  {s.repo && <span className="badge">🧥 Jacket Repo’d</span>}
                 </div>
-                <button className="btn ghost"
-                  onClick={()=>{
-                    const [ns,ok]=cost(s,{energy:0,slots:1});
-                    if(!ok) return;
-                    let st=tryCloseSome(ns,"🧪 Opportunistic Close");
-                    setS(st);
-                  }}
-                  disabled={s.slots<=0 || s.fired || s.burnedOut || s.win}
-                >Try Close Now (1 Slot)</button>
-                <button className="btn primary" onClick={endWeek} disabled={s.fired||s.burnedOut||s.win}>
-                  <strong>End Week</strong>
-                </button>
+                <div className="row right">
+                  <button
+                    className="btn ghost"
+                    onClick={tryOpportunisticClose}
+                    disabled={opportunisticDisabled}
+                  >
+                    Hail-Mary Close (10 Energy, 1 Slot)
+                  </button>
+                  <button
+                    className="btn primary"
+                    onClick={endWeek}
+                    disabled={s.fired || s.burnedOut || s.win || s.missed || s.repo}
+                  >
+                    End Week
+                  </button>
+                </div>
               </div>
             </div>
 
             <div className="panel">
               <h2>Active Deals</h2>
               <div className="deal-list">
-                {s.deals.length
-                  ? s.deals.slice(0,10).map(d=><DealCard deal={{...d,stage:STAGES[d.stage]}} key={d.id}/>)
-                  : <div className="tiny">No active deals yet. Phone go brr.</div>}
+                {s.deals.length>0 ? (
+                  s.deals.map(d=>(
+                    <DealCard key={d.id} deal={d} />
+                  ))
+                ) : (
+                  <div className="tiny">No active deals yet. Phone go brr.</div>
+                )}
               </div>
-
-              <div className="spacer"></div>
+              <div className="sep"></div>
               <h2>Activity Log</h2>
               <div className="log">
-                {s.logs.length
-                  ? s.logs.map(l=> <p key={l.id}><span className="muted">{l.t}</span> — {l.msg}</p>)
-                  : <p className="muted">Logs appear here. Make some noise.</p>}
+                {s.logs.length>0 ? (
+                  s.logs.map(entry=>(
+                    <p key={entry.id}>
+                      <span className="muted">{entry.t}</span> — {entry.msg}
+                    </p>
+                  ))
+                ) : (
+                  <p className="muted">Logs appear here once you start making noise.</p>
+                )}
               </div>
             </div>
           </div>
@@ -946,52 +1667,57 @@
           <Modal
             open={!!pending}
             title={pending?.title || "Event"}
-            actions={pending? pending.options.map((o)=>({
-              label:o.label,
-              className:o.className,
+            actions={pending ? pending.options.map(opt=>({
+              label:opt.label,
+              className:opt.className||"ghost",
               onClick:()=>{
-                let st=o.action(s);
+                let ns=opt.action({...s});
+                setS(ns);
                 setPending(null);
-                setS(st);
               }
             })) : []}
           >
-            <div><p style={{marginTop:0}}>{pending?.body}</p></div>
+            <p className="tiny">{pending?.body}</p>
           </Modal>
 
           <Modal
             open={!!over}
             title={over?.title || "Game Over"}
             actions={[
-              {label:"New Run",className:"success",onClick:()=>{ setS(newGame()); setOver(null); }},
-              {label:"Close",className:"ghost",onClick:()=>{
-                const x=document.querySelector("dialog[open]");
-                if(x) x.close();
-                setOver(null);
-              }}
+              {
+                label:"New Run",
+                className:"success",
+                onClick:()=>{
+                  setS(newGame());
+                  setOver(null);
+                }
+              }
             ]}
           >
-            <p style={{marginTop:0}}>{over?.body}</p>
-            <Cutscene frames={CUTSCENES[over?.type||"club"]} speed={asciiSpeed} play={!!over}/>
-            <div className="row" style={{justifyContent:"space-between"}}>
+            <p className="tiny">{over?.body}</p>
+            <Cutscene
+              frames={CUTSCENES[over?.type || "club"]}
+              speed={asciiSpeed}
+              play={!!over}
+            />
+            <div className="row between" style={{marginTop:6}}>
               <div className="badge-row">
-                <span className="badge">Closed: {money(s.closedWon)}</span>
+                <span className="badge">Total Closed: {money(s.closedWon)}</span>
                 <span className="badge">Pipeline: {money(s.pipeline)}</span>
-                <span className="badge">Quota: {money(s.quota)} ({pct(s.closedWon/s.quota)}%)</span>
-                <span className="badge">Discounted: {money(s.discounts)}</span>
+                <span className="badge">Total Discounts: {money(s.discounts)}</span>
               </div>
               <div className="row">
                 <span className="tiny">ASCII speed</span>
-                <button className="btn ghost" onClick={()=>setAsciiSpeed((p)=>Math.max(60,p-20))}>Faster</button>
-                <button className="btn ghost" onClick={()=>setAsciiSpeed((p)=>Math.min(240,p+20))}>Slower</button>
+                <button className="btn ghost" onClick={()=>setAsciiSpeed(p=>Math.max(60,p-20))}>Faster</button>
+                <button className="btn ghost" onClick={()=>setAsciiSpeed(p=>Math.min(260,p+20))}>Slower</button>
               </div>
             </div>
           </Modal>
-        </div>
+        </>
       );
     }
 
-    ReactDOM.createRoot(document.getElementById("root")).render(<Game/>);
+    ReactDOM.createRoot(document.getElementById("root")).render(<Game />);
   </script>
 </body>
 </html>
