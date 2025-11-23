@@ -18,3 +18,5 @@ Just download this repo (or visit the GitHub Pages link below) and open `index.h
 - Add AE scenarios
 - Add CSM/renewals mode
 - Real stats, dashboards, and visualizations
+
+PLAY: https://dkornchip.github.io/tech-sales-trail/
