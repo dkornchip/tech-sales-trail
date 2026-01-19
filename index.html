@@ -156,6 +156,20 @@
       font-family:ui-monospace,Menlo,Consolas,monospace;
       white-space:nowrap;
     }
+    .pill-btn{
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:#071530;
+      color:var(--muted);
+      padding:3px 8px;
+      font-size:11px;
+      cursor:pointer;
+      white-space:nowrap;
+    }
+    .pill-btn:hover{
+      border-color:#2759c7;
+      color:#e5eeff;
+    }
     .badge-row{
       display:flex;
       flex-wrap:wrap;
@@ -527,7 +541,7 @@
       manager:50,
       product:60,
       cash:1200,
-      quota:120000,
+      quota:160000,
       closedWon:0,
       closedQuarter:0,
       discounts:0,
@@ -544,6 +558,7 @@
       repoWarned:false,
       modifiers:{conversion:0,discount:0,expiresIn:0},
       achievements:[],
+      perfWarnings:0,
       runId:idGen(),
       used:{
         prospect:false,
@@ -604,7 +619,7 @@
           const tooOld=d.age>6 && d.stage<2 && Math.random()<0.25;
           const ghosted=d.mood==="skeptical" && Math.random()<0.15;
           if(tooOld||ghosted){
-            s=log(s,`👻 ${d.account} went dark.`,"warn");
+            s=log(s,`👻 ${d.account} went dark.`,`warn`);
             return false;
           }
           return true;
@@ -627,7 +642,7 @@
       s.deals=kept;
       s.pipeline=kept.reduce((sum,d)=>sum+d.value,0);
       if(lost>0){
-        s=log(s,`💀 Lost ${lost} deal(s) totaling ${money(lostVal)}.`,"bad");
+        s=log(s,`💀 Lost ${lost} deal(s) totaling ${money(lostVal)}.`,`bad`);
       }
       return s;
     };
@@ -636,7 +651,7 @@
       let s={...state};
       const candidates=s.deals.filter(d=>d.stage>=3);
       if(candidates.length===0){
-        return log(s,`${label}: nothing ready to close.`,"muted");
+        return log(s,`${label}: nothing ready to close.`,`muted`);
       }
       let closedCount=0,totalWon=0,totalDiscount=0,lost=0,lostVal=0;
       const pipPenalty=s.pip ? 0.05*(s.pipLevel||1) : 0;
@@ -693,10 +708,10 @@
         s=log(s,`${label}: closed ${closedCount} deal(s) for ${money(totalWon)}. Commission ${money(totalWon*0.12)}.`);
         if(totalWon>=65000)s=addAchievement(s,"whale","🐋 Whale Hunter");
       }else{
-        s=log(s,`${label}: nobody signed. Just vibes and verbal commits.`,"warn");
+        s=log(s,`${label}: nobody signed. Just vibes and verbal commits.`,`warn`);
       }
       if(lost>0){
-        s=log(s,`💀 Lost ${lost} late-stage deal(s) worth ${money(lostVal)}.`,"bad");
+        s=log(s,`💀 Lost ${lost} late-stage deal(s) worth ${money(lostVal)}.`,`bad`);
       }
       s=checkRepo(s);
       return s;
@@ -766,7 +781,7 @@
         if(!candidate)return st;
         st.product=clamp(st.product-6,0,100);
         st.stress=clamp(st.stress+4,0,100);
-        return log(st,`🛠️ SE fumbles a demo for ${candidate.account}. Product -6, stress +4.`,"warn");
+        return log(st,`🛠️ SE fumbles a demo for ${candidate.account}. Product -6, stress +4.`,`warn`);
       });
 
       fire(0.12,st=>{
@@ -874,7 +889,7 @@
           return true;
         });
         st.pipeline=st.deals.reduce((sum,d)=>sum+d.value,0);
-        st=log(st,`📉 Manager “rebalances territories” and yanks ${toSteal.length} top deal(s) worth ${money(total)}.`,"bad");
+        st=log(st,`📉 Manager “rebalances territories” and yanks ${toSteal.length} top deal(s) worth ${money(total)}.`,`bad`);
         return st;
       });
 
@@ -1019,40 +1034,40 @@
       \`-:.  .:-'           PRESIDENT'S CLUB
   _.-=========-._          Jacket secured
  (.-:#########:-.)
-  \\._\\#######/._/
-    /\\#####/\\
-   /__\\###/__\\     *   *   *    *    *
-  '----\\#/----'       You did the thing.`,
+  \._\#######/._/
+    /\#####/\
+   /__\###/__\     *   *   *    *    *
+  '----\#/----'       You did the thing.`,
 `      .-========-.
       \`-:.  .:-'           PRESIDENT'S CLUB
   _.-=========-._          Pipeline obliterated
  (.-:##*##*##:-.)
-  \\._\\#######/._/   *   *    *   *   *
-    /\\#####/\\
-   /__\\###/__\\   Commission rains like mana.
-  '----\\#/----'`
+  \._\#######/._/   *   *    *   *   *
+    /\#####/\
+   /__\###/__\   Commission rains like mana.
+  '----\#/----'`
       ],
       fired:[
 `   _________
-  /        /\\
- /  BOX   /  \\       YOU'RE DONE
-/______/\\/____\\      Badge deactivated
-\\      \\/      /
- \\____________/   HR reclaimed your dongles.`,
+  /        /\
+ /  BOX   /  \       YOU'RE DONE
+/______/\/____\      Badge deactivated
+\      \/      /
+ \____________/   HR reclaimed your dongles.`,
 `   _________
-  /        /\\
- /  BOX   /  \\       “We’re going in
-/______/\\/____\\       a different direction.”
-\\      \\/      /
- \\____________/       (That direction is: not you.)`
+  /        /\
+ /  BOX   /  \       “We’re going in
+/______/\/____\       a different direction.”
+\      \/      /
+ \____________/       (That direction is: not you.)`
       ],
       burnout:[
 `   (x_x)             BURNOUT
-    /|\\        Neurons filed a ticket.
-    / \\        System on fire.`,
+    /|\        Neurons filed a ticket.
+    / \        System on fire.`,
 `   (x_x)             BURNOUT
-    /|\\        You hit numbers.
-    / \\        Your soul did not.`
+    /|\        You hit numbers.
+    / \        Your soul did not.`
       ],
       missed:[
 `    .--.
@@ -1066,24 +1081,24 @@
       ],
       repo:[
 `     ______________
-    /             /\\
-   /  JACKET     /  \\    REPOSSESSED
-  /   RETURN    / /\\ \\   You financed
- /_____________/ /  \\ \\  the drip
- \\_____________\\ \\  / /  but not
-  \\\\\\\\\\\\\\\\\\\\\\\\/_/ /   the payments.
-   \\\\\\\\\\\\\\\\\\\/_/
+    /             /\
+   /  JACKET     /  \    REPOSSESSED
+  /   RETURN    / /\ \   You financed
+ /_____________/ /  \ \  the drip
+ \_____________\ \  / /  but not
+  \\\\\\\\\\\/_/ /   the payments.
+   \\\\\\\\\\/_/
 
    Collections walks off
    with your flex piece.`,
 `     ______________
-    /             /\\
-   /  JACKET     /  \\   REPOSSESSED
-  /   RETURN    / /\\ \\  Finance “can’t justify”
- /_____________/ /  \\ \\ the expense.
- \\_____________\\ \\  / / 
-  \\\\\\\\\\\\\\\\\\\\\\\/_/ /   HR keeps the photo
-   \\\\\\\\\\\\\\\\\\\/_/    on the wall.`
+    /             /\
+   /  JACKET     /  \   REPOSSESSED
+  /   RETURN    / /\ \  Finance “can’t justify”
+ /_____________/ /  \ \ the expense.
+ \_____________\ \  / / 
+  \\\\\\\\\\\/_/ /   HR keeps the photo
+   \\\\\\\\\\/_/    on the wall.`
       ]
     };
 
@@ -1110,6 +1125,7 @@
       const[pending,setPending]=useState(null);
       const[over,setOver]=useState(null);
       const[asciiSpeed,setAsciiSpeed]=useState(120);
+      const[showHelp,setShowHelp]=useState(false);
 
       useEffect(()=>{
         const ng=document.getElementById("new-game");
@@ -1486,6 +1502,56 @@
         const drift=(perfToDate-0.5)*4;
         ns.manager=clamp(ns.manager+drift,0,100);
 
+        const pace=ns.quota>0 ? ns.week/QUARTER_WEEKS : 0;
+        const behind=pace-perfToDate;
+
+        if(ns.week>=5 && behind>0.03 && !ns.fired && !ns.burnedOut && !ns.repo && !ns.win && !ns.missed){
+          if(!Number.isFinite(ns.perfWarnings)) ns.perfWarnings=0;
+          let warnedThisWeek=false;
+
+          if(ns.perfWarnings===0 && Math.random()<0.7){
+            ns=log(ns,"👀 Manager asks for a detailed list of every meeting you’ve had this quarter. \"Just for forecasting.\"", "warn");
+            ns.stress=clamp(ns.stress+4,0,100);
+            ns.perfWarnings=1;
+            warnedThisWeek=true;
+          }else if(ns.perfWarnings===1 && Math.random()<0.6){
+            ns=log(ns,"📋 Enablement schedules a surprise \"pipeline hygiene\" review with you and your manager.","warn");
+            ns.stress=clamp(ns.stress+5,0,100);
+            ns.perfWarnings=2;
+            warnedThisWeek=true;
+          }else if(ns.perfWarnings===2 && Math.random()<0.5){
+            ns=log(ns,"🧊 HR quietly appears on your next 1:1 invite. Nobody comments on it.","warn");
+            ns.stress=clamp(ns.stress+6,0,100);
+            ns.perfWarnings=3;
+            warnedThisWeek=true;
+          }
+
+          const severity=clamp(behind*1.8,0,0.9);
+          let fireChance=0.03 + severity*0.45 + ns.perfWarnings*0.06;
+
+          if(ns.manager<50)fireChance+=0.04;
+          if(ns.manager<35)fireChance+=0.08;
+          if(ns.manager<20)fireChance+=0.10;
+          if(ns.pipeline<ns.quota*0.4)fireChance+=0.05;
+
+          if(!warnedThisWeek && ns.perfWarnings===0) fireChance*=0.6;
+
+          fireChance=clamp(fireChance,0.02,0.70);
+
+          if(ns.week>=6){
+            const roll=Math.random();
+            if(roll<fireChance){
+              ns.fired=true;
+              const msg = ns.perfWarnings>0
+                ? "📉 Mid-quarter \"forecast review\" quietly becomes an exit meeting. \"We just don’t see the ramp.\""
+                : "🪓 Out of nowhere, your manager and HR pull you into a same-day \"org update\" call. By the end, you’re not on the org chart.";
+              ns=log(ns,msg,"bad");
+            }else if(!warnedThisWeek && ns.perfWarnings>0 && Math.random()<0.4){
+              ns=log(ns,"📆 You notice a recurring calendar block with your name on your manager’s calendar. Nobody has invited you to it.","warn");
+            }
+          }
+        }
+
         const {weekInQuarter}=getQuarterInfo(ns.week);
         if(weekInQuarter===QUARTER_WEEKS && !ns.fired && !ns.burnedOut && !ns.repo){
           ns=evaluateQuarter(ns);
@@ -1547,6 +1613,7 @@
 
       const {weekInQuarter}=getQuarterInfo(s.week);
       const hasLateDeal = s.deals.some(d=>d.stage>=3);
+      const pacePercent=pct(s.week/QUARTER_WEEKS);
 
       const tryOpportunisticClose=()=>{
         if(!hasLateDeal){
@@ -1555,26 +1622,44 @@
         }
         let[ns,ok]=cost(s,{energy:10,slots:1});
         if(!ok)return;
+        const miracle=Math.random()<0.2;
         const beforeClosed=ns.closedWon;
         const beforePipe=ns.pipeline;
-        ns=log(ns,"🧪 Opportunistic close: you slam the phones and try to force signatures.","warn");
+        ns=log(
+          ns,
+          miracle
+            ? "🧪 Hail-Mary Close: you carpet-bomb every decision maker with \"last chance\" messages."
+            : "🧪 Hail-Mary Close: you press every late-stage deal way past the comfort line.",
+          "warn"
+        );
         let st=tryCloseSome(ns,"🧪 Hail-Mary Close");
         const closedDelta=st.closedWon-beforeClosed;
-        const pipeDelta=beforePipe-st.pipeline;
-        const pureLoss=Math.max(0,pipeDelta-closedDelta);
+        const pipeAfterClose=st.pipeline;
 
-        if(closedDelta<=0 && pureLoss>0){
-          st.manager=clamp(st.manager-6,0,100);
-          st.stress=clamp(st.stress+5,0,100);
-          st=log(st,"📛 Manager lights you up for reckless closing. Relationship -6, Stress +5.","bad");
-        }else if(closedDelta>0 && pureLoss>0){
-          st.manager=clamp(st.manager-2,0,100);
-          st=log(st,"😬 You closed something but scorched the rest of the pipe. Manager -2.");
-        }else if(closedDelta>0 && pureLoss===0){
-          st.manager=clamp(st.manager+3,0,100);
-          st=log(st,"✅ Threaded the needle. Big win, no collateral damage. Manager +3.");
+        if(miracle){
+          if(closedDelta>0){
+            st.manager=clamp(st.manager+8,0,100);
+            st.stress=clamp(st.stress+4,0,100);
+            st=log(st,"🌪️ Against all odds, the chaos campaign lands. Manager +8, Stress +4.");
+          }else{
+            st.manager=clamp(st.manager-4,0,100);
+            st.stress=clamp(st.stress+6,0,100);
+            st=log(st,"🤕 Chaos generated noise but no signatures. Manager -4, Stress +6.","bad");
+          }
+        }else{
+          st=killDeals(st,d=>d.stage>=3,0.55);
+          st.manager=clamp(st.manager-8,0,100);
+          st.stress=clamp(st.stress+8,0,100);
+          st.reputation=clamp(st.reputation-4,0,100);
+          if(closedDelta<=0){
+            st=log(st,"📛 Your reckless push torches late-stage trust. Manager -8, Rep -4, Stress +8.","bad");
+          }else{
+            st.manager=clamp(st.manager+2,0,100);
+            st.reputation=clamp(st.reputation+1,0,100);
+            st=log(st,"😬 You closed something, but cooked most of the late-stage pipe. Net Manager -6, Rep -3.","warn");
+          }
         }
-
+        st=checkRepo(st);
         setS(st);
       };
 
@@ -1593,6 +1678,7 @@
                   <span className="kbd">Turn {s.week}</span>
                   <span className="kbd">Slots {s.slots}/{s.maxSlots}</span>
                   <span className="kbd">Run {s.runId.slice(0,5)}</span>
+                  <button className="pill-btn" onClick={()=>setShowHelp(true)}>Stats Help</button>
                 </div>
               </div>
               <div className="stats">
@@ -1600,7 +1686,7 @@
                 <Stat label="Stress" value={`${s.stress}/100`} barValue={s.stress} barKind={s.stress<40?"good":s.stress<70?"warn":"bad"} />
                 <Stat label="Cash" value={money(s.cash)} sub="Salary + commission" />
                 <Stat label="Pipeline" value={money(s.pipeline)} sub={`${s.deals.length} live deals`} />
-                <Stat label="Closed (Q)" value={money(s.closedQuarter)} sub={`${pct(s.closedQuarter/s.quota)}% of quota`} />
+                <Stat label="Closed (Q)" value={money(s.closedQuarter)} sub={`${pct(s.closedQuarter/s.quota)}% of quota • Pace ${pacePercent}%`} />
                 <Stat label="Manager" value={s.manager} barValue={s.manager} />
                 <Stat label="Prospecting" value={s.skills.prospect} barValue={s.skills.prospect} />
                 <Stat label="Discovery" value={s.skills.discovery} barValue={s.skills.discovery} />
@@ -1616,8 +1702,8 @@
                   <span className="badge">Total Closed: {money(s.closedWon)}</span>
                   <span className="badge">Quota: {money(s.quota)}</span>
                   {s.pip && <span className="badge">📄 PIP L{(s.pipLevel||1)}</span>}
-                  {s.modifiers.discount>0 && <span className="badge">🧾 Discount Mode</span>}
-                  {s.modifiers.conversion!==0 && <span className="badge">🎲 Conversion Mod</span>}
+                  {s.modifiers.discount>0 && <span className="badge">🧾 Discount {pct(s.modifiers.discount)}%</span>}
+                  {s.modifiers.conversion!==0 && <span className="badge">🎲 Conv Mod {s.modifiers.conversion>0?"+":""}{pct(s.modifiers.conversion)}%</span>}
                   {s.restedThisWeek && <span className="badge">🧘 Rested</span>}
                   {s.repo && <span className="badge">🧥 Jacket Repo’d</span>}
                 </div>
@@ -1627,7 +1713,7 @@
                     onClick={tryOpportunisticClose}
                     disabled={opportunisticDisabled}
                   >
-                    Hail-Mary Close (10 Energy, 1 Slot)
+                    Hail-Mary Close (10 Energy, 1 Slot, High Risk)
                   </button>
                   <button
                     className="btn primary"
@@ -1666,6 +1752,29 @@
               </div>
             </div>
           </div>
+
+          <Modal
+            open={showHelp}
+            title="How This Mess Works"
+            actions={[
+              {
+                label:"Got it",
+                className:"primary",
+                onClick:()=>setShowHelp(false)
+              }
+            ]}
+          >
+            <p className="tiny"><strong>Energy</strong> limits how many big actions you can take each week. Most actions consume it; you get a small refill at week end.</p>
+            <p className="tiny"><strong>Stress</strong> reduces your close rates and can trigger burnout at 100. Coffee and chaos raise it; rest and weekends bring it down.</p>
+            <p className="tiny"><strong>Cash</strong> comes from salary and commission, but rent and events burn it. Go too negative and collections repo your jacket.</p>
+            <p className="tiny"><strong>Pipeline</strong> is total ACV of all active deals. Where they sit in the funnel depends on which actions you run each week.</p>
+            <p className="tiny"><strong>Closed (Q)</strong> tracks revenue this quarter. Hitting quota and staying close to the Week/13 pace line keeps you safer from surprise exits.</p>
+            <p className="tiny"><strong>Manager</strong> nudges close chance and heavily influences PIPs and firing risk, especially if you fall behind pace.</p>
+            <p className="tiny"><strong>Reputation</strong> helps random events break your way, slightly boosts close rates, and affects how big deals can get.</p>
+            <p className="tiny"><strong>Product</strong> reflects how cursed the stack is. Low product makes demos fizzle and prospects defect to competitors.</p>
+            <p className="tiny"><strong>Skills</strong> (Prospecting, Discovery, Demo, Negotiation) directly improve success for their corresponding motions and feed into close math.</p>
+            <p className="tiny"><strong>Modifiers</strong> like Conversion Mod and Discount are temporary buffs/nerfs from events. They decay after a few weeks.</p>
+          </Modal>
 
           <Modal
             open={!!pending}

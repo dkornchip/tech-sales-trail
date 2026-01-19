@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.11 – Pace & Pressure (2025-11-30)
+- Added Stats Help modal and pace tracking against quota.
+- Expanded mid-quarter performance warnings, firing risk, and high-risk Hail-Mary outcomes.
+- Tuned quota expectations and event mix for a sharper one-quarter run.
+
 ## v0.2.1 – Polish (2025-11-24)
 - Prevented overlapping modal random events from overwriting each other; now only the first decision event triggers per week.
 
