@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.12 – Full UI Refresh (2025-12-05)
+- Replaced the main HTML with the refreshed Tech Sales Trail UI and full game logic.
+- Added new actions (referrals, conferences, internal politics) and expanded random events.
+- Updated save/autosave keys and endgame cutscenes to match the new build.
+
 ## v1.11 – Pace & Pressure (2025-11-30)
 - Added Stats Help modal and pace tracking against quota.
 - Expanded mid-quarter performance warnings, firing risk, and high-risk Hail-Mary outcomes.
