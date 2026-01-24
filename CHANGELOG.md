@@ -1,16 +1,16 @@
 # Changelog
 
-## v1.12 – Full UI Refresh (2025-12-05)
+## v1.12 – Full UI Refresh (2026-01-23)
 - Replaced the main HTML with the refreshed Tech Sales Trail UI and full game logic.
 - Added new actions (referrals, conferences, internal politics) and expanded random events.
 - Updated save/autosave keys and endgame cutscenes to match the new build.
 
-## v1.11 – Pace & Pressure (2025-11-30)
+## v1.11 – Pace & Pressure (2026-01-18)
 - Added Stats Help modal and pace tracking against quota.
 - Expanded mid-quarter performance warnings, firing risk, and high-risk Hail-Mary outcomes.
 - Tuned quota expectations and event mix for a sharper one-quarter run.
 
-## v0.2.1 – Polish (2025-11-24)
+## v0.2.1 – Polish (2025-11-23)
 - Prevented overlapping modal random events from overwriting each other; now only the first decision event triggers per week.
 
 ## v0.2 – One-Quarter Alpha (2025-11-23)
@@ -23,7 +23,7 @@
 - Fixed ASCII cutscene jitter by using a fixed-height cutscene box.
 - Improved layout: taller log window, scrollable deals list, slightly smaller UI so everything fits at 100% zoom.
 
-## v0.1 – Initial Alpha
+## v0.1 – Initial Alpha (2025-11-15)
 - First public alpha of Tech Sales Trail.
 - Single-page React/HTML sales roguelike.
 - Core funnel actions (prospect, discovery, demo, propose, close) and random events.
