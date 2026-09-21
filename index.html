@@ -3,8 +3,13 @@
 <head>
   <meta charset="utf-8"/>
   <title>Tech Sales Trail</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
+    @property --angle { syntax:"<angle>"; initial-value:0deg; inherits:false; }
+
     :root{
       --bg:#020617;
       --panel:#0a1730;
@@ -13,6 +18,8 @@
       --muted:#9fb6db;
       --accent:#1f7aff;
       --accent-2:#19a8ff;
+      --accent-3:#a855f7;
+      --accent-4:#22d3ee;
       --good:#4ade80;
       --warn:#facc15;
       --bad:#fb7185;
@@ -21,22 +28,73 @@
       --btn-hover:#132e5f;
       --border:#16315a;
       --ink:#bfdbfe;
+      --glow:rgba(31,122,255,.45);
+      --ease:cubic-bezier(.22,1,.36,1);
+      box-sizing:border-box;
+      padding-top:env(safe-area-inset-top,0px);
+      padding-bottom:env(safe-area-inset-bottom,0px);
     }
+    /* The game is a dark-only experience by design; tokens are identical across schemes. */
+    @media (prefers-color-scheme: dark){
+      :root:not([data-theme="light"]){ --bg:#020617; --panel:#0a1730; --panel-2:#071324; --text:#e9f2ff; }
+    }
+    :root[data-theme="dark"]{ --bg:#020617; --panel:#0a1730; --panel-2:#071324; --text:#e9f2ff; }
+    html{ scroll-padding-top:env(safe-area-inset-top,0px); }
+
     *{box-sizing:border-box}
     html,body{height:100%}
     body{
       margin:0;
-      font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+      font-family:"Inter",ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
       font-size:14px;
       background:
         radial-gradient(1400px 900px at 0% 0%, rgba(31,122,255,0.28) 0, transparent 60%),
         radial-gradient(1300px 900px at 100% 100%, rgba(25,168,255,0.22) 0, transparent 65%),
         repeating-linear-gradient(135deg, rgba(255,255,255,0.03) 0, rgba(255,255,255,0.03) 1px, transparent 1px, transparent 8px),
         linear-gradient(135deg,#030617 0,#050b1f 45%,#02030a 100%);
+      background-color:var(--bg);
       background-attachment:fixed;
       color:var(--text);
+      overflow-x:hidden;
     }
+
+    /* ---------- ambient layers (decor only, never interactive) ---------- */
+    .aurora{position:fixed;inset:-20%;pointer-events:none;z-index:0;filter:blur(70px);opacity:.55;mix-blend-mode:screen}
+    .aurora i{position:absolute;display:block;width:55vw;height:55vw;border-radius:50%;will-change:transform}
+    .aurora .a{top:-8%;left:-12%;background:radial-gradient(circle,rgba(31,122,255,.65),transparent 60%);animation:blobA 22s ease-in-out infinite alternate}
+    .aurora .b{bottom:-18%;right:-12%;background:radial-gradient(circle,rgba(168,85,247,.5),transparent 60%);animation:blobB 26s ease-in-out infinite alternate}
+    .aurora .c{top:30%;left:35%;width:40vw;height:40vw;background:radial-gradient(circle,rgba(34,211,238,.45),transparent 60%);animation:blobC 30s ease-in-out infinite alternate}
+    .gridfloor{
+      position:fixed;left:-10%;right:-10%;bottom:-2%;height:42vh;pointer-events:none;z-index:0;opacity:.28;
+      background:
+        linear-gradient(to top,rgba(25,168,255,.35),transparent 70%),
+        repeating-linear-gradient(90deg,rgba(25,168,255,.35) 0 1px,transparent 1px 60px),
+        repeating-linear-gradient(0deg,rgba(25,168,255,.35) 0 1px,transparent 1px 40px);
+      transform:perspective(600px) rotateX(62deg);
+      transform-origin:50% 100%;
+      animation:gridScroll 2.2s linear infinite;
+      -webkit-mask-image:linear-gradient(to top,#000 20%,transparent 100%);
+      mask-image:linear-gradient(to top,#000 20%,transparent 100%);
+    }
+    .particles{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+    .particles span{
+      position:absolute;border-radius:50%;
+      background:radial-gradient(circle,rgba(25,168,255,.95),rgba(25,168,255,0) 70%);
+      animation:floaty linear infinite;opacity:0;will-change:transform,opacity;
+    }
+    .cursor-glow{
+      position:fixed;left:0;top:0;width:320px;height:320px;border-radius:50%;pointer-events:none;z-index:2;
+      background:radial-gradient(circle,rgba(31,122,255,.28),transparent 60%);
+      mix-blend-mode:screen;filter:blur(18px);opacity:.85;
+      transform:translate3d(-999px,-999px,0);transition:transform .12s linear;
+    }
+    .grain{
+      position:fixed;inset:0;pointer-events:none;z-index:3;opacity:.055;
+      background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    }
+
     .container{
+      position:relative;z-index:1;
       max-width:1400px;
       margin:0 auto;
       padding:10px 10px 12px;
@@ -47,16 +105,28 @@
       justify-content:space-between;
       gap:10px;
       margin-bottom:6px;
+      animation:cardIn .6s var(--ease) both;
     }
-    .title{
+    header .title{
       display:flex;
       align-items:baseline;
       gap:8px;
     }
-    .title h1{
+    header .title h1{
       margin:0;
       font-size:21px;
       letter-spacing:.15px;
+      font-family:"Sora","Inter",ui-sans-serif,system-ui,sans-serif;
+      font-weight:800;
+      display:inline-flex;align-items:center;gap:6px;
+    }
+    .logo-emoji{display:inline-block;animation:bob 2.8s ease-in-out infinite;filter:drop-shadow(0 0 10px rgba(25,168,255,.6))}
+    .grad-text{
+      background:linear-gradient(90deg,#e9f2ff 0%,#19a8ff 25%,#a855f7 50%,#22d3ee 75%,#e9f2ff 100%);
+      background-size:300% 100%;
+      -webkit-background-clip:text;background-clip:text;color:transparent;
+      animation:shimmerText 6s linear infinite;
+      text-shadow:none;
     }
     .chip{
       background:linear-gradient(180deg,var(--chip),#071630);
@@ -69,6 +139,8 @@
       align-items:center;
       gap:6px;
       white-space:nowrap;
+      position:relative;
+      animation:breathe 3.6s ease-in-out infinite;
     }
     .chip strong{color:#e5eeff}
     .row{
@@ -88,16 +160,39 @@
       .grid{grid-template-columns:1fr}
     }
     .panel{
+      position:relative;
+      isolation:isolate;
       background:linear-gradient(180deg,var(--panel),var(--panel-2));
       border-radius:12px;
       border:1px solid var(--border);
       padding:10px;
       box-shadow:0 0 0 1px rgba(255,255,255,0.03) inset,0 10px 30px rgba(0,0,0,0.6);
+      --mx:50%;--my:50%;
     }
+    .grid>.panel:nth-child(1){animation:cardIn .7s .08s var(--ease) both}
+    .grid>.panel:nth-child(2){animation:cardIn .7s .22s var(--ease) both}
+    .panel::before{
+      content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:0;
+      background:radial-gradient(520px circle at var(--mx) var(--my),rgba(31,122,255,.16),transparent 42%);
+      opacity:0;transition:opacity .45s;
+    }
+    .panel:hover::before{opacity:1}
+    .panel::after{
+      content:"";position:absolute;inset:-1px;border-radius:13px;padding:1px;pointer-events:none;z-index:0;
+      --angle:0deg;
+      background:conic-gradient(from var(--angle),transparent 0 55%,var(--accent-2) 72%,var(--accent-3) 84%,transparent 100%);
+      -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+      -webkit-mask-composite:xor;mask-composite:exclude;
+      animation:spinAngle 7s linear infinite;opacity:.9;
+    }
+    .panel>*{position:relative;z-index:1}
     h2{
       margin:0 0 8px 0;
       font-size:14px;
       color:#dbe8ff;
+      font-family:"Sora","Inter",ui-sans-serif,system-ui,sans-serif;
+      font-weight:700;
+      letter-spacing:.2px;
     }
     .stats{
       display:grid;
@@ -116,6 +211,18 @@
       display:flex;
       flex-direction:column;
       gap:3px;
+      position:relative;overflow:hidden;
+      transition:transform .35s var(--ease),box-shadow .35s,border-color .35s;
+    }
+    .stat::before{
+      content:"";position:absolute;inset:0;pointer-events:none;
+      background:linear-gradient(120deg,transparent 30%,rgba(255,255,255,.055) 50%,transparent 70%);
+      background-size:250% 100%;animation:bgDrift 4.5s linear infinite;
+    }
+    .stat:hover{
+      transform:translateY(-2px);
+      border-color:#2759c7;
+      box-shadow:0 10px 24px rgba(0,0,0,.5),0 0 18px rgba(31,122,255,.28);
     }
     .stat .label{
       font-size:11px;
@@ -125,7 +232,10 @@
     .stat .value{
       font-size:16px;
       font-weight:600;
+      font-variant-numeric:tabular-nums;
+      transform-origin:left center;
     }
+    .stat .value.pop{animation:pop .45s var(--ease)}
     .stat .sub{
       font-size:11px;
       color:var(--muted);
@@ -142,10 +252,18 @@
       height:100%;
       border-radius:999px;
       background:linear-gradient(90deg,var(--accent),var(--accent-2));
+      position:relative;overflow:hidden;
+      transition:width .7s var(--ease);
+      box-shadow:0 0 10px var(--glow);
     }
-    .bar.good>div{background:linear-gradient(90deg,var(--good),#22c55e)}
-    .bar.warn>div{background:linear-gradient(90deg,var(--warn),#f97316)}
-    .bar.bad>div{background:linear-gradient(90deg,var(--bad),#ef4444)}
+    .bar>div::after{
+      content:"";position:absolute;inset:0;
+      background:repeating-linear-gradient(-45deg,rgba(255,255,255,.22) 0 6px,transparent 6px 12px);
+      animation:barStripe 1.1s linear infinite;
+    }
+    .bar.good>div{background:linear-gradient(90deg,var(--good),#22c55e);box-shadow:0 0 10px rgba(74,222,128,.45)}
+    .bar.warn>div{background:linear-gradient(90deg,var(--warn),#f97316);box-shadow:0 0 10px rgba(250,204,21,.45)}
+    .bar.bad>div{background:linear-gradient(90deg,var(--bad),#ef4444);box-shadow:0 0 12px rgba(251,113,133,.6);animation:barPulse 1.1s ease-in-out infinite}
     .kbd{
       font-size:11px;
       padding:2px 6px;
@@ -155,7 +273,9 @@
       color:var(--muted);
       font-family:ui-monospace,Menlo,Consolas,monospace;
       white-space:nowrap;
+      transition:box-shadow .3s,border-color .3s,color .3s,transform .3s var(--ease);
     }
+    .kbd:hover{border-color:#2759c7;color:#e5eeff;box-shadow:0 0 12px rgba(31,122,255,.35);transform:translateY(-1px)}
     .pill-btn{
       border-radius:999px;
       border:1px solid var(--border);
@@ -165,10 +285,14 @@
       font-size:11px;
       cursor:pointer;
       white-space:nowrap;
+      font-family:inherit;
+      transition:box-shadow .3s,border-color .3s,color .3s,transform .3s var(--ease);
     }
     .pill-btn:hover{
       border-color:#2759c7;
       color:#e5eeff;
+      box-shadow:0 0 14px rgba(31,122,255,.4);
+      transform:translateY(-1px);
     }
     .badge-row{
       display:flex;
@@ -183,15 +307,23 @@
       border:1px solid var(--border);
       color:#c7dbff;
       white-space:nowrap;
+      animation:badgeFloat 4s ease-in-out infinite;
+      transition:box-shadow .3s,border-color .3s;
     }
+    .badge:nth-child(2n){animation-delay:-1.3s}
+    .badge:nth-child(3n){animation-delay:-2.4s}
+    .badge:hover{border-color:#2759c7;box-shadow:0 0 14px rgba(31,122,255,.35)}
     .tiny{
       font-size:11px;
       color:var(--muted);
     }
     .sep{
       height:1px;
-      background:var(--border);
+      background:linear-gradient(90deg,transparent,var(--accent-2),var(--accent-3),transparent);
+      background-size:200% 100%;
+      animation:bgDrift 6s linear infinite;
       margin:8px 0;
+      opacity:.7;
     }
     .actions{
       display:grid;
@@ -212,9 +344,17 @@
       cursor:pointer;
       display:block;
       width:100%;
+      font-family:inherit;
       box-shadow:0 0 0 1px rgba(255,255,255,0.02) inset,0 7px 22px rgba(0,0,0,0.55);
-      transition:background .12s,transform .08s,box-shadow .12s,border-color .12s;
+      position:relative;overflow:hidden;
+      transition:background .18s,transform .22s var(--ease),box-shadow .25s,border-color .18s;
     }
+    .btn::after{
+      content:"";position:absolute;top:0;left:-130%;width:60%;height:100%;pointer-events:none;
+      background:linear-gradient(100deg,transparent,rgba(255,255,255,.16),transparent);
+      transform:skewX(-18deg);transition:left .65s var(--ease);
+    }
+    .btn:hover:not(:disabled)::after{left:150%}
     .actions .btn{
       padding:7px 9px;
     }
@@ -237,18 +377,22 @@
     .btn:hover:not(:disabled){
       background:var(--btn-hover);
       border-color:#2759c7;
-      transform:translateY(-1px);
-      box-shadow:0 11px 28px rgba(0,0,0,0.7);
+      transform:translateY(-2px) scale(1.01);
+      box-shadow:0 14px 34px rgba(0,0,0,0.72),0 0 0 1px rgba(39,89,199,.55),0 0 26px rgba(31,122,255,.35);
     }
+    .btn:active:not(:disabled){transform:translateY(0) scale(.985)}
     .btn:disabled{
       opacity:.45;
       cursor:not-allowed;
       box-shadow:none;
     }
     .btn.primary{
-      background:linear-gradient(180deg,#1c3a7a,#122955);
+      background:linear-gradient(120deg,#1c3a7a,#122955,#2a4fa8,#1c3a7a);
+      background-size:250% 250%;
       border-color:#2850a4;
+      animation:pulseRing 2.4s ease-in-out infinite,bgDrift 5s linear infinite;
     }
+    .btn.primary:disabled{animation:none}
     .btn.ghost{
       background:transparent;
       border-color:var(--border);
@@ -258,6 +402,7 @@
       background:linear-gradient(180deg,#14532d,#052e16);
       border-color:#166534;
     }
+    .btn:focus-visible,.pill-btn:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
     .log{
       height:240px;
       overflow:auto;
@@ -269,7 +414,9 @@
     }
     .log p{
       margin:0 0 5px 0;
+      animation:logIn .35s var(--ease) both;
     }
+    .log p:first-child{text-shadow:0 0 14px rgba(31,122,255,.55)}
     .log .muted{
       color:var(--muted);
     }
@@ -292,6 +439,13 @@
       display:flex;
       flex-direction:column;
       gap:3px;
+      animation:cardIn .5s var(--ease) both;
+      transition:transform .3s var(--ease),box-shadow .3s,border-color .3s;
+    }
+    .deal:hover{
+      transform:translateY(-2px) scale(1.012);
+      border-color:#2759c7;
+      box-shadow:0 12px 28px rgba(0,0,0,.6),0 0 20px rgba(31,122,255,.25);
     }
     .deal-header{
       display:flex;
@@ -316,13 +470,15 @@
       background:#071530;
       color:var(--muted);
       white-space:nowrap;
+      transition:transform .25s var(--ease),box-shadow .25s;
     }
+    .pill:hover{transform:scale(1.06)}
     .pill.stage{color:#cde1ff}
-    .pill.value{color:#a5f3fc}
-    .pill.mood-happy{border-color:var(--good);color:#bbf7d0}
-    .pill.mood-curious{border-color:var(--accent);color:#bae6fd}
+    .pill.value{color:#a5f3fc;text-shadow:0 0 8px rgba(165,243,252,.45)}
+    .pill.mood-happy{border-color:var(--good);color:#bbf7d0;animation:moodGood 2.4s ease-in-out infinite}
+    .pill.mood-curious{border-color:var(--accent);color:#bae6fd;animation:breathe 3s ease-in-out infinite}
     .pill.mood-neutral{border-color:var(--border);color:var(--muted)}
-    .pill.mood-skeptical{border-color:var(--bad);color:#fecaca}
+    .pill.mood-skeptical{border-color:var(--bad);color:#fecaca;animation:moodBad 1.8s ease-in-out infinite}
     .deal-footer{
       display:flex;
       justify-content:space-between;
@@ -350,6 +506,14 @@
       line-height:1.25;
       color:var(--ink);
       white-space:pre;
+      position:relative;
+      text-shadow:0 0 8px rgba(31,122,255,.65);
+      animation:flicker 5s steps(1,end) infinite;
+      box-shadow:inset 0 0 40px rgba(31,122,255,.12);
+    }
+    .cutbox::after{
+      content:"";position:absolute;inset:0;pointer-events:none;
+      background:repeating-linear-gradient(0deg,rgba(0,0,0,.16) 0 2px,transparent 2px 4px);
     }
     dialog{
       position:fixed;
@@ -363,17 +527,21 @@
       background:#050b1c;
       color:var(--text);
       width:min(520px,94vw);
-      box-shadow:0 18px 42px rgba(0,0,0,0.85);
+      box-shadow:0 18px 42px rgba(0,0,0,0.85),0 0 0 1px rgba(31,122,255,.25),0 0 60px rgba(31,122,255,.18);
     }
+    dialog[open]{animation:modalIn .42s cubic-bezier(.2,.9,.3,1.15) both}
     dialog::backdrop{
       background:rgba(3,6,20,0.72);
       backdrop-filter:blur(4px);
+      animation:fadeIn .3s both;
     }
     dialog .d-header{
       padding:10px 14px;
       border-bottom:1px solid var(--border);
       font-weight:600;
       font-size:14px;
+      font-family:"Sora","Inter",ui-sans-serif,system-ui,sans-serif;
+      background:linear-gradient(90deg,rgba(31,122,255,.12),transparent 60%);
     }
     dialog .d-body{
       padding:12px 14px;
@@ -386,13 +554,52 @@
       gap:6px;
     }
     .cutscene{margin:0;}
+
+    ::-webkit-scrollbar{width:8px;height:8px}
+    ::-webkit-scrollbar-track{background:#050b1c;border-radius:8px}
+    ::-webkit-scrollbar-thumb{background:linear-gradient(180deg,var(--accent),var(--accent-3));border-radius:8px;border:2px solid #050b1c}
+
+    /* ---------- keyframes ---------- */
+    @keyframes spinAngle{to{--angle:360deg}}
+    @keyframes shimmerText{0%{background-position:0% 50%}100%{background-position:300% 50%}}
+    @keyframes bob{0%,100%{transform:translateY(0) rotate(-6deg)}50%{transform:translateY(-3px) rotate(8deg)}}
+    @keyframes blobA{0%{transform:translate(0,0) scale(1)}100%{transform:translate(18vw,12vh) scale(1.25)}}
+    @keyframes blobB{0%{transform:translate(0,0) scale(1.1)}100%{transform:translate(-16vw,-14vh) scale(.9)}}
+    @keyframes blobC{0%{transform:translate(-10vw,6vh) scale(.9)}100%{transform:translate(12vw,-10vh) scale(1.2)}}
+    @keyframes gridScroll{from{background-position:0 0,0 0,0 0}to{background-position:0 0,0 0,0 40px}}
+    @keyframes floaty{0%{transform:translate3d(0,0,0);opacity:0}8%{opacity:.75}92%{opacity:.75}100%{transform:translate3d(var(--dx,0px),-115vh,0);opacity:0}}
+    @keyframes breathe{0%,100%{box-shadow:0 0 0 0 rgba(25,168,255,0)}50%{box-shadow:0 0 18px 2px rgba(25,168,255,.38)}}
+    @keyframes moodGood{0%,100%{box-shadow:0 0 4px rgba(74,222,128,.2)}50%{box-shadow:0 0 14px rgba(74,222,128,.6)}}
+    @keyframes moodBad{0%,100%{box-shadow:0 0 4px rgba(251,113,133,.2);transform:rotate(0)}25%{transform:rotate(-1.5deg)}50%{box-shadow:0 0 14px rgba(251,113,133,.6);transform:rotate(1.5deg)}75%{transform:rotate(-1deg)}}
+    @keyframes pulseRing{0%,100%{box-shadow:0 0 0 0 rgba(31,122,255,.6),0 7px 22px rgba(0,0,0,.55)}50%{box-shadow:0 0 0 9px rgba(31,122,255,0),0 7px 22px rgba(0,0,0,.55)}}
+    @keyframes bgDrift{0%{background-position:0% 50%}100%{background-position:200% 50%}}
+    @keyframes barStripe{0%{background-position:0 0}100%{background-position:24px 0}}
+    @keyframes barPulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.7)}}
+    @keyframes badgeFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+    @keyframes cardIn{0%{opacity:0;transform:translateY(12px) scale(.97)}100%{opacity:1;transform:none}}
+    @keyframes logIn{0%{opacity:0;transform:translateX(-10px)}100%{opacity:1;transform:none}}
+    @keyframes pop{0%{transform:scale(1)}35%{transform:scale(1.14)}100%{transform:scale(1)}}
+    @keyframes modalIn{0%{opacity:0;transform:translate(-50%,-50%) scale(.88)}100%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+    @keyframes flicker{0%,96%,100%{opacity:1}97%{opacity:.82}98%{opacity:.96}99%{opacity:.88}}
+
+    @media (prefers-reduced-motion: reduce){
+      *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important}
+      .aurora,.particles,.gridfloor,.cursor-glow{display:none}
+    }
   </style>
 </head>
 <body>
+  <div class="aurora" aria-hidden="true"><i class="a"></i><i class="b"></i><i class="c"></i></div>
+  <div class="gridfloor" aria-hidden="true"></div>
+  <div class="particles" id="particles" aria-hidden="true"></div>
+  <div class="cursor-glow" id="cursor-glow" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+
   <div class="container">
     <header>
       <div class="title">
-        <h1>🧭 Tech Sales Trail</h1>
+        <h1><span class="logo-emoji">🧭</span><span class="grad-text">Tech Sales Trail</span></h1>
         <span class="chip">Matt, 25 • SDR @ <strong>Shitcorp</strong></span>
       </div>
       <div class="row">
@@ -404,17 +611,56 @@
     <div id="root"></div>
   </div>
 
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script>
+    (function(){
+      var reduced = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+      var pf=document.getElementById("particles");
+      if(pf && !reduced){
+        for(var i=0;i<28;i++){
+          var s=document.createElement("span");
+          var size=(Math.random()*4+2).toFixed(1);
+          s.style.left=(Math.random()*100).toFixed(2)+"%";
+          s.style.top=(Math.random()*100+20).toFixed(2)+"%";
+          s.style.width=size+"px";
+          s.style.height=size+"px";
+          s.style.animationDuration=(Math.random()*16+14).toFixed(1)+"s";
+          s.style.animationDelay=(-Math.random()*30).toFixed(1)+"s";
+          s.style.setProperty("--dx",(Math.random()*80-40).toFixed(0)+"px");
+          pf.appendChild(s);
+        }
+      }
+      var cursor=document.getElementById("cursor-glow");
+      var raf=0,mx=0,my=0;
+      document.addEventListener("mousemove",function(e){
+        mx=e.clientX;my=e.clientY;
+        if(raf)return;
+        raf=requestAnimationFrame(function(){
+          raf=0;
+          if(cursor)cursor.style.transform="translate3d("+(mx-160)+"px,"+(my-160)+"px,0)";
+          var panels=document.querySelectorAll(".panel");
+          for(var j=0;j<panels.length;j++){
+            var r=panels[j].getBoundingClientRect();
+            panels[j].style.setProperty("--mx",(mx-r.left)+"px");
+            panels[j].style.setProperty("--my",(my-r.top)+"px");
+          }
+        });
+      },{passive:true});
+    })();
+  </script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.28.4/babel.min.js" crossorigin="anonymous"></script>
 
   <script type="text/babel">
     const { useState, useEffect, useRef } = React;
 
+    const REDUCED_MOTION = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+
     const QUARTER_WEEKS = 13;
     const MAX_QUARTERS = 1;
 
-    // Save keys bumped, but we still read legacy keys to avoid breaking shipped runs.
+    // Save keys unchanged so existing runs keep loading; legacy keys still read.
     const SAVE_KEY = "tst-save-v4-3";
     const AUTOSAVE_KEY = "tst-autosave-v4-3";
     const LEGACY_KEYS = ["tst-save-v4-2", "tst-autosave-v4-2"];
@@ -423,7 +669,8 @@
     const rand=(a,b)=>Math.random()*(b-a)+a;
     const randi=(a,b)=>Math.floor(rand(a,b+1));
     const choice=(arr)=>arr[Math.floor(Math.random()*arr.length)];
-    const money=(n)=>"$"+Math.round(n).toLocaleString();
+    // FIX: negative cash used to render as "$-1,500".
+    const money=(n)=>{const r=Math.round(n);return (r<0?"-$":"$")+Math.abs(r).toLocaleString();};
     const pct=(p)=>Math.round(p*100);
     const now=()=>new Date().toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
     const idGen=(()=>{let i=0;return()=> (++i).toString(36)+"-"+Date.now().toString(36).slice(-4)})();
@@ -451,13 +698,34 @@
       return{quarter,weekInQuarter};
     };
 
-    const readStoredRun=()=>{
-      const keys=[SAVE_KEY, AUTOSAVE_KEY, ...LEGACY_KEYS];
+    // FIX: page refresh now resumes the autosave (most recent state); the Load button prefers the manual save.
+    const readStoredRun=(preferAutosave=true)=>{
+      const keys=preferAutosave
+        ?[AUTOSAVE_KEY, SAVE_KEY, ...LEGACY_KEYS]
+        :[SAVE_KEY, AUTOSAVE_KEY, ...LEGACY_KEYS];
       for(const k of keys){
-        const v=localStorage.getItem(k);
-        if(v) return v;
+        try{
+          const v=localStorage.getItem(k);
+          if(v) return v;
+        }catch{}
       }
       return null;
+    };
+
+    // Single merge path for restored runs (was duplicated between initial load and the Load button).
+    const mergeSaved=(parsed)=>{
+      const base=newGame();
+      return{
+        ...base,
+        ...parsed,
+        quota: base.quota, // force current difficulty
+        skills:{...base.skills,...(parsed.skills||{})},
+        modifiers:{...base.modifiers,...(parsed.modifiers||{})},
+        used:{...base.used,...(parsed.used||{})},
+        repo:!!parsed.repo,
+        repoWarned:!!parsed.repoWarned,
+        perfWarnings:Number.isFinite(parsed.perfWarnings)?parsed.perfWarnings:0
+      };
     };
 
     // Clone nested sub-objects that actions mutate, to avoid accidental state mutation bugs.
@@ -479,13 +747,42 @@
       return s;
     };
 
-    const Stat=({label,value,sub,barValue,barKind})=>{
+    // Eases a displayed number toward its real value; the real value is never changed.
+    const useTween=(target,ms=650)=>{
+      const[v,setV]=useState(target);
+      const rafRef=useRef(0);
+      useEffect(()=>{
+        if(REDUCED_MOTION){setV(target);return;}
+        const from=v;
+        if(from===target)return;
+        const start=performance.now();
+        cancelAnimationFrame(rafRef.current);
+        const step=(t)=>{
+          const p=Math.min(1,(t-start)/ms);
+          const e=1-Math.pow(1-p,3);
+          if(p<1){
+            setV(from+(target-from)*e);
+            rafRef.current=requestAnimationFrame(step);
+          }else{
+            setV(target);
+          }
+        };
+        rafRef.current=requestAnimationFrame(step);
+        return()=>cancelAnimationFrame(rafRef.current);
+      },[target]);
+      return v;
+    };
+
+    const Stat=({label,value,num,fmt,sub,barValue,barKind})=>{
+      const hasNum=typeof num==="number";
+      const tv=useTween(hasNum?num:0);
+      const display=hasNum ? (fmt?fmt(tv):String(Math.round(tv))) : value;
       let cls="bar";
       if(barKind)cls+=" "+barKind;
       return(
         <div className="stat">
           <div className="label">{label}</div>
-          <div className="value">{value}</div>
+          <div className="value pop" key={hasNum?num:value}>{display}</div>
           {sub && <div className="sub">{sub}</div>}
           {typeof barValue==="number" && (
             <div className={cls}>
@@ -587,6 +884,7 @@
       closedQuarter:0,
       discounts:0,
       pipeline:0,
+      meetings:0,
       deals:[],
       logs:[],
       pip:false,
@@ -681,20 +979,24 @@
       return s;
     };
 
+    // FIX: the old version logged ghosts inside the filter callback, which reassigned `s` mid-expression,
+    // so the filtered/aged deal list was written to the OLD state object and thrown away whenever a deal
+    // ghosted. Ghosts were announced but never removed and deals never aged on those weeks.
     const ageAndGhost=(state)=>{
       let s={...state};
-      s.deals=s.deals
-        .filter(d=>{
-          const tooOld=d.age>6 && d.stage<2 && Math.random()<0.25;
-          const ghosted=d.mood==="skeptical" && Math.random()<0.15;
-          if(tooOld||ghosted){
-            s=log(s,`👻 ${d.account} went dark.`,"warn");
-            return false;
-          }
-          return true;
-        })
-        .map(d=>({...d,age:d.age+1}));
-      s.pipeline=s.deals.reduce((sum,d)=>sum+d.value,0);
+      const kept=[];
+      const ghosts=[];
+      for(const d of s.deals){
+        const tooOld=d.age>6 && d.stage<2 && Math.random()<0.25;
+        const ghosted=d.mood==="skeptical" && Math.random()<0.15;
+        if(tooOld||ghosted)ghosts.push(d);
+        else kept.push({...d,age:d.age+1});
+      }
+      s.deals=kept;
+      s.pipeline=kept.reduce((sum,d)=>sum+d.value,0);
+      for(const g of ghosts){
+        s=log(s,`👻 ${g.account} went dark.`,"warn");
+      }
       return s;
     };
 
@@ -1172,24 +1474,321 @@
       ]
     };
 
+    // ---- helpers that used to be re-created inside the component on every render ----
+    const salaryAndBills=(state)=>{
+      let ns={...state};
+      ns.cash+=1000;
+      const {weekInQuarter}=getQuarterInfo(ns.week);
+      if(weekInQuarter===1||weekInQuarter===5||weekInQuarter===9){
+        ns.cash-=1600;
+        ns=log(ns,"🏠 Rent hit: -$1,600.","warn");
+      }
+      ns=log(ns,"💸 Salary processed: +$1,000.");
+      ns=checkRepo(ns);
+      return ns;
+    };
+
+    const countStage=(deals,stageIndex)=>deals.filter(d=>d.stage===stageIndex).length;
+
+    const behindPace=(state, weekInQuarter)=>{
+      const pace=weekInQuarter/QUARTER_WEEKS;
+      const perfToDate=state.quota>0 ? state.closedQuarter/state.quota : 0;
+      const behind=pace-perfToDate;
+      return behind>0.03;
+    };
+
+    const midQuarterRisk=(state, weekInQuarter)=>{
+      let ns={...state};
+      const pace=weekInQuarter/QUARTER_WEEKS;
+      const perfToDate=ns.quota>0 ? ns.closedQuarter/ns.quota : 0;
+      const behind=pace-perfToDate;
+
+      if(!Number.isFinite(ns.perfWarnings)) ns.perfWarnings=0;
+      let warnedThisWeek=false;
+
+      if(ns.perfWarnings===0 && Math.random()<0.7){
+        ns=log(ns,"👀 Manager asks for a detailed list of every meeting you’ve had this quarter. \"Just for forecasting.\"","warn");
+        ns.stress=clamp(ns.stress+4,0,100);
+        ns.perfWarnings=1;
+        warnedThisWeek=true;
+      }else if(ns.perfWarnings===1 && Math.random()<0.6){
+        ns=log(ns,"📋 Enablement schedules a surprise \"pipeline hygiene\" review with you and your manager.","warn");
+        ns.stress=clamp(ns.stress+5,0,100);
+        ns.perfWarnings=2;
+        warnedThisWeek=true;
+      }else if(ns.perfWarnings===2 && Math.random()<0.5){
+        ns=log(ns,"🧊 HR quietly appears on your next 1:1 invite. Nobody comments on it.","warn");
+        ns.stress=clamp(ns.stress+6,0,100);
+        ns.perfWarnings=3;
+        warnedThisWeek=true;
+      }
+
+      const severity=clamp(behind*1.8,0,0.9);
+      let fireChance=0.03 + severity*0.45 + ns.perfWarnings*0.06;
+
+      if(ns.manager<50)fireChance+=0.04;
+      if(ns.manager<35)fireChance+=0.08;
+      if(ns.manager<20)fireChance+=0.10;
+      if(ns.pipeline<ns.quota*0.4)fireChance+=0.05;
+
+      if(!warnedThisWeek && ns.perfWarnings===0) fireChance*=0.6;
+
+      fireChance=clamp(fireChance,0.02,0.70);
+
+      if(weekInQuarter>=6){
+        const roll=Math.random();
+        if(roll<fireChance){
+          ns.fired=true;
+          const msg = ns.perfWarnings>0
+            ? "📉 Mid-quarter \"forecast review\" quietly becomes an exit meeting. \"We just don’t see the ramp.\""
+            : "🪓 Out of nowhere, your manager and HR pull you into a same-day \"org update\" call. By the end, you’re not on the org chart.";
+          ns=log(ns,msg,"bad");
+        }else if(!warnedThisWeek && ns.perfWarnings>0 && Math.random()<0.4){
+          ns=log(ns,"📆 You notice a recurring calendar block with your name on your manager’s calendar. Nobody has invited you to it.","warn");
+        }
+      }
+      return ns;
+    };
+
+    // FIX: Actions was declared inside Game, so React saw a brand-new component type every render and
+    // remounted the whole action grid on each state change (killing hover/focus and any CSS transitions).
+    const Actions=({s,setS})=>{
+      const actProspect=()=>{
+        // Phones cost more energy now.
+        let[ns,ok]=cost(s,{energy:30,slots:1});
+        if(!ok)return;
+        const n=randi(1,4)+(Math.random()<(s.skills.prospect/100)*0.4?1:0);
+        const adds=Array.from({length:n},()=>makeDeal(s,{warm:false}));
+        ns.used.prospect=true;
+        ns.meetings=(ns.meetings||0)+randi(0,n);
+        ns.skills.prospect=clamp(ns.skills.prospect+1,0,100);
+        ns.stress=clamp(ns.stress+2,0,100);
+        ns.deals=[...adds,...ns.deals];
+        ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
+        ns=log(ns,`📞 Prospect Blitz: -30 energy • +${adds.length} leads`);
+        setS(ns);
+      };
+
+      const actCadence=()=>{
+        let[ns,ok]=cost(s,{energy:18,slots:1});
+        if(!ok)return;
+        const n=randi(0,3);
+        const adds=Array.from({length:n},()=>makeDeal(s,{warm:true}));
+        ns.used.cadence=true;
+        ns.meetings=(ns.meetings||0)+randi(0,n);
+        ns.deals=[...adds,...ns.deals];
+        ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
+        ns=log(ns,`✉️ Email Cadence: -18 energy • ${n} warm replies`);
+        setS(ns);
+      };
+
+      const actDiscovery=()=>{
+        let[ns,ok]=cost(s,{energy:22,slots:1});
+        if(!ok)return;
+        ns.used.discovery=true;
+        let advanced=0;
+        ns.deals=ns.deals.map(d=>{
+          if(d.stage===0 && Math.random()<(0.35+ns.skills.discovery/200)){
+            advanced++;
+            return {...d,stage:1,mood:d.mood==="skeptical"?"neutral":d.mood};
+          }
+          return d;
+        });
+        ns.skills.discovery=clamp(ns.skills.discovery+2,0,100);
+        ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
+        ns=log(ns,`🔎 Discovery Deep Dive: -22 energy • qualified ${advanced} lead(s)`);
+        setS(ns);
+      };
+
+      const actDemo=()=>{
+        let[ns,ok]=cost(s,{energy:28,slots:1});
+        if(!ok)return;
+        ns.used.demo=true;
+        let advanced=0;
+        ns.deals=ns.deals.map(d=>{
+          if(d.stage===1 && Math.random()<(0.30+ns.skills.demo/220+ns.product/350)){
+            advanced++;
+            return {...d,stage:2,mood:d.mood==="neutral"?"curious":d.mood};
+          }
+          return d;
+        });
+        ns.skills.demo=clamp(ns.skills.demo+2,0,100);
+        ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
+        ns=log(ns,`🖥️ Demo Marathon: -28 energy • advanced ${advanced} opp(s)`);
+        setS(ns);
+      };
+
+      const actPropose=()=>{
+        let[ns,ok]=cost(s,{energy:25,slots:1});
+        if(!ok)return;
+        ns.used.propose=true;
+        let advanced=0;
+        ns.deals=ns.deals.map(d=>{
+          if(d.stage===2 && Math.random()<0.38){
+            advanced++;
+            return {...d,stage:3,mood:d.mood==="curious"?"happy":d.mood};
+          }
+          return d;
+        });
+        ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
+        ns=log(ns,`📑 Proposals & Commit: -25 energy • sent ${advanced} proposal(s)`);
+        setS(ns);
+      };
+
+      const actClose=()=>{
+        let[ns,ok]=cost(s,{energy:28,slots:1});
+        if(!ok)return;
+        ns.used.close=true;
+        ns.skills.negotiate=clamp(ns.skills.negotiate+1,0,100);
+        ns=tryCloseSome(ns,"🤝 Close-Won Push");
+        setS(ns);
+      };
+
+      const actNetwork=()=>{
+        let[ns,ok]=cost(s,{energy:16,slots:1});
+        if(!ok)return;
+        ns.used.network=true;
+
+        // Rep buff first so it actually affects deal sizing.
+        ns.reputation=clamp(ns.reputation+4,0,100);
+
+        const n=randi(1,2);
+        const adds=Array.from({length:n},()=>makeReferralDeal(ns));
+
+        ns.meetings=(ns.meetings||0)+randi(0,n);
+        ns.deals=[...adds,...ns.deals];
+        ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
+
+        const hasWhale=adds.some(d=>d.probNote==="referral whale");
+        const hasBig=adds.some(d=>d.probNote==="referral big");
+        const tag = hasWhale ? " 🐋 whale intro!" : hasBig ? " 🐳 big intro!" : "";
+
+        ns=log(ns,`🧑‍🤝‍🧑 Referrals & Social: -16 energy • +${n} intro(s)${tag}`);
+        setS(ns);
+      };
+
+      const actRecharge=()=>{
+        let[ns,ok,reason]=cost(s,{energy:0,slots:1,onceKey:"restedThisWeek"});
+        if(!ok){
+          if(reason==="once")setS(log(s,"⏱️ Recharge already used this week.","warn"));
+          return;
+        }
+        ns.used.recharge=true;
+        ns.energy=clamp(ns.energy+35,0,100);
+        ns.stress=clamp(ns.stress-12,0,100);
+        ns=log(ns,"🧘 Recharge: once per week reset. +35 energy, -12 stress.");
+        setS(ns);
+      };
+
+      const actCoffee=()=>{
+        let[ns,ok]=cost(s,{energy:0,slots:1});
+        if(!ok)return;
+        ns.energy=clamp(ns.energy+18,0,100);
+        ns.cash-=6;
+        ns.stress=clamp(ns.stress+9,0,100);
+        if(ns.stress>=100 && !ns.burnedOut){
+          ns.burnedOut=true;
+          ns=log(ns,"🧯 You jitter-spammed yourself into burnout mid-week.","bad");
+        }
+        ns=checkRepo(ns);
+        ns=log(ns,"☕ Quad shot: +18 energy, +9 stress, -$6.");
+        setS(ns);
+      };
+
+      const actPolitics=()=>{
+        // Internal politics costs more energy now.
+        let[ns,ok]=cost(s,{energy:20,slots:1});
+        if(!ok)return;
+        ns.manager=clamp(ns.manager+8,0,100);
+        ns.product=clamp(ns.product+3,0,100);
+        ns.reputation=clamp(ns.reputation-4,0,100);
+        ns.stress=clamp(ns.stress+2,0,100);
+        ns=log(ns,"🏛️ Internal Politics: manager +8, product +3, rep −4. Soul slightly compromised.");
+        setS(ns);
+      };
+
+      const actConference=()=>{
+        let[ns,ok]=cost(s,{energy:40,slots:2});
+        if(!ok)return;
+        ns.cash-=800;
+        const n=randi(3,8);
+        const adds=Array.from({length:n},()=>makeDeal(s,{warm:true,big:Math.random()<0.4}));
+        ns.deals=[...adds,...ns.deals];
+        ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
+        ns.stress=clamp(ns.stress+5,0,100);
+        if(Math.random()<0.30){
+          ns.modifiers={
+            conversion:(ns.modifiers.conversion||0)+0.08,
+            discount:ns.modifiers.discount||0,
+            expiresIn:Math.max(1,ns.modifiers.expiresIn||0)
+          };
+        }
+        ns=checkRepo(ns);
+        ns=log(ns,`🏟️ Conference Run: -40 energy, -$800 • +${n} leads, possible macro buff.`);
+        setS(ns);
+      };
+
+      const disabled=(needEnergy,needSlots)=>(
+        s.energy<needEnergy || s.slots<needSlots || s.fired || s.burnedOut || s.win || s.missed || s.repo
+      );
+
+      return(
+        <div className="actions">
+          <button className="btn" disabled={disabled(30,1)} onClick={actProspect}>
+            <div className="title">📞 Prospect Blitz</div>
+            <div className="desc">Find new leads. Cost: 30 Energy • 1 Slot</div>
+          </button>
+          <button className="btn" disabled={disabled(18,1)} onClick={actCadence}>
+            <div className="title">✉️ Email Cadence</div>
+            <div className="desc">Warm replies and meetings. Cost: 18 Energy • 1 Slot</div>
+          </button>
+          <button className="btn" disabled={disabled(22,1)} onClick={actDiscovery}>
+            <div className="title">🔎 Discovery Deep Dive</div>
+            <div className="desc">Qualify top of funnel. Cost: 22 Energy • 1 Slot</div>
+          </button>
+          <button className="btn" disabled={disabled(28,1)} onClick={actDemo}>
+            <div className="title">🖥️ Demo Marathon</div>
+            <div className="desc">Run demos. Cost: 28 Energy • 1 Slot</div>
+          </button>
+          <button className="btn" disabled={disabled(25,1)} onClick={actPropose}>
+            <div className="title">📑 Proposals & Commit</div>
+            <div className="desc">Move deals to paper. Cost: 25 Energy • 1 Slot</div>
+          </button>
+          <button className="btn" disabled={disabled(28,1)} onClick={actClose}>
+            <div className="title">🤝 Close Deals</div>
+            <div className="desc">Push late-stage opps over the line. Cost: 28 Energy • 1 Slot</div>
+          </button>
+          <button className="btn" disabled={disabled(16,1)} onClick={actNetwork}>
+            <div className="title">🧑‍🤝‍🧑 Referrals & Social</div>
+            <div className="desc">High variance: mostly small, sometimes massive. Cost: 16 Energy • 1 Slot</div>
+          </button>
+          <button className="btn" disabled={disabled(40,2)} onClick={actConference}>
+            <div className="title">🏟️ Conference Run</div>
+            <div className="desc">Big swing, big leads. Cost: 40 Energy • 2 Slots • $800</div>
+          </button>
+          <button className="btn" disabled={disabled(0,1)} onClick={actRecharge}>
+            <div className="title">🧘 Recharge</div>
+            <div className="desc">Once per week. Cost: 1 Slot</div>
+          </button>
+          <button className="btn" disabled={disabled(0,1)} onClick={actCoffee}>
+            <div className="title">☕ Quad Shot</div>
+            <div className="desc">Borrow from tomorrow. Cost: 1 Slot • $6 • Stress +9</div>
+          </button>
+          <button className="btn" disabled={disabled(20,1)} onClick={actPolitics}>
+            <div className="title">🏛️ Internal Politics</div>
+            <div className="desc">Buff manager, tax reputation. Cost: 20 Energy • 1 Slot</div>
+          </button>
+        </div>
+      );
+    };
+
     function Game(){
       const createInitial=()=>{
         const base=newGame();
         try{
-          const raw=readStoredRun();
+          const raw=readStoredRun(true);
           if(!raw)return base;
-          const parsed=JSON.parse(raw);
-          return{
-            ...base,
-            ...parsed,
-            quota: base.quota, // force current difficulty
-            skills:{...base.skills,...(parsed.skills||{})},
-            modifiers:{...base.modifiers,...(parsed.modifiers||{})},
-            used:{...base.used,...(parsed.used||{})},
-            repo:!!parsed.repo,
-            repoWarned:!!parsed.repoWarned,
-            perfWarnings:Number.isFinite(parsed.perfWarnings)?parsed.perfWarnings:0
-          };
+          return mergeSaved(JSON.parse(raw));
         }catch{ return base; }
       };
 
@@ -1199,307 +1798,59 @@
       const[asciiSpeed,setAsciiSpeed]=useState(120);
       const[showHelp,setShowHelp]=useState(false);
 
+      // FIX: header buttons were re-bound on every state change. Bind once; read live state through a ref.
+      const sRef=useRef(s);
+      useEffect(()=>{ sRef.current=s; },[s]);
+
       useEffect(()=>{
         const ng=document.getElementById("new-game");
         const sv=document.getElementById("save");
         const ld=document.getElementById("load");
-        if(ng){
-          ng.onclick=()=>{
+        const onNew=()=>{
+          setS(newGame());
+          setPending(null);
+          setOver(null);
+        };
+        const onSave=()=>{
+          try{
+            localStorage.setItem(SAVE_KEY,JSON.stringify(sRef.current));
+            alert("Run saved.");
+          }catch{
+            alert("Couldn’t save — storage is blocked in this browser.");
+          }
+        };
+        const onLoad=()=>{
+          const v=readStoredRun(false);
+          if(!v){
+            alert("No save found.");
+            return;
+          }
+          try{
+            setS(mergeSaved(JSON.parse(v)));
+            setPending(null);
+            setOver(null);
+          }catch{
+            alert("Save was corrupted. Starting a new run.");
             setS(newGame());
             setPending(null);
             setOver(null);
-          };
-        }
-        if(sv){
-          sv.onclick=()=>{
-            localStorage.setItem(SAVE_KEY,JSON.stringify(s));
-            alert("Run saved.");
-          };
-        }
-        if(ld){
-          ld.onclick=()=>{
-            const v=readStoredRun();
-            if(v){
-              try{
-                const parsed=JSON.parse(v);
-                const base=newGame();
-                const merged={
-                  ...base,
-                  ...parsed,
-                  quota: base.quota, // force current difficulty
-                  skills:{...base.skills,...(parsed.skills||{})},
-                  modifiers:{...base.modifiers,...(parsed.modifiers||{})},
-                  used:{...base.used,...(parsed.used||{})},
-                  repo:!!parsed.repo,
-                  repoWarned:!!parsed.repoWarned,
-                  perfWarnings:Number.isFinite(parsed.perfWarnings)?parsed.perfWarnings:0
-                };
-                setS(merged);
-                setPending(null);
-                setOver(null);
-              }catch{
-                alert("Save was corrupted. Starting a new run.");
-                setS(newGame());
-                setPending(null);
-                setOver(null);
-              }
-            }else{
-              alert("No save found.");
-            }
-          };
-        }
-      },[s]);
+          }
+        };
+        if(ng)ng.addEventListener("click",onNew);
+        if(sv)sv.addEventListener("click",onSave);
+        if(ld)ld.addEventListener("click",onLoad);
+        return()=>{
+          if(ng)ng.removeEventListener("click",onNew);
+          if(sv)sv.removeEventListener("click",onSave);
+          if(ld)ld.removeEventListener("click",onLoad);
+        };
+      },[]);
 
       useEffect(()=>{
         try{
           localStorage.setItem(AUTOSAVE_KEY,JSON.stringify(s));
         }catch{}
       },[s]);
-
-      const salaryAndBills=(state)=>{
-        let ns={...state};
-        ns.cash+=1000;
-        const {weekInQuarter}=getQuarterInfo(ns.week);
-        if(weekInQuarter===1||weekInQuarter===5||weekInQuarter===9){
-          ns.cash-=1600;
-          ns=log(ns,"🏠 Rent hit: -$1,600.","warn");
-        }
-        ns=log(ns,"💸 Salary processed: +$1,000.");
-        ns=checkRepo(ns);
-        return ns;
-      };
-
-      const countStage=(deals,stageIndex)=>deals.filter(d=>d.stage===stageIndex).length;
-
-      const Actions=({s,setS})=>{
-        const actProspect=()=>{
-          // Phones cost more energy now.
-          let[ns,ok]=cost(s,{energy:30,slots:1});
-          if(!ok)return;
-          const n=randi(1,4)+(Math.random()<(s.skills.prospect/100)*0.4?1:0);
-          const adds=Array.from({length:n},()=>makeDeal(s,{warm:false}));
-          ns.used.prospect=true;
-          ns.meetings=(ns.meetings||0)+randi(0,n);
-          ns.skills.prospect=clamp(ns.skills.prospect+1,0,100);
-          ns.stress=clamp(ns.stress+2,0,100);
-          ns.deals=[...adds,...ns.deals];
-          ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
-          ns=log(ns,`📞 Prospect Blitz: -30 energy • +${adds.length} leads`);
-          setS(ns);
-        };
-
-        const actCadence=()=>{
-          let[ns,ok]=cost(s,{energy:18,slots:1});
-          if(!ok)return;
-          const n=randi(0,3);
-          const adds=Array.from({length:n},()=>makeDeal(s,{warm:true}));
-          ns.used.cadence=true;
-          ns.meetings=(ns.meetings||0)+randi(0,n);
-          ns.deals=[...adds,...ns.deals];
-          ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
-          ns=log(ns,`✉️ Email Cadence: -18 energy • ${n} warm replies`);
-          setS(ns);
-        };
-
-        const actDiscovery=()=>{
-          let[ns,ok]=cost(s,{energy:22,slots:1});
-          if(!ok)return;
-          ns.used.discovery=true;
-          let advanced=0;
-          ns.deals=ns.deals.map(d=>{
-            if(d.stage===0 && Math.random()<(0.35+ns.skills.discovery/200)){
-              advanced++;
-              return {...d,stage:1,mood:d.mood==="skeptical"?"neutral":d.mood};
-            }
-            return d;
-          });
-          ns.skills.discovery=clamp(ns.skills.discovery+2,0,100);
-          ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
-          ns=log(ns,`🔎 Discovery Deep Dive: -22 energy • qualified ${advanced} lead(s)`);
-          setS(ns);
-        };
-
-        const actDemo=()=>{
-          let[ns,ok]=cost(s,{energy:28,slots:1});
-          if(!ok)return;
-          ns.used.demo=true;
-          let advanced=0;
-          ns.deals=ns.deals.map(d=>{
-            if(d.stage===1 && Math.random()<(0.30+ns.skills.demo/220+ns.product/350)){
-              advanced++;
-              return {...d,stage:2,mood:d.mood==="neutral"?"curious":d.mood};
-            }
-            return d;
-          });
-          ns.skills.demo=clamp(ns.skills.demo+2,0,100);
-          ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
-          ns=log(ns,`🖥️ Demo Marathon: -28 energy • advanced ${advanced} opp(s)`);
-          setS(ns);
-        };
-
-        const actPropose=()=>{
-          let[ns,ok]=cost(s,{energy:25,slots:1});
-          if(!ok)return;
-          ns.used.propose=true;
-          let advanced=0;
-          ns.deals=ns.deals.map(d=>{
-            if(d.stage===2 && Math.random()<0.38){
-              advanced++;
-              return {...d,stage:3,mood:d.mood==="curious"?"happy":d.mood};
-            }
-            return d;
-          });
-          ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
-          ns=log(ns,`📑 Proposals & Commit: -25 energy • sent ${advanced} proposal(s)`);
-          setS(ns);
-        };
-
-        const actClose=()=>{
-          let[ns,ok]=cost(s,{energy:28,slots:1});
-          if(!ok)return;
-          ns.used.close=true;
-          ns.skills.negotiate=clamp(ns.skills.negotiate+1,0,100);
-          ns=tryCloseSome(ns,"🤝 Close-Won Push");
-          setS(ns);
-        };
-
-        const actNetwork=()=>{
-          let[ns,ok]=cost(s,{energy:16,slots:1});
-          if(!ok)return;
-          ns.used.network=true;
-
-          // Rep buff first so it actually affects deal sizing.
-          ns.reputation=clamp(ns.reputation+4,0,100);
-
-          const n=randi(1,2);
-          const adds=Array.from({length:n},()=>makeReferralDeal(ns));
-
-          ns.meetings=(ns.meetings||0)+randi(0,n);
-          ns.deals=[...adds,...ns.deals];
-          ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
-
-          const hasWhale=adds.some(d=>d.probNote==="referral whale");
-          const hasBig=adds.some(d=>d.probNote==="referral big");
-          const tag = hasWhale ? " 🐋 whale intro!" : hasBig ? " 🐳 big intro!" : "";
-
-          ns=log(ns,`🧑‍🤝‍🧑 Referrals & Social: -16 energy • +${n} intro(s)${tag}`);
-          setS(ns);
-        };
-
-        const actRecharge=()=>{
-          let[ns,ok,reason]=cost(s,{energy:0,slots:1,onceKey:"restedThisWeek"});
-          if(!ok){
-            if(reason==="once")setS(log(s,"⏱️ Recharge already used this week.","warn"));
-            return;
-          }
-          ns.used.recharge=true;
-          ns.energy=clamp(ns.energy+35,0,100);
-          ns.stress=clamp(ns.stress-12,0,100);
-          ns=log(ns,"🧘 Recharge: once per week reset. +35 energy, -12 stress.");
-          setS(ns);
-        };
-
-        const actCoffee=()=>{
-          let[ns,ok]=cost(s,{energy:0,slots:1});
-          if(!ok)return;
-          ns.energy=clamp(ns.energy+18,0,100);
-          ns.cash-=6;
-          ns.stress=clamp(ns.stress+9,0,100);
-          if(ns.stress>=100 && !ns.burnedOut){
-            ns.burnedOut=true;
-            ns=log(ns,"🧯 You jitter-spammed yourself into burnout mid-week.","bad");
-          }
-          ns=checkRepo(ns);
-          ns=log(ns,"☕ Quad shot: +18 energy, +9 stress, -$6.");
-          setS(ns);
-        };
-
-        const actPolitics=()=>{
-          // Internal politics costs more energy now.
-          let[ns,ok]=cost(s,{energy:20,slots:1});
-          if(!ok)return;
-          ns.manager=clamp(ns.manager+8,0,100);
-          ns.product=clamp(ns.product+3,0,100);
-          ns.reputation=clamp(ns.reputation-4,0,100);
-          ns.stress=clamp(ns.stress+2,0,100);
-          ns=log(ns,"🏛️ Internal Politics: manager +8, product +3, rep −4. Soul slightly compromised.");
-          setS(ns);
-        };
-
-        const actConference=()=>{
-          let[ns,ok]=cost(s,{energy:40,slots:2});
-          if(!ok)return;
-          ns.cash-=800;
-          const n=randi(3,8);
-          const adds=Array.from({length:n},()=>makeDeal(s,{warm:true,big:Math.random()<0.4}));
-          ns.deals=[...adds,...ns.deals];
-          ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
-          ns.stress=clamp(ns.stress+5,0,100);
-          if(Math.random()<0.30){
-            ns.modifiers={
-              conversion:(ns.modifiers.conversion||0)+0.08,
-              discount:ns.modifiers.discount||0,
-              expiresIn:Math.max(1,ns.modifiers.expiresIn||0)
-            };
-          }
-          ns=checkRepo(ns);
-          ns=log(ns,`🏟️ Conference Run: -40 energy, -$800 • +${n} leads, possible macro buff.`);
-          setS(ns);
-        };
-
-        const disabled=(needEnergy,needSlots)=>(
-          s.energy<needEnergy || s.slots<needSlots || s.fired || s.burnedOut || s.win || s.missed || s.repo
-        );
-
-        return(
-          <div className="actions">
-            <button className="btn" disabled={disabled(30,1)} onClick={actProspect}>
-              <div className="title">📞 Prospect Blitz</div>
-              <div className="desc">Find new leads. Cost: 30 Energy • 1 Slot</div>
-            </button>
-            <button className="btn" disabled={disabled(18,1)} onClick={actCadence}>
-              <div className="title">✉️ Email Cadence</div>
-              <div className="desc">Warm replies and meetings. Cost: 18 Energy • 1 Slot</div>
-            </button>
-            <button className="btn" disabled={disabled(22,1)} onClick={actDiscovery}>
-              <div className="title">🔎 Discovery Deep Dive</div>
-              <div className="desc">Qualify top of funnel. Cost: 22 Energy • 1 Slot</div>
-            </button>
-            <button className="btn" disabled={disabled(28,1)} onClick={actDemo}>
-              <div className="title">🖥️ Demo Marathon</div>
-              <div className="desc">Run demos. Cost: 28 Energy • 1 Slot</div>
-            </button>
-            <button className="btn" disabled={disabled(25,1)} onClick={actPropose}>
-              <div className="title">📑 Proposals & Commit</div>
-              <div className="desc">Move deals to paper. Cost: 25 Energy • 1 Slot</div>
-            </button>
-            <button className="btn" disabled={disabled(28,1)} onClick={actClose}>
-              <div className="title">🤝 Close Deals</div>
-              <div className="desc">Push late-stage opps over the line. Cost: 28 Energy • 1 Slot</div>
-            </button>
-            <button className="btn" disabled={disabled(16,1)} onClick={actNetwork}>
-              <div className="title">🧑‍🤝‍🧑 Referrals & Social</div>
-              <div className="desc">High variance: mostly small, sometimes massive. Cost: 16 Energy • 1 Slot</div>
-            </button>
-            <button className="btn" disabled={disabled(40,2)} onClick={actConference}>
-              <div className="title">🏟️ Conference Run</div>
-              <div className="desc">Big swing, big leads. Cost: 40 Energy • 2 Slots • $800</div>
-            </button>
-            <button className="btn" disabled={disabled(0,1)} onClick={actRecharge}>
-              <div className="title">🧘 Recharge</div>
-              <div className="desc">Once per week. Cost: 1 Slot</div>
-            </button>
-            <button className="btn" disabled={disabled(0,1)} onClick={actCoffee}>
-              <div className="title">☕ Quad Shot</div>
-              <div className="desc">Borrow from tomorrow. Cost: 1 Slot • $6 • Stress +9</div>
-            </button>
-            <button className="btn" disabled={disabled(20,1)} onClick={actPolitics}>
-              <div className="title">🏛️ Internal Politics</div>
-              <div className="desc">Buff manager, tax reputation. Cost: 20 Energy • 1 Slot</div>
-            </button>
-          </div>
-        );
-      };
 
       const endWeek=()=>{
         if(s.fired || s.burnedOut || s.win || s.missed || s.repo)return;
@@ -1510,7 +1861,7 @@
           ns=tryCloseSome(ns,"🕘 End-of-week closes");
         }
 
-        // FIX: tick down existing modifiers BEFORE we potentially apply new ones during this endWeek().
+        // Tick down existing modifiers BEFORE we potentially apply new ones during this endWeek().
         ns=tickModifiers(ns);
 
         ns=salaryAndBills(ns);
@@ -1585,7 +1936,7 @@
         const drift=(perfToDate-0.5)*4;
         ns.manager=clamp(ns.manager+drift,0,100);
 
-        // NEW: Email cadence without calling annoys the manager.
+        // Email cadence without calling annoys the manager.
         if(ns.used.cadence && !ns.used.prospect){
           ns.manager=clamp(ns.manager-3,0,100);
           ns=log(ns,"📵 Manager feedback: “Good emails. Now pick up the phone.” Manager -3.","warn");
@@ -1593,9 +1944,9 @@
 
         const {weekInQuarter}=getQuarterInfo(ns.week);
 
-        // Early termination checks should never fire on the final week (week 13); QBR handles that.
+        // Early termination checks never fire on the final week (week 13); QBR handles that.
         if(weekInQuarter>=5 && weekInQuarter<QUARTER_WEEKS && behindPace(ns, weekInQuarter) && !ns.fired && !ns.burnedOut && !ns.repo && !ns.win && !ns.missed){
-          ns=midQuarterRisk(ns, setPending, weekInQuarter);
+          ns=midQuarterRisk(ns, weekInQuarter);
         }
 
         if(weekInQuarter===QUARTER_WEEKS && !ns.fired && !ns.burnedOut && !ns.repo){
@@ -1624,68 +1975,6 @@
         };
 
         setS(ns);
-      };
-
-      // Helper: compute behind pace
-      const behindPace=(state, weekInQuarter)=>{
-        const pace=weekInQuarter/QUARTER_WEEKS;
-        const perfToDate=state.quota>0 ? state.closedQuarter/state.quota : 0;
-        const behind=pace-perfToDate;
-        return behind>0.03;
-      };
-
-      // Helper: apply mid-quarter warnings + firing chance
-      const midQuarterRisk=(state, setPending, weekInQuarter)=>{
-        let ns={...state};
-        const pace=weekInQuarter/QUARTER_WEEKS;
-        const perfToDate=ns.quota>0 ? ns.closedQuarter/ns.quota : 0;
-        const behind=pace-perfToDate;
-
-        if(!Number.isFinite(ns.perfWarnings)) ns.perfWarnings=0;
-        let warnedThisWeek=false;
-
-        if(ns.perfWarnings===0 && Math.random()<0.7){
-          ns=log(ns,"👀 Manager asks for a detailed list of every meeting you’ve had this quarter. \"Just for forecasting.\"","warn");
-          ns.stress=clamp(ns.stress+4,0,100);
-          ns.perfWarnings=1;
-          warnedThisWeek=true;
-        }else if(ns.perfWarnings===1 && Math.random()<0.6){
-          ns=log(ns,"📋 Enablement schedules a surprise \"pipeline hygiene\" review with you and your manager.","warn");
-          ns.stress=clamp(ns.stress+5,0,100);
-          ns.perfWarnings=2;
-          warnedThisWeek=true;
-        }else if(ns.perfWarnings===2 && Math.random()<0.5){
-          ns=log(ns,"🧊 HR quietly appears on your next 1:1 invite. Nobody comments on it.","warn");
-          ns.stress=clamp(ns.stress+6,0,100);
-          ns.perfWarnings=3;
-          warnedThisWeek=true;
-        }
-
-        const severity=clamp(behind*1.8,0,0.9);
-        let fireChance=0.03 + severity*0.45 + ns.perfWarnings*0.06;
-
-        if(ns.manager<50)fireChance+=0.04;
-        if(ns.manager<35)fireChance+=0.08;
-        if(ns.manager<20)fireChance+=0.10;
-        if(ns.pipeline<ns.quota*0.4)fireChance+=0.05;
-
-        if(!warnedThisWeek && ns.perfWarnings===0) fireChance*=0.6;
-
-        fireChance=clamp(fireChance,0.02,0.70);
-
-        if(weekInQuarter>=6){
-          const roll=Math.random();
-          if(roll<fireChance){
-            ns.fired=true;
-            const msg = ns.perfWarnings>0
-              ? "📉 Mid-quarter \"forecast review\" quietly becomes an exit meeting. \"We just don’t see the ramp.\""
-              : "🪓 Out of nowhere, your manager and HR pull you into a same-day \"org update\" call. By the end, you’re not on the org chart.";
-            ns=log(ns,msg,"bad");
-          }else if(!warnedThisWeek && ns.perfWarnings>0 && Math.random()<0.4){
-            ns=log(ns,"📆 You notice a recurring calendar block with your name on your manager’s calendar. Nobody has invited you to it.","warn");
-          }
-        }
-        return ns;
       };
 
       useEffect(()=>{
@@ -1788,18 +2077,18 @@
                 </div>
               </div>
               <div className="stats">
-                <Stat label="Energy" value={`${s.energy}/100`} barValue={s.energy} barKind={s.energy>50?"good":s.energy>25?"warn":"bad"} />
-                <Stat label="Stress" value={`${s.stress}/100`} barValue={s.stress} barKind={s.stress<40?"good":s.stress<70?"warn":"bad"} />
-                <Stat label="Cash" value={money(s.cash)} sub="Salary + commission" />
-                <Stat label="Pipeline" value={money(s.pipeline)} sub={`${s.deals.length} live deals`} />
-                <Stat label="Closed (Q)" value={money(s.closedQuarter)} sub={`${pct(s.closedQuarter/s.quota)}% of quota • Pace ${pacePercent}%`} />
-                <Stat label="Manager" value={s.manager} barValue={s.manager} />
-                <Stat label="Prospecting" value={s.skills.prospect} barValue={s.skills.prospect} />
-                <Stat label="Discovery" value={s.skills.discovery} barValue={s.skills.discovery} />
-                <Stat label="Demo" value={s.skills.demo} barValue={s.skills.demo} />
-                <Stat label="Negotiation" value={s.skills.negotiate} barValue={s.skills.negotiate} />
-                <Stat label="Reputation" value={s.reputation} barValue={s.reputation} />
-                <Stat label="Product" value={s.product} sub="How cursed the stack is" barValue={s.product} />
+                <Stat label="Energy" num={s.energy} fmt={v=>`${Math.round(v)}/100`} barValue={s.energy} barKind={s.energy>50?"good":s.energy>25?"warn":"bad"} />
+                <Stat label="Stress" num={s.stress} fmt={v=>`${Math.round(v)}/100`} barValue={s.stress} barKind={s.stress<40?"good":s.stress<70?"warn":"bad"} />
+                <Stat label="Cash" num={s.cash} fmt={money} sub="Salary + commission" />
+                <Stat label="Pipeline" num={s.pipeline} fmt={money} sub={`${s.deals.length} live deals`} />
+                <Stat label="Closed (Q)" num={s.closedQuarter} fmt={money} sub={`${pct(s.closedQuarter/s.quota)}% of quota • Pace ${pacePercent}%`} />
+                <Stat label="Manager" num={s.manager} barValue={s.manager} />
+                <Stat label="Prospecting" num={s.skills.prospect} barValue={s.skills.prospect} />
+                <Stat label="Discovery" num={s.skills.discovery} barValue={s.skills.discovery} />
+                <Stat label="Demo" num={s.skills.demo} barValue={s.skills.demo} />
+                <Stat label="Negotiation" num={s.skills.negotiate} barValue={s.skills.negotiate} />
+                <Stat label="Reputation" num={s.reputation} barValue={s.reputation} />
+                <Stat label="Product" num={s.product} sub="How cursed the stack is" barValue={s.product} />
               </div>
               <div className="sep"></div>
               <Actions s={s} setS={setS} />
