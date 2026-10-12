@@ -1,5 +1,19 @@
 # Changelog
 
+## v1.14 — Sound, PA announcer, ASCII scene engine
+
+### Added
+- Web Audio sound engine (synthesized, no samples): every log line maps to a sound effect; stress at 70+ adds a heartbeat that speeds up as it climbs.
+- Office PA announcer (browser speech synthesis) for week milestones, big events and endings.
+- Header controls: Sound on/off (`M` toggles), Announcer on/off, volume slider. Settings persist.
+- ASCII scene engine for the five endings (President's Club, Fired, Burnout, Barely Missed, Repo'd): multi-beat storyboards with particles, captions, glitch and shake cues, plus Skip and Replay. The old two-frame flipbook remains as a fallback.
+- SHITCORP OS boot screen, shown once per tab session.
+- In-page toast replaces `alert()` for Save/Load messages.
+
+### Fixed
+- An event that fired on the final week no longer leaks into the next run.
+- Dialogs no longer run off short screens.
+
 ## v1.13 — 2026-09-20
 
 ### Fixed
