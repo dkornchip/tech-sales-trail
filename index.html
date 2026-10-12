@@ -638,6 +638,29 @@
     @keyframes crtOn{0%{transform:scale(.04,.004);filter:brightness(4);opacity:.2}30%{transform:scale(1,.004);filter:brightness(4);opacity:1}62%{transform:scale(1,1.06);filter:brightness(1.8)}100%{transform:scale(1,1);filter:brightness(1)}}
     @keyframes crtOff{0%{transform:scale(1,1);filter:brightness(1)}55%{transform:scale(1,.005);filter:brightness(4)}100%{transform:scale(0,.005);filter:brightness(6);opacity:0}}
     @keyframes tstShake{0%,100%{transform:translate(0,0)}20%{transform:translate(-3px,1px)}40%{transform:translate(3px,-2px)}60%{transform:translate(-2px,2px)}80%{transform:translate(2px,-1px)}}
+    /* v1.15: anime camera. The art sits in a clipped window; only .tst-cam moves (look-at, zoom, roll, whip skew),
+       effects that must not move with it (title cards, slash gleam, letterbox) live in .tst-fx, captions stay put */
+    .tst-cam-win,.tst-cam,.tst-band{display:block}
+    .tst-cam-win{position:relative;overflow:hidden}
+    .tst-cam{transform-origin:50% 50%;
+      transform:translate(calc(var(--cx,0)*1%),calc(var(--cy,0)*1%)) scale(var(--cz,1)) rotate(calc(var(--rot,0)*1deg)) skewX(calc(var(--skew,0)*1deg))}
+    .tst-fx{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+    .tst-fx::before,.tst-fx::after{content:"";position:absolute;left:0;right:0;height:0;z-index:3;background:rgba(1,4,12,.94);transition:height calc(.4s / var(--spd,1)) cubic-bezier(.2,.8,.2,1)}
+    .tst-fx::before{top:0}.tst-fx::after{bottom:0}
+    .tst-fx.tst-lb::before,.tst-fx.tst-lb::after{height:8%}
+    .cutbox.crt.tst-impact{filter:invert(.85) hue-rotate(180deg) brightness(.6)}
+    .tst-slash{position:absolute;inset:0;display:block;z-index:2;background:linear-gradient(180deg,#ffffff,#a5f3fc);
+      clip-path:polygon(60% 0,61.6% 0,41.6% 100%,40% 100%);animation:tstSlash calc(var(--slash-ms,320ms) / var(--spd,1)) ease-out both}
+    .tst-card{position:absolute;left:0;right:0;top:50%;display:block;z-index:1;text-align:center;line-height:1;padding:.5em 0;
+      background:linear-gradient(90deg,rgba(2,6,23,0),rgba(2,6,23,.9) 12%,rgba(2,6,23,.9) 88%,rgba(2,6,23,0));
+      box-shadow:inset 0 1px 0 currentColor,inset 0 -1px 0 currentColor;
+      animation:tstCard calc(var(--card-ms,1300ms) / var(--spd,1)) linear both}
+    .tst-card-w{display:inline-block;line-height:1;text-shadow:0 0 10px currentColor,0 0 2px currentColor}
+    @keyframes tstSlash{0%{clip-path:polygon(61.6% 0,61.6% 0,61.6% 0,61.6% 0);opacity:1}35%{clip-path:polygon(60% 0,61.6% 0,41.6% 100%,40% 100%);opacity:1}
+      100%{clip-path:polygon(59.4% 0,62.2% 0,42.2% 100%,39.4% 100%);opacity:0}}
+    @keyframes tstCard{0%{opacity:0;transform:translate(0,-50%) scale(2.5) skewX(-14deg)}9%{opacity:1;transform:translate(0,-50%) scale(.95) skewX(-3deg)}
+      13%{transform:translate(0,-50%) scale(1.03) skewX(0deg)}17%,84%{opacity:1;transform:translate(0,-50%) scale(1) skewX(0deg)}
+      100%{opacity:0;transform:translate(-75%,-50%) scale(1) skewX(22deg)}}
 
     /* ---------- v1.14: toast (replaces alert(), which some viewers block) ---------- */
     #tst-toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;pointer-events:none;z-index:70;
@@ -749,6 +772,8 @@
   function esc(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
   function rep(ch,n){ var s = ""; for(var i=0;i<n;i++) s += ch; return s; }
   function dots(label,value,width){ var n = Math.max(2,width-label.length-value.length-2); return label+" "+rep(".",n)+" "+value; }
+  function mod(n,m){ return ((n%m)+m)%m; }
+  function easeInOut(p){ return p < .5 ? 4*p*p*p : 1-Math.pow(-2*p+2,3)/2; }
 
   /* ---------- character grid ---------- */
   function Grid(){ this.n = COLS*ROWS; this.ch = new Array(this.n); this.cl = new Array(this.n); this.clear(); }
@@ -788,9 +813,12 @@
   Grid.prototype.center = function(y,s,k){ this.text(Math.floor((COLS-s.length)/2),y,s,k); };
   Grid.prototype.copyFrom = function(o){ for(var i=0;i<this.n;i++){ this.ch[i] = o.ch[i]; this.cl[i] = o.cl[i]; } };
   Grid.prototype.toText = function(){ var out=[]; for(var y=0;y<ROWS;y++) out.push(this.ch.slice(y*COLS,(y+1)*COLS).join("")); return out.join("\n"); };
-  Grid.prototype.toHTML = function(){
+  // rows y0..y1-1 (default all): starts with no open span, newlines only between its own rows, closes its span at the end
+  Grid.prototype.toHTML = function(y0,y1){
+    if(y0 === undefined) y0 = 0;
+    if(y1 === undefined) y1 = ROWS;
     var out = "", cur = null, buf = "";
-    for(var y=0;y<ROWS;y++){
+    for(var y=y0;y<y1;y++){
       for(var x=0;x<COLS;x++){
         var i = y*COLS+x, k = this.cl[i] || "";
         // blanks without their own colour ride along with the current run (fewer spans) unless it paints a background
@@ -798,14 +826,20 @@
         if(k !== cur){ if(buf) out += cur ? '<span class="'+cur+'">'+esc(buf)+"</span>" : esc(buf); buf = ""; cur = k; }
         buf += this.ch[i];
       }
-      if(y < ROWS-1) buf += "\n";
+      if(y < y1-1) buf += "\n";
     }
     if(buf) out += cur ? '<span class="'+cur+'">'+esc(buf)+"</span>" : esc(buf);
     return out;
   };
+  // a repeating texture across one row, scrolled by a world offset (tracking shots); spaces are see-through
+  Grid.prototype.tile = function(y,pat,ox,k){
+    var n = pat.length, o = Math.round(ox);
+    for(var x=0;x<COLS;x++){ var c = pat.charAt(mod(x+o,n)); if(c !== " ") this.set(x,y,c,k); }
+  };
 
   /* ---------- particles ---------- */
-  function stepParts(ps,dt,g,floor){
+  // ox: optional world offset (particles live in world space during a tracking shot)
+  function stepParts(ps,dt,g,floor,ox){
     var s = dt/1000;
     for(var i=ps.length-1;i>=0;i--){
       var p = ps[i];
@@ -816,7 +850,7 @@
       if(g){
         var ch = p.ch;
         if(p.fade && p.life < p.fade) ch = p.life < p.fade/2 ? "." : (p.ch2 || "+");
-        g.set(p.x,p.y,ch,p.k);
+        g.set(p.x-(ox||0),p.y,ch,p.k);
       }
     }
   }
@@ -982,6 +1016,25 @@ __/_|__
 |          .------.     |
 |          |      |     |
 |__________|______|_____|
+`),
+    poster2: S(String.raw`
+.---------------.
+|  QUOTA IS A   |
+|   MINDSET.    |
+'---------------'
+`),
+    billboard: S(String.raw`
+.------------------.
+| PRESIDENT'S CLUB |
+| see you in Cabo  |
+'------------------'
+         ||
+         ||
+         ||
+         ||
+         ||
+         ||
+         ||
 `)
   };
 
@@ -1016,31 +1069,63 @@ __/_|__
     return typed;
   }
 
+  // per-cause caption override: sc.capBy[meta.cause] replaces fields of sc.cap; a line set may be a function of meta
+  function capFor(sc,meta){
+    var base = sc.cap; if(!base) return base;
+    var o = sc.capBy && meta && sc.capBy[meta.cause], out = {}, k;
+    for(k in base) out[k] = base[k];
+    if(o) for(k in o) out[k] = o[k];
+    if(typeof out.a === "function") out.a = out.a(meta||{});
+    if(typeof out.b === "function") out.b = out.b(meta||{});
+    return out;
+  }
+
   /* ======================================================================
-     SCENES. Each has: dur (ms of timeline before the idle loop), cap (caption schedule),
-     cues [{t, sfx | say | shake | glitch | amb, key:true = still fires on Skip}], draw(g, ctx)
+     SCENES. Each has: dur (ms of timeline before the idle loop), cap (caption schedule; capBy = per meta.cause),
+     cues [{t, sfx | say | amb | shake | glitch | whip | slash | impact | zoom | slam | pulse | lines | card | letterbox,
+            key:true = still fires on Skip (sound cues only), cause / notCause = only for that meta.cause}],
+     cam [{t, x, y, z, r, e}] camera keys: look-at offset from the art's centre (cells), zoom, roll (deg),
+            e = ease into the key (io | i | o | l | cut); drift = idle sway after dur; draw(g, ctx)
+     Lateral moves are tracking shots inside the grid (a world offset scrolls the set), so the CSS camera
+     only ever zooms in and never shows the edge of the art.
      ====================================================================== */
   var SCENES = {};
 
   /* ---------------- PRESIDENT'S CLUB: jet lands on the beach, jacket descends, fireworks ---------------- */
   SCENES.club = {
     dur: 8400,
-    cap: { title:"PRESIDENT'S CLUB", a:["Jacket secured","You did the thing."], b:["Pipeline obliterated","Commission rains like mana."], tTitle:300, tA:3700, tB:5700, k:"k-au", rule:"k-au-d" },
+    cap: { title:"PRESIDENT'S CLUB", a:["Jacket secured.","You did the thing."], b:["Pipeline: obliterated.","Commission rains."], tTitle:300, tA:3400, tB:5900, k:"k-au", rule:"k-au-d" },
     cues: [
-      {t:0, sfx:"plane"}, {t:2050, sfx:"screech"}, {t:2950, sfx:"seatbelt"},
-      {t:3400, sfx:"sparkle"}, {t:5400, sfx:"stingerClub", key:true}, {t:5400, shake:260},
-      {t:5600, say:"club", key:true}
+      {t:0, sfx:"plane"}, {t:200, lines:"h", ms:1700, dir:-1, n:10},
+      {t:2000, sfx:"screech"}, {t:2000, shake:200}, {t:2000, pulse:.05, ms:320},
+      {t:2900, sfx:"seatbelt"}, {t:3400, sfx:"sparkle"},
+      {t:4900, sfx:"thwack"}, {t:4900, impact:110}, {t:4900, lines:"radial", ms:800, fx:31, fy:3}, {t:4900, zoom:1.14, ms:650, fx:31, fy:3},
+      {t:5300, sfx:"stingerClub", key:true}, {t:5300, card:"CLUB", ms:1400}, {t:5300, shake:260},
+      {t:5500, say:"club", key:true}
     ],
-    summary: "A jet lands on a palm-lined beach, the President's Club jacket floats down in a cloud of sparkles, and fireworks rain commission over the sand.",
+    cam: [
+      {t:0,    x:-8, y:-2.5, z:1.3,  r:2.5},
+      {t:1000, x:-4, y:-1.2, z:1.22, r:1.5, e:"l"},
+      {t:2000, x:0,  y:0.6,  z:1.16, r:0},
+      {t:3000, x:0,  y:0,    z:1.06, r:0},
+      {t:3400, x:0,  y:0,    z:1.06, r:0},
+      {t:4850, x:-1, y:-3,   z:1.34, r:0},
+      {t:5700, x:-1, y:-3,   z:1.34, r:0},
+      {t:6700, x:0,  y:-0.4, z:1.08, r:0}
+    ],
+    drift: {x:1.5, y:.3, z:.02, p:9000},
+    summary: "A jet lands on the beach, the jacket descends, fireworks rain commission.",
     draw: function(g,c){
       var t = c.t, st = c.st;
-      // sky
+      // tracking shot: the camera rides with the jet, the beach scrolls past, then it all settles
+      var ox = -64*Math.pow(1-prog(t,0,2900),2);
+      // sky: the sun is too far away to move; clouds drift at a quarter of the speed
       g.spr(56,0, blink(t,420) ? SPR.sun : SPR.sun2, "k-y");
-      var c1 = ((t/240) + 10) % 84 - 12, c2 = ((t/360) + 46) % 84 - 12;
+      var c1 = mod(t/240 + 10 - ox*.25,84) - 12, c2 = mod(t/360 + 46 - ox*.25,84) - 12;
       g.sprO(c1,0,SPR.cloud,"k-d"); g.sprO(c2,1,SPR.cloud,"k-d");
       // fireworks behind the palms
-      if(t > 5400){
-        st.fw = st.fw || []; if(!st.nextFw) st.nextFw = 5400;
+      if(t > 5300){
+        st.fw = st.fw || []; if(!st.nextFw) st.nextFw = 5300;
         if(t >= st.nextFw){
           st.nextFw = t + (c.idle ? 1150 : 430)*rnd(.7,1.3);
           var bx = rnd(4,60), by = rnd(1,4.5), col = pick(["k-au","k-m","k-c","k-g","k-p"]);
@@ -1054,32 +1139,35 @@ __/_|__
         if(Math.random() < (c.idle ? .22 : .65)) st.fw.push({x:rnd(0,63),y:-0.4,vx:0,vy:rnd(5,8),life:3000,ch:"$",k:pick(["k-g","k-au"])});
         stepParts(st.fw,c.dt,g,10);
       }
-      // palms
-      var sway = blink(t,640);
-      g.spr(0,4, sway ? SPR.palmA : SPR.palmB, "k-g");
-      g.spr(50,4, sway ? SPR.palmB : SPR.palmA, "k-g");
-      for(var y=7;y<=9;y++){ g.set(7,y,"|","k-br"); g.set(57,y,"|","k-br"); }
-      g.text(6,9,"_|_","k-br"); g.text(56,9,"_|_","k-br");
+      // palms (the last two are the final composition)
+      var sway = blink(t,640), palms = [-60,-27,0,50];
+      for(var pi=0;pi<palms.length;pi++){
+        var px0 = Math.round(palms[pi]-ox); if(px0 < -15 || px0 >= COLS) continue;
+        g.spr(px0,4,(pi%2 ? !sway : sway) ? SPR.palmA : SPR.palmB,"k-g");
+        for(var y=7;y<=9;y++) g.set(px0+7,y,"|","k-br");
+        g.text(px0+6,9,"_|_","k-br");
+      }
       // runway, sand and sea
       var sand = ".:'.:.'::.'.:.:'.:.::'.:.'.:'::.:'.:..:'.:.:'.::.'.:.'.:.:'::.'.";
-      g.text(0,10,sand,"k-s");
-      for(var x=12;x<52;x++) g.set(x,10,(x%4<2) ? "=" : " ","k-d");
+      g.tile(10,sand,ox,"k-s");
+      for(var x=0;x<COLS;x++){ var wx = x+Math.round(ox); if(wx >= 12 && wx < 52) g.set(x,10,(mod(wx,4) < 2) ? "=" : " ","k-d"); }
       var wave = "~~~  ~~ ~~~~   ~~   ~~~ ~~  ~~~~ ~ ~~~   ~~ ~~~~  ~~   ~~~ ~ ~~  ";
-      var o1 = Math.floor(t/320)%wave.length, o2 = Math.floor(t/450)%wave.length;
-      g.text(0,11,(wave.slice(o1)+wave.slice(0,o1)),"k-c");
-      g.text(0,12,(wave.slice(wave.length-o2)+wave.slice(0,wave.length-o2)),"k-b");
-      // jet: level flight over the palms, flare, touchdown, roll-out
-      var px, py, gearDown = t > 1100;
-      if(t < 2000){ px = lerp(-18,23,t/2000); py = 6*Math.pow(prog(px,4,23),1.6); }
-      else { px = lerp(23,34,easeOut(prog(t,2000,3000))); py = 6; }
-      py = Math.round(py);
-      if(t < 2000) g.text(px-4,py+2,blink(t,120) ? "= -" : "- =","k-d");
-      g.sprO(px,py,SPR.plane,"k-w");
-      if(gearDown) { g.set(px+5,py+4,"o","k-d"); g.set(px+14,py+4,"o","k-d"); }
-      if(t > 2000 && t < 2800) g.text(px-2,py+4,blink(t,90) ? "~ ." : ". ~","k-d");
-      // jacket descends in a ring of sparkles
+      g.tile(11,wave,Math.floor(t/320)+ox,"k-c");
+      g.tile(12,wave,ox-Math.floor(t/450),"k-b");
+      // jet: in over the palms, flare, touchdown, roll-out (screen position; the world moves under it)
+      var sx, py, gearDown = t > 1100;
+      if(t < 700) sx = lerp(-18,12,easeOut(t/700));
+      else if(t < 2000) sx = lerp(12,22,(t-700)/1300);
+      else sx = lerp(22,34,easeOut(prog(t,2000,3000)));
+      py = t < 2000 ? Math.round(6*Math.pow(prog(t,150,2000),1.6)) : 6;
+      sx = Math.round(sx);
+      if(t < 2000) g.text(sx-4,py+2,blink(t,120) ? "= -" : "- =","k-d");
+      g.sprO(sx,py,SPR.plane,"k-w");
+      if(gearDown) { g.set(sx+5,py+4,"o","k-d"); g.set(sx+14,py+4,"o","k-d"); }
+      if(t > 2000 && t < 2800) g.text(sx-2,py+4,blink(t,90) ? "~ ." : ". ~","k-d");
+      // jacket floats down in a ring of sparkles and lands on the beat
       if(t > 3300){
-        var jy = Math.round(lerp(-7,0,easeOut(prog(t,3300,5200)))), jx = 24;
+        var jy = Math.round(lerp(-7,0,easeInOut(prog(t,3300,4900)))), jx = 24;
         for(var s=0;s<8;s++){
           var a = t/300 + s*0.8, rr = 9 + Math.sin(t/400+s)*1.5;
           g.set(jx+7+Math.cos(a)*rr, jy+2.5+Math.sin(a)*rr*0.42, pick(["*","+","'","."]), s%2 ? "k-y" : "k-w");
@@ -1090,81 +1178,106 @@ __/_|__
   };
 
   /* ---------------- FIRED: access denied, walk of shame, elevator goes down ---------------- */
+  var FACES = ["(-_-)","(o_o)","(-_-)","(o.o)","(-_-)"], FACES_AFTER = ["(-_-)","(._.)","(;_;)","(-_-)","(._.)"];
   SCENES.fired = {
     dur: 8800,
-    cap: { title:"YOU'RE DONE", a:["Badge deactivated","HR reclaimed your dongles."], b:["\u201cWe\u2019re going in a different direction.\u201d","(That direction is: not you.)"], tTitle:200, tA:1100, tB:6300, k:"k-r", rule:"k-r-d" },
+    cap: { title:"YOU'RE DONE", a:["Badge: deactivated.","HR took the dongles."], b:["\u201cDifferent direction.\u201d","(Not you.)"], tTitle:200, tA:1100, tB:6300, k:"k-r", rule:"k-r-d" },
     cues: [
-      {t:760, sfx:"beep"}, {t:960, sfx:"denied"}, {t:960, glitch:380}, {t:960, shake:220},
+      {t:760, sfx:"beep"}, {t:960, sfx:"denied"}, {t:960, impact:110}, {t:960, lines:"radial", ms:720, fx:24, fy:5}, {t:960, zoom:1.15, ms:620, fx:24, fy:5},
+      {t:960, glitch:320}, {t:960, shake:220},
       {t:1520, sfx:"denied"}, {t:2050, sfx:"drop"},
-      {t:6950, sfx:"doors"}, {t:7560, sfx:"elevator"}, {t:7650, sfx:"stingerFired", key:true}, {t:7800, say:"fired", key:true}
+      {t:2410, whip:"r", ms:380}, {t:2410, sfx:"fwip"},
+      {t:5500, slash:340}, {t:5500, sfx:"shing"}, {t:5500, letterbox:true},
+      {t:6050, sfx:"doors"}, {t:6600, sfx:"elevator"},
+      {t:7300, sfx:"stingerFired", key:true}, {t:7300, card:"FIRED", ms:1400}, {t:7300, impact:100}, {t:7300, lines:"radial", ms:900},
+      {t:7450, say:"fired", key:true}, {t:8500, letterbox:false}
     ],
+    cam: [
+      {t:0,    x:-3, y:-0.5, z:1.24, r:-3},
+      {t:900,  x:-7, y:-1,   z:1.42, r:-4.5},
+      {t:1800, x:3,  y:-0.5, z:1.36, r:-2.5},
+      {t:2380, x:5,  y:2,    z:1.3,  r:0},
+      {t:2600, x:0,  y:0.8,  z:1.1,  r:0, e:"cut"},
+      {t:5450, x:2,  y:0.6,  z:1.2,  r:1, e:"l"},
+      {t:5500, x:0,  y:0,    z:1.14, r:0, e:"cut"},
+      {t:6600, x:0,  y:-0.5, z:1.3,  r:0},
+      {t:7250, x:0,  y:-4.5, z:1.85, r:-2, e:"o"},
+      {t:7700, x:0,  y:-4.5, z:1.85, r:-2},
+      {t:8600, x:0,  y:-1.5, z:1.3,  r:0}
+    ],
+    drift: {x:.8, z:.02, p:7000},
     idleGlitch: 4600,
-    summary: "The badge reader flashes ACCESS DENIED, Matt carries his box past the cubicles while coworkers stare, and the elevator doors close on a floor counter heading down.",
+    summary: "Badge denied, box carried past staring coworkers, elevator down.",
     draw: function(g,c){
       var t = c.t, st = c.st;
       if(t < 2600){
-        // beat 1: badge reader
-        g.spr(6,2,SPR.reader,"k-d");
+        // beat 1: badge reader (Dutch-tilt push-in)
+        var RX = 14;
+        g.spr(RX,2,SPR.reader,"k-d");
         var state = t < 800 ? "ready" : t < 960 ? "check" : "denied";
         var scr = state === "ready" ? "    READY    " : state === "check" ? "   . . .     " : "ACCESS DENIED";
         var sk = state === "ready" ? "k-g" : state === "check" ? "k-y" : "k-r k-bold";
-        if(state !== "denied" || t > 2000 || blink(t,150)) g.text(10,5,scr,sk);
-        g.text(9,3,"SHITCORP SECURE","k-w");
+        if(state !== "denied" || t > 2000 || blink(t,150)) g.text(RX+4,5,scr,sk);
+        g.text(RX+3,3,"SHITCORP SECURE","k-w");
         var led = state === "ready" ? "k-g" : state === "check" ? "k-y" : (blink(t,200) ? "k-r" : "k-d");
-        g.text(10,7,"(o)",led);
+        g.text(RX+4,7,"(o)",led);
         // badge slides in, taps, dies, drops
-        var bx = t < 700 ? lerp(64,31,easeOut(t/700)) : (t < 820 ? 29 : 31);
+        var bx = t < 700 ? lerp(66,RX+25,easeOut(t/700)) : (t < 820 ? RX+23 : RX+25);
         var by = 3 + (t > 2000 ? Math.pow((t-2000)/1000,2)*24 : 0);
         g.sprO(bx,by,SPR.badge,"k-w");
         g.text(bx+2,by+1,"SHITCORP","k-b");
         if(t > 1300){ g.text(bx+3,by+2,"(x_x)","k-r"); }
         if(t > 1500){ g.text(bx+3,by+3,blink(t,180) ? "VOID" : "    ","k-r k-bold"); }
         if(state === "denied" && t < 1900){
-          for(var i=0;i<3;i++) g.set(28+i*0, 3+i*2, blink(t,100) ? "!" : " ", "k-r");
+          for(var i=0;i<3;i++) g.set(RX+22, 3+i*2, blink(t,100) ? "!" : " ", "k-r");
         }
         // wall + floor
         g.text(0,11,rep("_",COLS),"k-d");
         return;
       }
-      if(t < 6000){
-        // beat 2: walk of shame past the cubicles
-        g.spr(2,0,SPR.poster,"k-m");
-        g.text(47,1,"[ 4:59 PM FRI ]",blink(t,500) ? "k-r" : "k-r-d");
-        var wx = lerp(-9,58,(t-2600)/3400);
-        var heads = [{x:5,f:"(o_o)"},{x:26,f:"(o.o)"},{x:47,f:"(-_-)"}];
-        for(var h=0;h<heads.length;h++){
-          var hx = heads[h].x, dx = (wx+2) - (hx+2), face = heads[h].f;
-          if(dx > -12 && dx <= 5) face = "(O_O)"; else if(dx > 5) face = (h === 1 ? "(._.)" : "(-_-)");
+      if(t < 5500){
+        // beat 2: walk of shame. The camera tracks Matt; the back wall slides slower than the cubicles
+        var tau = (t-2600)/1000, ox = tau < .5 ? 17*tau*tau : 17*(tau-.25);
+        var sx = lerp(-9,25,easeOut(prog(t,2600,3300))) + 3*prog(t,3300,5500);
+        var mx = ox + sx, wo = ox*.55;
+        g.spr(Math.round(3-wo),0,SPR.poster,"k-m");
+        g.text(Math.round(39-wo),1,"[ 4:59 PM FRI ]",blink(t,500) ? "k-r" : "k-r-d");
+        g.spr(Math.round(64-wo),0,SPR.poster2,"k-m");
+        for(var h=0;h<5;h++){
+          var hw = 8 + h*21, hx = Math.round(hw-ox);
+          if(hx < -13 || hx >= COLS+2) continue;
+          var dx = (mx+2) - (hw+2), face = FACES[h];
+          if(dx > -12 && dx <= 5) face = "(O_O)"; else if(dx > 5) face = FACES_AFTER[h];
           g.text(hx,5,face,"k-w");
           g.text(hx-2,6,"|=========|","k-b");
-          if(h !== 1) g.text(hx+9,5,"[_]","k-d");
+          if(h%2 === 0) g.text(hx+9,5,"[_]","k-d");
+          if(h === 2 && dx > 3 && dx < 18) g.text(hx+1,4,"rip","k-d");
         }
-        g.text(0,7,rep(" ",0),"");
         var legA = Math.floor((t-2600)/230)%2 === 0;
         if(legA !== st.lastLeg){ st.lastLeg = legA; if(!c.idle) c.sfx("step"); }
+        var wx = Math.round(sx);
         g.spr(wx,8,legA ? SPR.walkA : SPR.walkB,"k-w");
         g.text(wx+6,8,"\\|/","k-g");
         g.text(wx+5,9,"[BOX]","k-y");
         g.text(0,11,rep("_",COLS),"k-d");
-        var carpet = ". ' . , . ' . , ";
-        g.text(0,12,(carpet+carpet+carpet+carpet+carpet).slice(0,COLS),"k-d");
+        g.tile(12,". ' . , ",ox,"k-d");
         return;
       }
       // beat 3: elevator
-      var ex = 18;
+      var ex = 19;
       g.spr(ex,1,SPR.elevator,"k-d");
-      var closing = prog(t,6900,7500), doorW = Math.round(11*closing);
+      var closing = prog(t,6100,6600), doorW = Math.round(11*closing);
       var floor = 13;
-      if(t > 7600) floor = Math.max(0,13 - Math.floor((t-7600)/650));
-      var arrow = t < 7500 ? "^" : "v";
+      if(t > 6700) floor = Math.max(0,13 - Math.floor((t-6700)/260));
+      var arrow = t < 6600 ? "^" : "v";
       var ind = "[ "+arrow+"  "+(floor > 0 ? (floor < 10 ? " "+floor : ""+floor) : " L")+" ]";
-      g.text(ex+8,2,ind, (t > 7500 && !blink(t,300)) ? "k-r-d" : "k-r k-bold");
+      g.text(ex+8,2,ind, (t > 6600 && !blink(t,300)) ? "k-r-d" : "k-r k-bold");
       // interior: mirror glint
       g.text(ex+19,4,"/","k-d"); g.text(ex+18,5,"/","k-d");
       // passenger
-      if(t < 6700){
-        var wx2 = lerp(-6,27,(t-6000)/700);
-        var legA2 = Math.floor((t-6000)/200)%2 === 0;
+      if(t < 6050){
+        var wx2 = lerp(4,ex+9,easeOut(prog(t,5500,6050)));
+        var legA2 = Math.floor((t-5500)/180)%2 === 0;
         if(legA2 !== st.lastLeg){ st.lastLeg = legA2; if(!c.idle) c.sfx("step"); }
         g.spr(wx2,6,legA2 ? SPR.walkA : SPR.walkB,"k-w");
         g.text(wx2+6,6,"\\|/","k-g"); g.text(wx2+5,7,"[BOX]","k-y");
@@ -1184,14 +1297,14 @@ __/_|__
       }
       // call buttons
       g.text(ex+28,5,"( ^ )","k-d");
-      g.text(ex+28,6,"( v )",t > 6800 ? "k-r k-bold" : "k-d");
+      g.text(ex+28,6,"( v )",t > 6050 ? "k-r k-bold" : "k-d");
       g.text(0,11,rep("_",COLS),"k-d");
-      g.text(0,12,"  .   '   .   ,   .   '   .   ,   .   '   .   ,   .   '   .   ,","k-d");
+      g.tile(12,"  .   '   .   , ",0,"k-d");
     }
   };
 
   /* ---------------- BURNOUT: stress spikes, desk melts, blue screen ---------------- */
-  function drawDesk(g,t,p,bpm){
+  function drawDesk(g,t,p,bpm,caf){
     g.spr(2,1,SPR.monitor,"k-d");
     var warn = p >= 85;
     g.text(4,2,"Q1 FORECAST","k-c");
@@ -1204,43 +1317,66 @@ __/_|__
     if(p >= 90){ var sy = 2 - (Math.floor(t/160)%2); g.text(24,sy,blink(t,160) ? "~ ~" : " ~ ","k-d"); }
     g.text(18,6,"c[_]","k-y");
     g.text(18,5,blink(t,400) ? " ) " : " ( ","k-d");
+    if(caf){ g.text(13,6,"c[_]","k-y"); g.text(31,6,"c[_]","k-y"); }
     g.spr(0,7,SPR.deskTop,"k-br");
     // stress meter
     var w = 20, f = Math.round(w*p/100);
     var mk = p < 70 ? "k-y" : p < 90 ? "k-o" : (blink(t,140) ? "k-r k-bold" : "k-r");
-    g.text(39,2,"STRESS","k-d");
+    g.text(39,2,caf ? "HEART" : "STRESS","k-d");
     g.text(39,3,"["+rep("\u2588",f)+rep("\u2591",w-f)+"]",mk);
     g.text(62-("" + Math.round(p)).length-1,2,Math.round(p)+"%",mk);
-    g.text(39,5,"BPM "+Math.round(bpm),"k-d");
-    var beatMs = 60000/bpm;
-    g.text(48,5,(t % beatMs) < beatMs*0.35 ? "<3" : "  ","k-r");
+    var flat = caf && t >= 2400, beatMs = 60000/bpm;
+    g.text(39,5,flat ? "BPM ---" : "BPM "+Math.round(bpm),flat ? "k-r k-bold" : "k-d");
+    if(!flat) g.text(48,5,(t % beatMs) < beatMs*0.35 ? "<3" : "  ","k-r");
+    // ECG trace, newest sample on the right; the caffeine ending flatlines it
+    for(var i=0;i<22;i++){
+      var tau = t-(21-i)*26, ph = Math.floor(mod(tau,beatMs)/26);
+      var ch = (caf && tau >= 2400) ? "_" : ph === 0 ? "/" : ph === 1 ? "\\" : "_";
+      g.set(39+i,6,ch,(caf && tau >= 2400) || p >= 90 ? "k-r" : "k-g");
+    }
   }
   SCENES.burnout = {
-    dur: 8200,
-    cap: { title:"(x_x) BURNOUT", a:["Neurons filed a ticket.","System on fire."], b:["You hit numbers.","Your soul did not."], tTitle:200, tA:2700, tB:5400, k:"k-o", rule:"k-o-d" },
+    dur: 8000,
+    cap: { title:"(x_x) BURNOUT", a:["Neurons filed a ticket.","System on fire."], b:["You hit numbers.","Your soul did not."], tTitle:200, tA:2500, tB:5300, k:"k-o", rule:"k-o-d" },
+    capBy: { caffeine: { title:"(x_x) CARDIAC", a:function(m){ return [m.shots > 1 ? "Shot #"+m.shots+"." : "One shot too many.","Heart said no."]; }, b:["Mug still warm.","You, less so."] } },
     cues: [
-      {t:0, sfx:"heartbeat"}, {t:650, sfx:"heartbeat"}, {t:1200, sfx:"heartbeat"}, {t:1650, sfx:"heartbeat"},
-      {t:2000, sfx:"heartbeat"}, {t:2260, sfx:"heartbeat"}, {t:2420, sfx:"alarm"},
-      {t:2650, sfx:"meltdown"}, {t:3150, sfx:"fire"}, {t:4300, sfx:"glitch"}, {t:4300, glitch:460}, {t:4300, shake:320},
-      {t:4750, sfx:"bsod"}, {t:5050, sfx:"stingerBurnout", key:true}, {t:5200, say:"burnout", key:true}
+      {t:0, sfx:"heartbeat"}, {t:0, pulse:.03, ms:380}, {t:650, sfx:"heartbeat"}, {t:650, pulse:.035, ms:360},
+      {t:1200, sfx:"heartbeat"}, {t:1200, pulse:.04, ms:340}, {t:1650, sfx:"heartbeat"}, {t:1650, pulse:.045, ms:300},
+      {t:2000, sfx:"heartbeat"}, {t:2000, pulse:.05, ms:260}, {t:2260, sfx:"heartbeat"}, {t:2260, pulse:.055, ms:240},
+      {t:2400, sfx:"alarm", notCause:"caffeine"}, {t:2400, sfx:"flatline", cause:"caffeine"},
+      {t:2500, slash:320}, {t:2500, sfx:"shing"},
+      {t:2560, sfx:"meltdown"}, {t:3050, sfx:"fire"},
+      {t:4200, sfx:"glitch"}, {t:4200, glitch:460}, {t:4200, shake:320},
+      {t:4600, sfx:"bsod"},
+      {t:4900, sfx:"stingerBurnout", key:true}, {t:4900, card:"BURNOUT", ms:1400}, {t:4900, impact:100},
+      {t:5050, say:"burnout", key:true}
+    ],
+    cam: [
+      {t:0,    x:2,  y:-0.5, z:1.08, r:0},
+      {t:1500, x:-2, y:-1.5, z:1.32, r:-1.5, e:"l"},
+      {t:2450, x:-7, y:-3.5, z:1.7,  r:-4.5, e:"i"},
+      {t:2500, x:0,  y:0,    z:1.08, r:0,    e:"cut"},
+      {t:4150, x:0,  y:1.5,  z:1.24, r:2.5},
+      {t:4600, x:0,  y:0,    z:1,    r:0,    e:"cut"},
+      {t:7800, x:-1, y:0,    z:1.05, r:0,    e:"l"}
     ],
     idleGlitch: 5200,
-    summary: "The stress meter climbs to 100% while the heart rate spikes, the desk melts into flames, and the screen drops to a blue error page for Matt's nervous system.",
+    summary: "Stress hits 100%, the desk melts, blue screen.",
     draw: function(g,c){
-      var t = c.t, st = c.st;
-      if(t < 2600){
-        var p = clamp(61 + 39*Math.pow(prog(t,0,2400),2),0,100);
-        drawDesk(g,t,p,88 + 104*Math.pow(prog(t,0,2400),2));
+      var t = c.t, st = c.st, caf = !!(c.meta && c.meta.cause === "caffeine");
+      if(t < 2500){
+        var p = clamp(61 + 39*Math.pow(prog(t,0,2300),2),0,100);
+        drawDesk(g,t,p,88 + 104*Math.pow(prog(t,0,2300),2),caf);
         return;
       }
-      if(t < 4750){
+      if(t < 4600){
         // melt: render the frozen desk, then slide each column down at its own pace
         if(!st.melt){
-          st.melt = new Grid(); drawDesk(st.melt,2600,100,192);
+          st.melt = new Grid(); drawDesk(st.melt,2500,100,192,caf);
           st.delay = []; st.speed = [];
           for(var i=0;i<COLS;i++){ st.delay.push(rnd(0,700)); st.speed.push(rnd(95,240)); }
         }
-        var m = st.melt, el = t-2600;
+        var m = st.melt, el = t-2500;
         for(var x=0;x<COLS;x++){
           var off = Math.max(0,Math.floor((el-st.delay[x])/st.speed[x]));
           for(var y=ART-1;y>=0;y--){
@@ -1263,61 +1399,99 @@ __/_|__
       }
       // blue screen
       c.screen = "bsod";
-      var pctDone = t <= c.dur ? Math.floor(37*prog(t,4900,c.dur)) : Math.min(99, 37 + Math.floor((t-c.dur)/900));
+      var pctDone = t <= c.dur ? Math.floor(37*prog(t,4800,c.dur)) : Math.min(99, 37 + Math.floor((t-c.dur)/900));
       g.text(3,1,":(","k-bs k-bold");
-      g.text(3,3,"Your nervous system ran into a problem and needs","k-bs");
-      g.text(3,4,"a long weekend. We're collecting some regrets,","k-bs");
-      g.text(3,5,"then we'll restart you in time for Monday.","k-bs");
-      g.text(3,7,pctDone+"% complete","k-bs");
-      g.text(3,9,"Stop code: QUOTA_EXCEEDS_SOUL","k-bs");
-      g.text(3,10,"What failed: work_life_balance.sys","k-bs");
-      if(blink(t,500)) g.text(3+(""+pctDone).length+10,7,"_","k-bs");
+      g.text(3,3,"Your nervous system ran into a problem.","k-bs");
+      g.text(3,4,"Restarting you Monday.","k-bs");
+      g.text(3,6,pctDone+"% complete","k-bs");
+      g.text(3,8,"Stop code: "+(caf ? "QUAD_SHOT_OVERFLOW" : "QUOTA_EXCEEDS_SOUL"),"k-bs");
+      g.text(3,9,"What failed: "+(caf ? "heart.sys" : "work_life_balance.sys"),"k-bs");
+      if(blink(t,500)) g.text(3+(""+pctDone).length+10,6,"_","k-bs");
     }
   };
 
-  /* ---------------- BARELY MISSED: a personal rain cloud, then an umbrella ---------------- */
+  /* ---------------- BARELY MISSED: the bar stalls, then a long walk under a personal rain cloud ---------------- */
   SCENES.missed = {
-    dur: 7600,
-    cap: { title:"BARELY MISSED", a:["70\u201399% to quota","Badge kept, ego bruised."], b:["Manager shrugs,","HR forgets your name."], tTitle:200, tA:1000, tB:5300, k:"k-c", rule:"k-c-d" },
+    dur: 7400,
+    cap: { title:"BARELY MISSED", a:["70\u201399% to quota.","Badge kept. Ego not."], b:["Manager shrugs.","HR forgets your name."], tTitle:200, tA:900, tB:4800, k:"k-c", rule:"k-c-d" },
     cues: [
-      {t:0, amb:"rain"}, {t:2150, sfx:"stingerMissed", key:true}, {t:2300, say:"missed", key:true}, {t:5050, sfx:"umbrella"}
+      {t:0, amb:"rain"},
+      {t:2100, zoom:1.12, ms:520},
+      {t:2150, sfx:"stingerMissed", key:true}, {t:2150, card:"MISSED", ms:1300},
+      {t:2300, say:"missed", key:true},
+      {t:3260, whip:"r", ms:380}, {t:3260, sfx:"fwip"},
+      {t:6000, sfx:"umbrella"}, {t:6000, zoom:1.1, ms:650, fx:25, fy:6}
     ],
-    summary: "The quota bar fills and stalls just short of the flag, a small rain cloud follows Matt down the street, and an umbrella pops open on the last beat.",
+    cam: [
+      {t:0,    x:-1, y:-1,  z:1.22, r:0},
+      {t:2100, x:-1, y:-1,  z:1.32, r:0, e:"l"},
+      {t:3450, x:0,  y:0.5, z:1.1,  r:0, e:"cut"},
+      {t:5900, x:1,  y:0.5, z:1.14, r:0, e:"l"},
+      {t:6900, x:-1, y:0,   z:1.16, r:0}
+    ],
+    drift: {x:1, z:.015, p:8000},
+    summary: "The quota bar stalls short, then a rain cloud follows you home.",
     draw: function(g,c){
       var t = c.t, st = c.st, pct = clamp(c.meta.pct || 0.85,0,1);
-      // quota bar
-      var w = 40, shown = pct*prog(t,300,2100), f = Math.floor(w*shown);
-      if(t > 300 && t < 2100){ var tk = Math.floor((t-300)/120); if(tk !== st.tk){ st.tk = tk; if(!c.idle) c.sfx("tick"); } }
-      g.text(1,0,"QUOTA","k-d");
-      g.text(7,0,"["+rep("\u2588",f)+rep("\u2591",w-f)+"]",t > 2100 ? "k-c" : "k-b");
-      g.text(49,0,"|>","k-g");
-      g.text(52,0,Math.round(shown*100)+"%",t > 2100 ? "k-c k-bold" : "k-w");
-      g.text(49,1,"| 100%","k-d");
+      if(t < 3450){
+        // shot 1: the quota bar, close up, in a drizzle
+        var w = 40, shown = pct*prog(t,300,2100), f = Math.floor(w*shown);
+        if(t > 300 && t < 2100){ var tk = Math.floor((t-300)/120); if(tk !== st.tk){ st.tk = tk; if(!c.idle) c.sfx("tick"); } }
+        st.dz = st.dz || [];
+        if(Math.random() < .9) st.dz.push({x:rnd(0,COLS+6),y:-0.5,vx:-3,vy:rnd(10,13),life:2500,ch:pick(["'","'",","]),k:"k-b-d"});
+        stepParts(st.dz,c.dt,g,ART);
+        var stalled = t > 2100;
+        g.text(7,3,"QUOTA","k-d");
+        g.text(13,3,Math.round(shown*100)+"%",stalled ? "k-c k-bold" : "k-w");
+        g.text(7,5,"["+rep("\u2588",f)+rep("\u2591",w-f)+"]",stalled ? "k-c" : "k-b");
+        g.text(50,3,"|>","k-g"); g.set(50,4,"|","k-d"); g.set(50,5,"|","k-d"); g.text(50,6,"| 100%","k-d");
+        if(stalled && blink(t,260)) g.text(7,7,"STALLED","k-c-d");
+        return;
+      }
+      // shot 2: tracking shot down the street; rep and cloud stay framed, the street slides by
+      var tau = (t-3450)/1000, v = 14, T = 2.45, q = clamp((tau-T)/.6,0,1);
+      var ox = tau < T ? v*tau : v*T + v*.6*(q - q*q/2), O = Math.round(ox);
+      // shop signs on the far side of the street (slower layer)
+      var so = ox*.6, signs = [[2,"CLOSED"],[27,Math.round(pct*100)+"% OFF"],[52,"LOANS"],[76,"CLOSED"]];
+      for(var s2=0;s2<signs.length;s2++){
+        var gx = Math.round(signs[s2][0]-so), lab = signs[s2][1], bw = lab.length+4;
+        if(gx >= COLS || gx+bw < 0) continue;
+        g.text(gx,1,"."+rep("-",bw-2)+".","k-d"); g.text(gx,2,"| "+lab+" |",s2 === 1 ? "k-p" : "k-d"); g.text(gx,3,"'"+rep("-",bw-2)+"'","k-d");
+      }
+      // lamp posts on the near curb
+      var lamps = [12,44,76];
+      for(var li=0;li<lamps.length;li++){
+        var lx = lamps[li]-O; if(lx < -2 || lx > COLS+1) continue;
+        g.text(lx-1,4,"(_)","k-y");
+        for(var ly=5;ly<=9;ly++) g.set(lx,ly,"|","k-d");
+        g.text(lx-1,10,"_|_","k-d");
+      }
       // street + puddles
       g.text(0,11,rep("_",COLS),"k-d");
-      g.text(0,12,"     ~~        ~~~      ~~           ~~~~       ~~         ~~~   ","k-b-d");
-      // rep walks, cloud tails him
-      var rx = t < 1200 ? 3 : t < 4800 ? lerp(3,30,(t-1200)/3600) : 30;
-      var walking = t >= 1200 && t < 4800;
+      g.tile(12,"     ~~        ~~~      ~~           ~~~~       ~~         ~~~   ",ox,"k-b-d");
+      // the rep (catching up to the camera at first), the cloud tails him
+      var rx = Math.round(18 + 6*easeOut(prog(tau,0,1.2)));
+      var walking = tau < T+.45;
       var legA = walking ? Math.floor(t/260)%2 === 0 : true;
-      var umbrella = t >= 5000;
-      st.cx = st.cx === undefined ? rx-3 : st.cx + ((rx-3) - st.cx)*Math.min(1,c.dt/260);
+      var umbrella = t >= 6000;
+      st.cx = st.cx === undefined ? rx-6 : st.cx + ((rx-3) - st.cx)*Math.min(1,c.dt/420);
       var cx = st.cx, cy = umbrella ? 3 : 4;
-      // rain under the cloud
+      // rain falls in world space, so it trails behind the moving cloud
       st.drops = st.drops || [];
-      for(var k=0;k<2;k++) if(Math.random() < .85) st.drops.push({x:cx+rnd(1,10),y:cy+3,vx:0,vy:rnd(9,13),life:2000,ch:pick(["'","|","'",","]),k:"k-c"});
+      for(var k=0;k<3;k++) if(Math.random() < .85) st.drops.push({x:cx+rnd(1,10)+ox,y:cy+3,vy:rnd(9,13),ch:pick(["'","|","'",","]),k:"k-c"});
       var stopY = 10.6;
       for(var i=st.drops.length-1;i>=0;i--){
-        var d = st.drops[i];
+        var d = st.drops[i], dx = d.x-ox;
         d.y += d.vy*c.dt/1000;
-        var hitUmb = umbrella && d.y >= 6 && d.x >= rx-2 && d.x <= rx+4.5;
-        if(hitUmb){ st.drops.splice(i,1); if(Math.random() < .5) g.set(d.x,5,pick([".","'","`"]),"k-w"); continue; }
-        if(d.y >= stopY){ st.drops.splice(i,1); g.set(d.x,10,pick([".",","]),"k-b"); continue; }
-        g.set(d.x,d.y,d.ch,d.k);
+        if(dx < -2){ st.drops.splice(i,1); continue; }
+        var hitUmb = umbrella && d.y >= 6 && dx >= rx-2 && dx <= rx+4.5;
+        if(hitUmb){ st.drops.splice(i,1); if(Math.random() < .5) g.set(dx,5,pick([".","'","`"]),"k-w"); continue; }
+        if(d.y >= stopY){ st.drops.splice(i,1); g.set(dx,10,pick([".",","]),"k-b"); continue; }
+        g.set(dx,d.y,d.ch,d.k);
       }
       g.sprO(cx,cy,SPR.rainCloud,"k-d");
       if(umbrella){
-        var pop = prog(t,5000,5160);
+        var pop = prog(t,6000,6160);
         g.spr(rx-2,6, pop < 1 ? [" .^. ","/_|_\\","  |"] : SPR.umbrella, "k-m");
         g.sprO(rx,8,[" o","/|\\","/ \\"],"k-w");
       } else {
@@ -1325,63 +1499,85 @@ __/_|__
       }
       g.text(rx-1,11,"___","k-d");
       if(t > c.dur){ // the sun peeks out for next quarter
-        g.spr(56,3,[" \\ | /","-- O","  /"],"k-y");
+        g.spr(45,4,[" \\ | /","-- O","  /"],"k-y");
       }
     }
   };
 
   /* ---------------- REPO: the tow truck takes the jacket ---------------- */
   SCENES.repo = {
-    dur: 7600,
-    cap: { title:"REPOSSESSED", a:["You financed the drip but not the payments.","Collections walks off with your flex piece."], b:["Finance “can’t justify” the expense.","HR keeps the photo on the wall."], tTitle:200, tA:1100, tB:5600, k:"k-y", rule:"k-y-d" },
+    dur: 7400,
+    cap: { title:"REPOSSESSED", a:["Financed the drip.","Not the payments."], b:["Collections took the flex.","HR keeps the photo."], tTitle:200, tA:1300, tB:5600, k:"k-y", rule:"k-y-d" },
     cues: [
-      {t:500, sfx:"beeper"}, {t:1000, sfx:"beeper"}, {t:1500, sfx:"beeper"}, {t:2000, sfx:"beeper"}, {t:2500, sfx:"beeper"},
-      {t:3150, sfx:"clank"}, {t:3750, sfx:"engine"}, {t:3950, sfx:"honk"},
-      {t:4600, sfx:"stingerRepo", key:true}, {t:4750, say:"repo", key:true}
+      {t:600, sfx:"beeper"},
+      {t:860, whip:"l", ms:340}, {t:860, sfx:"fwip"}, {t:900, lines:"h", ms:750, dir:1, n:11},
+      {t:1450, sfx:"screech"}, {t:1500, pulse:.06, ms:300}, {t:1500, shake:180},
+      {t:1700, sfx:"beeper"},
+      {t:2400, sfx:"clank"}, {t:2400, impact:100}, {t:2400, shake:260}, {t:2400, lines:"radial", ms:650, fx:34, fy:7}, {t:2400, zoom:1.15, ms:600, fx:34, fy:7},
+      {t:3000, sfx:"engine"}, {t:3300, sfx:"honk"},
+      {t:4700, sfx:"stingerRepo", key:true}, {t:4700, card:"REPO", ms:1400},
+      {t:4850, say:"repo", key:true}
     ],
-    summary: "A tow truck reverses up to the curb, hooks the President's Club jacket off its coat rack, and drives off with it while the photo stays on the wall.",
+    cam: [
+      {t:0,    x:6,  y:0,   z:1.18, r:0},
+      {t:850,  x:4,  y:0,   z:1.24, r:0, e:"l"},
+      {t:1500, x:0,  y:0.5, z:1.14, r:0},
+      {t:2350, x:2,  y:0.5, z:1.42, r:-2},
+      {t:2900, x:0,  y:0.3, z:1.2,  r:0},
+      {t:4700, x:-3, y:0.3, z:1.16, r:0},
+      {t:5200, x:6,  y:0,   z:1.12, r:0, e:"cut"},
+      {t:7200, x:6,  y:0,   z:1.16, r:0, e:"l"}
+    ],
+    drift: {x:1, z:.015, p:8000},
+    summary: "A tow truck hauls off the President's Club jacket.",
     draw: function(g,c){
       var t = c.t, st = c.st;
       var hookX = 34, TIP = 26, ty = 3; // boom tip column inside the truck sprite; truck top row
+      // the camera pans off with the truck, then (behind the title card) cuts back to the empty rack
+      var ox = t < 5200 ? -46*easeInOut(prog(t,3100,4700)) : 0, O = Math.round(ox);
+      // left of the building: a lamp post and a billboard
+      g.spr(-36-O,0,SPR.billboard,"k-d"); g.text(-34-O,1,"PRESIDENT'S CLUB","k-au");
+      var lx = -8-O;
+      g.text(lx-1,4,"(_)","k-y"); for(var ly=5;ly<=9;ly++) g.set(lx,ly,"|","k-d"); g.text(lx-1,10,"_|_","k-d");
       // building + street
-      g.spr(39,3,SPR.building,"k-d");
-      g.text(42,4,"COLLECTIONS  DEPT.","k-y");
+      g.spr(39-O,3,SPR.building,"k-d");
+      g.text(42-O,4,"COLLECTIONS  DEPT.","k-y");
       if(t > c.dur){ g.text(42,8,"[:)]",blink(t,700) ? "k-au" : "k-au-d"); if(blink(t,350)) g.set(46,7,"*","k-y"); }
       g.text(0,11,rep("_",COLS),"k-d");
-      g.text(0,12,"  ==   ==   ==   ==   ==   ==   ==   ==   ==   ==   ==   ==   ==","k-d");
+      g.tile(12,"  == ",ox,"k-d");
       // coat rack (stays behind after the tow)
-      g.set(hookX,6,"?","k-br");
-      for(var py=7;py<=10;py++) g.set(hookX,py,"|","k-br");
-      g.text(hookX-1,11,"_|_","k-br");
-      // truck path: reverse in, wait, drive off
-      var tx;
-      if(t < 500) tx = -30;
-      else if(t < 2700) tx = lerp(-30,hookX-TIP,easeOut(prog(t,500,2700)));
-      else if(t < 3800) tx = hookX-TIP;
-      else tx = lerp(hookX-TIP,-48,easeIn(prog(t,3800,6200)));
-      tx = Math.round(tx);
-      var tipX = tx+TIP;
+      var rk = hookX-O;
+      g.set(rk,6,"?","k-br");
+      for(var py=7;py<=10;py++) g.set(rk,py,"|","k-br");
+      g.text(rk-1,11,"_|_","k-br");
+      // truck path (world): whips in reversing, waits, drives off accelerating
+      var tw;
+      if(t < 900) tw = -44;
+      else if(t < 1500) tw = lerp(-44,hookX-TIP,easeOut(prog(t,900,1500)));
+      else if(t < 3100) tw = hookX-TIP;
+      else tw = hookX-TIP - 16*Math.pow((t-3100)/1000,2);
+      var tx = Math.round(tw-ox), tipX = tx+TIP;
       // cable lowers to the hanger, clanks, lifts
-      var attached = t >= 3150, cableLen = 0;
-      if(t >= 2700 && t < 3150) cableLen = Math.round(lerp(0,2,prog(t,2700,3100)));
-      else if(t >= 3150 && t < 3300) cableLen = 2;
-      else if(t >= 3300) cableLen = Math.round(lerp(2,1,prog(t,3300,3700)));
-      var swing = t > 3800 ? (blink(t,260) ? 1 : 0) : 0;
-      if(!attached) g.spr(hookX-3,7,SPR.jacketS,"k-au");
+      var attached = t >= 2400, cableLen = 0;
+      if(t >= 1800 && t < 2400) cableLen = Math.round(lerp(0,2,prog(t,1800,2300)));
+      else if(t >= 2400 && t < 2550) cableLen = 2;
+      else if(t >= 2550) cableLen = Math.round(lerp(2,1,prog(t,2550,2950)));
+      var swing = t > 3100 ? (blink(t,260) ? 1 : 0) : 0;
+      if(!attached) g.spr(rk-3,7,SPR.jacketS,"k-au");
       g.sprO(tx,ty,SPR.truck,"k-w");
       g.text(tx+9,ty+5,"REPO","k-r k-bold");
-      if(t >= 2700){
+      if(t >= 1800){
         for(var r=0;r<cableLen;r++) g.set(tipX+(r === cableLen-1 ? swing : 0),ty+1+r,"|","k-d");
         g.set(tipX+swing,ty+1+cableLen,"J","k-w");
         if(attached) g.spr(tipX-3+swing,ty+2+cableLen,SPR.jacketS,"k-au");
       }
-      // exhaust from the stack, dust from the tires
+      // exhaust from the stack, dust from the tires (world space)
       st.puffs = st.puffs || [];
-      var moving = (t > 500 && t < 2700) || (t > 3700 && t < 6400);
-      if(moving && Math.random() < .55) st.puffs.push({x:tx+12,y:ty,vx:rnd(1,4),vy:rnd(-3,-1.2),life:rnd(600,1000),ch:pick(["o","O","."]),k:"k-d",fade:320,ch2:"o"});
-      stepParts(st.puffs,c.dt,g);
-      if(t > 3800 && t < 6400) g.text(tx+19,ty+7,blink(t,120) ? ". '" : "' .","k-s");
-      if(t > 500 && t < 2700) g.text(tx-3,ty+7,blink(t,120) ? ". '" : "' .","k-s");
+      var moving = (t > 900 && t < 1500) || (t > 3100 && t < 5200);
+      if(moving && Math.random() < .55) st.puffs.push({x:tw+12,y:ty,vx:rnd(1,4),vy:rnd(-3,-1.2),life:rnd(600,1000),ch:pick(["o","O","."]),k:"k-d",fade:320,ch2:"o"});
+      stepParts(st.puffs,c.dt,g,undefined,ox);
+      if(t > 3100 && t < 5200) g.text(tx+19,ty+7,blink(t,120) ? ". '" : "' .","k-s");
+      if(t > 900 && t < 1500) g.text(tx-3,ty+7,blink(t,120) ? ". '" : "' .","k-s");
       // idle: tumbleweed
       if(t > c.dur){
         var cyc = (t-c.dur) % 7000, wx = 66 - cyc/90;
@@ -1391,12 +1587,15 @@ __/_|__
   };
 
   /* ---------------- BOOT: SHITCORP OS ---------------- */
-  var LOGO = (function(){
-    var F = {S:[" ####","#    "," ### ","    #","#### "],H:["#   #","#   #","#####","#   #","#   #"],I:["###"," # "," # "," # ","###"],T:["#####","  #  ","  #  ","  #  ","  #  "],C:[" ####","#    ","#    ","#    "," ####"],O:[" ### ","#   #","#   #","#   #"," ### "],R:["#### ","#   #","#### ","#  # ","#   #"],P:["#### ","#   #","#### ","#    ","#    "]};
+  // 5-row block font (6 columns a letter with the gap): the logo and the title cards
+  var FONT = {S:[" ####","#    "," ### ","    #","#### "],H:["#   #","#   #","#####","#   #","#   #"],I:["###"," # "," # "," # ","###"],T:["#####","  #  ","  #  ","  #  ","  #  "],C:[" ####","#    ","#    ","#    "," ####"],O:[" ### ","#   #","#   #","#   #"," ### "],R:["#### ","#   #","#### ","#  # ","#   #"],P:["#### ","#   #","#### ","#    ","#    "],
+    L:["#    ","#    ","#    ","#    ","#####"],U:["#   #","#   #","#   #","#   #"," ### "],B:["#### ","#   #","#### ","#   #","#### "],F:["#####","#    ","#### ","#    ","#    "],E:["#####","#    ","#### ","#    ","#####"],D:["#### ","#   #","#   #","#   #","#### "],N:["#   #","##  #","# # #","#  ##","#   #"],M:["#   #","## ##","# # #","#   #","#   #"]};
+  function blockWord(word){
     var out = [];
-    for(var r=0;r<5;r++) out.push("SHITCORP".split("").map(function(ch){ return F[ch][r]; }).join(" "));
+    for(var r=0;r<5;r++) out.push(word.split("").map(function(ch){ return (FONT[ch] || FONT.O)[r]; }).join(" "));
     return out;
-  })();
+  }
+  var LOGO = blockWord("SHITCORP");
   function drawLogo(g,x,y,k,k2){
     for(var r=0;r<LOGO.length;r++){
       var L = LOGO[r];
@@ -1404,53 +1603,41 @@ __/_|__
     }
   }
   var BOOT_LINES = [
-    {t:250,  s:"SHITCORP OS v4.3", r:"(c) Shitcorp Holdings", k:"k-w k-bold"},
-    {t:420,  rule:true},
-    {t:600,  s:dots("BIOS check","caffeinated",62), k:"k-d", v:"k-g", vl:11},
-    {t:950,  s:dots("Memory test","16 GB of ambition",62), k:"k-d", v:"k-g", vl:17},
-    {t:1300, s:dots("Mounting /dev/pipeline","OK",62), k:"k-d", v:"k-g", vl:2},
-    {t:1600, s:dots("Starting CRM (source of truth)","OK",62), k:"k-d", v:"k-g", vl:2},
-    {t:1900, s:dots("Syncing forecast with reality","SKIPPED",62), k:"k-d", v:"k-y", vl:7},
-    {t:2250, bar:true},
-    {t:3500, s:"ERROR: quota exceeds pipeline.", k:"k-r k-bold"},
-    {t:4050, s:"Proceeding anyway.", k:"k-w"},
-    {t:4600, s:"Welcome back, Matt.  SDR @ Shitcorp.", k:"k-c", week:true},
-    {t:5150, s:"> clocking in", k:"k-w", cursor:true}
+    {t:260,  y:9,  s:"SHITCORP OS v4.3", k:"k-w k-bold"},
+    {t:480,  y:11, bar:true},
+    {t:1120, y:13, s:"ERROR: quota exceeds pipeline.", k:"k-r k-bold"},
+    {t:1400, y:15, week:true, k:"k-c", cursor:true}
   ];
   SCENES.boot = {
-    dur: 6300, band:false,
+    dur: 1700, band:false,
+    cam: [{t:0, x:0, y:0, z:1, r:0}],
     cues: [
-      {t:0, sfx:"bootHum"}, {t:2260, sfx:"loadStart"}, {t:3500, sfx:"errBeep", key:true}, {t:3500, glitch:200},
-      {t:4600, sfx:"chime", key:true}, {t:4800, say:"boot", key:true}
+      {t:0, sfx:"bootHum"}, {t:0, slam:1.6, ms:460, fx:31, fy:4}, {t:0, lines:"radial", ms:560, fx:31, fy:4, n:34}, {t:40, impact:90},
+      {t:480, sfx:"loadStart"},
+      {t:1120, sfx:"errBeep"}, {t:1120, glitch:220}, {t:1120, impact:90}, {t:1120, shake:200},
+      {t:1400, sfx:"chime"}, {t:1500, say:"boot", key:true}
     ],
-    summary: "SHITCORP OS boots, loads the quota, and reports that quota exceeds pipeline.",
+    summary: "SHITCORP OS boots and reports quota exceeds pipeline.",
     draw: function(g,c){
-      var t = c.t, st = c.st, row = 2, typed = 0;
+      var t = c.t, st = c.st, typed = 0, X = 10;
+      drawLogo(g,9,2,"k-c","k-b");
       for(var i=0;i<BOOT_LINES.length;i++){
         var L = BOOT_LINES[i]; if(t < L.t && !c.still) break;
-        var y = row + i;
-        if(L.rule){ g.text(1,y,rep("\u2500",62),"k-d"); continue; }
         if(L.bar){
-          var p = c.still ? 1 : prog(t,2250,3350), w = 36;
+          var p = c.still ? 1 : prog(t,480,1000), w = 24;
           var pct = Math.round(74*p), f = Math.floor(w*pct/100);
-          g.text(1,y,"Loading quota","k-d");
-          g.text(15,y,"["+rep("\u2588",f)+rep("\u2591",w-f)+"]",pct >= 74 ? "k-r" : "k-b");
-          g.text(54,y,(pct < 10 ? " " : "")+pct+"%",pct >= 74 ? "k-r k-bold" : "k-w");
-          if(!c.still && p < 1){ var tk = Math.floor(p*14); if(tk !== st.tk){ st.tk = tk; c.sfx("tick"); } }
+          g.text(X,L.y,"Loading quota","k-d");
+          g.text(X+14,L.y,"["+rep("\u2588",f)+rep("\u2591",w-f)+"]",pct >= 74 ? "k-r" : "k-b");
+          g.text(X+41,L.y,(pct < 10 ? " " : "")+pct+"%",pct >= 74 ? "k-r k-bold" : "k-w");
+          if(!c.still && p < 1){ var tk = Math.floor(p*12); if(tk !== st.tk){ st.tk = tk; c.sfx("tick"); } }
           continue;
         }
-        var src = L.week ? L.s+"  Week "+(c.meta.week||1)+" of 13." : L.s;
+        var src = L.week ? "Week "+(c.meta.week||1)+"/13. Clocking in." : L.s;
         var n = c.still ? src.length : Math.min(src.length, Math.floor((t-L.t)/1000*110));
-        var shown = src.slice(0,n);
-        if(L.v){
-          var vi = L.s.length - L.vl;
-          g.text(1,y,shown.slice(0,Math.min(n,vi)),L.k);
-          if(n > vi) g.text(1+vi,y,shown.slice(vi),L.v);
-        } else g.text(1,y,shown,L.k);
-        if(L.r) g.text(63-L.r.length,y,L.r,"k-d");
+        g.text(X,L.y,src.slice(0,n),L.k);
         typed += n;
-        if(n < src.length) g.set(1+n,y,"\u258c","k-w");
-        else if(L.cursor && blink(t,400)) g.set(2+n,y,"\u258c","k-w");
+        if(n < src.length) g.set(X+n,L.y,"\u258c","k-w");
+        else if(L.cursor && blink(t,400)) g.set(X+1+n,L.y,"\u258c","k-w");
       }
       c.typed = typed;
     }
@@ -1463,8 +1650,7 @@ __/_|__
       var t = c.t;
       drawLogo(g,9,2,"k-c","k-b");
       g.center(8,"O S   v 4 . 3","k-d");
-      g.center(11,blink(t,600) || c.still ? "[ PRESS ANY KEY TO CLOCK IN ]" : "                             ","k-w k-bold");
-      g.center(13,"Sound starts when you clock in. Press M to mute.","k-d");
+      if(blink(t,600) || c.still) g.center(12,"[ PRESS ANY KEY ]","k-w k-bold");
     }
   };
 
@@ -1474,15 +1660,141 @@ __/_|__
   var reduced = HAS_DOM && root.matchMedia ? root.matchMedia("(prefers-reduced-motion: reduce)").matches : false;
   function audio(){ return root.TST_AUDIO || null; }
 
-  function glitchPost(g){
+  function glitchPost(g,rows){
+    rows = rows || ART;
     var marks = "#%&@$/\\|=+<>?!";
-    for(var y=0;y<ART;y++){
+    for(var y=0;y<rows;y++){
       if(Math.random() < .28){
         var sh = Math.round(rnd(-3,3)), row = g.ch.slice(y*COLS,(y+1)*COLS), rk = g.cl.slice(y*COLS,(y+1)*COLS);
-        for(var x=0;x<COLS;x++){ var sx = x-sh; g.ch[y*COLS+x] = sx >= 0 && sx < COLS ? row[sx] : " "; g.cl[y*COLS+x] = sx >= 0 && sx < COLS ? rk[sx] : ""; }
+        // rows wrap around, so full-width ground lines never end on screen
+        for(var x=0;x<COLS;x++){ var sx = mod(x-sh,COLS); g.ch[y*COLS+x] = row[sx]; g.cl[y*COLS+x] = rk[sx]; }
       }
     }
-    for(var i=0;i<34;i++) g.set(Math.floor(rnd(0,COLS)),Math.floor(rnd(0,ART)),pick(marks.split("")),pick(["k-r","k-c","k-m","k-w"]));
+    for(var i=0;i<34;i++) g.set(Math.floor(rnd(0,COLS)),Math.floor(rnd(0,rows)),pick(marks.split("")),pick(["k-r","k-c","k-m","k-w"]));
+  }
+
+  /* ---------- anime effects drawn into the grid ---------- */
+  function isBlank(g,i){ return g.ch[i] === " " && !g.cl[i]; }
+  // focus lines: rays from the frame edge toward (cx,cy), only through empty cells, dim
+  function rayChar(ca,sa){ var ax = Math.abs(ca), ay = Math.abs(sa); if(ay < ax*.42) return "-"; if(ay > ax*2.4) return "|"; return ca*sa > 0 ? "\\" : "/"; }
+  function radialLines(g,e,p,rows,asp){
+    var n = Math.round((e.n || 30)*(p < .55 ? 1 : 1-(p-.55)/.45*.75));
+    var cx = e.fx !== undefined ? e.fx : COLS/2-.5, cy = e.fy !== undefined ? e.fy : (rows-1)/2;
+    for(var i=0;i<n;i++){
+      var a = (i+Math.random()*.85)/n*Math.PI*2, ca = Math.cos(a), sa = Math.sin(a), ch = rayChar(ca,sa), k = i%3 ? "k-d" : "k-b-d";
+      for(var r=(e.rin || 8)+Math.random()*7+p*8; r<96; r+=.5){
+        var x = Math.round(cx+ca*r), y = Math.round(cy+sa*r/asp);
+        if(x < 0 || x >= COLS || y < 0 || y >= rows) break;
+        var j = y*COLS+x; if(isBlank(g,j)){ g.ch[j] = ch; g.cl[j] = k; }
+      }
+    }
+  }
+  // horizontal speed lines streaming in e.dir, only through empty cells
+  function speedLines(g,e,p,el,rows){
+    if(!e.st){ e.st = []; for(var i=0;i<(e.n || 9);i++) e.st.push({y:Math.floor(Math.random()*rows), len:Math.round(rnd(5,15)), x0:rnd(0,COLS+20), v:rnd(60,120)}); }
+    var fade = p > .7 ? 1-(p-.7)/.3 : 1;
+    for(var k=0;k<e.st.length;k++){
+      var s = e.st[k], span = COLS+s.len+4, run = s.x0 + e.dir*s.v*el, hx = mod(run,span) - 2, y = mod(s.y + Math.floor(run/span)*5,rows);
+      for(var j=0;j<Math.max(1,Math.round(s.len*fade));j++){
+        var x = Math.round(e.dir > 0 ? hx - j : COLS-1-hx + j); if(x < 0 || x >= COLS) continue;
+        var ii = y*COLS+x; if(isBlank(g,ii)){ g.ch[ii] = j === 0 ? "=" : "-"; g.cl[ii] = "k-d"; }
+      }
+    }
+  }
+  // whip-pan smear: rows slide (wrapping) and every mark drags a streak behind it
+  function smear(g,s,dir,rows){
+    var maxSh = s*9, blur = s > .5 ? (s-.5)*1.6 : 0, len = Math.round(1+s*7);
+    for(var y=0;y<rows;y++){
+      var o = y*COLS, row = g.ch.slice(o,o+COLS), rk = g.cl.slice(o,o+COLS), sh = dir*Math.round(maxSh*(.5+Math.random()*.5));
+      for(var x=0;x<COLS;x++){
+        var sx = mod(x-sh,COLS), c = row[sx];
+        if(c !== " " && blur && Math.random() < blur) c = Math.random() < .5 ? "-" : "=";
+        g.ch[o+x] = c; g.cl[o+x] = rk[sx];
+      }
+      var src = g.ch.slice(o,o+COLS);
+      for(var x2=0;x2<COLS;x2++){
+        if(src[x2] === " ") continue;
+        for(var j=1;j<=len;j++){
+          var xx = x2-dir*j; if(xx < 0 || xx >= COLS || src[xx] !== " ") break;
+          if(g.ch[o+xx] === " "){ g.ch[o+xx] = j < 2 ? "=" : "-"; g.cl[o+xx] = "k-d"; }
+        }
+      }
+    }
+  }
+  // slash cut: a "/" band sweeps left to right; behind it the new shot, ahead of it the frozen old one
+  function slashWipe(g,snap,p,rows){
+    var uc = -3 + (COLS+rows+6)*p;
+    for(var y=0;y<rows;y++) for(var x=0;x<COLS;x++){
+      var i = y*COLS+x, d = x+y-uc;
+      if(d > 1.5){ g.ch[i] = snap.ch[i]; g.cl[i] = snap.cl[i]; }
+      else if(d > -1.5){ g.ch[i] = "/"; g.cl[i] = Math.abs(d) < .75 ? "k-w k-bold" : "k-c"; }
+    }
+  }
+
+  /* ---------- camera ---------- */
+  var CAM0 = {t:0, x:0, y:0, z:1, r:0};
+  function normTrack(tr){
+    if(!tr || !tr.length) return null;
+    var out = [], prev = CAM0;
+    for(var i=0;i<tr.length;i++){
+      var k = tr[i], n = {t:k.t, e:k.e || "io"};
+      n.x = k.x !== undefined ? k.x : prev.x; n.y = k.y !== undefined ? k.y : prev.y;
+      n.z = k.z !== undefined ? k.z : prev.z; n.r = k.r !== undefined ? k.r : prev.r;
+      out.push(n); prev = n;
+    }
+    return out;
+  }
+  function ease(e,p){ return e === "l" ? p : e === "i" ? easeIn(p) : e === "o" ? easeOut(p) : e === "cut" ? 0 : easeInOut(p); }
+  function trackAt(tr,t){
+    var a = tr[0]; if(t <= a.t) return a;
+    for(var i=1;i<tr.length;i++){
+      var b = tr[i];
+      if(t < b.t){ var p = ease(b.e,(t-a.t)/(b.t-a.t)); return {x:lerp(a.x,b.x,p), y:lerp(a.y,b.y,p), z:lerp(a.z,b.z,p), r:lerp(a.r,b.r,p)}; }
+      a = b;
+    }
+    return a;
+  }
+  // punch-in: fast in with overshoot, settle, hold, release
+  function punch(p){
+    if(p < .14) return 1.3*easeOut(p/.14);
+    if(p < .32) return lerp(1.3,1,easeInOut((p-.14)/.18));
+    if(p < .7) return 1;
+    return 1-easeInOut((p-.7)/.3);
+  }
+  // keep the art covering the window: zoom >= 1 (more when rolled or skewed) and the look-at offset clamped to the slack.
+  // Units: x in columns, y in rows, asp = row height / column width.
+  function clampCam(x,y,z,r,sk,rows,asp){
+    if(Math.abs(x) < 1e-4 && Math.abs(y) < 1e-4 && Math.abs(r) < 1e-4 && Math.abs(sk) < 1e-4 && z <= 1) return {x:0, y:0, z:1, r:0, sk:0};
+    var W2 = COLS/2, H2 = rows*asp/2, a = r*Math.PI/180, ca = Math.cos(a), sa = Math.sin(a), ts = Math.tan(sk*Math.PI/180), mx = 0, my = 0;
+    for(var s=-1;s<=1;s+=2){ // window corners pulled back into the art's space (inverse roll, then inverse skew)
+      var u = ca*W2 + sa*s*H2, v = -sa*W2 + ca*s*H2; u -= v*ts;
+      mx = Math.max(mx,Math.abs(u)); my = Math.max(my,Math.abs(v));
+    }
+    var m = .35; // a third of a cell of slack so subpixel rounding never shows an edge
+    z = Math.max(z,1,(mx+m)/W2,(my+m)/H2);
+    var lx = Math.max(0,W2-(mx+m)/z), ly = Math.max(0,H2-(my+m)/z);
+    return {x:clamp(x,-lx,lx), y:clamp(y*asp,-ly,ly)/asp, z:z, r:r, sk:sk};
+  }
+  // flash safety (WCAG 2.3.1): at most two impact frames in any second, across every player
+  var IMPACTS = [];
+  function impactOk(){
+    var now = root.performance && root.performance.now ? root.performance.now() : Date.now();
+    while(IMPACTS.length && now-IMPACTS[0] >= 1000) IMPACTS.shift();
+    if(IMPACTS.length >= 2) return false;
+    IMPACTS.push(now); return true;
+  }
+  // persistent layers per <pre>: built once, never replaced per frame
+  function layers(pre,band){
+    var L = pre._tst;
+    if(!L || !L.win || L.win.parentNode !== pre || L.bandEl.parentNode !== pre){
+      pre.innerHTML = '<span class="tst-cam-win"><span class="tst-cam"></span><span class="tst-fx"></span></span><span class="tst-band"></span>';
+      L = { win:pre.firstChild, bandEl:pre.lastChild, camKey:"" };
+      L.cam = L.win.firstChild; L.fx = L.win.lastChild;
+      pre._tst = L;
+    }
+    L.bandEl.hidden = !band;
+    if(!band){ L.bandEl.innerHTML = ""; L.bandEl._h = ""; }
+    return L;
   }
 
   function measure(pre){
@@ -1491,7 +1803,8 @@ __/_|__
       probe.textContent = rep("M",100);
       probe.style.cssText = "position:absolute;visibility:hidden;white-space:pre;font-size:100px;line-height:1;";
       pre.appendChild(probe);
-      var w = probe.getBoundingClientRect().width/10000;
+      // layout width: unaffected by the CRT, modal-open or camera scale transforms (getBoundingClientRect is not)
+      var w = probe.offsetWidth/10000;
       pre.removeChild(probe);
       return w > 0.3 && w < 1 ? w : 0;
     }catch(e){ return 0; }
@@ -1514,54 +1827,158 @@ __/_|__
     opts = opts || {};
     var sc = SCENES[type] || SCENES.club;
     var box = opts.box || pre.parentNode;
+    var hasBand = sc.band !== false, rows = hasBand ? ART : ROWS, cues = sc.cues || [], track = normTrack(sc.cam);
     var g = new Grid(), st = {}, speed = opts.speed || 1, t = 0, cue = 0, raf = 0, last = 0, acc = 0, stopped = false;
     var glitchUntil = 0, nextIdleGlitch = 0, lastTyped = 0, lastTick = 0, screen = "", doneFired = false, fitted = false;
     var still = !!(opts.still || reduced);
+    var timers = [], envs = [], lfx = [], slash = null;
+    var L = HAS_DOM ? layers(pre,hasBand) : null;
     if(opts.maxFont) pre._maxFont = opts.maxFont;
     var ctx = { t:0, dt:50, st:st, meta:opts.meta||{}, dur:sc.dur, idle:false, still:false, screen:"", typed:0,
       sfx:function(n){ if(!still && !ctx.sim){ var A = audio(); if(A) A.play(n,{scene:true}); } } };
+    var cap = capFor(sc,ctx.meta);
+    function later(fn,ms){ var id = setTimeout(function(){ var k = timers.indexOf(id); if(k >= 0) timers.splice(k,1); fn(); },ms); timers.push(id); return id; }
+    function clearTimers(){ for(var i=0;i<timers.length;i++) clearTimeout(timers[i]); timers.length = 0; }
+    function aspect(){ return 1.14/(pre._ratio || 0.6); }
     function setScreen(cls){ if(cls === screen) return; if(screen) box.classList.remove(screen); screen = cls; if(cls) box.classList.add(cls); }
-    function fire(cu){
-      var A = audio();
-      if(cu.sfx){ if(A) A.play(cu.sfx,{scene:true}); }
-      else if(cu.say){ if(A) A.say(cu.say,{force:true,meta:ctx.meta}); }
-      else if(cu.amb){ if(A) A.ambient(cu.amb); }
-      else if(cu.shake && !still){ box.classList.remove("tst-shake"); void box.offsetWidth; box.classList.add("tst-shake"); setTimeout(function(){ box.classList.remove("tst-shake"); },cu.shake); }
-      else if(cu.glitch && !still){ glitchUntil = t + cu.glitch; box.classList.add("tst-glitch"); setTimeout(function(){ box.classList.remove("tst-glitch"); },cu.glitch); }
+    function impact(ms){
+      if(!impactOk()) return;
+      box.classList.remove("tst-impact"); void box.offsetWidth; box.classList.add("tst-impact");
+      later(function(){ box.classList.remove("tst-impact"); },clamp(Math.round(ms/speed),70,160));
     }
+    function fxEl(cls,html,ms,v){
+      var el = document.createElement("span"); el.className = cls;
+      if(html) el.innerHTML = html;
+      if(v) el.style.setProperty(v,ms+"ms");
+      L.fx.appendChild(el);
+      later(function(){ if(el.parentNode) el.parentNode.removeChild(el); },ms/speed+80);
+      return el;
+    }
+    function fire(cu){
+      if(cu.cause && cu.cause !== ctx.meta.cause) return;
+      if(cu.notCause && cu.notCause === ctx.meta.cause) return;
+      var A = audio();
+      if(cu.sfx){ if(A) A.play(cu.sfx,{scene:true}); return; }
+      if(cu.say){ if(A) A.say(cu.say,{force:true,meta:ctx.meta}); return; }
+      if(cu.amb){ if(A) A.ambient(cu.amb); return; }
+      if(still || !L) return; // reduced motion: sound only, no camera, no flashes
+      if(cu.shake){ box.classList.remove("tst-shake"); void box.offsetWidth; box.classList.add("tst-shake"); later(function(){ box.classList.remove("tst-shake"); },cu.shake); }
+      else if(cu.glitch){ glitchUntil = t + cu.glitch; box.classList.add("tst-glitch"); later(function(){ box.classList.remove("tst-glitch"); },cu.glitch); }
+      else if(cu.whip){ envs.push({k:"whip", t0:cu.t, ms:cu.ms || 360, dir:cu.whip === "l" ? -1 : 1}); }
+      else if(cu.zoom){ envs.push({k:"zoom", t0:cu.t, ms:cu.ms || 600, z:cu.zoom, fx:cu.fx, fy:cu.fy}); }
+      else if(cu.slam){ envs.push({k:"slam", t0:cu.t, ms:cu.ms || 450, z:cu.slam, fx:cu.fx, fy:cu.fy}); }
+      else if(cu.pulse){ envs.push({k:"pulse", t0:cu.t, ms:cu.ms || 300, a:cu.pulse}); }
+      else if(cu.impact){ impact(cu.impact); }
+      else if(cu.lines){ lfx.push({k:cu.lines, t0:cu.t, ms:cu.ms || 600, fx:cu.fx, fy:cu.fy, dir:cu.dir || -1, n:cu.n}); }
+      else if(cu.slash){
+        var snap = new Grid(); snap.copyFrom(g); // the last frame on screen is the shot being cut away from
+        slash = {t0:cu.t, ms:cu.slash, snap:snap};
+        fxEl("tst-slash","",cu.slash,"--slash-ms");
+      }
+      else if(cu.card){
+        var old = L.fx.querySelector(".tst-card"); if(old) old.parentNode.removeChild(old);
+        var bw = blockWord(cu.card), ms = cu.ms || 1300;
+        fxEl("tst-card "+(cu.k || (cap && cap.k) || "k-w"),
+          '<span class="tst-card-w" style="font-size:'+Math.min(1.45,58/bw[0].length).toFixed(2)+'em">'+esc(bw.join("\n").replace(/#/g,"\u2588"))+"</span>",ms,"--card-ms");
+      }
+      else if(cu.letterbox !== undefined){ L.fx.classList.toggle("tst-lb",!!cu.letterbox); }
+    }
+    // camera = keyframe track + idle drift + effect envelopes, clamped so the art always covers the window
+    function camAt(tt){
+      var b = track ? trackAt(track,tt) : CAM0, x = b.x, y = b.y, z = b.z, r = b.r, sk = 0;
+      if(tt > sc.dur && sc.drift){
+        var d = sc.drift, w = (tt-sc.dur)/(d.p || 9000)*Math.PI*2;
+        x += (d.x||0)*Math.sin(w); y += (d.y||0)*Math.sin(w*.7); z += (d.z||0)*(1-Math.cos(w))/2;
+      }
+      for(var i=envs.length-1;i>=0;i--){
+        var e = envs[i], p = (tt-e.t0)/e.ms;
+        if(p >= 1){ envs.splice(i,1); continue; }
+        if(p < 0) continue;
+        if(e.k === "whip"){ var s = Math.sin(Math.PI*p); x += e.dir*18*(p < .5 ? easeIn(p*2) : -(1-easeOut((p-.5)*2))); sk += e.dir*11*s; z *= 1+.14*s; }
+        else if(e.k === "zoom"){ var w2 = punch(p); z *= 1+(e.z-1)*w2; if(e.fx !== undefined){ x = lerp(x,e.fx+.5-COLS/2,w2*.6); y = lerp(y,e.fy+.5-rows/2,w2*.6); } }
+        else if(e.k === "slam"){
+          var q = Math.pow(1-clamp(p/.5,0,1),3);
+          z *= 1+(e.z-1)*q+.03*Math.sin(Math.PI*clamp((p-.5)/.5,0,1));
+          if(e.fx !== undefined){ x = lerp(x,e.fx+.5-COLS/2,q); y = lerp(y,e.fy+.5-rows/2,q); }
+        }
+        else if(e.k === "pulse"){ z *= 1+e.a*(p < .22 ? easeOut(p/.22) : 1-easeInOut((p-.22)/.78)); }
+      }
+      return clampCam(x,y,z,r,sk,rows,aspect());
+    }
+    function applyCam(c){
+      if(!L || still) return;
+      var asp = aspect(), a = c.r*Math.PI/180, ca = Math.cos(a), sa = Math.sin(a), ts = Math.tan(c.sk*Math.PI/180);
+      var kx = c.x + c.y*asp*ts, ky = c.y*asp;            // skew the look-at offset (column units)...
+      var tx = -c.z*(ca*kx - sa*ky), ty = -c.z*(sa*kx + ca*ky); // ...roll and scale it, then move it to the centre
+      var v = [(tx/COLS*100).toFixed(3), (ty/asp/rows*100).toFixed(3), c.z.toFixed(4), c.r.toFixed(3), c.sk.toFixed(3)], key = v.join("|");
+      if(key === L.camKey) return;
+      L.camKey = key;
+      var s = L.cam.style;
+      s.setProperty("--cx",v[0]); s.setProperty("--cy",v[1]); s.setProperty("--cz",v[2]); s.setProperty("--rot",v[3]); s.setProperty("--skew",v[4]);
+    }
+    function resetCam(){
+      if(!L) return;
+      ["--cx","--cy","--cz","--rot","--skew"].forEach(function(n){ L.cam.style.removeProperty(n); });
+      L.camKey = "";
+    }
+    function clearFx(){
+      envs.length = 0; lfx.length = 0; slash = null; glitchUntil = 0;
+      box.classList.remove("tst-glitch","tst-shake","tst-impact");
+      if(L){ L.fx.innerHTML = ""; L.fx.classList.remove("tst-lb"); }
+    }
+    function post(){
+      var asp = aspect();
+      for(var i=lfx.length-1;i>=0;i--){
+        var e = lfx[i], p = (t-e.t0)/e.ms;
+        if(p >= 1){ lfx.splice(i,1); continue; }
+        if(p < 0) continue;
+        if(e.k === "radial") radialLines(g,e,p,rows,asp); else speedLines(g,e,p,(t-e.t0)/1000,rows);
+      }
+      var s = 0, dir = 1;
+      for(var j=0;j<envs.length;j++){
+        var w = envs[j]; if(w.k !== "whip") continue;
+        var q = (t-w.t0)/w.ms; if(q > 0 && q < 1){ var sv = Math.pow(Math.sin(Math.PI*q),1.2); if(sv > s){ s = sv; dir = -w.dir; } }
+      }
+      if(s > .06) smear(g,s,dir,rows);
+      if(slash){ var sp = (t-slash.t0)/slash.ms; if(sp >= 1) slash = null; else slashWipe(g,slash.snap,Math.max(0,sp),rows); }
+    }
+    function put(el,html){ if(el._h !== html){ el._h = html; el.innerHTML = html; } }
     function render(){
       g.clear(); ctx.t = t; ctx.idle = t > sc.dur; ctx.screen = "";
       sc.draw(g,ctx);
-      if(sc.band !== false){
-        var typed = caption(g,sc.cap,t,sc.dur,{still:still});
+      if(!still) post();
+      if(hasBand){
+        var typed = caption(g,cap,t,sc.dur,{still:still});
         if(!still && t <= sc.dur && typed > lastTyped && performance.now()-lastTick > 45){ lastTick = performance.now(); var A = audio(); if(A) A.play("key",{scene:true}); }
         lastTyped = typed;
       } else if(ctx.typed !== undefined && !still){
         if(ctx.typed > lastTyped && performance.now()-lastTick > 38){ lastTick = performance.now(); var A2 = audio(); if(A2) A2.play("key",{scene:true}); }
         lastTyped = ctx.typed;
       }
-      if(t < glitchUntil) glitchPost(g);
+      if(t < glitchUntil) glitchPost(g,rows);
       setScreen(ctx.screen || "");
-      pre.innerHTML = g.toHTML();
+      if(L){ put(L.cam,g.toHTML(0,rows)); if(hasBand) put(L.bandEl,g.toHTML(ART,ROWS)); }
     }
     function frame(now){
       if(stopped) return;
       if(!fitted && HAS_DOM) fitted = fit(pre);
       var dt = Math.min(250, now-(last||now)); last = now; // slow frames still keep pace; a long tab-away doesn't skip the show
       t += dt*speed; acc += dt;
-      while(cue < (sc.cues||[]).length && sc.cues[cue].t <= t){ fire(sc.cues[cue]); cue++; }
+      while(cue < cues.length && cues[cue].t <= t){ fire(cues[cue]); cue++; }
       if(sc.idleGlitch && t > sc.dur){
         if(!nextIdleGlitch) nextIdleGlitch = t + sc.idleGlitch;
         if(t >= nextIdleGlitch){ nextIdleGlitch = t + sc.idleGlitch*rnd(.8,1.3); glitchUntil = t + 160; }
       }
       if(acc >= 50){ ctx.dt = acc*speed; acc = 0; render(); }
+      applyCam(camAt(t));
       if(t >= sc.dur && !doneFired){ doneFired = true; if(opts.onDone) opts.onDone(); }
       raf = requestAnimationFrame(frame);
     }
     function start(){
-      stopped = false; t = 0; cue = 0; last = 0; acc = 0; lastTyped = 0; glitchUntil = 0; nextIdleGlitch = 0; doneFired = false;
+      stopped = false; t = 0; cue = 0; last = 0; acc = 0; lastTyped = 0; nextIdleGlitch = 0; doneFired = false;
       for(var k in st) delete st[k];
-      if(HAS_DOM) fitted = fit(pre);
+      clearTimers(); clearFx(); resetCam();
+      if(HAS_DOM){ fitted = fit(pre); box.style.setProperty("--spd",String(speed)); }
       if(still){
         // reduced motion: simulate quietly to the end, draw one still frame, play only the key cues
         ctx.sim = true; ctx.still = false;
@@ -1569,15 +1986,17 @@ __/_|__
         ctx.sim = false; ctx.still = true; t = sc.dur; ctx.t = t;
         render();
         if(HAS_DOM && !fitted){ var tries = 0; (function refit(){ if(stopped) return; fitted = fit(pre); if(!fitted && tries++ < 40) requestAnimationFrame(refit); })(); }
-        (sc.cues||[]).forEach(function(cu){ if(cu.key) fire(cu); });
-        if(opts.onDone) setTimeout(opts.onDone,0);
+        cues.forEach(function(cu){ if(cu.key) fire(cu); });
+        if(opts.onDone) later(opts.onDone,0);
         return;
       }
       if(opts.crt !== false){ pre.classList.remove("tst-crt-on"); void pre.offsetWidth; pre.classList.add("tst-crt-on"); }
+      while(cue < cues.length && cues[cue].t <= 0){ fire(cues[cue]); cue++; } // t:0 effects land on the first frame
+      applyCam(camAt(0));
       render();
       raf = requestAnimationFrame(frame);
     }
-    function stop(){ stopped = true; cancelAnimationFrame(raf); setScreen(""); box.classList.remove("tst-glitch","tst-shake"); var A = audio(); if(A) A.stopAmbient(); }
+    function stop(){ stopped = true; cancelAnimationFrame(raf); clearTimers(); clearFx(); resetCam(); setScreen(""); var A = audio(); if(A) A.stopAmbient(); }
     var onResize = function(){ if(HAS_DOM) fitted = fit(pre); };
     if(HAS_DOM) root.addEventListener("resize",onResize);
     start();
@@ -1586,14 +2005,15 @@ __/_|__
       replay: function(){ stop(); var A = audio(); if(A) A.hush(); start(); },
       skip: function(){
         if(still || t >= sc.dur) return;
-        for(; cue < (sc.cues||[]).length; cue++){ if(sc.cues[cue].key) fire(sc.cues[cue]); }
+        for(; cue < cues.length; cue++){ if(cues[cue].key) fire(cues[cue]); }
+        clearTimers(); clearFx();
         // fast-forward state so particle systems are populated
         ctx.sim = true;
         while(t < sc.dur){ t += 50; ctx.dt = 50; g.clear(); ctx.t = t; ctx.idle = false; sc.draw(g,ctx); }
         ctx.sim = false;
-        t = sc.dur + 1; render();
+        t = sc.dur + 1; render(); applyCam(camAt(t));
       },
-      setSpeed: function(v){ speed = v > 0 ? v : 1; },
+      setSpeed: function(v){ speed = v > 0 ? v : 1; if(HAS_DOM) box.style.setProperty("--spd",String(speed)); },
       isDone: function(){ return t >= sc.dur; },
       summary: sc.summary
     };
@@ -1603,7 +2023,8 @@ __/_|__
   function renderText(type,tms,meta){
     var sc = SCENES[type]; var g = new Grid(), st = {};
     var ctx = { t:0, dt:50, st:st, meta:meta||{}, dur:sc.dur, idle:false, still:false, sim:true, sfx:function(){} };
-    for(var t=0;t<=tms;t+=50){ g.clear(); ctx.t = t; ctx.idle = t > sc.dur; ctx.screen = ""; sc.draw(g,ctx); if(sc.band !== false) caption(g,sc.cap,t,sc.dur,{still:false}); }
+    var cap = capFor(sc,ctx.meta);
+    for(var t=0;t<=tms;t+=50){ g.clear(); ctx.t = t; ctx.idle = t > sc.dur; ctx.screen = ""; sc.draw(g,ctx); if(sc.band !== false) caption(g,cap,t,sc.dur,{still:false}); }
     return {text:g.toText(), html:g.toHTML(), screen:ctx.screen||""};
   }
 
@@ -2081,6 +2502,12 @@ __/_|__
     else if(t.indexOf("🔐") === 0) say("incident",{cooldown:4000});
   }
 
+  // v1.15 scene cuts: whip pan, slash cut, impact frame
+  Object.assign(P,{
+    fwip:  {prio:3, free:true, fn:function(o){ noise(o,{ft:"bandpass",f:500,f2:4800,q:1.1,dur:.13,v:.5,a:.03}); return noise(o,{ft:"bandpass",f:4200,f2:900,q:1.3,at:.11,dur:.12,v:.3,a:.01}); }},
+    shing: {prio:3, free:true, fn:function(o){ noise(o,{ft:"highpass",f:5200,q:.7,dur:.07,v:.12}); tone(o,{type:"sine",f:2960,f2:3320,dur:.42,v:.05,vib:[11,18]}); return tone(o,{type:"sine",f:4440,f2:4980,dur:.3,v:.025}); }},
+    thwack:{prio:3, free:true, fn:function(o){ noise(o,{ft:"lowpass",f:900,q:.8,dur:.09,v:.22}); noise(o,{ft:"highpass",f:2600,q:.7,dur:.03,v:.1}); return tone(o,{type:"sine",f:130,f2:46,dur:.22,v:.34}); }}
+  });
   root.TST_AUDIO = {
     play:play, say:say, hush:hush, ambient:ambient, stopAmbient:stopAmbient, setStress:setStress,
     onLogs:onLogs, onModal:onModal, ruleFor:ruleFor, setOn:setOn, setVoice:setVoice, setVolume:setVolume, unlock:unlock,
@@ -2152,7 +2579,7 @@ __/_|__
       '<div class="cutbox crt boot-screen"><pre class="cutscene" aria-hidden="true"></pre></div>'+
       '<div class="boot-bezel">'+
         '<span class="boot-led" aria-hidden="true"></span><span class="boot-brand">SHITCORP</span>'+
-        '<span class="boot-hint">Press any key or click to clock in</span>'+
+        '<span class="boot-hint">M mutes</span>'+
         '<button type="button" class="btn primary boot-btn" data-nosfx>Clock in</button>'+
       '</div>'+
     '</div>';
@@ -2169,7 +2596,7 @@ __/_|__
     ctrl.stop();
     ov.classList.add("on");
     btn.textContent = "Skip"; hint.textContent = "Booting…";
-    ctrl = Sc.play(pre,"boot",{maxFont:20, meta:{week:readWeek()}, onDone:function(){ setTimeout(finish, reduced ? 2600 : 1100); }});
+    ctrl = Sc.play(pre,"boot",{crt:false, maxFont:20, meta:{week:readWeek()}, onDone:function(){ setTimeout(finish, reduced ? 2000 : 400); }});
   }
   function finish(){
     if(stage === "done") return;
@@ -2188,7 +2615,16 @@ __/_|__
   function advance(){ if(stage === "standby") start(); else if(stage === "booting"){ ctrl.skip(); finish(); } }
   function onKey(e){
     if(stage === "done") return;
+    if(e.ctrlKey || e.metaKey || e.altKey) return; // browser shortcuts (reload, tabs, devtools) pass through
     if(e.key === "Tab") return;
+    if(e.key === "m" || e.key === "M"){ // mute toggle, without clocking in
+      e.preventDefault(); e.stopPropagation();
+      if(e.repeat) return;
+      A.setOn(!A.settings.on);
+      if(A.settings.on){ A.unlock(); A.play("coin"); }
+      window.TST_TOAST(A.settings.on ? "Sound on" : "Sound off");
+      return;
+    }
     if(e.key === "Escape"){ e.preventDefault(); if(stage === "standby") A.unlock(); finish(); return; }
     if(/^(Shift|Control|Alt|Meta|CapsLock|Arrow|F\d)/.test(e.key)) return;
     e.preventDefault(); e.stopPropagation(); advance();
