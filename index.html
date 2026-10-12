@@ -2330,46 +2330,46 @@ __/_|__
 
   /* ---------- PA announcer (speechSynthesis) ---------- */
   var LINES = {
-    boot:["Good morning. Your quota has been assigned."],
+    boot:["Quota assigned. Good morning."],
     newrun:["New quarter. Same quota."],
-    club:["Attention. President's Club has been achieved. Please collect your jacket."],
-    fired:["Please return your badge to the front desk."],
-    firedOrg:["Org update. Layoffs!"],
-    firedReview:["This forecast review is now an exit interview."],
-    burnout:["Your nervous system has stopped responding."],
-    missed:["Close. But not closed."],
-    repo:["Will the owner of one jacket please report to Collections."],
-    week5:["Mid-quarter reviews are now in session."],
-    week7:["Attention. The quarter is half over. So is the coffee."],
-    week12:["Attention all reps. The quarter ends in one week."],
+    club:["President's Club. Grab your jacket."],
+    fired:["Return your badge."],
+    firedOrg:["Org update. Layoffs."],
+    firedReview:["Forecast review. Exit interview."],
+    burnout:["Nervous system offline."],
+    missed:["Close. Not closed."],
+    repo:["Jacket owner to Collections."],
+    week5:["Mid-quarter reviews are in session."],
+    week7:["Quarter half over. Coffee too."],
+    week12:["One week left. Panic quietly."],
     week13:["Final week. Commit means commit."],
     filler:[
-      "Reminder. Pipeline is not revenue.",
-      "Please update your opportunities before the forecast call.",
-      "Hydration is a key performance indicator.",
-      "The leaderboard has been updated. Do not look at it.",
-      "Attention reps. Verbal commits are not commits.",
-      "Lunch and learn is cancelled. Please learn without lunch.",
-      "Reminder. The CRM is the source of truth. Please stop arguing with it.",
-      "The kudos channel is open. Mandatory fun begins at four.",
-      "Your calendar has been optimized. You're welcome.",
-      "The kitchen fridge will be cleaned on Friday. So will the pipeline."
+      "Pipeline is not revenue.",
+      "Update opportunities before forecast call.",
+      "Hydration is a KPI.",
+      "Leaderboard updated. Do not look.",
+      "Verbal commits are not commits.",
+      "Lunch and learn. No lunch.",
+      "The CRM is always right.",
+      "Mandatory fun begins at four.",
+      "Your calendar has been optimized.",
+      "Fridge cleanout Friday. Pipeline too."
     ],
-    hr:["Human Resources has joined the meeting."],
-    meetings:["Reminder. All meetings are logged. For forecasting."],
-    hygiene:["Pipeline hygiene is everyone's responsibility."],
+    hr:["HR has joined the meeting."],
+    meetings:["All meetings are logged. For forecasting."],
+    hygiene:["Pipeline hygiene is everyone's job."],
     whale:["Whale on the board."],
-    bigClose:["Big deal closed. Somebody ring something."],
-    sqlStorm:["Marketing has delivered leads. Quality not guaranteed."],
-    viral:["We are trending. Legal is aware."],
+    bigClose:["Big deal closed. Ring something."],
+    sqlStorm:["Leads delivered. Quality not guaranteed."],
+    viral:["We are trending. Legal knows."],
     outage:["The cloud is experiencing weather."],
-    freeze:["Budget freeze rumors detected. Remain calm."],
-    rebalance:["Territories have been realigned. Your best deals now belong to someone else."],
+    freeze:["Budget freeze rumors. Remain calm."],
+    rebalance:["Territories realigned. Not in your favor."],
     cash:["Finance would like a word."],
-    phones:["Reminder. Phones are for calling."],
-    competitor:["Pricing alert. A competitor has panicked."],
-    incident:["Security incident. Please do not talk to the press."],
-    hydrate:["Wellness reminder. Please hydrate."]
+    phones:["Phones are for calling."],
+    competitor:["Pricing alert. Competitor panicked."],
+    incident:["Security incident. No comment."],
+    hydrate:["Wellness reminder. Hydrate."]
   };
   Object.assign(LINES,{ closeOut:["Close that out."], burnoutCaffeine:["Medical to the sales floor."] });
   var SAY = { last:0, voice:null, timer:0 };
@@ -2454,22 +2454,22 @@ __/_|__
     ["📞","dial",3], ["✉","whoosh",3], ["🔎","typewriter",3], ["🖥","demo",3], ["📑","printer",3],
     ["🏟","airport",3], ["🧘","bowl",3], ["⏱","nope",3], ["☕","coffee",3], ["🏛","sneaky",3],
     ["🧪 No late-stage","nope",3], ["🧪","hailmary",3], ["🌪","fanfareS",3], ["🤕","bad",3], ["📛","bad",3], ["😬","warn",3],
-    ["🏠","rent",2], ["💸 Salary","coin",1], ["💸 You matched","discount",2], ["🧱","thud",2],
-    ["📣","leads",2,"sqlStorm"], ["🛠","fumble",2], ["🧙","magic",2], ["🧯 You told","warn",2], ["🌀","warn",2],
+    ["🏠","rent",2], ["💸 Salary","coin",1], ["💸 Matched","discount",2], ["🧱","thud",2],
+    ["📣","leads",2,"sqlStorm"], ["🛠","fumble",2], ["🧙","magic",2], ["🔦","warn",2], ["🌀","warn",2],
     ["🌩","thunder",2,"outage"], ["🪜","rise",2], ["📘","ping",2], ["🐦","chirp",2,"viral"],
-    ["🥶 Budget","ice",2,"freeze"], ["🥶","ice",2], ["🤒","sick",2], ["📉 Manager","bad",3,"rebalance"],
+    ["🥶 Budget","ice",2,"freeze"], ["🍂","ice",2], ["🤒","sick",2], ["📉 Territory","bad",3,"rebalance"],
     ["🛡","shield",2], ["👻","ghost",2], ["🧩","puzzle",2], ["🪫","powerdown",2], ["🕑","ticktock",2],
     ["📵","busy",2,"phones"], ["👀","suspicion",3,"meetings"], ["📋","suspicion",3,"hygiene"], ["🧊","hr",4,"hr"],
-    ["📆 You notice","hrSoft",2], ["📆 Week advanced","week",1], ["📊","qbr",1],
+    ["📆 Recurring","hrSoft",2], ["📆 Week ","week",1], ["📊","qbr",1],
     ["🏅","achievement",4,"whale"], ["💀","lost",4], ["⚠","alarm",4,"cash"]
   ];
-  RULES.unshift(["🧹","crm",3,"hygiene"],["🗑","lost",4,"closeOut"],["🫀","heartbeat",2],["🚑","flatline",4]);
+  RULES.unshift(["🧹","crm",3,"hygiene"],["🗑","lost",4,"closeOut"],["🫀","heartbeat",2],["🚑","flatline",4],["🥴","sick",2]);
   function ruleFor(msg){
     var m = norm(msg);
-    if(/closed \d+ deal\(s\) for/.test(m)) return {sfx:"cash", prio:4, close:true};
+    if(/\d+ signed, \$/.test(m)) return {sfx:"cash", prio:4, close:true};
     if(/nobody signed/.test(m)) return {sfx:"thud", prio:3};
-    if(/nothing ready to close/.test(m)) return {sfx:"nope", prio:3};
-    if(m.indexOf("🧑") === 0 && /whale intro/.test(m)) return {sfx:"sonar", prio:3};
+    if(/nothing to close/.test(m)) return {sfx:"nope", prio:3};
+    if(m.indexOf("🧑") === 0 && /🐋/.test(m)) return {sfx:"sonar", prio:3};
     if(m.indexOf("🧑") === 0) return {sfx:"ping", prio:3};
     for(var i=0;i<RULES.length;i++){ var r = RULES[i]; if(m.indexOf(norm(r[0])) === 0) return {sfx:r[1], prio:r[2], say:r[3]}; }
     return null;
@@ -2480,8 +2480,8 @@ __/_|__
     var picks = [], speech = null;
     for(var i=0;i<entries.length;i++){
       var e = entries[i], r = ruleFor(e.msg);
-      if(r && r.close){ var mm = /for \$([\d,]+)/.exec(e.msg); var amt = mm ? parseInt(mm[1].replace(/,/g,""),10) : 0; if(amt >= 45000) r.say = "bigClose"; }
-      if(r && r.sfx === "week"){ var wm = /Week advanced to (\d+)/.exec(e.msg); if(wm){ var w = ((parseInt(wm[1],10)-1)%13)+1;
+      if(r && r.close){ var mm = /signed, \$([\d,]+)/.exec(e.msg); var amt = mm ? parseInt(mm[1].replace(/,/g,""),10) : 0; if(amt >= 45000) r.say = "bigClose"; }
+      if(r && r.sfx === "week"){ var wm = /📆 Week (\d+)/.exec(e.msg); if(wm){ var w = ((parseInt(wm[1],10)-1)%13)+1;
         r.say = w === 5 ? "week5" : w === 7 ? "week7" : w === 12 ? "week12" : w === 13 ? "week13" : (Math.random() < .3 ? "filler" : null); } }
       if(r){ r.i = i; picks.push(r); if(r.say && (!speech || r.prio > speech.prio)) speech = r; }
     }
@@ -2964,7 +2964,7 @@ __/_|__
     const addAchievement=(state,key,label)=>{
       if(state.achievements.some(a=>a.key===key))return state;
       const next={...state,achievements:[...state.achievements,{key,label}]};
-      return log(next,`🏅 Achievement unlocked: ${label}`);
+      return log(next,`🏅 Unlocked: ${label}`);
     };
 
     const makeDeal=(state,{warm=false,big=false}={})=>{
@@ -3017,10 +3017,10 @@ __/_|__
       if(s.cash<=-1500 && !s.repo && !s.fired && !s.burnedOut && !s.win && !s.missed){
         s.repo=true;
         s.endCause="repo";
-        s=log(s,"🧥 Collections repossessed your President’s Club jacket. That was the last flex you had.","bad");
+        s=log(s,"🧥 Collections took the jacket. Last flex, gone.","bad");
       }else if(s.cash<=-1000 && !s.repo && !s.repoWarned){
         s.repoWarned=true;
-        s=log(s,"⚠️ Cash below -$1,000. Finance is side-eyeing your jacket as collateral.","warn");
+        s=log(s,"⚠️ Cash under -$1,000. Finance eyes the jacket.","warn");
       }
       return s;
     };
@@ -3059,7 +3059,7 @@ __/_|__
       s.deals=kept;
       s.pipeline=kept.reduce((sum,d)=>sum+d.value,0);
       if(lost>0){
-        s=log(s,`💀 Lost ${lost} deal(s) totaling ${money(lostVal)}.`,"bad");
+        s=log(s,`💀 Lost ${lost} deal(s), ${money(lostVal)}.`,"bad");
       }
       return s;
     };
@@ -3068,7 +3068,7 @@ __/_|__
       let s={...state};
       const candidates=s.deals.filter(d=>d.stage>=3);
       if(candidates.length===0){
-        return log(s,`${label}: nothing ready to close.`,"muted");
+        return log(s,`${label}: nothing to close.`,"muted");
       }
       let closedCount=0,totalWon=0,totalDiscount=0,lost=0,lostVal=0;
       const pipPenalty=s.pip ? 0.05*(s.pipLevel||1) : 0;
@@ -3122,13 +3122,13 @@ __/_|__
       s.discounts+=totalDiscount;
 
       if(closedCount>0){
-        s=log(s,`${label}: closed ${closedCount} deal(s) for ${money(totalWon)}. Commission ${money(totalWon*0.12)}.`);
+        s=log(s,`${label}: ${closedCount} signed, ${money(totalWon)}. You keep ${money(totalWon*0.12)}.`);
         if(totalWon>=65000)s=addAchievement(s,"whale","🐋 Whale Hunter");
       }else{
-        s=log(s,`${label}: nobody signed. Just vibes and verbal commits.`,"warn");
+        s=log(s,`${label}: nobody signed. Verbal commits only.`,"warn");
       }
       if(lost>0){
-        s=log(s,`💀 Lost ${lost} late-stage deal(s) worth ${money(lostVal)}.`,"bad");
+        s=log(s,`💀 Lost ${lost} late-stage deal(s), ${money(lostVal)}.`,"bad");
       }
       s=checkRepo(s);
       return s;
@@ -3153,16 +3153,16 @@ __/_|__
         const adds=Array.from({length:n},()=>makeDeal(st,{warm:true}));
         st.deals=[...adds,...st.deals];
         st.pipeline=st.deals.reduce((sum,d)=>sum+d.value,0);
-        return log(st,`📣 Marketing "SQL Storm": ${n} warm leads landed.`);
+        return log(st,`📣 Marketing delivered ${n} “warm” leads.`);
       });
 
       fire(0.18,st=>{
         setPending({
-          title:"🧨 Competitor drops a 25% discount",
-          body:"Match them and win more but cut ACV, or hold the line and protect brand?",
+          title:"🧨 Competitor Panic",
+          body:"They cut 25%. Match it or hold the line?",
           options:[
             {
-              label:"Match 20% discount (win more, earn less)",
+              label:"Match 20% (more wins, less $)",
               className:"primary",
               action:(x)=>{
                 const baseConv = x.modifiers?.conversion ?? 0;
@@ -3171,11 +3171,11 @@ __/_|__
                   discount:0.20,
                   expiresIn:1
                 };
-                return log(x,"💸 You matched the discount. Win-rate up, ACV down for a week.");
+                return log(x,"💸 Matched 20%. Wins up, ACV down this week.");
               }
             },
             {
-              label:"Hold the line (fewer wins, stronger rep)",
+              label:"Hold price (fewer wins, +rep)",
               className:"ghost",
               action:(x)=>{
                 const baseConv = x.modifiers?.conversion ?? 0;
@@ -3185,7 +3185,7 @@ __/_|__
                   discount:0,
                   expiresIn:1
                 };
-                return log(x,"🧱 You held pricing. Fewer closes this week; rep nudges up.","warn");
+                return log(x,"🧱 Held price. Fewer closes this week, +rep.","warn");
               }
             }
           ]
@@ -3198,7 +3198,7 @@ __/_|__
         if(!candidate)return st;
         st.product=clamp(st.product-6,0,100);
         st.stress=clamp(st.stress+4,0,100);
-        return log(st,`🛠️ SE fumbles a demo for ${candidate.account}. Product -6, stress +4.`,"warn");
+        return log(st,`🛠️ SE fumbled ${candidate.account}. -6 product, +4 stress.`,"warn");
       });
 
       fire(0.12,st=>{
@@ -3206,34 +3206,34 @@ __/_|__
         if(!candidate)return st;
         st.product=clamp(st.product+8,0,100);
         st.reputation=clamp(st.reputation+3,0,100);
-        return log(st,`🧙 SE hero save on ${candidate.account}. Product +8, rep +3.`);
+        return log(st,`🧙 SE saved ${candidate.account}. +8 product, +3 rep.`);
       });
 
       fire(0.10,st=>{
         setPending({
           title:"🔐 Security Incident",
-          body:"A mid-market customer had a breach. Legal wants spin, CS wants transparency.",
+          body:"A customer got breached. Own it or spin it?",
           options:[
             {
-              label:"Radical transparency (trust +, wins −)",
+              label:"Own it (+rep, fewer wins)",
               className:"primary",
               action:(x)=>{
                 x.reputation=clamp(x.reputation+6,0,100);
                 x.product=clamp(x.product-18,0,100);
                 x.modifiers={conversion:-0.15,discount:0,expiresIn:2};
                 x=killDeals(x,d=>d.stage>=2,0.30);
-                return log(x,"🧯 You told the truth. Trust builds; close rate tanks for a bit.","warn");
+                return log(x,"🔦 Came clean. +rep, closes tank for a bit.","warn");
               }
             },
             {
-              label:"Spin it (pipe saved, soul bruised)",
+              label:"Spin it (safer pipe, -rep)",
               className:"ghost",
               action:(x)=>{
                 x.reputation=clamp(x.reputation-8,0,100);
                 x.product=clamp(x.product-12,0,100);
                 x.modifiers={conversion:-0.08,discount:0,expiresIn:1};
                 x=killDeals(x,d=>d.stage>=2,0.15);
-                return log(x,"🌀 You spun it. Pipe mostly intact; reputation takes a hit.","warn");
+                return log(x,"🌀 Spun it. Pipe mostly safe, rep takes a hit.","warn");
               }
             }
           ]
@@ -3244,7 +3244,7 @@ __/_|__
       fire(0.12,st=>{
         st.product=clamp(st.product-12,0,100);
         st=killDeals(st,d=>d.stage>=2,0.18);
-        return log(st,"🌩️ Cloud outage nuked demos. Product -12; some mid-funnel deals bailed.","bad");
+        return log(st,"🌩️ Cloud outage ate the demos. -12 product.","bad");
       });
 
       fire(0.11,st=>{
@@ -3255,7 +3255,7 @@ __/_|__
         st.pipeline=st.deals.reduce((sum,d)=>sum+d.value,0);
         st.reputation=clamp(st.reputation+3,0,100);
         st.manager=clamp(st.manager+3,0,100);
-        return log(st,`🪜 Champion promoted at ${candidate.account}. Deal moves forward and gets happier.`);
+        return log(st,`🪜 Champion promoted at ${candidate.account}. Deal moves up.`);
       });
 
       fire(0.10,st=>{
@@ -3265,7 +3265,7 @@ __/_|__
           discount:st.modifiers.discount||0,
           expiresIn:Math.max(1,st.modifiers.expiresIn||0)
         };
-        return log(st,"📘 New case study hits LinkedIn. +Rep, +8% close chance for a bit.");
+        return log(st,"📘 Case study live. +rep, +8% close for now.");
       });
 
       fire(0.10,st=>{
@@ -3274,7 +3274,7 @@ __/_|__
         st.deals=[...adds,...st.deals];
         st.pipeline=st.deals.reduce((sum,d)=>sum+d.value,0);
         st.reputation=clamp(st.reputation+4,0,100);
-        return log(st,`🐦 A meme about your product goes mildly viral. ${n} inbound whale-adjacent leads show up.`);
+        return log(st,`🐦 Product became a meme. +${n} inbound leads.`);
       });
 
       fire(0.10,st=>{
@@ -3283,14 +3283,14 @@ __/_|__
           discount:st.modifiers.discount||0,
           expiresIn:Math.max(1,st.modifiers.expiresIn||0)
         };
-        return log(st,"🥶 Budget freeze rumor. Close rates nerfed this week.","warn");
+        return log(st,"🥶 Budget freeze rumor. Closes nerfed this week.","warn");
       });
 
       fire(0.10,st=>{
         if(st.energy<55){
           st.stress=clamp(st.stress+6,0,100);
           st.energy=clamp(st.energy-10,0,100);
-          return log(st,"🤒 Conference crud: low immune system, high regret. Stress +6, Energy −10.","warn");
+          return log(st,"🤒 Conference crud. -10 energy, +6 stress.","warn");
         }
         return st;
       });
@@ -3306,7 +3306,7 @@ __/_|__
           return true;
         });
         st.pipeline=st.deals.reduce((sum,d)=>sum+d.value,0);
-        st=log(st,`📉 Manager “rebalances territories” and yanks ${toSteal.length} top deal(s) worth ${money(total)}.`,"bad");
+        st=log(st,`📉 Territory “rebalance.” Lost ${toSteal.length} top deal(s), ${money(total)}.`,"bad");
         return st;
       });
 
@@ -3315,13 +3315,13 @@ __/_|__
         if(st.pip && Math.random()<0.6){
           st.pip=false;
           st.pipLevel=0;
-          return log(st,"🛡️ Your manager quietly tears up your PIP. “Reset next quarter.”");
+          return log(st,"🛡️ Manager shredded your PIP. “Fresh start.”");
         }
         const n=randi(1,3);
         const adds=Array.from({length:n},()=>makeDeal(st,{warm:true,big:Math.random()<0.5}));
         st.deals=[...adds,...st.deals];
         st.pipeline=st.deals.reduce((sum,d)=>sum+d.value,0);
-        return log(st,`🛡️ Manager pulls strings for ${n} extra warm intro(s). Protection buff applied.`);
+        return log(st,`🛡️ Manager called in favors. +${n} warm intro(s).`);
       });
 
       return s;
@@ -3335,29 +3335,29 @@ __/_|__
       const mgr=s.manager;
 
       let lines=[];
-      lines.push(`📊 Quarter ${quarter} closed at ${pct(perfQ)}% of quota.`);
+      lines.push(`📊 Q${quarter} final: ${pct(perfQ)}% of quota.`);
 
       if(perfQ>=1){
         s.manager=clamp(s.manager+10,0,100);
         s.reputation=clamp(s.reputation+5,0,100);
         s.pip=false;
         s.pipLevel=0;
-        lines.push("QBR: everyone just nods and lets you cook. No PIP, no drama.");
+        lines.push("🗣️ QBR: nods all around. No PIP.");
       }else if(perfQ>=0.8){
         s.manager=clamp(s.manager+(mgr>60?2:-3),0,100);
         if(mgr<40){
           if(!s.pip){
             s.pip=true;
             s.pipLevel=1;
-            lines.push("QBR: your manager slaps you on a soft PIP. More dashboards, more meetings.");
+            lines.push("🗣️ QBR: soft PIP. More dashboards.");
           }else{
             s.pipLevel=Math.min(2,s.pipLevel+1);
-            lines.push("QBR: PIP quietly tightens. Milestones go from insane to impossible.");
+            lines.push("🗣️ QBR: PIP tightens. Milestones now fiction.");
           }
         }else if(mgr>70){
-          lines.push("QBR: your manager shields you. “Macro headwinds” take the blame.");
+          lines.push("🗣️ QBR: manager blames “macro.” You live.");
         }else{
-          lines.push("QBR: passive-aggressive comments, but you live to grind another quarter.");
+          lines.push("🗣️ QBR: passive-aggressive. You survive.");
         }
       }else{
         let fireChance=0.25;
@@ -3370,15 +3370,15 @@ __/_|__
         if(roll<fireChance){
           s.fired=true;
           s.endCause="qbr";
-          lines.push("QBR turns into a surprise exit interview. “We’re going in a different direction.”");
+          lines.push("🗣️ QBR became an exit interview.");
         }else{
           if(!s.pip){
             s.pip=true;
             s.pipLevel=1;
-            lines.push("You dodge being fired, but land on a PIP. Targets move farther away.");
+            lines.push("📄 Dodged the axe. Landed on a PIP.");
           }else{
             s.pipLevel=Math.min(2,s.pipLevel+1);
-            lines.push("You narrowly avoid termination. PIP escalates to hard mode.");
+            lines.push("📄 Barely kept the badge. PIP escalates.");
           }
           s.manager=clamp(s.manager-8,0,100);
         }
@@ -3387,7 +3387,7 @@ __/_|__
       if(!s.fired && perfQ>=1 && mgr<25 && Math.random()<0.06){
         s.fired=true;
         s.endCause="politics";
-        lines.push("Your manager wanted you gone anyway. Politics > performance. You’re out.");
+        lines.push("🗡️ Hit quota, fired anyway. Politics.");
       }
 
       if(!s.fired && s.manager<30 && s.pipeline>0 && Math.random()<0.35){
@@ -3400,14 +3400,14 @@ __/_|__
           return true;
         });
         s.pipeline=s.deals.reduce((sum,d)=>sum+d.value,0);
-        lines.push(`Manager “reassigns” ${cut.length} big deal(s) worth ${money(total)}. Setup-to-fail buff applied.`);
+        lines.push(`📉 Manager “reassigned” ${cut.length} big deal(s), ${money(total)}.`);
       }
 
       if(!s.fired && s.manager>75 && perfQ<1 && Math.random()<0.5){
         if(s.pip){
           s.pip=false;
           s.pipLevel=0;
-          lines.push("Because your manager actually likes you, the PIP disappears in a puff of HR paperwork.");
+          lines.push("🪄 Manager likes you. PIP vanishes.");
         }
       }
 
@@ -3418,15 +3418,15 @@ __/_|__
         if(perfQ>=1){
           s.win=true;
           s.endCause="club";
-          lines.push("Quarter done, number hit. President’s Club ticket punched.");
+          lines.push("🏆 Number hit. President’s Club.");
         }else if(perfQ>=0.7){
           s.missed=true;
           s.endCause="missed";
-          lines.push("Quarter ends with you under quota but still employed. Dignity slightly scuffed.");
+          lines.push("😮‍💨 Under quota. Still employed.");
         }else{
           s.fired=true;
           s.endCause="qbr";
-          lines.push("Quarter-end QBR: finance votes you off the island.");
+          lines.push("🗣️ QBR: under 70%. Voted off the island.");
         }
       }
 
@@ -3532,9 +3532,9 @@ __/_|__
       const {weekInQuarter}=getQuarterInfo(ns.week);
       if(weekInQuarter===1||weekInQuarter===5||weekInQuarter===9){
         ns.cash-=1600;
-        ns=log(ns,"🏠 Rent hit: -$1,600.","warn");
+        ns=log(ns,"🏠 Rent: -$1,600.","warn");
       }
-      ns=log(ns,"💸 Salary processed: +$1,000.");
+      ns=log(ns,"💸 Salary: +$1,000.");
       ns=checkRepo(ns);
       return ns;
     };
@@ -3562,17 +3562,17 @@ __/_|__
       if(shielded){
         // clean CRM: nothing for the manager to escalate this week
       }else if(ns.perfWarnings===0 && Math.random()<0.7){
-        ns=log(ns,"👀 Manager asks for a detailed list of every meeting you’ve had this quarter. \"Just for forecasting.\"","warn");
+        ns=log(ns,"👀 Manager wants a meeting audit. “For forecasting.”","warn");
         ns.stress=clamp(ns.stress+4,0,100);
         ns.perfWarnings=1;
         warnedThisWeek=true;
       }else if(ns.perfWarnings===1 && Math.random()<0.6){
-        ns=log(ns,"📋 Enablement schedules a surprise \"pipeline hygiene\" review with you and your manager.","warn");
+        ns=log(ns,"📋 Surprise “pipeline hygiene” review.","warn");
         ns.stress=clamp(ns.stress+5,0,100);
         ns.perfWarnings=2;
         warnedThisWeek=true;
       }else if(ns.perfWarnings===2 && Math.random()<0.5){
-        ns=log(ns,"🧊 HR quietly appears on your next 1:1 invite. Nobody comments on it.","warn");
+        ns=log(ns,"🧊 HR is on your next 1:1. Nobody mentions it.","warn");
         ns.stress=clamp(ns.stress+6,0,100);
         ns.perfWarnings=3;
         warnedThisWeek=true;
@@ -3597,11 +3597,11 @@ __/_|__
           ns.fired=true;
           ns.endCause=ns.perfWarnings>0 ? "review" : "org";
           const msg = ns.perfWarnings>0
-            ? "📉 Mid-quarter \"forecast review\" quietly becomes an exit meeting. \"We just don’t see the ramp.\""
-            : "🪓 Out of nowhere, your manager and HR pull you into a same-day \"org update\" call. By the end, you’re not on the org chart.";
+            ? "📉 Forecast review became an exit meeting."
+            : "🪓 Surprise “org update.” You’re off the chart.";
           ns=log(ns,msg,"bad");
         }else if(!warnedThisWeek && ns.perfWarnings>0 && Math.random()<0.4){
-          ns=log(ns,"📆 You notice a recurring calendar block with your name on your manager’s calendar. Nobody has invited you to it.","warn");
+          ns=log(ns,"📆 Recurring meeting about you. Not invited.","warn");
         }
       }
       return ns;
@@ -3624,7 +3624,7 @@ __/_|__
         ns.stress=clamp(ns.stress+2,0,100);
         ns.deals=[...adds,...ns.deals];
         ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
-        ns=log(ns,`📞 Prospect Blitz: -30 energy • +${adds.length} leads`);
+        ns=log(ns,`📞 Blitz: +${adds.length} leads. -30 energy.`);
         setS(ns);
       };
 
@@ -3637,7 +3637,7 @@ __/_|__
         ns.meetings=(ns.meetings||0)+randi(0,n);
         ns.deals=[...adds,...ns.deals];
         ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
-        ns=log(ns,`✉️ Email Cadence: -18 energy • ${n} warm replies`);
+        ns=log(ns,`✉️ Cadence: ${n} warm replies. -18 energy.`);
         setS(ns);
       };
 
@@ -3655,7 +3655,7 @@ __/_|__
         });
         ns.skills.discovery=clamp(ns.skills.discovery+2,0,100);
         ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
-        ns=log(ns,`🔎 Discovery Deep Dive: -22 energy • qualified ${advanced} lead(s)`);
+        ns=log(ns,`🔎 Discovery: ${advanced} qualified. -22 energy.`);
         setS(ns);
       };
 
@@ -3673,7 +3673,7 @@ __/_|__
         });
         ns.skills.demo=clamp(ns.skills.demo+2,0,100);
         ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
-        ns=log(ns,`🖥️ Demo Marathon: -28 energy • advanced ${advanced} opp(s)`);
+        ns=log(ns,`🖥️ Demos: ${advanced} advanced. -28 energy.`);
         setS(ns);
       };
 
@@ -3690,7 +3690,7 @@ __/_|__
           return d;
         });
         ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
-        ns=log(ns,`📑 Proposals & Commit: -25 energy • sent ${advanced} proposal(s)`);
+        ns=log(ns,`📑 Proposals: ${advanced} sent. -25 energy.`);
         setS(ns);
       };
 
@@ -3699,7 +3699,7 @@ __/_|__
         if(!ok)return;
         ns.used.close=true;
         ns.skills.negotiate=clamp(ns.skills.negotiate+1,0,100);
-        ns=tryCloseSome(ns,"🤝 Close-Won Push");
+        ns=tryCloseSome(ns,"🤝 Close push");
         setS(ns);
       };
 
@@ -3720,16 +3720,16 @@ __/_|__
 
         const hasWhale=adds.some(d=>d.probNote==="referral whale");
         const hasBig=adds.some(d=>d.probNote==="referral big");
-        const tag = hasWhale ? " 🐋 whale intro!" : hasBig ? " 🐳 big intro!" : "";
+        const tag = hasWhale ? " 🐋 Whale." : hasBig ? " 🐳 Big one." : "";
 
-        ns=log(ns,`🧑‍🤝‍🧑 Referrals & Social: -16 energy • +${n} intro(s)${tag}`);
+        ns=log(ns,`🧑‍🤝‍🧑 Referrals: +${n} intro(s). -16 energy.${tag}`);
         setS(ns);
       };
 
       const actRecharge=()=>{
         let[ns,ok,reason]=cost(s,{energy:0,slots:1,onceKey:"restedThisWeek"});
         if(!ok){
-          if(reason==="once")setS(log(s,"⏱️ Recharge already used this week.","warn"));
+          if(reason==="once")setS(log(s,"⏱️ Already recharged this week.","warn"));
           return;
         }
         ns.used.recharge=true;
@@ -3737,7 +3737,7 @@ __/_|__
         // v1.15: caffeine in the system blunts the reset
         const relief=Math.max(0,12-4*(ns.coffeesThisWeek||0));
         ns.stress=clamp(ns.stress-relief,0,100);
-        ns=log(ns,`🧘 Recharge: once per week reset. +35 energy, -${relief} stress.`);
+        ns=log(ns,`🧘 Recharged. +35 energy, -${relief} stress.`);
         setS(ns);
       };
 
@@ -3800,7 +3800,7 @@ __/_|__
         ns.product=clamp(ns.product+3,0,100);
         ns.reputation=clamp(ns.reputation-4,0,100);
         ns.stress=clamp(ns.stress+2,0,100);
-        ns=log(ns,"🏛️ Internal Politics: manager +8, product +3, rep −4. Soul slightly compromised.");
+        ns=log(ns,"🏛️ Politics: +8 manager, +3 product, -4 rep.");
         setS(ns);
       };
 
@@ -3821,7 +3821,7 @@ __/_|__
           };
         }
         ns=checkRepo(ns);
-        ns=log(ns,`🏟️ Conference Run: -40 energy, -$800 • +${n} leads, possible macro buff.`);
+        ns=log(ns,`🏟️ Conference: +${n} leads. -40 energy, -$800.`);
         setS(ns);
       };
 
@@ -3989,7 +3989,7 @@ __/_|__
 
         // End-of-week closes still happen with current modifiers.
         if(Math.random()<0.15){
-          ns=tryCloseSome(ns,"🕘 End-of-week closes");
+          ns=tryCloseSome(ns,"🕘 Friday closes");
         }
 
         // Tick down existing modifiers BEFORE we potentially apply new ones during this endWeek().
@@ -4017,14 +4017,14 @@ __/_|__
             discount:ns.modifiers.discount||0,
             expiresIn:Math.max(1,ns.modifiers.expiresIn||0)
           };
-          ns=log(ns,"🧩 Coherent week: touched most of the funnel. +6% close next week.");
+          ns=log(ns,"🧩 Full-funnel week. +6% close next week.");
         }else if(motionsSkipped>=3 && ns.pipeline>0){
           ns.modifiers={
             conversion:(ns.modifiers.conversion||0)-0.06,
             discount:ns.modifiers.discount||0,
             expiresIn:Math.max(1,ns.modifiers.expiresIn||0)
           };
-          ns=log(ns,"🪫 Funnel neglect: deals getting weird vibes. −6% close next week.","warn");
+          ns=log(ns,"🪫 Funnel neglected. -6% close next week.","warn");
         }
 
         if(!u.discovery && countStage(ns.deals,0)>=6){
@@ -4034,7 +4034,7 @@ __/_|__
             return true;
           });
           if(lost>0){
-            ns=log(ns,`🥶 Lead decay: ${lost} raw lead(s) went stale.`,"warn");
+            ns=log(ns,`🍂 ${lost} raw lead(s) went stale.`,"warn");
             ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
           }
         }
@@ -4049,7 +4049,7 @@ __/_|__
             return d;
           });
           if(reg>0){
-            ns=log(ns,`🕑 Demo backlog: ${reg} qualified lead(s) slid back to cold.`,"warn");
+            ns=log(ns,`🕑 Demo backlog: ${reg} lead(s) went cold.`,"warn");
             ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
           }
         }
@@ -4060,7 +4060,7 @@ __/_|__
         if(shots>0){
           const crash=CRASH_PER_SHOT*shots;
           ns.stress=clamp(ns.stress+crash,0,100);
-          ns=log(ns,`🥴 Caffeine crash. Stress +${crash}.`,"warn");
+          ns=log(ns,`🥴 Caffeine crash. +${crash} stress.`,"warn");
         }else{
           ns.stress=clamp(ns.stress-4,0,100);
         }
@@ -4082,7 +4082,7 @@ __/_|__
         // Email cadence without calling annoys the manager.
         if(ns.used.cadence && !ns.used.prospect){
           ns.manager=clamp(ns.manager-3,0,100);
-          ns=log(ns,"📵 Manager feedback: “Good emails. Now pick up the phone.” Manager -3.","warn");
+          ns=log(ns,"📵 “Nice emails. Now call someone.” -3 manager.","warn");
         }
 
         const {weekInQuarter}=getQuarterInfo(ns.week);
@@ -4104,7 +4104,7 @@ __/_|__
         }
 
         const nextWeek=ns.week+1;
-        ns=log(ns,`📆 Week advanced to ${nextWeek}.`);
+        ns=log(ns,`📆 Week ${nextWeek}.`);
         ns.week=nextWeek;
         ns.slots=ns.maxSlots;
         ns.restedThisWeek=false;
@@ -4142,14 +4142,16 @@ __/_|__
             "Terminated 💼";
           const body=
             type==="club"
-              ? `Closed ${money(s.closedWon)} this quarter. Number obliterated.`
+              ? `Closed ${money(s.closedWon)}. Pack for Cabo.`
               : type==="burnout"
-                ? `Closed ${money(s.closedWon)} this quarter, but your nervous system liquidated itself.`
+                ? (s.endCause==="caffeine"
+                  ? `Closed ${money(s.closedWon)}. Heart clocked out first.`
+                  : `Closed ${money(s.closedWon)}. Nervous system quit first.`)
                 : type==="missed"
-                  ? `Closed ${money(s.closedWon)} this quarter. Badge kept; grind continues.`
+                  ? `Closed ${money(s.closedWon)}. Badge kept. Back to the phones.`
                   : type==="repo"
-                    ? `Cash went deeply negative and collections took your flex piece.`
-                    : `Closed ${money(s.closedWon)} before HR reclaimed your dongles.`;
+                    ? `Overdrawn. Collections took the jacket.`
+                    : `Closed ${money(s.closedWon)}. HR wants the dongles back.`;
           // v1.15: endCause is set wherever an ending lands; log parsing is only for pre-v1.15 saves
           const legacyCause=()=>{
             if(type!=="fired")return type==="burnout" ? "stress" : type;
@@ -4157,7 +4159,7 @@ __/_|__
             return !lastBad ? "qbr" : lastBad.msg.indexOf("🪓")===0 ? "org" : lastBad.msg.indexOf("📉 Mid-quarter")===0 ? "review" : "qbr";
           };
           const cause=s.endCause || legacyCause();
-          const meta={pct:s.quota>0 ? s.closedWon/s.quota : 0, cause};
+          const meta={pct:s.quota>0 ? s.closedWon/s.quota : 0, cause, shots:s.coffeesThisWeek||0};
           setPending(null);
           setOver({title,body,type,meta});
         }else{
@@ -4174,7 +4176,7 @@ __/_|__
 
       const tryOpportunisticClose=()=>{
         if(!hasLateDeal){
-          setS(log(s,"🧪 No late-stage deals to hail-mary. Manager would just call that LARPing.","warn"));
+          setS(log(s,"🧪 No late-stage deals to Hail-Mary.","warn"));
           return;
         }
         let[ns,ok]=cost(s,{energy:10,slots:1});
@@ -4185,22 +4187,22 @@ __/_|__
         ns=log(
           ns,
           miracle
-            ? "🧪 Hail-Mary Close: you carpet-bomb every decision maker with \"last chance\" messages."
-            : "🧪 Hail-Mary Close: you press every late-stage deal way past the comfort line.",
+            ? "🧪 Hail-Mary: “last chance” blast to every exec."
+            : "🧪 Hail-Mary: leaning on every late deal. Hard.",
           "warn"
         );
-        let st=tryCloseSome(ns,"🧪 Hail-Mary Close");
+        let st=tryCloseSome(ns,"🧪 Hail-Mary");
         const closedDelta=st.closedWon-beforeClosed;
 
         if(miracle){
           if(closedDelta>0){
             st.manager=clamp(st.manager+8,0,100);
             st.stress=clamp(st.stress+4,0,100);
-            st=log(st,"🌪️ Against all odds, the chaos campaign lands. Manager +8, Stress +4.");
+            st=log(st,"🌪️ Chaos worked. +8 manager, +4 stress.");
           }else{
             st.manager=clamp(st.manager-4,0,100);
             st.stress=clamp(st.stress+6,0,100);
-            st=log(st,"🤕 Chaos generated noise but no signatures. Manager -4, Stress +6.","bad");
+            st=log(st,"🤕 All noise, no ink. -4 manager, +6 stress.","bad");
           }
         }else{
           st=killDeals(st,d=>d.stage>=3,0.55);
@@ -4208,11 +4210,11 @@ __/_|__
           st.stress=clamp(st.stress+8,0,100);
           st.reputation=clamp(st.reputation-4,0,100);
           if(closedDelta<=0){
-            st=log(st,"📛 Your reckless push torches late-stage trust. Manager -8, Rep -4, Stress +8.","bad");
+            st=log(st,"📛 Pipe torched. -8 manager, -4 rep, +8 stress.","bad");
           }else{
             st.manager=clamp(st.manager+2,0,100);
             st.reputation=clamp(st.reputation+1,0,100);
-            st=log(st,"😬 You closed something, but cooked most of the late-stage pipe. Net Manager -6, Rep -3.","warn");
+            st=log(st,"😬 Got ink, cooked the pipe. Net -6 manager, -3 rep.","warn");
           }
         }
         st=checkRepo(st);
@@ -4272,7 +4274,7 @@ __/_|__
                     onClick={tryOpportunisticClose}
                     disabled={opportunisticDisabled}
                   >
-                    Hail-Mary Close (10 Energy, 1 Slot, High Risk)
+                    🧪 Hail-Mary (10 Energy • 1 Slot • Risky)
                   </button>
                   <button
                     className="btn primary"
@@ -4293,7 +4295,7 @@ __/_|__
                     <DealCard key={d.id} deal={d} />
                   ))
                 ) : (
-                  <div className="tiny">No active deals yet. Phone go brr.</div>
+                  <div className="tiny">No deals. Start dialing.</div>
                 )}
               </div>
               <div className="sep"></div>
@@ -4306,7 +4308,7 @@ __/_|__
                     </p>
                   ))
                 ) : (
-                  <p className="muted">Logs appear here once you start making noise.</p>
+                  <p className="muted">Nothing yet. Quota’s waiting.</p>
                 )}
               </div>
             </div>
@@ -4314,7 +4316,7 @@ __/_|__
 
           <Modal
             open={showHelp}
-            title="How This Mess Works"
+            title="How It Works"
             actions={[
               {
                 label:"Got it",
@@ -4323,16 +4325,18 @@ __/_|__
               }
             ]}
           >
-            <p className="tiny"><strong>Energy</strong> limits how many big actions you can take each week. Most actions consume it; you get a small refill at week end.</p>
-            <p className="tiny"><strong>Stress</strong> reduces your close rates and can trigger burnout at 100. Coffee and chaos raise it; rest and weekends bring it down.</p>
-            <p className="tiny"><strong>Cash</strong> comes from salary and commission, but rent and events burn it. Go too negative and collections repo your jacket.</p>
-            <p className="tiny"><strong>Pipeline</strong> is total ACV of all active deals. Where they sit in the funnel depends on which actions you run each week.</p>
-            <p className="tiny"><strong>Closed (Q)</strong> tracks revenue this quarter. Hitting quota and staying close to the Week/13 pace line keeps you safer from surprise exits.</p>
-            <p className="tiny"><strong>Manager</strong> nudges close chance and heavily influences PIPs and firing risk. Emailing without calling can ding it.</p>
-            <p className="tiny"><strong>Reputation</strong> helps random events break your way, slightly boosts close rates, and affects how big deals can get.</p>
-            <p className="tiny"><strong>Product</strong> reflects how cursed the stack is. Low product makes demos fizzle and prospects defect to competitors.</p>
-            <p className="tiny"><strong>Skills</strong> (Prospecting, Discovery, Demo, Negotiation) improve success for their motions and feed into close math.</p>
-            <p className="tiny"><strong>Modifiers</strong> like Conversion Mod and Discount are temporary buffs/nerfs from events and coherent weeks.</p>
+            <p className="tiny"><strong>Energy</strong> fuels actions. Small refill at week end.</p>
+            <p className="tiny"><strong>Stress</strong> hurts close rates. 80+ can burn you out at week end; 100 is instant.</p>
+            <p className="tiny"><strong>Quad Shot</strong> hits harder each shot that week. 3+ can stop your heart. Then you crash.</p>
+            <p className="tiny"><strong>CRM Cleanup</strong> weekly: prunes dead leads, +manager, shields this week’s review. Boss may nuke a good deal.</p>
+            <p className="tiny"><strong>Cash</strong> is salary and commission in, rent out. At -$1,500 the jacket goes.</p>
+            <p className="tiny"><strong>Pipeline</strong> is the value of live deals. Actions move them down the funnel.</p>
+            <p className="tiny"><strong>Closed (Q)</strong> is revenue this quarter. Behind pace from week 5? Exits get likely.</p>
+            <p className="tiny"><strong>Manager</strong> nudges close odds, drives PIPs and firing. Emails without calls annoy them.</p>
+            <p className="tiny"><strong>Reputation</strong> grows deal size, nudges closes, tilts events your way.</p>
+            <p className="tiny"><strong>Product</strong> is how cursed the stack is. Low product sinks demos and closes.</p>
+            <p className="tiny"><strong>Skills</strong> boost their matching action and feed the close math.</p>
+            <p className="tiny"><strong>Modifiers</strong> are short-term close and discount effects from events and full-funnel weeks.</p>
           </Modal>
 
           <Modal
