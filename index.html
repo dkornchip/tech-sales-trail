@@ -1817,6 +1817,17 @@ __/_|__
                return o.t+1.8; }},
     poweroff:{prio:3, fn:function(o){ noise(o,{ft:"highpass",f:2500,q:.7,nj:1,dur:.03,v:.08}); return tone(o,{type:"sine",f:900,f2:60,nj:1,dur:.24,v:.07}); }}
   };
+  // v1.15 mechanics: CRM Cleanup (paper shuffle + trash whoosh) and the caffeine flatline (monitor beeps, then one long tone)
+  Object.assign(P,{
+    crm:     {prio:3, fn:function(o){ var t=0;
+               for(var i=0;i<4;i++){ noise(o,{ft:"bandpass",f:2400+Math.random()*900,q:1.4,at:t,dur:.05,v:.1,a:.008}); t += .05+Math.random()*.03; }
+               noise(o,{ft:"bandpass",f:2600,f2:260,q:.9,at:t+.05,dur:.34,v:.17,a:.07});
+               return tone(o,{type:"sine",f:150,f2:70,at:t+.36,dur:.12,v:.12}); }},
+    flatline:{prio:5, fn:function(o){ var e=0;
+               for(var i=0;i<2;i++) tone(o,{type:"sine",f:988,nj:1,at:i*.62,dur:.13,v:.08,hold:.09});
+               tone(o,{type:"sine",f:988,nj:1,at:1.24,dur:3.0,v:.08,a:.01,hold:2.6});
+               e = tone(o,{type:"sine",f:1976,nj:1,at:1.24,dur:3.0,v:.012,a:.01,hold:2.6}); return e; }}
+  });
 
   /* ---------- context + voice management ---------- */
   function ensureCtx(){
@@ -1939,6 +1950,7 @@ __/_|__
     incident:["Security incident. Please do not talk to the press."],
     hydrate:["Wellness reminder. Please hydrate."]
   };
+  Object.assign(LINES,{ closeOut:["Close that out."], burnoutCaffeine:["Medical to the sales floor."] });
   var SAY = { last:0, voice:null, timer:0 };
   function pickVoice(){
     if(!("speechSynthesis" in root)) return null;
@@ -1955,6 +1967,7 @@ __/_|__
     if(!A.settings.on || !A.settings.voice || !A.unlocked) return false;
     if(!("speechSynthesis" in root)) return false;
     if(key === "fired" && opts.meta){ if(opts.meta.cause === "org") key = "firedOrg"; else if(opts.meta.cause === "review") key = "firedReview"; }
+    if(key === "burnout" && opts.meta && opts.meta.cause === "caffeine") key = "burnoutCaffeine";
     var bank = LINES[key], text = bank ? bank[Math.floor(Math.random()*bank.length)] : String(key);
     var ss = root.speechSynthesis, now = Date.now();
     if(!opts.force){
@@ -2029,6 +2042,7 @@ __/_|__
     ["📆 You notice","hrSoft",2], ["📆 Week advanced","week",1], ["📊","qbr",1],
     ["🏅","achievement",4,"whale"], ["💀","lost",4], ["⚠","alarm",4,"cash"]
   ];
+  RULES.unshift(["🧹","crm",3,"hygiene"],["🗑","lost",4,"closeOut"],["🫀","heartbeat",2],["🚑","flatline",4]);
   function ruleFor(msg){
     var m = norm(msg);
     if(/closed \d+ deal\(s\) for/.test(m)) return {sfx:"cash", prio:4, close:true};
@@ -2266,7 +2280,12 @@ __/_|__
         used:{...base.used,...(parsed.used||{})},
         repo:!!parsed.repo,
         repoWarned:!!parsed.repoWarned,
-        perfWarnings:Number.isFinite(parsed.perfWarnings)?parsed.perfWarnings:0
+        perfWarnings:Number.isFinite(parsed.perfWarnings)?parsed.perfWarnings:0,
+        // v1.15 fields; v1.14 saves don't have them
+        coffeesThisWeek:Number.isFinite(parsed.coffeesThisWeek)?Math.max(0,parsed.coffeesThisWeek):0,
+        stressWarned:!!parsed.stressWarned,
+        hygieneShield:!!parsed.hygieneShield,
+        endCause:typeof parsed.endCause==="string"?parsed.endCause:null
       };
     };
 
@@ -2461,6 +2480,10 @@ __/_|__
       modifiers:{conversion:0,discount:0,expiresIn:0},
       achievements:[],
       perfWarnings:0,
+      coffeesThisWeek:0,
+      stressWarned:false,
+      hygieneShield:false,
+      endCause:null,
       runId:idGen(),
       used:{
         prospect:false,
@@ -2470,13 +2493,36 @@ __/_|__
         propose:false,
         close:false,
         network:false,
-        recharge:false
+        recharge:false,
+        crm:false
       }
     });
 
     const log=(state,msg,kind="info")=>{
       const entry={id:idGen(),t:now(),msg,kind};
       return{...state,logs:[entry,...state.logs].slice(0,220)};
+    };
+
+    // v1.15: caffeine and stress can end a run. Numbers tuned with the Monte Carlo sim.
+    const isRunOver=(st)=>!!(st.fired||st.burnedOut||st.win||st.missed||st.repo);
+    const STRESS_WARN=70;            // 🫀 warning, once per week
+    const STRESS_DANGER=80;          // end-of-week burnout roll starts here
+    const DANGER_RATE=0.03;          // chance per point above 75
+    const CRASH_PER_SHOT=13;         // end-of-week stress per Quad Shot drunk that week
+    // n = shots already drunk this week, so these describe the NEXT shot
+    const COFFEE_ENERGY=[18,15,12,9,6];
+    const coffeeEnergy=(n)=>COFFEE_ENERGY[Math.min(n,COFFEE_ENERGY.length-1)];
+    const coffeeStress=(n)=>12+6*n;
+    const coffeeRisk=(n)=>n<2?0:n===2?0.20:n===3?0.45:Math.min(0.95,0.75+0.10*(n-4)); // palpitations from shot 3
+    const checkBurnout=(state)=>{
+      if(!state || isRunOver(state))return state; // an ending already landed; keep its priority
+      if(state.stress>=100){
+        return log({...state,burnedOut:true,endCause:state.endCause||"stress"},"🧯 Stress 100. Burnout.","bad");
+      }
+      if(state.stress>=STRESS_WARN && !state.stressWarned){
+        return log({...state,stressWarned:true},`🫀 Eye twitch. Stress ${Math.round(state.stress)}.`,"warn");
+      }
+      return state;
     };
 
     const addAchievement=(state,key,label)=>{
@@ -2534,6 +2580,7 @@ __/_|__
       let s={...state};
       if(s.cash<=-1500 && !s.repo && !s.fired && !s.burnedOut && !s.win && !s.missed){
         s.repo=true;
+        s.endCause="repo";
         s=log(s,"🧥 Collections repossessed your President’s Club jacket. That was the last flex you had.","bad");
       }else if(s.cash<=-1000 && !s.repo && !s.repoWarned){
         s.repoWarned=true;
@@ -2886,6 +2933,7 @@ __/_|__
         const roll=Math.random();
         if(roll<fireChance){
           s.fired=true;
+          s.endCause="qbr";
           lines.push("QBR turns into a surprise exit interview. “We’re going in a different direction.”");
         }else{
           if(!s.pip){
@@ -2902,6 +2950,7 @@ __/_|__
 
       if(!s.fired && perfQ>=1 && mgr<25 && Math.random()<0.06){
         s.fired=true;
+        s.endCause="politics";
         lines.push("Your manager wanted you gone anyway. Politics > performance. You’re out.");
       }
 
@@ -2932,12 +2981,15 @@ __/_|__
       if(s.quartersSurvived>=s.maxQuarters && !s.fired && !s.burnedOut && !s.repo){
         if(perfQ>=1){
           s.win=true;
+          s.endCause="club";
           lines.push("Quarter done, number hit. President’s Club ticket punched.");
         }else if(perfQ>=0.7){
           s.missed=true;
+          s.endCause="missed";
           lines.push("Quarter ends with you under quota but still employed. Dignity slightly scuffed.");
         }else{
           s.fired=true;
+          s.endCause="qbr";
           lines.push("Quarter-end QBR: finance votes you off the island.");
         }
       }
@@ -3068,8 +3120,12 @@ __/_|__
 
       if(!Number.isFinite(ns.perfWarnings)) ns.perfWarnings=0;
       let warnedThisWeek=false;
+      // v1.15: a CRM Cleanup this week keeps the warning ladder still and takes the edge off the fire roll.
+      const shielded=!!ns.hygieneShield;
 
-      if(ns.perfWarnings===0 && Math.random()<0.7){
+      if(shielded){
+        // clean CRM: nothing for the manager to escalate this week
+      }else if(ns.perfWarnings===0 && Math.random()<0.7){
         ns=log(ns,"👀 Manager asks for a detailed list of every meeting you’ve had this quarter. \"Just for forecasting.\"","warn");
         ns.stress=clamp(ns.stress+4,0,100);
         ns.perfWarnings=1;
@@ -3095,6 +3151,7 @@ __/_|__
       if(ns.pipeline<ns.quota*0.4)fireChance+=0.05;
 
       if(!warnedThisWeek && ns.perfWarnings===0) fireChance*=0.6;
+      if(shielded) fireChance-=0.06;
 
       fireChance=clamp(fireChance,0.02,0.70);
 
@@ -3102,6 +3159,7 @@ __/_|__
         const roll=Math.random();
         if(roll<fireChance){
           ns.fired=true;
+          ns.endCause=ns.perfWarnings>0 ? "review" : "org";
           const msg = ns.perfWarnings>0
             ? "📉 Mid-quarter \"forecast review\" quietly becomes an exit meeting. \"We just don’t see the ramp.\""
             : "🪓 Out of nowhere, your manager and HR pull you into a same-day \"org update\" call. By the end, you’re not on the org chart.";
@@ -3115,7 +3173,9 @@ __/_|__
 
     // FIX: Actions was declared inside Game, so React saw a brand-new component type every render and
     // remounted the whole action grid on each state change (killing hover/focus and any CSS transitions).
-    const Actions=({s,setS})=>{
+    const Actions=({s,setS:commit})=>{
+      // v1.15: every action result passes through the burnout check
+      const setS=ns=>commit(checkBurnout(ns));
       const actProspect=()=>{
         // Phones cost more energy now.
         let[ns,ok]=cost(s,{energy:30,slots:1});
@@ -3238,23 +3298,61 @@ __/_|__
         }
         ns.used.recharge=true;
         ns.energy=clamp(ns.energy+35,0,100);
-        ns.stress=clamp(ns.stress-12,0,100);
-        ns=log(ns,"🧘 Recharge: once per week reset. +35 energy, -12 stress.");
+        // v1.15: caffeine in the system blunts the reset
+        const relief=Math.max(0,12-4*(ns.coffeesThisWeek||0));
+        ns.stress=clamp(ns.stress-relief,0,100);
+        ns=log(ns,`🧘 Recharge: once per week reset. +35 energy, -${relief} stress.`);
         setS(ns);
       };
 
+      // v1.15: each shot this week hits harder and does less; from shot 3 the heart rolls dice.
       const actCoffee=()=>{
         let[ns,ok]=cost(s,{energy:0,slots:1});
         if(!ok)return;
-        ns.energy=clamp(ns.energy+18,0,100);
+        const n=ns.coffeesThisWeek||0, k=n+1;
+        const e=coffeeEnergy(n), st=coffeeStress(n), risk=coffeeRisk(n);
+        ns.coffeesThisWeek=k;
+        ns.energy=clamp(ns.energy+e,0,100);
         ns.cash-=6;
-        ns.stress=clamp(ns.stress+9,0,100);
-        if(ns.stress>=100 && !ns.burnedOut){
+        ns.stress=clamp(ns.stress+st,0,100);
+        // a shot that maxes stress counts as the heart giving out too
+        if(ns.stress>=100 || (risk>0 && Math.random()<risk)){
           ns.burnedOut=true;
-          ns=log(ns,"🧯 You jitter-spammed yourself into burnout mid-week.","bad");
+          ns.endCause="caffeine";
+          setS(log(ns,`🚑 Shot #${k}. Heart said no.`,"bad"));
+          return;
         }
         ns=checkRepo(ns);
-        ns=log(ns,"☕ Quad shot: +18 energy, +9 stress, -$6.");
+        ns=log(ns,`☕ Shot #${k}. +${e} energy, +${st} stress.`);
+        setS(ns);
+      };
+
+      // v1.15: pipeline hygiene. Not a funnel motion; once per week.
+      const actCrm=()=>{
+        if(s.used && s.used.crm)return;
+        let[ns,ok]=cost(s,{energy:15,slots:1});
+        if(!ok)return;
+        ns.used.crm=true;
+        const dead=d=>d.stage<=1 && (d.mood==="skeptical" || d.age>=5);
+        const pruned=ns.deals.filter(dead).length;
+        ns.deals=ns.deals.filter(d=>!dead(d));
+        const gain=Math.min(10,5+pruned);
+        // "Close that out" reads the manager's mood before the cleanup lands
+        const nukeChance=s.manager<40?0.25:0.15;
+        ns.manager=clamp(ns.manager+gain,0,100);
+        ns.hygieneShield=true;
+        let nuked=null;
+        const pool=ns.deals.filter(d=>d.stage===1||d.stage===2);
+        if(pool.length && Math.random()<nukeChance){
+          const warm=d=>(d.mood==="happy"||d.mood==="curious")?1:0;
+          nuked=[...pool].sort((a,b)=>warm(b)-warm(a)||b.value-a.value)[0];
+          ns.deals=ns.deals.filter(d=>d.id!==nuked.id);
+        }
+        ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
+        ns=log(ns,pruned>0
+          ? `🧹 CRM cleanup. -${pruned} dead lead(s), +${gain} manager.`
+          : `🧹 CRM cleanup. Nothing dead. +${gain} manager.`);
+        if(nuked)ns=log(ns,`🗑️ "Close that out." ${nuked.account} gone. -${money(nuked.value)}.`,"bad");
         setS(ns);
       };
 
@@ -3291,9 +3389,12 @@ __/_|__
         setS(ns);
       };
 
-      const disabled=(needEnergy,needSlots)=>(
-        s.energy<needEnergy || s.slots<needSlots || s.fired || s.burnedOut || s.win || s.missed || s.repo
+      const disabled=(needEnergy,needSlots,usedKey)=>(
+        s.energy<needEnergy || s.slots<needSlots || s.fired || s.burnedOut || s.win || s.missed || s.repo ||
+        !!(usedKey && s.used && s.used[usedKey])
       );
+      const shotsNow=s.coffeesThisWeek||0;
+      const nextShotRisk=coffeeRisk(shotsNow);
 
       return(
         <div className="actions">
@@ -3335,11 +3436,15 @@ __/_|__
           </button>
           <button className="btn" disabled={disabled(0,1)} onClick={actCoffee}>
             <div className="title">☕ Quad Shot</div>
-            <div className="desc">Borrow from tomorrow. Cost: 1 Slot • $6 • Stress +9</div>
+            <div className="desc">Borrow from tomorrow. Cost: 1 Slot • $6 • Stress +{coffeeStress(shotsNow)}{nextShotRisk>0 ? ` • 🫀 ${pct(nextShotRisk)}%` : ""}</div>
           </button>
           <button className="btn" disabled={disabled(20,1)} onClick={actPolitics}>
             <div className="title">🏛️ Internal Politics</div>
             <div className="desc">Buff manager, tax reputation. Cost: 20 Energy • 1 Slot</div>
+          </button>
+          <button className="btn" disabled={disabled(15,1,"crm")} onClick={actCrm}>
+            <div className="title">🧹 CRM Cleanup</div>
+            <div className="desc">Prune dead leads, +manager. Risky. Cost: 15 Energy • 1 Slot</div>
           </button>
         </div>
       );
@@ -3457,6 +3562,7 @@ __/_|__
         ns=salaryAndBills(ns);
         ns=randomEvents(ns,setPending,2);
         ns=ageAndGhost(ns);
+        ns=checkBurnout(ns);
 
         const u=ns.used;
         const didProspectish=u.prospect||u.cadence||u.network;
@@ -3513,11 +3619,22 @@ __/_|__
         }
 
         ns.energy=clamp(ns.energy+15,0,100);
-        ns.stress=clamp(ns.stress-4,0,100);
+        // v1.15: caffeinated weeks crash instead of recovering
+        const shots=ns.coffeesThisWeek||0;
+        if(shots>0){
+          const crash=CRASH_PER_SHOT*shots;
+          ns.stress=clamp(ns.stress+crash,0,100);
+          ns=log(ns,`🥴 Caffeine crash. Stress +${crash}.`,"warn");
+        }else{
+          ns.stress=clamp(ns.stress-4,0,100);
+        }
 
-        if(ns.stress>=100 && !ns.burnedOut){
+        // v1.15: burnout lands before reviews. Danger zone rolls every weekend.
+        ns=checkBurnout(ns);
+        if(!isRunOver(ns) && ns.stress>=STRESS_DANGER && Math.random()<(ns.stress-75)*DANGER_RATE){
           ns.burnedOut=true;
-          ns=log(ns,"🧯 Burnout: nervous system filed a ticket.","bad");
+          ns.endCause="stress";
+          ns=log(ns,"🧯 Weekend didn't help. Burnout.","bad");
         }
 
         ns=checkRepo(ns);
@@ -3537,6 +3654,7 @@ __/_|__
         // Early termination checks never fire on the final week (week 13); QBR handles that.
         if(weekInQuarter>=5 && weekInQuarter<QUARTER_WEEKS && behindPace(ns, weekInQuarter) && !ns.fired && !ns.burnedOut && !ns.repo && !ns.win && !ns.missed){
           ns=midQuarterRisk(ns, weekInQuarter);
+          ns=checkBurnout(ns);
         }
 
         if(weekInQuarter===QUARTER_WEEKS && !ns.fired && !ns.burnedOut && !ns.repo){
@@ -3544,6 +3662,7 @@ __/_|__
         }
 
         if(ns.fired || ns.burnedOut || ns.win || ns.missed || ns.repo){
+          setPending(null); // an event queued this week must not stack on the game-over dialog
           setS(ns);
           return;
         }
@@ -3553,6 +3672,9 @@ __/_|__
         ns.week=nextWeek;
         ns.slots=ns.maxSlots;
         ns.restedThisWeek=false;
+        ns.coffeesThisWeek=0;
+        ns.stressWarned=false;
+        ns.hygieneShield=false;
         ns.used={
           prospect:false,
           cadence:false,
@@ -3561,7 +3683,8 @@ __/_|__
           propose:false,
           close:false,
           network:false,
-          recharge:false
+          recharge:false,
+          crm:false
         };
 
         setS(ns);
@@ -3591,9 +3714,15 @@ __/_|__
                   : type==="repo"
                     ? `Cash went deeply negative and collections took your flex piece.`
                     : `Closed ${money(s.closedWon)} before HR reclaimed your dongles.`;
-          const lastBad=s.logs.find(e=>e.kind==="bad");
-          const cause=!lastBad ? "qbr" : lastBad.msg.indexOf("🪓")===0 ? "org" : lastBad.msg.indexOf("📉 Mid-quarter")===0 ? "review" : "qbr";
+          // v1.15: endCause is set wherever an ending lands; log parsing is only for pre-v1.15 saves
+          const legacyCause=()=>{
+            if(type!=="fired")return type==="burnout" ? "stress" : type;
+            const lastBad=s.logs.find(e=>e.kind==="bad");
+            return !lastBad ? "qbr" : lastBad.msg.indexOf("🪓")===0 ? "org" : lastBad.msg.indexOf("📉 Mid-quarter")===0 ? "review" : "qbr";
+          };
+          const cause=s.endCause || legacyCause();
           const meta={pct:s.quota>0 ? s.closedWon/s.quota : 0, cause};
+          setPending(null);
           setOver({title,body,type,meta});
         }else{
           setOver(null);
@@ -3651,6 +3780,7 @@ __/_|__
           }
         }
         st=checkRepo(st);
+        st=checkBurnout(st);
         setS(st);
       };
 
@@ -3674,7 +3804,8 @@ __/_|__
               </div>
               <div className="stats">
                 <Stat label="Energy" num={s.energy} fmt={v=>`${Math.round(v)}/100`} barValue={s.energy} barKind={s.energy>50?"good":s.energy>25?"warn":"bad"} />
-                <Stat label="Stress" num={s.stress} fmt={v=>`${Math.round(v)}/100`} barValue={s.stress} barKind={s.stress<40?"good":s.stress<70?"warn":"bad"} />
+                <Stat label="Stress" num={s.stress} fmt={v=>`${Math.round(v)}/100`} barValue={s.stress} barKind={s.stress<40?"good":s.stress<70?"warn":"bad"}
+                  sub={s.stress>=STRESS_DANGER ? <span style={{color:"var(--bad)"}}>Danger zone</span> : s.stress>=60 ? <span style={{color:"var(--warn)"}}>Edgy</span> : null} />
                 <Stat label="Cash" num={s.cash} fmt={money} sub="Salary + commission" />
                 <Stat label="Pipeline" num={s.pipeline} fmt={money} sub={`${s.deals.length} live deals`} />
                 <Stat label="Closed (Q)" num={s.closedQuarter} fmt={money} sub={`${pct(s.closedQuarter/s.quota)}% of quota • Pace ${pacePercent}%`} />
@@ -3696,6 +3827,7 @@ __/_|__
                   {s.modifiers.discount>0 && <span className="badge">🧾 Discount {pct(s.modifiers.discount)}%</span>}
                   {s.modifiers.conversion!==0 && <span className="badge">🎲 Conv Mod {s.modifiers.conversion>0?"+":""}{pct(s.modifiers.conversion)}%</span>}
                   {s.restedThisWeek && <span className="badge">🧘 Rested</span>}
+                  {s.coffeesThisWeek>0 && <span className="badge">☕×{s.coffeesThisWeek}</span>}
                   {s.repo && <span className="badge">🧥 Jacket Repo’d</span>}
                 </div>
                 <div className="row right">
@@ -3774,7 +3906,7 @@ __/_|__
               label:opt.label,
               className:opt.className||"ghost",
               onClick:()=>{
-                let ns=opt.action({...s});
+                let ns=checkBurnout(opt.action({...s}));
                 setS(ns);
                 setPending(null);
               }
