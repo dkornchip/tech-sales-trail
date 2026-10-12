@@ -170,6 +170,7 @@
       box-shadow:0 0 0 1px rgba(255,255,255,0.03) inset,0 10px 30px rgba(0,0,0,0.6);
       --mx:50%;--my:50%;
     }
+    .grid>.panel{min-width:0}
     .grid>.panel:nth-child(1){animation:cardIn .7s .08s var(--ease) both}
     .grid>.panel:nth-child(2){animation:cardIn .7s .22s var(--ease) both}
     .panel::before{
@@ -495,6 +496,9 @@
       margin-top:6px;
       flex-wrap:wrap;
     }
+    .footer .row.right{flex-wrap:wrap}
+    .footer .row.right .btn{width:auto;white-space:nowrap}
+    .footer .row.right .btn.primary{text-align:center;min-width:96px}
     .cutbox{
       background:#061737;
       border-radius:10px;
@@ -630,6 +634,7 @@
       header .row{flex-wrap:wrap;width:100%}
       header .row > .btn{width:auto;flex:1 1 0;text-align:center;white-space:nowrap}
     }
+    @media (max-width:480px){.stats{grid-template-columns:repeat(2,1fr)}} /* phones: room for $1,234,567 */
     .scene-note{margin:6px 0 0}
     .k-w{color:#e9f2ff}.k-d{color:#5d77a3}.k-b{color:#60a5fa}.k-b-d{color:#2c4f86}.k-c{color:#22d3ee}.k-c-d{color:#155e75}
     .k-g{color:#4ade80}.k-y{color:#facc15}.k-y-d{color:#854d0e}.k-o{color:#fb923c}.k-o-d{color:#9a3412}.k-r{color:#fb7185}.k-r-d{color:#9f1239}
@@ -663,16 +668,18 @@
       100%{opacity:0;transform:translate(-75%,-50%) scale(1) skewX(22deg)}}
 
     /* ---------- v1.14: toast (replaces alert(), which some viewers block) ---------- */
-    #tst-toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;pointer-events:none;z-index:70;
+    #tst-toast{position:fixed;inset:auto;margin:0;overflow:visible;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;pointer-events:none;z-index:70;
       background:linear-gradient(180deg,var(--panel),var(--panel-2));border:1px solid var(--border);border-radius:999px;padding:8px 16px;font-size:13px;color:var(--text);
       box-shadow:0 12px 30px rgba(0,0,0,.6),0 0 20px rgba(31,122,255,.25);transition:opacity .25s,transform .35s var(--ease);max-width:calc(100vw - 32px)}
     #tst-toast.show{opacity:1;transform:translate(-50%,0)}
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 
     /* ---------- v1.14: SHITCORP OS boot screen ---------- */
     #boot{position:fixed;inset:0;z-index:60;display:grid;place-items:center;padding:16px;background:rgba(2,6,23,.8);
       -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);animation:fadeIn .3s both;cursor:pointer}
     #boot.off{animation:bootOut .5s .3s var(--ease) both;pointer-events:none}
-    .boot-monitor{width:min(780px,100%);background:linear-gradient(180deg,#0e1b36,#070f1e);border:1px solid var(--border);border-radius:24px;padding:16px 16px 12px;
+    #boot.off .boot-monitor{pointer-events:auto} /* a late Skip tap during the fade lands on the monitor, not the game */
+    .boot-monitor{width:min(780px,100%);width:min(780px,100%,calc((100vh - 110px)*1.75));width:min(780px,100%,calc((100dvh - 110px)*1.75));background:linear-gradient(180deg,#0e1b36,#070f1e);border:1px solid var(--border);border-radius:24px;padding:16px 16px 12px;
       box-shadow:0 30px 90px rgba(0,0,0,.75),inset 0 1px 0 rgba(255,255,255,.05),0 0 70px rgba(31,122,255,.16)}
     .boot-screen.cutbox.crt{border-radius:18px}
     .boot-bezel{display:flex;align-items:center;gap:10px;margin-top:12px;padding:0 4px}
@@ -1079,9 +1086,15 @@ __/_|__
     if(typeof out.b === "function") out.b = out.b(meta||{});
     return out;
   }
+  // one-line description (aria-label, reduced-motion note); sc.summaryBy[meta.cause] wins over sc.summary
+  function summaryFor(type,meta){
+    var sc = SCENES[type]; if(!sc) return "";
+    return (sc.summaryBy && meta && sc.summaryBy[meta.cause]) || sc.summary || "";
+  }
 
   /* ======================================================================
      SCENES. Each has: dur (ms of timeline before the idle loop), cap (caption schedule; capBy = per meta.cause),
+     summary (summaryBy = per meta.cause),
      cues [{t, sfx | say | amb | shake | glitch | whip | slash | impact | zoom | slam | pulse | lines | card | letterbox,
             key:true = still fires on Skip (sound cues only), cause / notCause = only for that meta.cause}],
      cam [{t, x, y, z, r, e}] camera keys: look-at offset from the art's centre (cells), zoom, roll (deg),
@@ -1197,8 +1210,8 @@ __/_|__
       {t:900,  x:-7, y:-1,   z:1.42, r:-4.5},
       {t:1800, x:3,  y:-0.5, z:1.36, r:-2.5},
       {t:2380, x:5,  y:2,    z:1.3,  r:0},
-      {t:2600, x:0,  y:0.8,  z:1.1,  r:0, e:"cut"},
-      {t:5450, x:2,  y:0.6,  z:1.2,  r:1, e:"l"},
+      {t:2600, x:0,  y:0.25, z:1.08, r:0, e:"cut"},
+      {t:5450, x:2,  y:0.25, z:1.12, r:0.4, e:"l"},
       {t:5500, x:0,  y:0,    z:1.14, r:0, e:"cut"},
       {t:6600, x:0,  y:-0.5, z:1.3,  r:0},
       {t:7250, x:0,  y:-4.5, z:1.85, r:-2, e:"o"},
@@ -1324,7 +1337,7 @@ __/_|__
     var mk = p < 70 ? "k-y" : p < 90 ? "k-o" : (blink(t,140) ? "k-r k-bold" : "k-r");
     g.text(39,2,caf ? "HEART" : "STRESS","k-d");
     g.text(39,3,"["+rep("\u2588",f)+rep("\u2591",w-f)+"]",mk);
-    g.text(62-("" + Math.round(p)).length-1,2,Math.round(p)+"%",mk);
+    g.text(46,2,Math.round(p)+"%",mk); // next to the label, so heartbeat push-ins never crop it
     var flat = caf && t >= 2400, beatMs = 60000/bpm;
     g.text(39,5,flat ? "BPM ---" : "BPM "+Math.round(bpm),flat ? "k-r k-bold" : "k-d");
     if(!flat) g.text(48,5,(t % beatMs) < beatMs*0.35 ? "<3" : "  ","k-r");
@@ -1353,15 +1366,17 @@ __/_|__
     ],
     cam: [
       {t:0,    x:2,  y:-0.5, z:1.08, r:0},
-      {t:1500, x:-2, y:-1.5, z:1.32, r:-1.5, e:"l"},
+      {t:1500, x:5,  y:-1.5, z:1.22, r:-1.5, e:"l"},  // face and readout share the frame through the climb
+      {t:2300, x:5,  y:-2,   z:1.24, r:-2,   e:"l"},
       {t:2450, x:-7, y:-3.5, z:1.7,  r:-4.5, e:"i"},
-      {t:2500, x:0,  y:0,    z:1.08, r:0,    e:"cut"},
+      {t:2500, x:0.6,y:0,    z:1.08, r:0,    e:"cut"},
       {t:4150, x:0,  y:1.5,  z:1.24, r:2.5},
       {t:4600, x:0,  y:0,    z:1,    r:0,    e:"cut"},
       {t:7800, x:-1, y:0,    z:1.05, r:0,    e:"l"}
     ],
     idleGlitch: 5200,
     summary: "Stress hits 100%, the desk melts, blue screen.",
+    summaryBy: { caffeine: "Heart races, flatlines, blue screen." },
     draw: function(g,c){
       var t = c.t, st = c.st, caf = !!(c.meta && c.meta.cause === "caffeine");
       if(t < 2500){
@@ -1401,7 +1416,7 @@ __/_|__
       c.screen = "bsod";
       var pctDone = t <= c.dur ? Math.floor(37*prog(t,4800,c.dur)) : Math.min(99, 37 + Math.floor((t-c.dur)/900));
       g.text(3,1,":(","k-bs k-bold");
-      g.text(3,3,"Your nervous system ran into a problem.","k-bs");
+      g.text(3,3,caf ? "Your heart ran into a problem." : "Your nervous system ran into a problem.","k-bs");
       g.text(3,4,"Restarting you Monday.","k-bs");
       g.text(3,6,pctDone+"% complete","k-bs");
       g.text(3,8,"Stop code: "+(caf ? "QUAD_SHOT_OVERFLOW" : "QUOTA_EXCEEDS_SOUL"),"k-bs");
@@ -1423,8 +1438,8 @@ __/_|__
       {t:6000, sfx:"umbrella"}, {t:6000, zoom:1.1, ms:650, fx:25, fy:6}
     ],
     cam: [
-      {t:0,    x:-1, y:-1,  z:1.22, r:0},
-      {t:2100, x:-1, y:-1,  z:1.32, r:0, e:"l"},
+      {t:0,    x:-0.5, y:-1, z:1.06, r:0},       // cols 7-55 (QUOTA to the 100% goal) survive the 2100 punch-in
+      {t:2100, x:-0.5, y:-1, z:1.1,  r:0, e:"l"},
       {t:3450, x:0,  y:0.5, z:1.1,  r:0, e:"cut"},
       {t:5900, x:1,  y:0.5, z:1.14, r:0, e:"l"},
       {t:6900, x:-1, y:0,   z:1.16, r:0}
@@ -1523,8 +1538,8 @@ __/_|__
       {t:850,  x:4,  y:0,   z:1.24, r:0, e:"l"},
       {t:1500, x:0,  y:0.5, z:1.14, r:0},
       {t:2350, x:2,  y:0.5, z:1.42, r:-2},
-      {t:2900, x:0,  y:0.3, z:1.2,  r:0},
-      {t:4700, x:-3, y:0.3, z:1.16, r:0},
+      {t:2900, x:0,  y:0.2, z:1.08, r:0},  // the pan stays wide enough for the billboard's text rows
+      {t:4700, x:-3, y:0.2, z:1.1,  r:0},
       {t:5200, x:6,  y:0,   z:1.12, r:0, e:"cut"},
       {t:7200, x:6,  y:0,   z:1.16, r:0, e:"l"}
     ],
@@ -1535,8 +1550,19 @@ __/_|__
       var hookX = 34, TIP = 26, ty = 3; // boom tip column inside the truck sprite; truck top row
       // the camera pans off with the truck, then (behind the title card) cuts back to the empty rack
       var ox = t < 5200 ? -46*easeInOut(prog(t,3100,4700)) : 0, O = Math.round(ox);
-      // left of the building: a lamp post and a billboard
-      g.spr(-36-O,0,SPR.billboard,"k-d"); g.text(-34-O,1,"PRESIDENT'S CLUB","k-au");
+      // truck path (world): whips in reversing, waits, drives off accelerating
+      var tw;
+      if(t < 900) tw = -44;
+      else if(t < 1500) tw = lerp(-44,hookX-TIP,easeOut(prog(t,900,1500)));
+      else if(t < 3100) tw = hookX-TIP;
+      else tw = hookX-TIP - 16*Math.pow((t-3100)/1000,2);
+      // exhaust from the stack (world space), drawn first so the sign and the truck sit in front of it
+      st.puffs = st.puffs || [];
+      var moving = (t > 900 && t < 1500) || (t > 3100 && t < 5200);
+      if(moving && Math.random() < .55) st.puffs.push({x:tw+12,y:ty,vx:rnd(1,4),vy:rnd(-3,-1.2),life:rnd(600,1000),ch:pick(["o","O","."]),k:"k-d",fade:320,ch2:"o"});
+      stepParts(st.puffs,c.dt,g,undefined,ox);
+      // left of the building: a lamp post and a billboard (solid, so the exhaust passes behind its text)
+      g.sprO(-36-O,0,SPR.billboard,"k-d"); g.text(-34-O,1,"PRESIDENT'S CLUB","k-au");
       var lx = -8-O;
       g.text(lx-1,4,"(_)","k-y"); for(var ly=5;ly<=9;ly++) g.set(lx,ly,"|","k-d"); g.text(lx-1,10,"_|_","k-d");
       // building + street
@@ -1550,12 +1576,6 @@ __/_|__
       g.set(rk,6,"?","k-br");
       for(var py=7;py<=10;py++) g.set(rk,py,"|","k-br");
       g.text(rk-1,11,"_|_","k-br");
-      // truck path (world): whips in reversing, waits, drives off accelerating
-      var tw;
-      if(t < 900) tw = -44;
-      else if(t < 1500) tw = lerp(-44,hookX-TIP,easeOut(prog(t,900,1500)));
-      else if(t < 3100) tw = hookX-TIP;
-      else tw = hookX-TIP - 16*Math.pow((t-3100)/1000,2);
       var tx = Math.round(tw-ox), tipX = tx+TIP;
       // cable lowers to the hanger, clanks, lifts
       var attached = t >= 2400, cableLen = 0;
@@ -1571,11 +1591,7 @@ __/_|__
         g.set(tipX+swing,ty+1+cableLen,"J","k-w");
         if(attached) g.spr(tipX-3+swing,ty+2+cableLen,SPR.jacketS,"k-au");
       }
-      // exhaust from the stack, dust from the tires (world space)
-      st.puffs = st.puffs || [];
-      var moving = (t > 900 && t < 1500) || (t > 3100 && t < 5200);
-      if(moving && Math.random() < .55) st.puffs.push({x:tw+12,y:ty,vx:rnd(1,4),vy:rnd(-3,-1.2),life:rnd(600,1000),ch:pick(["o","O","."]),k:"k-d",fade:320,ch2:"o"});
-      stepParts(st.puffs,c.dt,g,undefined,ox);
+      // dust from the tires
       if(t > 3100 && t < 5200) g.text(tx+19,ty+7,blink(t,120) ? ". '" : "' .","k-s");
       if(t > 900 && t < 1500) g.text(tx-3,ty+7,blink(t,120) ? ". '" : "' .","k-s");
       // idle: tumbleweed
@@ -1843,6 +1859,9 @@ __/_|__
     function setScreen(cls){ if(cls === screen) return; if(screen) box.classList.remove(screen); screen = cls; if(cls) box.classList.add(cls); }
     function impact(ms){
       if(!impactOk()) return;
+      // an inverted frame that is on screen when the main thread stalls (e.g. the game still compiling behind
+      // the boot) stays up for the whole stall, so callers can veto impacts while the page is busy
+      if(opts.impactOk && !opts.impactOk()) return;
       box.classList.remove("tst-impact"); void box.offsetWidth; box.classList.add("tst-impact");
       later(function(){ box.classList.remove("tst-impact"); },clamp(Math.round(ms/speed),70,160));
     }
@@ -1851,7 +1870,11 @@ __/_|__
       if(html) el.innerHTML = html;
       if(v) el.style.setProperty(v,ms+"ms");
       L.fx.appendChild(el);
-      later(function(){ if(el.parentNode) el.parentNode.removeChild(el); },ms/speed+80);
+      // leave with the CSS animation, whose length follows live speed changes (--spd); the timer is a fallback
+      // for when animationend never comes (hidden tab), long enough for the slowest speed (120/260)
+      function rm(){ if(el.parentNode) el.parentNode.removeChild(el); }
+      el.addEventListener("animationend",function(e){ if(e.target === el) rm(); });
+      later(rm,Math.ceil(ms*260/120)+200);
       return el;
     }
     function fire(cu){
@@ -2015,7 +2038,7 @@ __/_|__
       },
       setSpeed: function(v){ speed = v > 0 ? v : 1; if(HAS_DOM) box.style.setProperty("--spd",String(speed)); },
       isDone: function(){ return t >= sc.dur; },
-      summary: sc.summary
+      summary: summaryFor(type,ctx.meta)
     };
   }
 
@@ -2028,7 +2051,7 @@ __/_|__
     return {text:g.toText(), html:g.toHTML(), screen:ctx.screen||""};
   }
 
-  root.TST_SCENES = { play:play, renderText:renderText, SCENES:SCENES, COLS:COLS, ROWS:ROWS, reduced:reduced, fit:fit };
+  root.TST_SCENES = { play:play, renderText:renderText, SCENES:SCENES, COLS:COLS, ROWS:ROWS, reduced:reduced, fit:fit, summaryFor:summaryFor };
 })(typeof window !== "undefined" ? window : globalThis);
 
 /* ===== Tech Sales Trail v1.14: sound engine (Web Audio synth, no samples) + PA announcer ===== */
@@ -2468,7 +2491,7 @@ __/_|__
     var m = norm(msg);
     if(/\d+ signed, \$/.test(m)) return {sfx:"cash", prio:4, close:true};
     if(/nobody signed/.test(m)) return {sfx:"thud", prio:3};
-    if(/nothing to close/.test(m)) return {sfx:"nope", prio:3};
+    if(/nothing to close|no late-stage deals/.test(m)) return {sfx:"nope", prio:3};
     if(m.indexOf("🧑") === 0 && /🐋/.test(m)) return {sfx:"sonar", prio:3};
     if(m.indexOf("🧑") === 0) return {sfx:"ping", prio:3};
     for(var i=0;i<RULES.length;i++){ var r = RULES[i]; if(m.indexOf(norm(r[0])) === 0) return {sfx:r[1], prio:r[2], say:r[3]}; }
@@ -2555,12 +2578,27 @@ __/_|__
   });
 
   /* ---------- toast (in-page replacement for alert(), which the artifact viewer blocks) ---------- */
+  // Both nodes exist before the first message, so the live region is registered when it speaks. The visible
+  // toast is a manual popover: the top layer keeps it above an open <dialog> and its backdrop.
+  function toastNodes(){
+    var el = document.getElementById("tst-toast"), live = document.getElementById("tst-live");
+    if(!document.body) return null;
+    if(!el){ el = document.createElement("div"); el.id = "tst-toast"; el.setAttribute("aria-hidden","true"); el.setAttribute("popover","manual"); document.body.appendChild(el); }
+    if(!live){ live = document.createElement("div"); live.id = "tst-live"; live.className = "sr-only"; live.setAttribute("role","status"); live.setAttribute("aria-live","polite"); document.body.appendChild(live); }
+    return {el:el, live:live};
+  }
+  toastNodes();
   window.TST_TOAST = function(msg){
-    var el = document.getElementById("tst-toast");
-    if(!el){ el = document.createElement("div"); el.id = "tst-toast"; el.setAttribute("role","status"); el.setAttribute("aria-live","polite"); document.body.appendChild(el); }
+    var n = toastNodes(); if(!n) return;
+    var el = n.el;
+    clearTimeout(el._t); clearTimeout(el._h);
+    try{ if(el.matches(":popover-open")) el.hidePopover(); el.showPopover(); }catch(e){} // re-show = topmost
     el.textContent = msg;
     el.classList.remove("show"); void el.offsetWidth; el.classList.add("show");
-    clearTimeout(el._t); el._t = setTimeout(function(){ el.classList.remove("show"); },2600);
+    el._t = setTimeout(function(){ el.classList.remove("show"); el._h = setTimeout(function(){ try{ el.hidePopover(); }catch(e){} },400); },2600);
+    // an open modal makes the rest of the page inert, so screen readers hear it from the dialog's own status line
+    var live = document.querySelector("dialog[open] .tst-sr") || n.live;
+    live.textContent = ""; clearTimeout(live._t); live._t = setTimeout(function(){ live.textContent = msg; },60);
   };
 
   /* ---------- boot screen (once per tab session) ---------- */
@@ -2596,7 +2634,8 @@ __/_|__
     ctrl.stop();
     ov.classList.add("on");
     btn.textContent = "Skip"; hint.textContent = "Booting…";
-    ctrl = Sc.play(pre,"boot",{crt:false, maxFont:20, meta:{week:readWeek()}, onDone:function(){ setTimeout(finish, reduced ? 2000 : 400); }});
+    // no impact frames until the game behind the boot has mounted (Babel compiling = long main-thread stall)
+    ctrl = Sc.play(pre,"boot",{crt:false, maxFont:20, meta:{week:readWeek()}, impactOk:function(){ return !!document.querySelector("#root .grid"); }, onDone:function(){ setTimeout(finish, reduced ? 2000 : 400); }});
   }
   function finish(){
     if(stage === "done") return;
@@ -2627,7 +2666,9 @@ __/_|__
     }
     if(e.key === "Escape"){ e.preventDefault(); if(stage === "standby") A.unlock(); finish(); return; }
     if(/^(Shift|Control|Alt|Meta|CapsLock|Arrow|F\d)/.test(e.key)) return;
-    e.preventDefault(); e.stopPropagation(); advance();
+    e.preventDefault(); e.stopPropagation();
+    if(e.repeat) return; // a held key starts the boot once, never skips it
+    advance();
   }
   ov.addEventListener("click",function(e){ e.stopPropagation(); advance(); });
   document.addEventListener("keydown",onKey,true);
@@ -2661,8 +2702,8 @@ __/_|__
     const rand=(a,b)=>Math.random()*(b-a)+a;
     const randi=(a,b)=>Math.floor(rand(a,b+1));
     const choice=(arr)=>arr[Math.floor(Math.random()*arr.length)];
-    // FIX: negative cash used to render as "$-1,500".
-    const money=(n)=>{const r=Math.round(n);return (r<0?"-$":"$")+Math.abs(r).toLocaleString();};
+    // FIX: negative cash used to render as "$-1,500". en-US grouping everywhere: logs, badges and the big-close PA regex.
+    const money=(n)=>{const r=Math.round(n);return (r<0?"-$":"$")+Math.abs(r).toLocaleString("en-US");};
     const pct=(p)=>Math.round(p*100);
     const now=()=>new Date().toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
     const idGen=(()=>{let i=0;return()=> (++i).toString(36)+"-"+Date.now().toString(36).slice(-4)})();
@@ -2718,7 +2759,7 @@ __/_|__
         repoWarned:!!parsed.repoWarned,
         perfWarnings:Number.isFinite(parsed.perfWarnings)?parsed.perfWarnings:0,
         // v1.15 fields; v1.14 saves don't have them
-        coffeesThisWeek:Number.isFinite(parsed.coffeesThisWeek)?Math.max(0,parsed.coffeesThisWeek):0,
+        coffeesThisWeek:Number.isFinite(parsed.coffeesThisWeek)?Math.max(0,Math.floor(parsed.coffeesThisWeek)):0,
         stressWarned:!!parsed.stressWarned,
         hygieneShield:!!parsed.hygieneShield,
         endCause:typeof parsed.endCause==="string"?parsed.endCause:null
@@ -2810,8 +2851,10 @@ __/_|__
       );
     };
 
-    const Modal=({open,title,children,actions})=>{
+    // onDismiss: Esc may close it (info-only dialogs). Without it, Esc does nothing.
+    const Modal=({open,title,children,actions,onDismiss})=>{
       const ref=useRef(null);
+      const titleId=React.useId()+"t";
       useEffect(()=>{
         if(!ref.current)return;
         if(open){
@@ -2821,8 +2864,14 @@ __/_|__
         }
       },[open]);
       return(
-        <dialog ref={ref} onCancel={e=>e.preventDefault()}>
-          <div className="d-header">{title}</div>
+        <dialog ref={ref} aria-labelledby={titleId}
+          onCancel={e=>{ if(!onDismiss)e.preventDefault(); }}
+          onClose={()=>{
+            if(onDismiss){ if(open)onDismiss(); return; }
+            // Chromium force-closes on a repeated Esc even when cancel is prevented; keep the dialog in step with state
+            if(open && ref.current && !ref.current.open)ref.current.showModal();
+          }}>
+          <div className="d-header" id={titleId}>{title}</div>
           <div className="d-body">{children}</div>
           <div className="d-footer">
             {actions && actions.map((a,i)=>(
@@ -2836,6 +2885,7 @@ __/_|__
               </button>
             ))}
           </div>
+          <span className="sr-only tst-sr" role="status" aria-live="polite"></span>
         </dialog>
       );
     };
@@ -2875,7 +2925,7 @@ __/_|__
           </div>
         );
       }
-      const label=(engine.SCENES[type] && engine.SCENES[type].summary) || "Ending animation";
+      const label=(engine.summaryFor && engine.summaryFor(type,meta)) || "Ending animation";
       return(
         <div className="cutbox crt" role="img" aria-label={label}>
           <pre className="cutscene" ref={preRef}></pre>
@@ -2947,8 +2997,9 @@ __/_|__
     const CRASH_PER_SHOT=13;         // end-of-week stress per Quad Shot drunk that week
     // n = shots already drunk this week, so these describe the NEXT shot
     const COFFEE_ENERGY=[18,15,12,9,6];
-    const coffeeEnergy=(n)=>COFFEE_ENERGY[Math.min(n,COFFEE_ENERGY.length-1)];
+    const coffeeEnergy=(n)=>COFFEE_ENERGY[clamp(Math.floor(n)||0,0,COFFEE_ENERGY.length-1)];
     const coffeeStress=(n)=>12+6*n;
+    const rechargeRelief=(n)=>Math.max(0,12-4*n); // caffeine in the system blunts the Recharge
     const coffeeRisk=(n)=>n<2?0:n===2?0.20:n===3?0.45:Math.min(0.95,0.75+0.10*(n-4)); // palpitations from shot 3
     const checkBurnout=(state)=>{
       if(!state || isRunOver(state))return state; // an ending already landed; keep its priority
@@ -3068,7 +3119,7 @@ __/_|__
       let s={...state};
       const candidates=s.deals.filter(d=>d.stage>=3);
       if(candidates.length===0){
-        return log(s,`${label}: nothing to close.`,"muted");
+        return log(s,`${label}: no late-stage deals.`,"muted");
       }
       let closedCount=0,totalWon=0,totalDiscount=0,lost=0,lostVal=0;
       const pipPenalty=s.pip ? 0.05*(s.pipLevel||1) : 0;
@@ -3159,7 +3210,7 @@ __/_|__
       fire(0.18,st=>{
         setPending({
           title:"🧨 Competitor Panic",
-          body:"They cut 25%. Match it or hold the line?",
+          body:"They cut 25%. Match 20% or hold?",
           options:[
             {
               label:"Match 20% (more wins, less $)",
@@ -3226,7 +3277,7 @@ __/_|__
               }
             },
             {
-              label:"Spin it (safer pipe, -rep)",
+              label:"Spin it (safer pipe, -\u2060rep)", // word joiner: keeps "-rep" on one line
               className:"ghost",
               action:(x)=>{
                 x.reputation=clamp(x.reputation-8,0,100);
@@ -3274,7 +3325,7 @@ __/_|__
         st.deals=[...adds,...st.deals];
         st.pipeline=st.deals.reduce((sum,d)=>sum+d.value,0);
         st.reputation=clamp(st.reputation+4,0,100);
-        return log(st,`🐦 Product became a meme. +${n} inbound leads.`);
+        return log(st,`🐦 Product became a meme. +${n} inbound lead(s).`);
       });
 
       fire(0.10,st=>{
@@ -3624,7 +3675,7 @@ __/_|__
         ns.stress=clamp(ns.stress+2,0,100);
         ns.deals=[...adds,...ns.deals];
         ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
-        ns=log(ns,`📞 Blitz: +${adds.length} leads. -30 energy.`);
+        ns=log(ns,`📞 Blitz: +${adds.length} lead(s). -30 energy.`);
         setS(ns);
       };
 
@@ -3637,7 +3688,7 @@ __/_|__
         ns.meetings=(ns.meetings||0)+randi(0,n);
         ns.deals=[...adds,...ns.deals];
         ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
-        ns=log(ns,`✉️ Cadence: ${n} warm replies. -18 energy.`);
+        ns=log(ns,`✉️ Cadence: +${n} warm lead(s). -18 energy.`);
         setS(ns);
       };
 
@@ -3735,9 +3786,9 @@ __/_|__
         ns.used.recharge=true;
         ns.energy=clamp(ns.energy+35,0,100);
         // v1.15: caffeine in the system blunts the reset
-        const relief=Math.max(0,12-4*(ns.coffeesThisWeek||0));
+        const relief=rechargeRelief(ns.coffeesThisWeek||0);
         ns.stress=clamp(ns.stress-relief,0,100);
-        ns=log(ns,`🧘 Recharged. +35 energy, -${relief} stress.`);
+        ns=log(ns,relief>0 ? `🧘 Recharged. +35 energy, -${relief} stress.` : "🧘 Recharged. +35 energy. Caffeine ate the calm.");
         setS(ns);
       };
 
@@ -3788,7 +3839,7 @@ __/_|__
         ns=log(ns,pruned>0
           ? `🧹 CRM cleanup. -${pruned} dead lead(s), +${gain} manager.`
           : `🧹 CRM cleanup. Nothing dead. +${gain} manager.`);
-        if(nuked)ns=log(ns,`🗑️ "Close that out." ${nuked.account} gone. -${money(nuked.value)}.`,"bad");
+        if(nuked)ns=log(ns,`🗑️ “Close that out.” ${nuked.account} gone. -${money(nuked.value)}.`,"bad");
         setS(ns);
       };
 
@@ -3830,7 +3881,10 @@ __/_|__
         !!(usedKey && s.used && s.used[usedKey])
       );
       const shotsNow=s.coffeesThisWeek||0;
-      const nextShotRisk=coffeeRisk(shotsNow);
+      // actCoffee also kills when the shot itself takes stress to 100 (cost() leaves stress alone), so show that as 100%
+      const shotLethal=(s.stress||0)+coffeeStress(shotsNow)>=100;
+      const nextShotRisk=shotLethal?1:coffeeRisk(shotsNow);
+      const crmDone=!!(s.used && s.used.crm);
 
       return(
         <div className="actions">
@@ -3868,19 +3922,19 @@ __/_|__
           </button>
           <button className="btn" disabled={disabled(0,1)} onClick={actRecharge}>
             <div className="title">🧘 Recharge</div>
-            <div className="desc">Once per week. Cost: 1 Slot</div>
+            <div className="desc">Once per week. Cost: 1 Slot • Stress -{rechargeRelief(shotsNow)}</div>
           </button>
           <button className="btn" disabled={disabled(0,1)} onClick={actCoffee}>
             <div className="title">☕ Quad Shot</div>
-            <div className="desc">Borrow from tomorrow. Cost: 1 Slot • $6 • Stress +{coffeeStress(shotsNow)}{nextShotRisk>0 ? ` • 🫀 ${pct(nextShotRisk)}%` : ""}</div>
+            <div className="desc">Borrow from tomorrow. Cost: 1 Slot • $6 • Stress +{coffeeStress(shotsNow)} (+{CRASH_PER_SHOT} Fri){nextShotRisk>0 ? ` • 🫀 ${pct(nextShotRisk)}%` : ""}</div>
           </button>
           <button className="btn" disabled={disabled(20,1)} onClick={actPolitics}>
             <div className="title">🏛️ Internal Politics</div>
             <div className="desc">Buff manager, tax reputation. Cost: 20 Energy • 1 Slot</div>
           </button>
-          <button className="btn" disabled={disabled(15,1,"crm")} onClick={actCrm}>
+          <button className="btn" disabled={disabled(15,1,"crm")} onClick={actCrm} title={crmDone ? "Once per week. Back next week." : undefined}>
             <div className="title">🧹 CRM Cleanup</div>
-            <div className="desc">Prune dead leads, +manager. Risky. Cost: 15 Energy • 1 Slot</div>
+            <div className="desc">{crmDone ? "Done this week. Back next week." : "Weekly. Prune dead leads, +manager. Risky. Cost: 15 Energy • 1 Slot"}</div>
           </button>
         </div>
       );
@@ -3999,6 +4053,8 @@ __/_|__
         ns=randomEvents(ns,setPending,2);
         ns=ageAndGhost(ns);
         ns=checkBurnout(ns);
+        // a run that just ended (burnout here, repo from the bills) stops simulating, so its ending stays the last line
+        if(isRunOver(ns)){ setPending(null); setS(ns); return; }
 
         const u=ns.used;
         const didProspectish=u.prospect||u.cadence||u.network;
@@ -4070,8 +4126,9 @@ __/_|__
         if(!isRunOver(ns) && ns.stress>=STRESS_DANGER && Math.random()<(ns.stress-75)*DANGER_RATE){
           ns.burnedOut=true;
           ns.endCause="stress";
-          ns=log(ns,"🧯 Weekend didn't help. Burnout.","bad");
+          ns=log(ns,"🧯 Weekend didn’t help. Burnout.","bad");
         }
+        if(isRunOver(ns)){ setPending(null); setS(ns); return; }
 
         ns=checkRepo(ns);
 
@@ -4146,12 +4203,12 @@ __/_|__
               : type==="burnout"
                 ? (s.endCause==="caffeine"
                   ? `Closed ${money(s.closedWon)}. Heart clocked out first.`
-                  : `Closed ${money(s.closedWon)}. Nervous system quit first.`)
+                  : `Closed ${money(s.closedWon)}. Body quit first.`)
                 : type==="missed"
                   ? `Closed ${money(s.closedWon)}. Badge kept. Back to the phones.`
                   : type==="repo"
-                    ? `Overdrawn. Collections took the jacket.`
-                    : `Closed ${money(s.closedWon)}. HR wants the dongles back.`;
+                    ? `Cash hit ${money(s.cash)}. The loan came due.`
+                    : `Closed ${money(s.closedWon)}. Your Slack is already gone.`;
           // v1.15: endCause is set wherever an ending lands; log parsing is only for pre-v1.15 saves
           const legacyCause=()=>{
             if(type!=="fired")return type==="burnout" ? "stress" : type;
@@ -4173,6 +4230,13 @@ __/_|__
       const {weekInQuarter}=getQuarterInfo(s.week);
       const hasLateDeal = s.deals.some(d=>d.stage>=3);
       const pacePercent=pct(weekInQuarter/QUARTER_WEEKS);
+      // v1.15: the caffeine crash lands inside End Week, right before the danger roll, so label stress by where it will be
+      const crashDue=CRASH_PER_SHOT*(s.coffeesThisWeek||0);
+      const projStress=Math.min(100,s.stress+crashDue);
+      const stressZone=projStress>=STRESS_DANGER ? "Danger zone" : projStress>=60 ? "Edgy" : "";
+      const stressSub=(stressZone||crashDue)
+        ? <span style={{color:projStress>=STRESS_DANGER?"var(--bad)":"var(--warn)"}}>{[stressZone,crashDue?(stressZone?`+${crashDue} Fri`:`Crash +${crashDue} Fri`):""].filter(Boolean).join(" • ")}</span>
+        : null;
 
       const tryOpportunisticClose=()=>{
         if(!hasLateDeal){
@@ -4223,27 +4287,27 @@ __/_|__
       };
 
       const opportunisticDisabled=(
-        s.slots<=0 || s.fired || s.burnedOut || s.win || s.missed || s.repo || !hasLateDeal
+        s.energy<10 || s.slots<=0 || s.fired || s.burnedOut || s.win || s.missed || s.repo || !hasLateDeal
       );
 
       return(
         <>
           <div className="grid">
             <div className="panel">
-              <div className="row between" style={{marginBottom:8}}>
+              <div className="row between wrap" style={{marginBottom:8}}>
                 <h2>Quarter Map</h2>
-                <div className="row">
+                <div className="row wrap">
                   <span className="kbd">Week {weekInQuarter}/{QUARTER_WEEKS}</span>
                   <span className="kbd">Turn {s.week}</span>
                   <span className="kbd">Slots {s.slots}/{s.maxSlots}</span>
                   <span className="kbd">Run {s.runId.slice(0,5)}</span>
-                  <button className="pill-btn" onClick={()=>setShowHelp(true)}>Stats Help</button>
+                  <button className="pill-btn" onClick={()=>setShowHelp(true)}>Rules</button>
                 </div>
               </div>
               <div className="stats">
                 <Stat label="Energy" num={s.energy} fmt={v=>`${Math.round(v)}/100`} barValue={s.energy} barKind={s.energy>50?"good":s.energy>25?"warn":"bad"} />
                 <Stat label="Stress" num={s.stress} fmt={v=>`${Math.round(v)}/100`} barValue={s.stress} barKind={s.stress<40?"good":s.stress<70?"warn":"bad"}
-                  sub={s.stress>=STRESS_DANGER ? <span style={{color:"var(--bad)"}}>Danger zone</span> : s.stress>=60 ? <span style={{color:"var(--warn)"}}>Edgy</span> : null} />
+                  sub={stressSub} />
                 <Stat label="Cash" num={s.cash} fmt={money} sub="Salary + commission" />
                 <Stat label="Pipeline" num={s.pipeline} fmt={money} sub={`${s.deals.length} live deals`} />
                 <Stat label="Closed (Q)" num={s.closedQuarter} fmt={money} sub={`${pct(s.closedQuarter/s.quota)}% of quota • Pace ${pacePercent}%`} />
@@ -4317,6 +4381,7 @@ __/_|__
           <Modal
             open={showHelp}
             title="How It Works"
+            onDismiss={()=>setShowHelp(false)}
             actions={[
               {
                 label:"Got it",
@@ -4327,13 +4392,13 @@ __/_|__
           >
             <p className="tiny"><strong>Energy</strong> fuels actions. Small refill at week end.</p>
             <p className="tiny"><strong>Stress</strong> hurts close rates. 80+ can burn you out at week end; 100 is instant.</p>
-            <p className="tiny"><strong>Quad Shot</strong> hits harder each shot that week. 3+ can stop your heart. Then you crash.</p>
-            <p className="tiny"><strong>CRM Cleanup</strong> weekly: prunes dead leads, +manager, shields this week’s review. Boss may nuke a good deal.</p>
+            <p className="tiny"><strong>Quad Shot</strong> hits harder each shot that week. Shot 3+ can stop your heart; a shot to 100 stress will. Each one: +{CRASH_PER_SHOT} stress at week end, weaker Recharge.</p>
+            <p className="tiny"><strong>CRM Cleanup</strong> weekly: prunes dead leads, +manager, freezes warnings, trims fire odds. Boss may nuke a good deal.</p>
             <p className="tiny"><strong>Cash</strong> is salary and commission in, rent out. At -$1,500 the jacket goes.</p>
             <p className="tiny"><strong>Pipeline</strong> is the value of live deals. Actions move them down the funnel.</p>
-            <p className="tiny"><strong>Closed (Q)</strong> is revenue this quarter. Behind pace from week 5? Exits get likely.</p>
+            <p className="tiny"><strong>Closed (Q)</strong> is revenue this quarter. Behind pace from week 5? Warnings, or a surprise exit.</p>
             <p className="tiny"><strong>Manager</strong> nudges close odds, drives PIPs and firing. Emails without calls annoy them.</p>
-            <p className="tiny"><strong>Reputation</strong> grows deal size, nudges closes, tilts events your way.</p>
+            <p className="tiny"><strong>Reputation</strong> grows deal size and nudges close odds.</p>
             <p className="tiny"><strong>Product</strong> is how cursed the stack is. Low product sinks demos and closes.</p>
             <p className="tiny"><strong>Skills</strong> boost their matching action and feed the close math.</p>
             <p className="tiny"><strong>Modifiers</strong> are short-term close and discount effects from events and full-funnel weeks.</p>
@@ -4380,7 +4445,7 @@ __/_|__
               ctrlRef={sceneRef}
             />
             {REDUCED_MOTION && over && window.TST_SCENES && window.TST_SCENES.SCENES[over.type] && (
-              <p className="tiny scene-note">{window.TST_SCENES.SCENES[over.type].summary}</p>
+              <p className="tiny scene-note">{window.TST_SCENES.summaryFor(over.type,over.meta)}</p>
             )}
             {!REDUCED_MOTION && window.TST_SCENES && (
               <div className="row right scene-ctl">
