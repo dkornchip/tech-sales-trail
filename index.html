@@ -552,6 +552,7 @@
       padding:12px 14px;
     }
     dialog .d-footer{
+      position:sticky;bottom:0;z-index:1;background:#050b1c; /* focusing the first action never scrolls a tall dialog away from its top */
       padding:8px 14px 10px;
       border-top:1px solid var(--border);
       display:flex;
@@ -690,6 +691,38 @@
     .boot-btn.btn{width:auto;flex:none;text-align:center;padding:7px 16px}
     @keyframes bootOut{to{opacity:0;visibility:hidden}}
     @media (max-width:520px){ .boot-hint{display:none} .boot-btn.btn{margin-left:auto} }
+
+    /* ---------- v1.16: Shitcorp onboarding memo at the top of the Rules ---------- */
+    /* Resting styles are the final (stamped) frame, so a skip or reduced motion lands there. */
+    .memo{position:relative;margin:0 0 10px;padding:10px 14px 12px;border-radius:10px;border:1px solid var(--border);overflow:hidden;
+      background:linear-gradient(180deg,#0d1c3a,#081428);box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+      animation:memoDrop .5s var(--ease) both,memoShake .32s 1.62s linear} /* no fill on the shake: it would override the drop */
+    .memo.live{cursor:pointer}
+    .memo-head{display:flex;justify-content:space-between;gap:8px;padding-bottom:6px;margin-bottom:8px;border-bottom:1px dashed var(--border);
+      font-family:"Sora","Inter",ui-sans-serif,system-ui,sans-serif;font-size:9.5px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+    .memo h3{margin:0 0 6px;font-family:"Sora","Inter",ui-sans-serif,system-ui,sans-serif;font-size:15px;color:var(--text)}
+    .memo p{margin:0 0 6px;font-size:12px;line-height:1.45;color:#c7dbff}
+    .memo-cannon{position:relative;display:inline-block;transform-origin:30% 80%;transform:rotate(6deg) translateY(1px);animation:memoCannon .45s .3s ease-out both}
+    .memo-bit{position:absolute;left:35%;top:30%;width:5px;height:7px;border-radius:1px;opacity:0;animation:memoFizzle 1.1s ease-in both}
+    .memo-bit:nth-child(1){background:var(--accent-3);--dx:-7px;animation-delay:.42s}
+    .memo-bit:nth-child(2){background:var(--warn);--dx:1px;animation-delay:.5s}
+    .memo-bit:nth-child(3){background:var(--accent-4);--dx:8px;animation-delay:.58s}
+    .memo-title{position:relative;display:inline-block;font-weight:700;color:#fde68a;animation:memoShine .7s .9s ease-in-out both}
+    .memo-stamp{position:absolute;left:50%;top:50%;padding:0 7px;border:3px double #f43f5e;border-radius:6px;pointer-events:none;white-space:nowrap;
+      font-family:"Sora","Inter",ui-sans-serif,system-ui,sans-serif;font-size:20px;font-weight:800;line-height:1.15;letter-spacing:.14em;color:#f43f5e;
+      background:rgba(244,63,94,.10);text-shadow:0 0 10px rgba(244,63,94,.45);transform:translate(-50%,-50%) rotate(-12deg);
+      animation:memoStamp .42s 1.4s cubic-bezier(.2,.9,.3,1.3) both}
+    .memo .memo-foot{margin:4px 0 0;font-size:11px;font-style:italic;color:var(--muted);animation:fadeIn .4s 1.9s ease both}
+    .memo.done,.memo.done *{animation:none!important}
+    @keyframes memoDrop{0%{opacity:0;transform:translateY(-26px) rotate(-1.5deg)}70%{opacity:1;transform:translateY(3px) rotate(.4deg)}100%{transform:none}}
+    @keyframes memoShake{0%,100%{transform:none}25%{transform:translate(-3px,1px)}50%{transform:translate(3px,-1px)}75%{transform:translate(-1px,1px)}}
+    @keyframes memoCannon{0%{transform:none}40%{transform:rotate(-14deg) scale(1.15)}100%{transform:rotate(6deg) translateY(1px)}}
+    @keyframes memoFizzle{0%{opacity:0;transform:none}12%{opacity:1;transform:translate(var(--dx),-7px)}100%{opacity:0;transform:translate(var(--dx),46px) rotate(190deg)}}
+    @keyframes memoShine{0%,100%{text-shadow:none}50%{text-shadow:0 0 12px rgba(253,230,138,.9),0 0 2px #fff}}
+    @keyframes memoStamp{0%{opacity:0;transform:translate(-50%,-50%) rotate(-24deg) scale(2.4)}60%{opacity:1;transform:translate(-50%,-50%) rotate(-11deg) scale(.92)}100%{opacity:1;transform:translate(-50%,-50%) rotate(-12deg) scale(1)}}
+    .memo-head span{white-space:nowrap}
+    @media (max-width:480px){ .memo-head span+span{display:none} }
+    @media (prefers-reduced-motion: reduce){ .memo,.memo *{animation:none!important} }
 
     /* elements using the hidden attribute stay hidden even when a rule sets display */
     [hidden]:not([hidden=until-found i]){display:none!important}
@@ -2395,6 +2428,7 @@ __/_|__
     hydrate:["Wellness reminder. Hydrate."]
   };
   Object.assign(LINES,{ closeOut:["Close that out."], burnoutCaffeine:["Medical to the sales floor."] });
+  Object.assign(LINES,{ welcome:["Welcome to Shitcorp. Culture is glue."] }); // v1.16 onboarding memo
   var SAY = { last:0, voice:null, timer:0 };
   function pickVoice(){
     if(!("speechSynthesis" in root)) return null;
@@ -2422,6 +2456,7 @@ __/_|__
     play("pa");
     clearTimeout(SAY.timer);
     SAY.timer = setTimeout(function(){
+      SAY.timer = 0;
       if(!A.settings.on || !A.settings.voice) return;
       try{
         var u = new root.SpeechSynthesisUtterance(text), v = SAY.voice || (SAY.voice = pickVoice());
@@ -2435,7 +2470,9 @@ __/_|__
     }, 720);
     return true;
   }
-  function hush(){ clearTimeout(SAY.timer); try{ if("speechSynthesis" in root) root.speechSynthesis.cancel(); }catch(e){} stopAmbient(); }
+  // drop a line say() has queued but not spoken yet; unlike hush(), nothing already playing is touched
+  function cancelSay(){ var queued = !!SAY.timer; clearTimeout(SAY.timer); SAY.timer = 0; return queued; }
+  function hush(){ clearTimeout(SAY.timer); SAY.timer = 0; try{ if("speechSynthesis" in root) root.speechSynthesis.cancel(); }catch(e){} stopAmbient(); }
 
   /* ---------- unlock on the first gesture ---------- */
   function unlock(){
@@ -2531,8 +2568,16 @@ __/_|__
     shing: {prio:3, free:true, fn:function(o){ noise(o,{ft:"highpass",f:5200,q:.7,dur:.07,v:.12}); tone(o,{type:"sine",f:2960,f2:3320,dur:.42,v:.05,vib:[11,18]}); return tone(o,{type:"sine",f:4440,f2:4980,dur:.3,v:.025}); }},
     thwack:{prio:3, free:true, fn:function(o){ noise(o,{ft:"lowpass",f:900,q:.8,dur:.09,v:.22}); noise(o,{ft:"highpass",f:2600,q:.7,dur:.03,v:.1}); return tone(o,{type:"sine",f:130,f2:46,dur:.22,v:.34}); }}
   });
+  // v1.16 onboarding memo (Rules): a party horn that deflates, and HR's rubber stamp
+  Object.assign(P,{
+    sadHorn:{prio:3, fn:function(o){ noise(o,{ft:"bandpass",f:1800,q:.9,dur:.07,v:.1});
+               tone(o,{type:"sawtooth",f:N("A4"),f2:N("D4"),at:.05,dur:.6,v:.1,a:.03,lp:1800,vib:[7,12]});
+               return tone(o,{type:"square",f:N("A3"),f2:N("D3"),at:.05,dur:.6,v:.04,a:.03,lp:1100}); }},
+    stamp:  {prio:3, fn:function(o){ noise(o,{ft:"highpass",f:2400,q:.7,dur:.03,v:.12}); noise(o,{ft:"lowpass",f:700,q:.8,dur:.09,v:.24});
+               return tone(o,{type:"sine",f:115,f2:52,dur:.2,v:.3}); }}
+  });
   root.TST_AUDIO = {
-    play:play, say:say, hush:hush, ambient:ambient, stopAmbient:stopAmbient, setStress:setStress,
+    play:play, say:say, cancelSay:cancelSay, hush:hush, ambient:ambient, stopAmbient:stopAmbient, setStress:setStress,
     onLogs:onLogs, onModal:onModal, ruleFor:ruleFor, setOn:setOn, setVoice:setVoice, setVolume:setVolume, unlock:unlock,
     get settings(){ return A.settings; }, get unlocked(){ return A.unlocked; },
     set onChange(fn){ A.onChange = fn; },
@@ -2887,6 +2932,58 @@ __/_|__
           </div>
           <span className="sr-only tst-sr" role="status" aria-live="polite"></span>
         </dialog>
+      );
+    };
+
+    // v1.16: Shitcorp onboarding memo at the top of the Rules. Game remounts it (new key) on every open so the
+    // gag replays; `active` is the modal's open state, and closing cancels anything still queued.
+    // The cues line up with the CSS: the cannon fizzles at .3s, the stamp lands at 1.4s + 60% of .42s,
+    // and the HR footnote's fade-in (1.9s + .4s) is the last beat.
+    const MEMO_SFX=[["sadHorn",300],["stamp",1650]];
+    const MEMO_END=2300;
+    const reducedNow=()=>!!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+    let welcomeSaid=false; // the PA welcome plays once per page load, not on every reopen
+    const WelcomeMemo=({active})=>{
+      const[rm]=useState(reducedNow);    // read on each open (the memo remounts), so a mid-session OS change counts
+      const[done,setDone]=useState(rm);  // .done = the stamped frame with no animation
+      const[live,setLive]=useState(!rm); // skippable only while the gag is still playing
+      const cues=useRef([]);
+      const retry=useRef(0);
+      const stamped=useRef(rm);
+      const paQueued=useRef(false);
+      const clearCues=()=>{ cues.current.forEach(clearTimeout); cues.current=[]; };
+      useEffect(()=>{
+        if(!active)return;
+        // The PA is sound, not motion, so it plays under reduced motion too. On a fresh tab the Rules click can be
+        // the first gesture, and the audio unlock's silent primer then makes say() decline; try once more after it.
+        const greet=()=>{ if(welcomeSaid)return false; const a=AUDIO(); if(a && a.say("welcome",{cooldown:3000})){ welcomeSaid=true; paQueued.current=true; } return welcomeSaid; };
+        if(!greet())retry.current=setTimeout(greet,800);
+        if(!rm){
+          cues.current=MEMO_SFX.map(([name,ms])=>setTimeout(()=>{ if(name==="stamp")stamped.current=true; sfx(name); },ms));
+          cues.current.push(setTimeout(()=>setLive(false),MEMO_END));
+        }
+        return()=>{
+          clearCues(); clearTimeout(retry.current);
+          // closed before the PA spoke: drop the line and let the next open try again
+          if(paQueued.current){ paQueued.current=false; const a=AUDIO(); if(a && a.cancelSay && a.cancelSay())welcomeSaid=false; }
+        };
+      },[active]);
+      // click to skip straight to the stamped memo (the stamp still lands, with its thud)
+      const skip=()=>{
+        if(!live)return;
+        clearCues();
+        if(!stamped.current){ stamped.current=true; sfx("stamp"); }
+        setDone(true); setLive(false);
+      };
+      return(
+        <div className={"memo"+(done?" done":"")+(live?" live":"")} onClick={skip}>
+          <div className="memo-head" aria-hidden="true"><span>Shitcorp • People & Culture</span><span>Internal • Do not forward</span></div>
+          <h3>Welcome to Shitcorp, Matt! <span className="memo-cannon" aria-hidden="true">🎉<i className="memo-bit"/><i className="memo-bit"/><i className="memo-bit"/></span></h3>
+          <p>The next disruptor in SaaS. (Our PE owners say we’re on track to overtake Scheisskorp in market cap by the end of the decade!)</p>
+          <p>Here, our culture is our glue. Your fair and killer comp plan rewards builders, not takers. You could become a gorillionaire!</p>
+          <p>And since you close deals, internally you’ll be known as an <span className="memo-title">Associate Account Executive<span className="memo-stamp" aria-hidden="true">SDR*</span></span>. How cool is that, for a young man of your tenure!</p>
+          <p className="memo-foot">*HR will classify you as an SDR… for… ahem… admin and streamlining purposes.</p>
+        </div>
       );
     };
 
@@ -3955,6 +4052,7 @@ __/_|__
       const[over,setOver]=useState(null);
       const[asciiSpeed,setAsciiSpeed]=useState(120);
       const[showHelp,setShowHelp]=useState(false);
+      const[helpOpens,setHelpOpens]=useState(0); // keys the onboarding memo so its gag replays on each open
       const sceneRef=useRef(null);
 
       // FIX: header buttons were re-bound on every state change. Bind once; read live state through a ref.
@@ -4301,7 +4399,7 @@ __/_|__
                   <span className="kbd">Turn {s.week}</span>
                   <span className="kbd">Slots {s.slots}/{s.maxSlots}</span>
                   <span className="kbd">Run {s.runId.slice(0,5)}</span>
-                  <button className="pill-btn" onClick={()=>setShowHelp(true)}>Rules</button>
+                  <button className="pill-btn" onClick={()=>{ setHelpOpens(n=>n+1); setShowHelp(true); }}>Rules</button>
                 </div>
               </div>
               <div className="stats">
@@ -4390,6 +4488,7 @@ __/_|__
               }
             ]}
           >
+            {helpOpens>0 && <WelcomeMemo key={helpOpens} active={showHelp} />}
             <p className="tiny"><strong>Energy</strong> fuels actions. Small refill at week end.</p>
             <p className="tiny"><strong>Stress</strong> hurts close rates. 80+ can burn you out at week end; 100 is instant.</p>
             <p className="tiny"><strong>Quad Shot</strong> hits harder each shot that week. Shot 3+ can stop your heart; a shot to 100 stress will. Each one: +{CRASH_PER_SHOT} stress at week end, weaker Recharge.</p>
