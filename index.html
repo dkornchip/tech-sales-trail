@@ -30,6 +30,7 @@
       --ink:#bfdbfe;
       --glow:rgba(31,122,255,.45);
       --ease:cubic-bezier(.22,1,.36,1);
+      color-scheme:dark;
       box-sizing:border-box;
       padding-top:env(safe-area-inset-top,0px);
       padding-bottom:env(safe-area-inset-bottom,0px);
@@ -169,6 +170,7 @@
       box-shadow:0 0 0 1px rgba(255,255,255,0.03) inset,0 10px 30px rgba(0,0,0,0.6);
       --mx:50%;--my:50%;
     }
+    .grid>.panel{min-width:0}
     .grid>.panel:nth-child(1){animation:cardIn .7s .08s var(--ease) both}
     .grid>.panel:nth-child(2){animation:cardIn .7s .22s var(--ease) both}
     .panel::before{
@@ -494,6 +496,9 @@
       margin-top:6px;
       flex-wrap:wrap;
     }
+    .footer .row.right{flex-wrap:wrap}
+    .footer .row.right .btn{width:auto;white-space:nowrap}
+    .footer .row.right .btn.primary{text-align:center;min-width:96px}
     .cutbox{
       background:#061737;
       border-radius:10px;
@@ -587,6 +592,107 @@
       *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important}
       .aurora,.particles,.gridfloor,.cursor-glow{display:none}
     }
+
+    /* ---------- v1.14: dialogs never run off short screens ---------- */
+    dialog{max-height:calc(100vh - 24px);overflow:auto}
+    @supports (height:100dvh){ dialog{max-height:calc(100dvh - 24px)} }
+
+    /* ---------- v1.14: header sound controls ---------- */
+    .snd{display:flex;align-items:center;gap:6px;flex:none}
+    .snd-btn{display:inline-flex;align-items:center;gap:5px}
+    .snd-btn .ico{font-size:12px;line-height:1}
+    .snd-btn[aria-pressed="false"]{color:var(--muted);border-style:dashed}
+    .snd-btn:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
+    .snd-vol{-webkit-appearance:none;appearance:none;width:84px;height:6px;margin:0 2px;border-radius:999px;cursor:pointer;
+      background:linear-gradient(90deg,var(--accent-2) 0 var(--fill,60%),#071530 var(--fill,60%) 100%);border:1px solid var(--border)}
+    .snd-vol::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:13px;height:13px;border-radius:50%;background:var(--text);border:2px solid var(--accent);box-shadow:0 0 10px rgba(31,122,255,.6)}
+    .snd-vol::-moz-range-thumb{width:10px;height:10px;border-radius:50%;background:var(--text);border:2px solid var(--accent);box-shadow:0 0 10px rgba(31,122,255,.6)}
+    .snd-vol:disabled{opacity:.4;cursor:not-allowed}
+    .snd-vol:focus-visible{outline:2px solid var(--accent-2);outline-offset:3px}
+    @media (max-width:880px){ .snd-btn .lbl{display:none} }
+    @media (max-width:640px){ .snd-vol{display:none} }
+
+    /* ---------- v1.14: CRT screen for the ASCII scenes ---------- */
+    .cutbox.crt{height:auto;overflow:hidden;padding:10px;border-radius:16px;animation:none;
+      background:radial-gradient(ellipse at 50% 45%,#0a2350 0%,#061737 55%,#030c1f 100%);
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.04),inset 0 0 50px rgba(0,0,0,.65),inset 0 0 22px rgba(31,122,255,.22),0 0 24px rgba(31,122,255,.12)}
+    .cutbox.crt::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:2;border-radius:inherit;
+      background:radial-gradient(ellipse at 50% 50%,transparent 58%,rgba(0,0,0,.5) 100%),linear-gradient(115deg,rgba(255,255,255,.06) 0%,transparent 28%)}
+    .cutbox.crt::after{z-index:3;border-radius:inherit}
+    .cutbox.crt pre{position:relative;z-index:1;margin:0;font-family:ui-monospace,Menlo,Consolas,"DejaVu Sans Mono","Courier New",monospace;
+      font-size:11px;line-height:1.14;white-space:pre;color:var(--ink);text-shadow:0 0 5px currentColor;transform-origin:50% 50%;animation:flicker 6s steps(1,end) infinite}
+    .cutbox.crt.bsod{background:#0b3fb8}
+    .cutbox.crt.bsod pre{text-shadow:0 0 3px rgba(255,255,255,.55)}
+    .cutbox.crt pre.tst-crt-on{animation:crtOn .62s cubic-bezier(.2,.8,.2,1) both}
+    .cutbox.crt pre.tst-crt-off{animation:crtOff .42s ease-in both}
+    .cutbox.tst-shake{animation:tstShake .32s linear both}
+    .cutbox.tst-glitch pre{text-shadow:-2px 0 rgba(255,0,90,.75),2px 0 rgba(0,229,255,.75)}
+    .cutbox.crt pre{width:-moz-fit-content;width:fit-content;max-width:100%;margin:0 auto}
+    .scene-ctl{margin-top:6px}
+    @media (max-width:760px){
+      header{flex-wrap:wrap}
+      header .row{flex-wrap:wrap;width:100%}
+      header .row > .btn{width:auto;flex:1 1 0;text-align:center;white-space:nowrap}
+    }
+    @media (max-width:480px){.stats{grid-template-columns:repeat(2,1fr)}} /* phones: room for $1,234,567 */
+    .scene-note{margin:6px 0 0}
+    .k-w{color:#e9f2ff}.k-d{color:#5d77a3}.k-b{color:#60a5fa}.k-b-d{color:#2c4f86}.k-c{color:#22d3ee}.k-c-d{color:#155e75}
+    .k-g{color:#4ade80}.k-y{color:#facc15}.k-y-d{color:#854d0e}.k-o{color:#fb923c}.k-o-d{color:#9a3412}.k-r{color:#fb7185}.k-r-d{color:#9f1239}
+    .k-m{color:#c084fc}.k-p{color:#f472b6}.k-s{color:#d6b98c}.k-br{color:#b07a4a}.k-au{color:#fbbf24}.k-au-d{color:#92400e}
+    .k-glow{text-shadow:0 0 8px #fbbf24,0 0 2px #fde68a}.k-bs{color:#ffffff}.k-bold{font-weight:700}
+    @keyframes crtOn{0%{transform:scale(.04,.004);filter:brightness(4);opacity:.2}30%{transform:scale(1,.004);filter:brightness(4);opacity:1}62%{transform:scale(1,1.06);filter:brightness(1.8)}100%{transform:scale(1,1);filter:brightness(1)}}
+    @keyframes crtOff{0%{transform:scale(1,1);filter:brightness(1)}55%{transform:scale(1,.005);filter:brightness(4)}100%{transform:scale(0,.005);filter:brightness(6);opacity:0}}
+    @keyframes tstShake{0%,100%{transform:translate(0,0)}20%{transform:translate(-3px,1px)}40%{transform:translate(3px,-2px)}60%{transform:translate(-2px,2px)}80%{transform:translate(2px,-1px)}}
+    /* v1.15: anime camera. The art sits in a clipped window; only .tst-cam moves (look-at, zoom, roll, whip skew),
+       effects that must not move with it (title cards, slash gleam, letterbox) live in .tst-fx, captions stay put */
+    .tst-cam-win,.tst-cam,.tst-band{display:block}
+    .tst-cam-win{position:relative;overflow:hidden}
+    .tst-cam{transform-origin:50% 50%;
+      transform:translate(calc(var(--cx,0)*1%),calc(var(--cy,0)*1%)) scale(var(--cz,1)) rotate(calc(var(--rot,0)*1deg)) skewX(calc(var(--skew,0)*1deg))}
+    .tst-fx{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+    .tst-fx::before,.tst-fx::after{content:"";position:absolute;left:0;right:0;height:0;z-index:3;background:rgba(1,4,12,.94);transition:height calc(.4s / var(--spd,1)) cubic-bezier(.2,.8,.2,1)}
+    .tst-fx::before{top:0}.tst-fx::after{bottom:0}
+    .tst-fx.tst-lb::before,.tst-fx.tst-lb::after{height:8%}
+    .cutbox.crt.tst-impact{filter:invert(.85) hue-rotate(180deg) brightness(.6)}
+    .tst-slash{position:absolute;inset:0;display:block;z-index:2;background:linear-gradient(180deg,#ffffff,#a5f3fc);
+      clip-path:polygon(60% 0,61.6% 0,41.6% 100%,40% 100%);animation:tstSlash calc(var(--slash-ms,320ms) / var(--spd,1)) ease-out both}
+    .tst-card{position:absolute;left:0;right:0;top:50%;display:block;z-index:1;text-align:center;line-height:1;padding:.5em 0;
+      background:linear-gradient(90deg,rgba(2,6,23,0),rgba(2,6,23,.9) 12%,rgba(2,6,23,.9) 88%,rgba(2,6,23,0));
+      box-shadow:inset 0 1px 0 currentColor,inset 0 -1px 0 currentColor;
+      animation:tstCard calc(var(--card-ms,1300ms) / var(--spd,1)) linear both}
+    .tst-card-w{display:inline-block;line-height:1;text-shadow:0 0 10px currentColor,0 0 2px currentColor}
+    @keyframes tstSlash{0%{clip-path:polygon(61.6% 0,61.6% 0,61.6% 0,61.6% 0);opacity:1}35%{clip-path:polygon(60% 0,61.6% 0,41.6% 100%,40% 100%);opacity:1}
+      100%{clip-path:polygon(59.4% 0,62.2% 0,42.2% 100%,39.4% 100%);opacity:0}}
+    @keyframes tstCard{0%{opacity:0;transform:translate(0,-50%) scale(2.5) skewX(-14deg)}9%{opacity:1;transform:translate(0,-50%) scale(.95) skewX(-3deg)}
+      13%{transform:translate(0,-50%) scale(1.03) skewX(0deg)}17%,84%{opacity:1;transform:translate(0,-50%) scale(1) skewX(0deg)}
+      100%{opacity:0;transform:translate(-75%,-50%) scale(1) skewX(22deg)}}
+
+    /* ---------- v1.14: toast (replaces alert(), which some viewers block) ---------- */
+    #tst-toast{position:fixed;inset:auto;margin:0;overflow:visible;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;pointer-events:none;z-index:70;
+      background:linear-gradient(180deg,var(--panel),var(--panel-2));border:1px solid var(--border);border-radius:999px;padding:8px 16px;font-size:13px;color:var(--text);
+      box-shadow:0 12px 30px rgba(0,0,0,.6),0 0 20px rgba(31,122,255,.25);transition:opacity .25s,transform .35s var(--ease);max-width:calc(100vw - 32px)}
+    #tst-toast.show{opacity:1;transform:translate(-50%,0)}
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+    /* ---------- v1.14: SHITCORP OS boot screen ---------- */
+    #boot{position:fixed;inset:0;z-index:60;display:grid;place-items:center;padding:16px;background:rgba(2,6,23,.8);
+      -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);animation:fadeIn .3s both;cursor:pointer}
+    #boot.off{animation:bootOut .5s .3s var(--ease) both;pointer-events:none}
+    #boot.off .boot-monitor{pointer-events:auto} /* a late Skip tap during the fade lands on the monitor, not the game */
+    .boot-monitor{width:min(780px,100%);width:min(780px,100%,calc((100vh - 110px)*1.75));width:min(780px,100%,calc((100dvh - 110px)*1.75));background:linear-gradient(180deg,#0e1b36,#070f1e);border:1px solid var(--border);border-radius:24px;padding:16px 16px 12px;
+      box-shadow:0 30px 90px rgba(0,0,0,.75),inset 0 1px 0 rgba(255,255,255,.05),0 0 70px rgba(31,122,255,.16)}
+    .boot-screen.cutbox.crt{border-radius:18px}
+    .boot-bezel{display:flex;align-items:center;gap:10px;margin-top:12px;padding:0 4px}
+    .boot-led{width:8px;height:8px;border-radius:50%;background:#4b1d1d;flex:none;transition:background .3s,box-shadow .3s}
+    #boot.on .boot-led{background:var(--good);box-shadow:0 0 10px var(--good)}
+    .boot-brand{font-family:"Sora","Inter",ui-sans-serif,system-ui,sans-serif;font-weight:800;font-size:11px;letter-spacing:.32em;color:var(--muted)}
+    .boot-hint{font-size:12px;color:var(--muted);margin-left:auto;text-align:right}
+    .boot-btn.btn{width:auto;flex:none;text-align:center;padding:7px 16px}
+    @keyframes bootOut{to{opacity:0;visibility:hidden}}
+    @media (max-width:520px){ .boot-hint{display:none} .boot-btn.btn{margin-left:auto} }
+
+    /* elements using the hidden attribute stay hidden even when a rule sets display */
+    [hidden]:not([hidden=until-found i]){display:none!important}
   </style>
 </head>
 <body>
@@ -603,6 +709,11 @@
         <span class="chip">Matt, 25 • SDR @ <strong>Shitcorp</strong></span>
       </div>
       <div class="row">
+        <div class="snd" role="group" aria-label="Sound">
+          <button id="snd-toggle" class="pill-btn snd-btn" type="button" aria-pressed="true" title="Sound on or off (M)" data-nosfx><span class="ico" aria-hidden="true">&#x1F50A;</span><span class="lbl">Sound</span></button>
+          <button id="voice-toggle" class="pill-btn snd-btn" type="button" aria-pressed="true" title="Office PA announcer on or off"><span class="ico" aria-hidden="true">&#x1F4E2;</span><span class="lbl">Announcer</span></button>
+          <input id="snd-vol" class="snd-vol" type="range" min="0" max="100" step="5" value="60" aria-label="Volume" title="Volume">
+        </div>
         <button id="new-game" class="btn ghost">New Game</button>
         <button id="save" class="btn ghost">Save</button>
         <button id="load" class="btn ghost">Load</button>
@@ -648,6 +759,1923 @@
     })();
   </script>
 
+  <script>
+/* ===== Tech Sales Trail v1.14: ASCII scene engine + storyboards (all art drawn for this game) ===== */
+(function(root){
+  "use strict";
+  var HAS_DOM = typeof document !== "undefined";
+  var COLS = 64, ROWS = 17, ART = 13; // rows 0-12 art, 13 rule, 14-16 caption band
+
+  /* ---------- helpers ---------- */
+  function S(str){ var a = str.split("\n"); if(a[0] === "") a.shift(); if(a.length && a[a.length-1].trim() === "") a.pop(); return a; }
+  function clamp(n,a,b){ return n < a ? a : n > b ? b : n; }
+  function prog(t,a,b){ return clamp((t-a)/(b-a),0,1); }
+  function lerp(a,b,p){ return a+(b-a)*p; }
+  function easeOut(p){ return 1-Math.pow(1-p,3); }
+  function easeIn(p){ return p*p*p; }
+  function blink(t,ms){ return Math.floor(t/ms)%2 === 0; }
+  function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
+  function rnd(a,b){ return a+Math.random()*(b-a); }
+  function esc(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+  function rep(ch,n){ var s = ""; for(var i=0;i<n;i++) s += ch; return s; }
+  function dots(label,value,width){ var n = Math.max(2,width-label.length-value.length-2); return label+" "+rep(".",n)+" "+value; }
+  function mod(n,m){ return ((n%m)+m)%m; }
+  function easeInOut(p){ return p < .5 ? 4*p*p*p : 1-Math.pow(-2*p+2,3)/2; }
+
+  /* ---------- character grid ---------- */
+  function Grid(){ this.n = COLS*ROWS; this.ch = new Array(this.n); this.cl = new Array(this.n); this.clear(); }
+  Grid.prototype.clear = function(){ for(var i=0;i<this.n;i++){ this.ch[i] = " "; this.cl[i] = ""; } };
+  Grid.prototype.set = function(x,y,c,k){
+    x = Math.round(x); y = Math.round(y);
+    if(x<0||y<0||x>=COLS||y>=ROWS) return;
+    var i = y*COLS+x; this.ch[i] = c; if(k !== undefined) this.cl[i] = k;
+  };
+  Grid.prototype.get = function(x,y){ x = Math.round(x); y = Math.round(y); if(x<0||y<0||x>=COLS||y>=ROWS) return " "; return this.ch[y*COLS+x]; };
+  Grid.prototype.getK = function(x,y){ if(x<0||y<0||x>=COLS||y>=ROWS) return ""; return this.cl[y*COLS+x]; };
+  Grid.prototype.text = function(x,y,s,k){ x = Math.round(x); for(var i=0;i<s.length;i++) this.set(x+i,y,s.charAt(i),k); };
+  // sprite: spaces are see-through; "§" paints an opaque blank; optional per-char colour mask
+  Grid.prototype.spr = function(x,y,lines,k,mask,pal){
+    x = Math.round(x); y = Math.round(y);
+    for(var r=0;r<lines.length;r++){
+      var L = lines[r], M = mask && mask[r];
+      for(var i=0;i<L.length;i++){
+        var c = L.charAt(i); if(c === " ") continue;
+        var kk = k;
+        if(M && pal){ var mc = M.charAt(i); if(pal[mc] !== undefined) kk = pal[mc]; }
+        this.set(x+i,y+r,c === "§" ? " " : c,kk);
+      }
+    }
+  };
+  // solid sprite: blanks between a row's first and last mark are painted, so things behind don't show through
+  Grid.prototype.sprO = function(x,y,lines,k){
+    x = Math.round(x); y = Math.round(y);
+    for(var r=0;r<lines.length;r++){
+      var L = lines[r], a = L.search(/\S/), b = L.length-1;
+      if(a < 0) continue;
+      while(b > a && L.charAt(b) === " ") b--;
+      for(var i=a;i<=b;i++) this.set(x+i,y+r,L.charAt(i) === "§" ? " " : L.charAt(i),k);
+    }
+  };
+  Grid.prototype.fill = function(x,y,w,h,c,k){ for(var r=0;r<h;r++) for(var i=0;i<w;i++) this.set(x+i,y+r,c,k); };
+  Grid.prototype.center = function(y,s,k){ this.text(Math.floor((COLS-s.length)/2),y,s,k); };
+  Grid.prototype.copyFrom = function(o){ for(var i=0;i<this.n;i++){ this.ch[i] = o.ch[i]; this.cl[i] = o.cl[i]; } };
+  Grid.prototype.toText = function(){ var out=[]; for(var y=0;y<ROWS;y++) out.push(this.ch.slice(y*COLS,(y+1)*COLS).join("")); return out.join("\n"); };
+  // rows y0..y1-1 (default all): starts with no open span, newlines only between its own rows, closes its span at the end
+  Grid.prototype.toHTML = function(y0,y1){
+    if(y0 === undefined) y0 = 0;
+    if(y1 === undefined) y1 = ROWS;
+    var out = "", cur = null, buf = "";
+    for(var y=y0;y<y1;y++){
+      for(var x=0;x<COLS;x++){
+        var i = y*COLS+x, k = this.cl[i] || "";
+        // blanks without their own colour ride along with the current run (fewer spans) unless it paints a background
+        if(this.ch[i] === " " && k === "" && cur && cur.indexOf("b-") < 0) k = cur;
+        if(k !== cur){ if(buf) out += cur ? '<span class="'+cur+'">'+esc(buf)+"</span>" : esc(buf); buf = ""; cur = k; }
+        buf += this.ch[i];
+      }
+      if(y < y1-1) buf += "\n";
+    }
+    if(buf) out += cur ? '<span class="'+cur+'">'+esc(buf)+"</span>" : esc(buf);
+    return out;
+  };
+  // a repeating texture across one row, scrolled by a world offset (tracking shots); spaces are see-through
+  Grid.prototype.tile = function(y,pat,ox,k){
+    var n = pat.length, o = Math.round(ox);
+    for(var x=0;x<COLS;x++){ var c = pat.charAt(mod(x+o,n)); if(c !== " ") this.set(x,y,c,k); }
+  };
+
+  /* ---------- particles ---------- */
+  // ox: optional world offset (particles live in world space during a tracking shot)
+  function stepParts(ps,dt,g,floor,ox){
+    var s = dt/1000;
+    for(var i=ps.length-1;i>=0;i--){
+      var p = ps[i];
+      p.life -= dt;
+      if(p.life <= 0){ ps.splice(i,1); continue; }
+      p.vy += (p.g||0)*s; p.x += p.vx*s; p.y += p.vy*s;
+      if(floor !== undefined && p.y >= floor){ if(p.onFloor) p.onFloor(p); ps.splice(i,1); continue; }
+      if(g){
+        var ch = p.ch;
+        if(p.fade && p.life < p.fade) ch = p.life < p.fade/2 ? "." : (p.ch2 || "+");
+        g.set(p.x-(ox||0),p.y,ch,p.k);
+      }
+    }
+  }
+
+  /* ---------- sprites ---------- */
+  var SPR = {
+    sun: S(String.raw`
+ \ | /
+-- O --
+ / | \
+`),
+    sun2: S(String.raw`
+ . | .
+-- O --
+ ' | '
+`),
+    cloud: S(String.raw`
+   _  _
+ _( )( )_
+(________)
+`),
+    plane: S(String.raw`
+|\
+| \___________
+ \  o o o o o '-.
+  '---\\_\\-----'
+`),
+    palmA: S(String.raw`
+ _.-._ _.-._
+'     \|/    '
+    _.-|-._
+       |
+       |
+      _|_
+`),
+    palmB: S(String.raw`
+  _.-._ _.-._
+ '     \|/    '
+     _.-|-._
+       |
+       |
+      _|_
+`),
+    jacket: S(String.raw`
+   _/\  /\_
+ _/  \\//  \_
+/  |  \/  |  \
+\__|  ::  |__/
+   |  ::  |
+   '------'
+`),
+    jacketS: S(String.raw`
+ _/\/\_
+/ |::| \
+\_|::|_/
+  '--'
+`),
+    reader: S(String.raw`
+.-------------------.
+|  SHITCORP SECURE  |
+|  .-------------.  |
+|  |             |  |
+|  '-------------'  |
+|   (o)    [1][2]   |
+|          [3][4]   |
+'-------------------'
+`),
+    badge: S(String.raw`
+.----------.
+| SHITCORP |
+|  (o_o)   |
+|  MATT    |
+|  SDR     |
+'----------'
+`),
+    poster: S(String.raw`
+.------------------.
+|  WE'RE A FAMILY* |
+|        *at-will  |
+'------------------'
+`),
+    walkA: S(String.raw`
+  o   \|/
+ /|\_[BOX]
+ / \
+`),
+    walkB: S(String.raw`
+  o   \|/
+ /|\_[BOX]
+  |\
+`),
+    front: S(String.raw`
+  o
+[BOX]
+ / \
+`),
+    elevator: S(String.raw`
+.------------------------.
+|                        |
+|========================|
+||                      ||
+||                      ||
+||                      ||
+||                      ||
+||                      ||
+||______________________||
+`),
+    monitor: S(String.raw`
+.--------------.
+|              |
+|              |
+|              |
+'-----.  .-----'
+      |__|
+`),
+    worker: S(String.raw`
+ (o_o)
+__/|\__
+   /|
+__/_|__
+`),
+    deskTop: S(String.raw`
+====================================
+  ||                            ||
+  ||                            ||
+`),
+    rainCloud: S(String.raw`
+  .-~~~-.
+ (       )
+(_________)
+`),
+    repA: S(String.raw`
+ o
+/|\
+/ \
+`),
+    repB: S(String.raw`
+ o
+/|\
+ |\
+`),
+    umbrella: S(String.raw`
+ .-^-.
+/_/|\_\
+   |
+`),
+    truck: S(String.raw`
+                          _
+            |           ,'
+     _____  |         ,'
+    /  |  \ |       ,'
+ __/___|___\|_____,'
+|     |  REPO     |
+|_____|___________|
+  (_)         (_)(_)
+`),
+    building: S(String.raw`
+._______________________.
+|  COLLECTIONS  DEPT.   |
+|  ___    ___    ___    |
+| |___|  |___|  |___|   |
+|                       |
+|          .------.     |
+|          |      |     |
+|__________|______|_____|
+`),
+    poster2: S(String.raw`
+.---------------.
+|  QUOTA IS A   |
+|   MINDSET.    |
+'---------------'
+`),
+    billboard: S(String.raw`
+.------------------.
+| PRESIDENT'S CLUB |
+| see you in Cabo  |
+'------------------'
+         ||
+         ||
+         ||
+         ||
+         ||
+         ||
+         ||
+`)
+  };
+
+  /* ---------- caption band ---------- */
+  function caption(g,c,t,dur,run){
+    var tc = c.k || "k-w", cps = 34, typed = 0;
+    g.fill(0,ART,COLS,ROWS-ART," ","");
+    g.text(0,ART,rep("\u2500",COLS),c.rule || "k-d");
+    if(t >= c.tTitle || run.still){
+      var n = run.still ? c.title.length : Math.min(c.title.length, Math.floor((t-c.tTitle)/1000*cps));
+      g.text(1,ART+1,"> ","k-d"); g.text(3,ART+1,c.title.slice(0,n),tc+" k-bold"); typed += n;
+      if(n < c.title.length) g.set(3+n,ART+1,"\u258c",tc);
+    }
+    var set = null, t0 = 0;
+    if(run.still){ set = c.a; t0 = -1e9; }
+    else if(t > dur){ set = (Math.floor((t-dur)/5200)%2 === 0) ? c.b : c.a; t0 = -1e9; }
+    else if(t >= c.tB){ set = c.b; t0 = c.tB; }
+    else if(t >= c.tA){ set = c.a; t0 = c.tA; }
+    if(set){
+      var el = (t-t0)/1000*cps, used = 0, lk = c.lk || "k-w";
+      for(var r=0;r<set.length;r++){
+        var line = set[r], m = clamp(Math.floor(el-used),0,line.length);
+        g.text(3,ART+2+r,line.slice(0,m),lk); typed += m;
+        if(m > 0 && m < line.length) g.set(3+m,ART+2+r,"\u258c",lk);
+        used += line.length + 6;
+      }
+      if(!run.still && el >= used && blink(t,530)){
+        var last = set[set.length-1];
+        g.set(3+last.length+1,ART+1+set.length,"\u258c","k-d");
+      }
+    }
+    return typed;
+  }
+
+  // per-cause caption override: sc.capBy[meta.cause] replaces fields of sc.cap; a line set may be a function of meta
+  function capFor(sc,meta){
+    var base = sc.cap; if(!base) return base;
+    var o = sc.capBy && meta && sc.capBy[meta.cause], out = {}, k;
+    for(k in base) out[k] = base[k];
+    if(o) for(k in o) out[k] = o[k];
+    if(typeof out.a === "function") out.a = out.a(meta||{});
+    if(typeof out.b === "function") out.b = out.b(meta||{});
+    return out;
+  }
+  // one-line description (aria-label, reduced-motion note); sc.summaryBy[meta.cause] wins over sc.summary
+  function summaryFor(type,meta){
+    var sc = SCENES[type]; if(!sc) return "";
+    return (sc.summaryBy && meta && sc.summaryBy[meta.cause]) || sc.summary || "";
+  }
+
+  /* ======================================================================
+     SCENES. Each has: dur (ms of timeline before the idle loop), cap (caption schedule; capBy = per meta.cause),
+     summary (summaryBy = per meta.cause),
+     cues [{t, sfx | say | amb | shake | glitch | whip | slash | impact | zoom | slam | pulse | lines | card | letterbox,
+            key:true = still fires on Skip (sound cues only), cause / notCause = only for that meta.cause}],
+     cam [{t, x, y, z, r, e}] camera keys: look-at offset from the art's centre (cells), zoom, roll (deg),
+            e = ease into the key (io | i | o | l | cut); drift = idle sway after dur; draw(g, ctx)
+     Lateral moves are tracking shots inside the grid (a world offset scrolls the set), so the CSS camera
+     only ever zooms in and never shows the edge of the art.
+     ====================================================================== */
+  var SCENES = {};
+
+  /* ---------------- PRESIDENT'S CLUB: jet lands on the beach, jacket descends, fireworks ---------------- */
+  SCENES.club = {
+    dur: 8400,
+    cap: { title:"PRESIDENT'S CLUB", a:["Jacket secured.","You did the thing."], b:["Pipeline: obliterated.","Commission rains."], tTitle:300, tA:3400, tB:5900, k:"k-au", rule:"k-au-d" },
+    cues: [
+      {t:0, sfx:"plane"}, {t:200, lines:"h", ms:1700, dir:-1, n:10},
+      {t:2000, sfx:"screech"}, {t:2000, shake:200}, {t:2000, pulse:.05, ms:320},
+      {t:2900, sfx:"seatbelt"}, {t:3400, sfx:"sparkle"},
+      {t:4900, sfx:"thwack"}, {t:4900, impact:110}, {t:4900, lines:"radial", ms:800, fx:31, fy:3}, {t:4900, zoom:1.14, ms:650, fx:31, fy:3},
+      {t:5300, sfx:"stingerClub", key:true}, {t:5300, card:"CLUB", ms:1400}, {t:5300, shake:260},
+      {t:5500, say:"club", key:true}
+    ],
+    cam: [
+      {t:0,    x:-8, y:-2.5, z:1.3,  r:2.5},
+      {t:1000, x:-4, y:-1.2, z:1.22, r:1.5, e:"l"},
+      {t:2000, x:0,  y:0.6,  z:1.16, r:0},
+      {t:3000, x:0,  y:0,    z:1.06, r:0},
+      {t:3400, x:0,  y:0,    z:1.06, r:0},
+      {t:4850, x:-1, y:-3,   z:1.34, r:0},
+      {t:5700, x:-1, y:-3,   z:1.34, r:0},
+      {t:6700, x:0,  y:-0.4, z:1.08, r:0}
+    ],
+    drift: {x:1.5, y:.3, z:.02, p:9000},
+    summary: "A jet lands on the beach, the jacket descends, fireworks rain commission.",
+    draw: function(g,c){
+      var t = c.t, st = c.st;
+      // tracking shot: the camera rides with the jet, the beach scrolls past, then it all settles
+      var ox = -64*Math.pow(1-prog(t,0,2900),2);
+      // sky: the sun is too far away to move; clouds drift at a quarter of the speed
+      g.spr(56,0, blink(t,420) ? SPR.sun : SPR.sun2, "k-y");
+      var c1 = mod(t/240 + 10 - ox*.25,84) - 12, c2 = mod(t/360 + 46 - ox*.25,84) - 12;
+      g.sprO(c1,0,SPR.cloud,"k-d"); g.sprO(c2,1,SPR.cloud,"k-d");
+      // fireworks behind the palms
+      if(t > 5300){
+        st.fw = st.fw || []; if(!st.nextFw) st.nextFw = 5300;
+        if(t >= st.nextFw){
+          st.nextFw = t + (c.idle ? 1150 : 430)*rnd(.7,1.3);
+          var bx = rnd(4,60), by = rnd(1,4.5), col = pick(["k-au","k-m","k-c","k-g","k-p"]);
+          var n = 12 + Math.floor(Math.random()*6);
+          for(var i=0;i<n;i++){
+            var ang = (i/n)*Math.PI*2, sp = rnd(4.5,8.5);
+            st.fw.push({x:bx,y:by,vx:Math.cos(ang)*sp*2.1,vy:Math.sin(ang)*sp,g:5,life:rnd(650,1050),fade:360,ch:pick(["*","$","*","+"]),k:col});
+          }
+          if(!c.idle) c.sfx("pop");
+        }
+        if(Math.random() < (c.idle ? .22 : .65)) st.fw.push({x:rnd(0,63),y:-0.4,vx:0,vy:rnd(5,8),life:3000,ch:"$",k:pick(["k-g","k-au"])});
+        stepParts(st.fw,c.dt,g,10);
+      }
+      // palms (the last two are the final composition)
+      var sway = blink(t,640), palms = [-60,-27,0,50];
+      for(var pi=0;pi<palms.length;pi++){
+        var px0 = Math.round(palms[pi]-ox); if(px0 < -15 || px0 >= COLS) continue;
+        g.spr(px0,4,(pi%2 ? !sway : sway) ? SPR.palmA : SPR.palmB,"k-g");
+        for(var y=7;y<=9;y++) g.set(px0+7,y,"|","k-br");
+        g.text(px0+6,9,"_|_","k-br");
+      }
+      // runway, sand and sea
+      var sand = ".:'.:.'::.'.:.:'.:.::'.:.'.:'::.:'.:..:'.:.:'.::.'.:.'.:.:'::.'.";
+      g.tile(10,sand,ox,"k-s");
+      for(var x=0;x<COLS;x++){ var wx = x+Math.round(ox); if(wx >= 12 && wx < 52) g.set(x,10,(mod(wx,4) < 2) ? "=" : " ","k-d"); }
+      var wave = "~~~  ~~ ~~~~   ~~   ~~~ ~~  ~~~~ ~ ~~~   ~~ ~~~~  ~~   ~~~ ~ ~~  ";
+      g.tile(11,wave,Math.floor(t/320)+ox,"k-c");
+      g.tile(12,wave,ox-Math.floor(t/450),"k-b");
+      // jet: in over the palms, flare, touchdown, roll-out (screen position; the world moves under it)
+      var sx, py, gearDown = t > 1100;
+      if(t < 700) sx = lerp(-18,12,easeOut(t/700));
+      else if(t < 2000) sx = lerp(12,22,(t-700)/1300);
+      else sx = lerp(22,34,easeOut(prog(t,2000,3000)));
+      py = t < 2000 ? Math.round(6*Math.pow(prog(t,150,2000),1.6)) : 6;
+      sx = Math.round(sx);
+      if(t < 2000) g.text(sx-4,py+2,blink(t,120) ? "= -" : "- =","k-d");
+      g.sprO(sx,py,SPR.plane,"k-w");
+      if(gearDown) { g.set(sx+5,py+4,"o","k-d"); g.set(sx+14,py+4,"o","k-d"); }
+      if(t > 2000 && t < 2800) g.text(sx-2,py+4,blink(t,90) ? "~ ." : ". ~","k-d");
+      // jacket floats down in a ring of sparkles and lands on the beat
+      if(t > 3300){
+        var jy = Math.round(lerp(-7,0,easeInOut(prog(t,3300,4900)))), jx = 24;
+        for(var s=0;s<8;s++){
+          var a = t/300 + s*0.8, rr = 9 + Math.sin(t/400+s)*1.5;
+          g.set(jx+7+Math.cos(a)*rr, jy+2.5+Math.sin(a)*rr*0.42, pick(["*","+","'","."]), s%2 ? "k-y" : "k-w");
+        }
+        g.sprO(jx,jy,SPR.jacket,"k-au k-glow");
+      }
+    }
+  };
+
+  /* ---------------- FIRED: access denied, walk of shame, elevator goes down ---------------- */
+  var FACES = ["(-_-)","(o_o)","(-_-)","(o.o)","(-_-)"], FACES_AFTER = ["(-_-)","(._.)","(;_;)","(-_-)","(._.)"];
+  SCENES.fired = {
+    dur: 8800,
+    cap: { title:"YOU'RE DONE", a:["Badge: deactivated.","HR took the dongles."], b:["\u201cDifferent direction.\u201d","(Not you.)"], tTitle:200, tA:1100, tB:6300, k:"k-r", rule:"k-r-d" },
+    cues: [
+      {t:760, sfx:"beep"}, {t:960, sfx:"denied"}, {t:960, impact:110}, {t:960, lines:"radial", ms:720, fx:24, fy:5}, {t:960, zoom:1.15, ms:620, fx:24, fy:5},
+      {t:960, glitch:320}, {t:960, shake:220},
+      {t:1520, sfx:"denied"}, {t:2050, sfx:"drop"},
+      {t:2410, whip:"r", ms:380}, {t:2410, sfx:"fwip"},
+      {t:5500, slash:340}, {t:5500, sfx:"shing"}, {t:5500, letterbox:true},
+      {t:6050, sfx:"doors"}, {t:6600, sfx:"elevator"},
+      {t:7300, sfx:"stingerFired", key:true}, {t:7300, card:"FIRED", ms:1400}, {t:7300, impact:100}, {t:7300, lines:"radial", ms:900},
+      {t:7450, say:"fired", key:true}, {t:8500, letterbox:false}
+    ],
+    cam: [
+      {t:0,    x:-3, y:-0.5, z:1.24, r:-3},
+      {t:900,  x:-7, y:-1,   z:1.42, r:-4.5},
+      {t:1800, x:3,  y:-0.5, z:1.36, r:-2.5},
+      {t:2380, x:5,  y:2,    z:1.3,  r:0},
+      {t:2600, x:0,  y:0.25, z:1.08, r:0, e:"cut"},
+      {t:5450, x:2,  y:0.25, z:1.12, r:0.4, e:"l"},
+      {t:5500, x:0,  y:0,    z:1.14, r:0, e:"cut"},
+      {t:6600, x:0,  y:-0.5, z:1.3,  r:0},
+      {t:7250, x:0,  y:-4.5, z:1.85, r:-2, e:"o"},
+      {t:7700, x:0,  y:-4.5, z:1.85, r:-2},
+      {t:8600, x:0,  y:-1.5, z:1.3,  r:0}
+    ],
+    drift: {x:.8, z:.02, p:7000},
+    idleGlitch: 4600,
+    summary: "Badge denied, box carried past staring coworkers, elevator down.",
+    draw: function(g,c){
+      var t = c.t, st = c.st;
+      if(t < 2600){
+        // beat 1: badge reader (Dutch-tilt push-in)
+        var RX = 14;
+        g.spr(RX,2,SPR.reader,"k-d");
+        var state = t < 800 ? "ready" : t < 960 ? "check" : "denied";
+        var scr = state === "ready" ? "    READY    " : state === "check" ? "   . . .     " : "ACCESS DENIED";
+        var sk = state === "ready" ? "k-g" : state === "check" ? "k-y" : "k-r k-bold";
+        if(state !== "denied" || t > 2000 || blink(t,150)) g.text(RX+4,5,scr,sk);
+        g.text(RX+3,3,"SHITCORP SECURE","k-w");
+        var led = state === "ready" ? "k-g" : state === "check" ? "k-y" : (blink(t,200) ? "k-r" : "k-d");
+        g.text(RX+4,7,"(o)",led);
+        // badge slides in, taps, dies, drops
+        var bx = t < 700 ? lerp(66,RX+25,easeOut(t/700)) : (t < 820 ? RX+23 : RX+25);
+        var by = 3 + (t > 2000 ? Math.pow((t-2000)/1000,2)*24 : 0);
+        g.sprO(bx,by,SPR.badge,"k-w");
+        g.text(bx+2,by+1,"SHITCORP","k-b");
+        if(t > 1300){ g.text(bx+3,by+2,"(x_x)","k-r"); }
+        if(t > 1500){ g.text(bx+3,by+3,blink(t,180) ? "VOID" : "    ","k-r k-bold"); }
+        if(state === "denied" && t < 1900){
+          for(var i=0;i<3;i++) g.set(RX+22, 3+i*2, blink(t,100) ? "!" : " ", "k-r");
+        }
+        // wall + floor
+        g.text(0,11,rep("_",COLS),"k-d");
+        return;
+      }
+      if(t < 5500){
+        // beat 2: walk of shame. The camera tracks Matt; the back wall slides slower than the cubicles
+        var tau = (t-2600)/1000, ox = tau < .5 ? 17*tau*tau : 17*(tau-.25);
+        var sx = lerp(-9,25,easeOut(prog(t,2600,3300))) + 3*prog(t,3300,5500);
+        var mx = ox + sx, wo = ox*.55;
+        g.spr(Math.round(3-wo),0,SPR.poster,"k-m");
+        g.text(Math.round(39-wo),1,"[ 4:59 PM FRI ]",blink(t,500) ? "k-r" : "k-r-d");
+        g.spr(Math.round(64-wo),0,SPR.poster2,"k-m");
+        for(var h=0;h<5;h++){
+          var hw = 8 + h*21, hx = Math.round(hw-ox);
+          if(hx < -13 || hx >= COLS+2) continue;
+          var dx = (mx+2) - (hw+2), face = FACES[h];
+          if(dx > -12 && dx <= 5) face = "(O_O)"; else if(dx > 5) face = FACES_AFTER[h];
+          g.text(hx,5,face,"k-w");
+          g.text(hx-2,6,"|=========|","k-b");
+          if(h%2 === 0) g.text(hx+9,5,"[_]","k-d");
+          if(h === 2 && dx > 3 && dx < 18) g.text(hx+1,4,"rip","k-d");
+        }
+        var legA = Math.floor((t-2600)/230)%2 === 0;
+        if(legA !== st.lastLeg){ st.lastLeg = legA; if(!c.idle) c.sfx("step"); }
+        var wx = Math.round(sx);
+        g.spr(wx,8,legA ? SPR.walkA : SPR.walkB,"k-w");
+        g.text(wx+6,8,"\\|/","k-g");
+        g.text(wx+5,9,"[BOX]","k-y");
+        g.text(0,11,rep("_",COLS),"k-d");
+        g.tile(12,". ' . , ",ox,"k-d");
+        return;
+      }
+      // beat 3: elevator
+      var ex = 19;
+      g.spr(ex,1,SPR.elevator,"k-d");
+      var closing = prog(t,6100,6600), doorW = Math.round(11*closing);
+      var floor = 13;
+      if(t > 6700) floor = Math.max(0,13 - Math.floor((t-6700)/260));
+      var arrow = t < 6600 ? "^" : "v";
+      var ind = "[ "+arrow+"  "+(floor > 0 ? (floor < 10 ? " "+floor : ""+floor) : " L")+" ]";
+      g.text(ex+8,2,ind, (t > 6600 && !blink(t,300)) ? "k-r-d" : "k-r k-bold");
+      // interior: mirror glint
+      g.text(ex+19,4,"/","k-d"); g.text(ex+18,5,"/","k-d");
+      // passenger
+      if(t < 6050){
+        var wx2 = lerp(4,ex+9,easeOut(prog(t,5500,6050)));
+        var legA2 = Math.floor((t-5500)/180)%2 === 0;
+        if(legA2 !== st.lastLeg){ st.lastLeg = legA2; if(!c.idle) c.sfx("step"); }
+        g.spr(wx2,6,legA2 ? SPR.walkA : SPR.walkB,"k-w");
+        g.text(wx2+6,6,"\\|/","k-g"); g.text(wx2+5,7,"[BOX]","k-y");
+      } else {
+        g.spr(ex+10,6,SPR.front,"k-w");
+        g.text(ex+10,7,"[BOX]","k-y");
+        g.text(ex+14,6,"\\|/","k-g");
+      }
+      // doors slide shut from both sides
+      if(doorW > 0){
+        for(var r=3;r<=8;r++){
+          for(var dx2=0;dx2<doorW;dx2++){
+            g.set(ex+2+dx2,1+r,dx2 === doorW-1 ? "]" : (r === 3 ? "-" : " "),"k-d");
+            g.set(ex+23-dx2,1+r,dx2 === doorW-1 ? "[" : (r === 3 ? "-" : " "),"k-d");
+          }
+        }
+      }
+      // call buttons
+      g.text(ex+28,5,"( ^ )","k-d");
+      g.text(ex+28,6,"( v )",t > 6050 ? "k-r k-bold" : "k-d");
+      g.text(0,11,rep("_",COLS),"k-d");
+      g.tile(12,"  .   '   .   , ",0,"k-d");
+    }
+  };
+
+  /* ---------------- BURNOUT: stress spikes, desk melts, blue screen ---------------- */
+  function drawDesk(g,t,p,bpm,caf){
+    g.spr(2,1,SPR.monitor,"k-d");
+    var warn = p >= 85;
+    g.text(4,2,"Q1 FORECAST","k-c");
+    g.text(4,3,warn ? (blink(t,180) ? "> !!!!!!!" : "> ???????") : "> commit?","k-w");
+    g.text(4,4,"> ????","k-d");
+    g.spr(22,3,SPR.worker,"k-w");
+    var face = p < 75 ? "(o_o)" : p < 88 ? "(O_O)" : p < 100 ? "(@_@)" : "(x_x)";
+    g.text(23,3,face,p >= 88 ? "k-r" : "k-w");
+    if(p >= 80){ g.set(21,3,blink(t,260) ? "'" : " ","k-c"); g.set(29,4,blink(t,330) ? "'" : " ","k-c"); }
+    if(p >= 90){ var sy = 2 - (Math.floor(t/160)%2); g.text(24,sy,blink(t,160) ? "~ ~" : " ~ ","k-d"); }
+    g.text(18,6,"c[_]","k-y");
+    g.text(18,5,blink(t,400) ? " ) " : " ( ","k-d");
+    if(caf){ g.text(13,6,"c[_]","k-y"); g.text(31,6,"c[_]","k-y"); }
+    g.spr(0,7,SPR.deskTop,"k-br");
+    // stress meter
+    var w = 20, f = Math.round(w*p/100);
+    var mk = p < 70 ? "k-y" : p < 90 ? "k-o" : (blink(t,140) ? "k-r k-bold" : "k-r");
+    g.text(39,2,caf ? "HEART" : "STRESS","k-d");
+    g.text(39,3,"["+rep("\u2588",f)+rep("\u2591",w-f)+"]",mk);
+    g.text(46,2,Math.round(p)+"%",mk); // next to the label, so heartbeat push-ins never crop it
+    var flat = caf && t >= 2400, beatMs = 60000/bpm;
+    g.text(39,5,flat ? "BPM ---" : "BPM "+Math.round(bpm),flat ? "k-r k-bold" : "k-d");
+    if(!flat) g.text(48,5,(t % beatMs) < beatMs*0.35 ? "<3" : "  ","k-r");
+    // ECG trace, newest sample on the right; the caffeine ending flatlines it
+    for(var i=0;i<22;i++){
+      var tau = t-(21-i)*26, ph = Math.floor(mod(tau,beatMs)/26);
+      var ch = (caf && tau >= 2400) ? "_" : ph === 0 ? "/" : ph === 1 ? "\\" : "_";
+      g.set(39+i,6,ch,(caf && tau >= 2400) || p >= 90 ? "k-r" : "k-g");
+    }
+  }
+  SCENES.burnout = {
+    dur: 8000,
+    cap: { title:"(x_x) BURNOUT", a:["Neurons filed a ticket.","System on fire."], b:["You hit numbers.","Your soul did not."], tTitle:200, tA:2500, tB:5300, k:"k-o", rule:"k-o-d" },
+    capBy: { caffeine: { title:"(x_x) CARDIAC", a:function(m){ return [m.shots > 1 ? "Shot #"+m.shots+"." : "One shot too many.","Heart said no."]; }, b:["Mug still warm.","You, less so."] } },
+    cues: [
+      {t:0, sfx:"heartbeat"}, {t:0, pulse:.03, ms:380}, {t:650, sfx:"heartbeat"}, {t:650, pulse:.035, ms:360},
+      {t:1200, sfx:"heartbeat"}, {t:1200, pulse:.04, ms:340}, {t:1650, sfx:"heartbeat"}, {t:1650, pulse:.045, ms:300},
+      {t:2000, sfx:"heartbeat"}, {t:2000, pulse:.05, ms:260}, {t:2260, sfx:"heartbeat"}, {t:2260, pulse:.055, ms:240},
+      {t:2400, sfx:"alarm", notCause:"caffeine"}, {t:2400, sfx:"flatline", cause:"caffeine"},
+      {t:2500, slash:320}, {t:2500, sfx:"shing"},
+      {t:2560, sfx:"meltdown"}, {t:3050, sfx:"fire"},
+      {t:4200, sfx:"glitch"}, {t:4200, glitch:460}, {t:4200, shake:320},
+      {t:4600, sfx:"bsod"},
+      {t:4900, sfx:"stingerBurnout", key:true}, {t:4900, card:"BURNOUT", ms:1400}, {t:4900, impact:100},
+      {t:5050, say:"burnout", key:true}
+    ],
+    cam: [
+      {t:0,    x:2,  y:-0.5, z:1.08, r:0},
+      {t:1500, x:5,  y:-1.5, z:1.22, r:-1.5, e:"l"},  // face and readout share the frame through the climb
+      {t:2300, x:5,  y:-2,   z:1.24, r:-2,   e:"l"},
+      {t:2450, x:-7, y:-3.5, z:1.7,  r:-4.5, e:"i"},
+      {t:2500, x:0.6,y:0,    z:1.08, r:0,    e:"cut"},
+      {t:4150, x:0,  y:1.5,  z:1.24, r:2.5},
+      {t:4600, x:0,  y:0,    z:1,    r:0,    e:"cut"},
+      {t:7800, x:-1, y:0,    z:1.05, r:0,    e:"l"}
+    ],
+    idleGlitch: 5200,
+    summary: "Stress hits 100%, the desk melts, blue screen.",
+    summaryBy: { caffeine: "Heart races, flatlines, blue screen." },
+    draw: function(g,c){
+      var t = c.t, st = c.st, caf = !!(c.meta && c.meta.cause === "caffeine");
+      if(t < 2500){
+        var p = clamp(61 + 39*Math.pow(prog(t,0,2300),2),0,100);
+        drawDesk(g,t,p,88 + 104*Math.pow(prog(t,0,2300),2),caf);
+        return;
+      }
+      if(t < 4600){
+        // melt: render the frozen desk, then slide each column down at its own pace
+        if(!st.melt){
+          st.melt = new Grid(); drawDesk(st.melt,2500,100,192,caf);
+          st.delay = []; st.speed = [];
+          for(var i=0;i<COLS;i++){ st.delay.push(rnd(0,700)); st.speed.push(rnd(95,240)); }
+        }
+        var m = st.melt, el = t-2500;
+        for(var x=0;x<COLS;x++){
+          var off = Math.max(0,Math.floor((el-st.delay[x])/st.speed[x]));
+          for(var y=ART-1;y>=0;y--){
+            var ch = m.get(x,y); if(ch === " ") continue;
+            var ny = y+off; if(ny > ART-1) continue;
+            g.set(x,ny,ch,m.getK(x,y));
+            if(off > 0 && y+off-1 >= 0 && g.get(x,y+off-1) === " " && (x+y)%3 === 0) g.set(x,y+off-1,"'","k-d");
+          }
+        }
+        if(el > 400){
+          var dens = clamp((el-400)/1400,0,1);
+          for(var fx=0;fx<COLS;fx++){
+            for(var fy=10;fy<=12;fy++){
+              var chance = dens*(fy === 12 ? .85 : fy === 11 ? .55 : .25);
+              if(Math.random() < chance) g.set(fx,fy,pick(["^","(",")","'","\"","^"]),pick(["k-r","k-o","k-y","k-o"]));
+            }
+          }
+        }
+        return;
+      }
+      // blue screen
+      c.screen = "bsod";
+      var pctDone = t <= c.dur ? Math.floor(37*prog(t,4800,c.dur)) : Math.min(99, 37 + Math.floor((t-c.dur)/900));
+      g.text(3,1,":(","k-bs k-bold");
+      g.text(3,3,caf ? "Your heart ran into a problem." : "Your nervous system ran into a problem.","k-bs");
+      g.text(3,4,"Restarting you Monday.","k-bs");
+      g.text(3,6,pctDone+"% complete","k-bs");
+      g.text(3,8,"Stop code: "+(caf ? "QUAD_SHOT_OVERFLOW" : "QUOTA_EXCEEDS_SOUL"),"k-bs");
+      g.text(3,9,"What failed: "+(caf ? "heart.sys" : "work_life_balance.sys"),"k-bs");
+      if(blink(t,500)) g.text(3+(""+pctDone).length+10,6,"_","k-bs");
+    }
+  };
+
+  /* ---------------- BARELY MISSED: the bar stalls, then a long walk under a personal rain cloud ---------------- */
+  SCENES.missed = {
+    dur: 7400,
+    cap: { title:"BARELY MISSED", a:["70\u201399% to quota.","Badge kept. Ego not."], b:["Manager shrugs.","HR forgets your name."], tTitle:200, tA:900, tB:4800, k:"k-c", rule:"k-c-d" },
+    cues: [
+      {t:0, amb:"rain"},
+      {t:2100, zoom:1.12, ms:520},
+      {t:2150, sfx:"stingerMissed", key:true}, {t:2150, card:"MISSED", ms:1300},
+      {t:2300, say:"missed", key:true},
+      {t:3260, whip:"r", ms:380}, {t:3260, sfx:"fwip"},
+      {t:6000, sfx:"umbrella"}, {t:6000, zoom:1.1, ms:650, fx:25, fy:6}
+    ],
+    cam: [
+      {t:0,    x:-0.5, y:-1, z:1.06, r:0},       // cols 7-55 (QUOTA to the 100% goal) survive the 2100 punch-in
+      {t:2100, x:-0.5, y:-1, z:1.1,  r:0, e:"l"},
+      {t:3450, x:0,  y:0.5, z:1.1,  r:0, e:"cut"},
+      {t:5900, x:1,  y:0.5, z:1.14, r:0, e:"l"},
+      {t:6900, x:-1, y:0,   z:1.16, r:0}
+    ],
+    drift: {x:1, z:.015, p:8000},
+    summary: "The quota bar stalls short, then a rain cloud follows you home.",
+    draw: function(g,c){
+      var t = c.t, st = c.st, pct = clamp(c.meta.pct || 0.85,0,1);
+      if(t < 3450){
+        // shot 1: the quota bar, close up, in a drizzle
+        var w = 40, shown = pct*prog(t,300,2100), f = Math.floor(w*shown);
+        if(t > 300 && t < 2100){ var tk = Math.floor((t-300)/120); if(tk !== st.tk){ st.tk = tk; if(!c.idle) c.sfx("tick"); } }
+        st.dz = st.dz || [];
+        if(Math.random() < .9) st.dz.push({x:rnd(0,COLS+6),y:-0.5,vx:-3,vy:rnd(10,13),life:2500,ch:pick(["'","'",","]),k:"k-b-d"});
+        stepParts(st.dz,c.dt,g,ART);
+        var stalled = t > 2100;
+        g.text(7,3,"QUOTA","k-d");
+        g.text(13,3,Math.round(shown*100)+"%",stalled ? "k-c k-bold" : "k-w");
+        g.text(7,5,"["+rep("\u2588",f)+rep("\u2591",w-f)+"]",stalled ? "k-c" : "k-b");
+        g.text(50,3,"|>","k-g"); g.set(50,4,"|","k-d"); g.set(50,5,"|","k-d"); g.text(50,6,"| 100%","k-d");
+        if(stalled && blink(t,260)) g.text(7,7,"STALLED","k-c-d");
+        return;
+      }
+      // shot 2: tracking shot down the street; rep and cloud stay framed, the street slides by
+      var tau = (t-3450)/1000, v = 14, T = 2.45, q = clamp((tau-T)/.6,0,1);
+      var ox = tau < T ? v*tau : v*T + v*.6*(q - q*q/2), O = Math.round(ox);
+      // shop signs on the far side of the street (slower layer)
+      var so = ox*.6, signs = [[2,"CLOSED"],[27,Math.round(pct*100)+"% OFF"],[52,"LOANS"],[76,"CLOSED"]];
+      for(var s2=0;s2<signs.length;s2++){
+        var gx = Math.round(signs[s2][0]-so), lab = signs[s2][1], bw = lab.length+4;
+        if(gx >= COLS || gx+bw < 0) continue;
+        g.text(gx,1,"."+rep("-",bw-2)+".","k-d"); g.text(gx,2,"| "+lab+" |",s2 === 1 ? "k-p" : "k-d"); g.text(gx,3,"'"+rep("-",bw-2)+"'","k-d");
+      }
+      // lamp posts on the near curb
+      var lamps = [12,44,76];
+      for(var li=0;li<lamps.length;li++){
+        var lx = lamps[li]-O; if(lx < -2 || lx > COLS+1) continue;
+        g.text(lx-1,4,"(_)","k-y");
+        for(var ly=5;ly<=9;ly++) g.set(lx,ly,"|","k-d");
+        g.text(lx-1,10,"_|_","k-d");
+      }
+      // street + puddles
+      g.text(0,11,rep("_",COLS),"k-d");
+      g.tile(12,"     ~~        ~~~      ~~           ~~~~       ~~         ~~~   ",ox,"k-b-d");
+      // the rep (catching up to the camera at first), the cloud tails him
+      var rx = Math.round(18 + 6*easeOut(prog(tau,0,1.2)));
+      var walking = tau < T+.45;
+      var legA = walking ? Math.floor(t/260)%2 === 0 : true;
+      var umbrella = t >= 6000;
+      st.cx = st.cx === undefined ? rx-6 : st.cx + ((rx-3) - st.cx)*Math.min(1,c.dt/420);
+      var cx = st.cx, cy = umbrella ? 3 : 4;
+      // rain falls in world space, so it trails behind the moving cloud
+      st.drops = st.drops || [];
+      for(var k=0;k<3;k++) if(Math.random() < .85) st.drops.push({x:cx+rnd(1,10)+ox,y:cy+3,vy:rnd(9,13),ch:pick(["'","|","'",","]),k:"k-c"});
+      var stopY = 10.6;
+      for(var i=st.drops.length-1;i>=0;i--){
+        var d = st.drops[i], dx = d.x-ox;
+        d.y += d.vy*c.dt/1000;
+        if(dx < -2){ st.drops.splice(i,1); continue; }
+        var hitUmb = umbrella && d.y >= 6 && dx >= rx-2 && dx <= rx+4.5;
+        if(hitUmb){ st.drops.splice(i,1); if(Math.random() < .5) g.set(dx,5,pick([".","'","`"]),"k-w"); continue; }
+        if(d.y >= stopY){ st.drops.splice(i,1); g.set(dx,10,pick([".",","]),"k-b"); continue; }
+        g.set(dx,d.y,d.ch,d.k);
+      }
+      g.sprO(cx,cy,SPR.rainCloud,"k-d");
+      if(umbrella){
+        var pop = prog(t,6000,6160);
+        g.spr(rx-2,6, pop < 1 ? [" .^. ","/_|_\\","  |"] : SPR.umbrella, "k-m");
+        g.sprO(rx,8,[" o","/|\\","/ \\"],"k-w");
+      } else {
+        g.sprO(rx,8,legA ? SPR.repA : SPR.repB,"k-w");
+      }
+      g.text(rx-1,11,"___","k-d");
+      if(t > c.dur){ // the sun peeks out for next quarter
+        g.spr(45,4,[" \\ | /","-- O","  /"],"k-y");
+      }
+    }
+  };
+
+  /* ---------------- REPO: the tow truck takes the jacket ---------------- */
+  SCENES.repo = {
+    dur: 7400,
+    cap: { title:"REPOSSESSED", a:["Financed the drip.","Not the payments."], b:["Collections took the flex.","HR keeps the photo."], tTitle:200, tA:1300, tB:5600, k:"k-y", rule:"k-y-d" },
+    cues: [
+      {t:600, sfx:"beeper"},
+      {t:860, whip:"l", ms:340}, {t:860, sfx:"fwip"}, {t:900, lines:"h", ms:750, dir:1, n:11},
+      {t:1450, sfx:"screech"}, {t:1500, pulse:.06, ms:300}, {t:1500, shake:180},
+      {t:1700, sfx:"beeper"},
+      {t:2400, sfx:"clank"}, {t:2400, impact:100}, {t:2400, shake:260}, {t:2400, lines:"radial", ms:650, fx:34, fy:7}, {t:2400, zoom:1.15, ms:600, fx:34, fy:7},
+      {t:3000, sfx:"engine"}, {t:3300, sfx:"honk"},
+      {t:4700, sfx:"stingerRepo", key:true}, {t:4700, card:"REPO", ms:1400},
+      {t:4850, say:"repo", key:true}
+    ],
+    cam: [
+      {t:0,    x:6,  y:0,   z:1.18, r:0},
+      {t:850,  x:4,  y:0,   z:1.24, r:0, e:"l"},
+      {t:1500, x:0,  y:0.5, z:1.14, r:0},
+      {t:2350, x:2,  y:0.5, z:1.42, r:-2},
+      {t:2900, x:0,  y:0.2, z:1.08, r:0},  // the pan stays wide enough for the billboard's text rows
+      {t:4700, x:-3, y:0.2, z:1.1,  r:0},
+      {t:5200, x:6,  y:0,   z:1.12, r:0, e:"cut"},
+      {t:7200, x:6,  y:0,   z:1.16, r:0, e:"l"}
+    ],
+    drift: {x:1, z:.015, p:8000},
+    summary: "A tow truck hauls off the President's Club jacket.",
+    draw: function(g,c){
+      var t = c.t, st = c.st;
+      var hookX = 34, TIP = 26, ty = 3; // boom tip column inside the truck sprite; truck top row
+      // the camera pans off with the truck, then (behind the title card) cuts back to the empty rack
+      var ox = t < 5200 ? -46*easeInOut(prog(t,3100,4700)) : 0, O = Math.round(ox);
+      // truck path (world): whips in reversing, waits, drives off accelerating
+      var tw;
+      if(t < 900) tw = -44;
+      else if(t < 1500) tw = lerp(-44,hookX-TIP,easeOut(prog(t,900,1500)));
+      else if(t < 3100) tw = hookX-TIP;
+      else tw = hookX-TIP - 16*Math.pow((t-3100)/1000,2);
+      // exhaust from the stack (world space), drawn first so the sign and the truck sit in front of it
+      st.puffs = st.puffs || [];
+      var moving = (t > 900 && t < 1500) || (t > 3100 && t < 5200);
+      if(moving && Math.random() < .55) st.puffs.push({x:tw+12,y:ty,vx:rnd(1,4),vy:rnd(-3,-1.2),life:rnd(600,1000),ch:pick(["o","O","."]),k:"k-d",fade:320,ch2:"o"});
+      stepParts(st.puffs,c.dt,g,undefined,ox);
+      // left of the building: a lamp post and a billboard (solid, so the exhaust passes behind its text)
+      g.sprO(-36-O,0,SPR.billboard,"k-d"); g.text(-34-O,1,"PRESIDENT'S CLUB","k-au");
+      var lx = -8-O;
+      g.text(lx-1,4,"(_)","k-y"); for(var ly=5;ly<=9;ly++) g.set(lx,ly,"|","k-d"); g.text(lx-1,10,"_|_","k-d");
+      // building + street
+      g.spr(39-O,3,SPR.building,"k-d");
+      g.text(42-O,4,"COLLECTIONS  DEPT.","k-y");
+      if(t > c.dur){ g.text(42,8,"[:)]",blink(t,700) ? "k-au" : "k-au-d"); if(blink(t,350)) g.set(46,7,"*","k-y"); }
+      g.text(0,11,rep("_",COLS),"k-d");
+      g.tile(12,"  == ",ox,"k-d");
+      // coat rack (stays behind after the tow)
+      var rk = hookX-O;
+      g.set(rk,6,"?","k-br");
+      for(var py=7;py<=10;py++) g.set(rk,py,"|","k-br");
+      g.text(rk-1,11,"_|_","k-br");
+      var tx = Math.round(tw-ox), tipX = tx+TIP;
+      // cable lowers to the hanger, clanks, lifts
+      var attached = t >= 2400, cableLen = 0;
+      if(t >= 1800 && t < 2400) cableLen = Math.round(lerp(0,2,prog(t,1800,2300)));
+      else if(t >= 2400 && t < 2550) cableLen = 2;
+      else if(t >= 2550) cableLen = Math.round(lerp(2,1,prog(t,2550,2950)));
+      var swing = t > 3100 ? (blink(t,260) ? 1 : 0) : 0;
+      if(!attached) g.spr(rk-3,7,SPR.jacketS,"k-au");
+      g.sprO(tx,ty,SPR.truck,"k-w");
+      g.text(tx+9,ty+5,"REPO","k-r k-bold");
+      if(t >= 1800){
+        for(var r=0;r<cableLen;r++) g.set(tipX+(r === cableLen-1 ? swing : 0),ty+1+r,"|","k-d");
+        g.set(tipX+swing,ty+1+cableLen,"J","k-w");
+        if(attached) g.spr(tipX-3+swing,ty+2+cableLen,SPR.jacketS,"k-au");
+      }
+      // dust from the tires
+      if(t > 3100 && t < 5200) g.text(tx+19,ty+7,blink(t,120) ? ". '" : "' .","k-s");
+      if(t > 900 && t < 1500) g.text(tx-3,ty+7,blink(t,120) ? ". '" : "' .","k-s");
+      // idle: tumbleweed
+      if(t > c.dur){
+        var cyc = (t-c.dur) % 7000, wx = 66 - cyc/90;
+        if(wx > -2) g.set(wx,10 - (Math.floor(cyc/180)%2),"@","k-br");
+      }
+    }
+  };
+
+  /* ---------------- BOOT: SHITCORP OS ---------------- */
+  // 5-row block font (6 columns a letter with the gap): the logo and the title cards
+  var FONT = {S:[" ####","#    "," ### ","    #","#### "],H:["#   #","#   #","#####","#   #","#   #"],I:["###"," # "," # "," # ","###"],T:["#####","  #  ","  #  ","  #  ","  #  "],C:[" ####","#    ","#    ","#    "," ####"],O:[" ### ","#   #","#   #","#   #"," ### "],R:["#### ","#   #","#### ","#  # ","#   #"],P:["#### ","#   #","#### ","#    ","#    "],
+    L:["#    ","#    ","#    ","#    ","#####"],U:["#   #","#   #","#   #","#   #"," ### "],B:["#### ","#   #","#### ","#   #","#### "],F:["#####","#    ","#### ","#    ","#    "],E:["#####","#    ","#### ","#    ","#####"],D:["#### ","#   #","#   #","#   #","#### "],N:["#   #","##  #","# # #","#  ##","#   #"],M:["#   #","## ##","# # #","#   #","#   #"]};
+  function blockWord(word){
+    var out = [];
+    for(var r=0;r<5;r++) out.push(word.split("").map(function(ch){ return (FONT[ch] || FONT.O)[r]; }).join(" "));
+    return out;
+  }
+  var LOGO = blockWord("SHITCORP");
+  function drawLogo(g,x,y,k,k2){
+    for(var r=0;r<LOGO.length;r++){
+      var L = LOGO[r];
+      for(var i=0;i<L.length;i++) if(L.charAt(i) === "#") g.set(x+i,y+r,"\u2588",r < 3 ? k : k2);
+    }
+  }
+  var BOOT_LINES = [
+    {t:260,  y:9,  s:"SHITCORP OS v4.3", k:"k-w k-bold"},
+    {t:480,  y:11, bar:true},
+    {t:1120, y:13, s:"ERROR: quota exceeds pipeline.", k:"k-r k-bold"},
+    {t:1400, y:15, week:true, k:"k-c", cursor:true}
+  ];
+  SCENES.boot = {
+    dur: 1700, band:false,
+    cam: [{t:0, x:0, y:0, z:1, r:0}],
+    cues: [
+      {t:0, sfx:"bootHum"}, {t:0, slam:1.6, ms:460, fx:31, fy:4}, {t:0, lines:"radial", ms:560, fx:31, fy:4, n:34}, {t:40, impact:90},
+      {t:480, sfx:"loadStart"},
+      {t:1120, sfx:"errBeep"}, {t:1120, glitch:220}, {t:1120, impact:90}, {t:1120, shake:200},
+      {t:1400, sfx:"chime"}, {t:1500, say:"boot", key:true}
+    ],
+    summary: "SHITCORP OS boots and reports quota exceeds pipeline.",
+    draw: function(g,c){
+      var t = c.t, st = c.st, typed = 0, X = 10;
+      drawLogo(g,9,2,"k-c","k-b");
+      for(var i=0;i<BOOT_LINES.length;i++){
+        var L = BOOT_LINES[i]; if(t < L.t && !c.still) break;
+        if(L.bar){
+          var p = c.still ? 1 : prog(t,480,1000), w = 24;
+          var pct = Math.round(74*p), f = Math.floor(w*pct/100);
+          g.text(X,L.y,"Loading quota","k-d");
+          g.text(X+14,L.y,"["+rep("\u2588",f)+rep("\u2591",w-f)+"]",pct >= 74 ? "k-r" : "k-b");
+          g.text(X+41,L.y,(pct < 10 ? " " : "")+pct+"%",pct >= 74 ? "k-r k-bold" : "k-w");
+          if(!c.still && p < 1){ var tk = Math.floor(p*12); if(tk !== st.tk){ st.tk = tk; c.sfx("tick"); } }
+          continue;
+        }
+        var src = L.week ? "Week "+(c.meta.week||1)+"/13. Clocking in." : L.s;
+        var n = c.still ? src.length : Math.min(src.length, Math.floor((t-L.t)/1000*110));
+        g.text(X,L.y,src.slice(0,n),L.k);
+        typed += n;
+        if(n < src.length) g.set(X+n,L.y,"\u258c","k-w");
+        else if(L.cursor && blink(t,400)) g.set(X+1+n,L.y,"\u258c","k-w");
+      }
+      c.typed = typed;
+    }
+  };
+  // standby screen shown before the first click
+  SCENES.standby = {
+    dur: 1, band:false, cues: [],
+    summary: "SHITCORP OS standby screen.",
+    draw: function(g,c){
+      var t = c.t;
+      drawLogo(g,9,2,"k-c","k-b");
+      g.center(8,"O S   v 4 . 3","k-d");
+      if(blink(t,600) || c.still) g.center(12,"[ PRESS ANY KEY ]","k-w k-bold");
+    }
+  };
+
+  /* ======================================================================
+     PLAYER
+     ====================================================================== */
+  var reduced = HAS_DOM && root.matchMedia ? root.matchMedia("(prefers-reduced-motion: reduce)").matches : false;
+  function audio(){ return root.TST_AUDIO || null; }
+
+  function glitchPost(g,rows){
+    rows = rows || ART;
+    var marks = "#%&@$/\\|=+<>?!";
+    for(var y=0;y<rows;y++){
+      if(Math.random() < .28){
+        var sh = Math.round(rnd(-3,3)), row = g.ch.slice(y*COLS,(y+1)*COLS), rk = g.cl.slice(y*COLS,(y+1)*COLS);
+        // rows wrap around, so full-width ground lines never end on screen
+        for(var x=0;x<COLS;x++){ var sx = mod(x-sh,COLS); g.ch[y*COLS+x] = row[sx]; g.cl[y*COLS+x] = rk[sx]; }
+      }
+    }
+    for(var i=0;i<34;i++) g.set(Math.floor(rnd(0,COLS)),Math.floor(rnd(0,rows)),pick(marks.split("")),pick(["k-r","k-c","k-m","k-w"]));
+  }
+
+  /* ---------- anime effects drawn into the grid ---------- */
+  function isBlank(g,i){ return g.ch[i] === " " && !g.cl[i]; }
+  // focus lines: rays from the frame edge toward (cx,cy), only through empty cells, dim
+  function rayChar(ca,sa){ var ax = Math.abs(ca), ay = Math.abs(sa); if(ay < ax*.42) return "-"; if(ay > ax*2.4) return "|"; return ca*sa > 0 ? "\\" : "/"; }
+  function radialLines(g,e,p,rows,asp){
+    var n = Math.round((e.n || 30)*(p < .55 ? 1 : 1-(p-.55)/.45*.75));
+    var cx = e.fx !== undefined ? e.fx : COLS/2-.5, cy = e.fy !== undefined ? e.fy : (rows-1)/2;
+    for(var i=0;i<n;i++){
+      var a = (i+Math.random()*.85)/n*Math.PI*2, ca = Math.cos(a), sa = Math.sin(a), ch = rayChar(ca,sa), k = i%3 ? "k-d" : "k-b-d";
+      for(var r=(e.rin || 8)+Math.random()*7+p*8; r<96; r+=.5){
+        var x = Math.round(cx+ca*r), y = Math.round(cy+sa*r/asp);
+        if(x < 0 || x >= COLS || y < 0 || y >= rows) break;
+        var j = y*COLS+x; if(isBlank(g,j)){ g.ch[j] = ch; g.cl[j] = k; }
+      }
+    }
+  }
+  // horizontal speed lines streaming in e.dir, only through empty cells
+  function speedLines(g,e,p,el,rows){
+    if(!e.st){ e.st = []; for(var i=0;i<(e.n || 9);i++) e.st.push({y:Math.floor(Math.random()*rows), len:Math.round(rnd(5,15)), x0:rnd(0,COLS+20), v:rnd(60,120)}); }
+    var fade = p > .7 ? 1-(p-.7)/.3 : 1;
+    for(var k=0;k<e.st.length;k++){
+      var s = e.st[k], span = COLS+s.len+4, run = s.x0 + e.dir*s.v*el, hx = mod(run,span) - 2, y = mod(s.y + Math.floor(run/span)*5,rows);
+      for(var j=0;j<Math.max(1,Math.round(s.len*fade));j++){
+        var x = Math.round(e.dir > 0 ? hx - j : COLS-1-hx + j); if(x < 0 || x >= COLS) continue;
+        var ii = y*COLS+x; if(isBlank(g,ii)){ g.ch[ii] = j === 0 ? "=" : "-"; g.cl[ii] = "k-d"; }
+      }
+    }
+  }
+  // whip-pan smear: rows slide (wrapping) and every mark drags a streak behind it
+  function smear(g,s,dir,rows){
+    var maxSh = s*9, blur = s > .5 ? (s-.5)*1.6 : 0, len = Math.round(1+s*7);
+    for(var y=0;y<rows;y++){
+      var o = y*COLS, row = g.ch.slice(o,o+COLS), rk = g.cl.slice(o,o+COLS), sh = dir*Math.round(maxSh*(.5+Math.random()*.5));
+      for(var x=0;x<COLS;x++){
+        var sx = mod(x-sh,COLS), c = row[sx];
+        if(c !== " " && blur && Math.random() < blur) c = Math.random() < .5 ? "-" : "=";
+        g.ch[o+x] = c; g.cl[o+x] = rk[sx];
+      }
+      var src = g.ch.slice(o,o+COLS);
+      for(var x2=0;x2<COLS;x2++){
+        if(src[x2] === " ") continue;
+        for(var j=1;j<=len;j++){
+          var xx = x2-dir*j; if(xx < 0 || xx >= COLS || src[xx] !== " ") break;
+          if(g.ch[o+xx] === " "){ g.ch[o+xx] = j < 2 ? "=" : "-"; g.cl[o+xx] = "k-d"; }
+        }
+      }
+    }
+  }
+  // slash cut: a "/" band sweeps left to right; behind it the new shot, ahead of it the frozen old one
+  function slashWipe(g,snap,p,rows){
+    var uc = -3 + (COLS+rows+6)*p;
+    for(var y=0;y<rows;y++) for(var x=0;x<COLS;x++){
+      var i = y*COLS+x, d = x+y-uc;
+      if(d > 1.5){ g.ch[i] = snap.ch[i]; g.cl[i] = snap.cl[i]; }
+      else if(d > -1.5){ g.ch[i] = "/"; g.cl[i] = Math.abs(d) < .75 ? "k-w k-bold" : "k-c"; }
+    }
+  }
+
+  /* ---------- camera ---------- */
+  var CAM0 = {t:0, x:0, y:0, z:1, r:0};
+  function normTrack(tr){
+    if(!tr || !tr.length) return null;
+    var out = [], prev = CAM0;
+    for(var i=0;i<tr.length;i++){
+      var k = tr[i], n = {t:k.t, e:k.e || "io"};
+      n.x = k.x !== undefined ? k.x : prev.x; n.y = k.y !== undefined ? k.y : prev.y;
+      n.z = k.z !== undefined ? k.z : prev.z; n.r = k.r !== undefined ? k.r : prev.r;
+      out.push(n); prev = n;
+    }
+    return out;
+  }
+  function ease(e,p){ return e === "l" ? p : e === "i" ? easeIn(p) : e === "o" ? easeOut(p) : e === "cut" ? 0 : easeInOut(p); }
+  function trackAt(tr,t){
+    var a = tr[0]; if(t <= a.t) return a;
+    for(var i=1;i<tr.length;i++){
+      var b = tr[i];
+      if(t < b.t){ var p = ease(b.e,(t-a.t)/(b.t-a.t)); return {x:lerp(a.x,b.x,p), y:lerp(a.y,b.y,p), z:lerp(a.z,b.z,p), r:lerp(a.r,b.r,p)}; }
+      a = b;
+    }
+    return a;
+  }
+  // punch-in: fast in with overshoot, settle, hold, release
+  function punch(p){
+    if(p < .14) return 1.3*easeOut(p/.14);
+    if(p < .32) return lerp(1.3,1,easeInOut((p-.14)/.18));
+    if(p < .7) return 1;
+    return 1-easeInOut((p-.7)/.3);
+  }
+  // keep the art covering the window: zoom >= 1 (more when rolled or skewed) and the look-at offset clamped to the slack.
+  // Units: x in columns, y in rows, asp = row height / column width.
+  function clampCam(x,y,z,r,sk,rows,asp){
+    if(Math.abs(x) < 1e-4 && Math.abs(y) < 1e-4 && Math.abs(r) < 1e-4 && Math.abs(sk) < 1e-4 && z <= 1) return {x:0, y:0, z:1, r:0, sk:0};
+    var W2 = COLS/2, H2 = rows*asp/2, a = r*Math.PI/180, ca = Math.cos(a), sa = Math.sin(a), ts = Math.tan(sk*Math.PI/180), mx = 0, my = 0;
+    for(var s=-1;s<=1;s+=2){ // window corners pulled back into the art's space (inverse roll, then inverse skew)
+      var u = ca*W2 + sa*s*H2, v = -sa*W2 + ca*s*H2; u -= v*ts;
+      mx = Math.max(mx,Math.abs(u)); my = Math.max(my,Math.abs(v));
+    }
+    var m = .35; // a third of a cell of slack so subpixel rounding never shows an edge
+    z = Math.max(z,1,(mx+m)/W2,(my+m)/H2);
+    var lx = Math.max(0,W2-(mx+m)/z), ly = Math.max(0,H2-(my+m)/z);
+    return {x:clamp(x,-lx,lx), y:clamp(y*asp,-ly,ly)/asp, z:z, r:r, sk:sk};
+  }
+  // flash safety (WCAG 2.3.1): at most two impact frames in any second, across every player
+  var IMPACTS = [];
+  function impactOk(){
+    var now = root.performance && root.performance.now ? root.performance.now() : Date.now();
+    while(IMPACTS.length && now-IMPACTS[0] >= 1000) IMPACTS.shift();
+    if(IMPACTS.length >= 2) return false;
+    IMPACTS.push(now); return true;
+  }
+  // persistent layers per <pre>: built once, never replaced per frame
+  function layers(pre,band){
+    var L = pre._tst;
+    if(!L || !L.win || L.win.parentNode !== pre || L.bandEl.parentNode !== pre){
+      pre.innerHTML = '<span class="tst-cam-win"><span class="tst-cam"></span><span class="tst-fx"></span></span><span class="tst-band"></span>';
+      L = { win:pre.firstChild, bandEl:pre.lastChild, camKey:"" };
+      L.cam = L.win.firstChild; L.fx = L.win.lastChild;
+      pre._tst = L;
+    }
+    L.bandEl.hidden = !band;
+    if(!band){ L.bandEl.innerHTML = ""; L.bandEl._h = ""; }
+    return L;
+  }
+
+  function measure(pre){
+    try{
+      var probe = document.createElement("span");
+      probe.textContent = rep("M",100);
+      probe.style.cssText = "position:absolute;visibility:hidden;white-space:pre;font-size:100px;line-height:1;";
+      pre.appendChild(probe);
+      // layout width: unaffected by the CRT, modal-open or camera scale transforms (getBoundingClientRect is not)
+      var w = probe.offsetWidth/10000;
+      pre.removeChild(probe);
+      return w > 0.3 && w < 1 ? w : 0;
+    }catch(e){ return 0; }
+  }
+  // size the font so all 64 columns fit the screen's width; returns false while the box isn't laid out yet
+  function fit(pre){
+    var box = pre.parentNode; if(!box || !box.clientWidth) return false;
+    var cs = root.getComputedStyle ? root.getComputedStyle(box) : null;
+    var inner = box.clientWidth - (cs ? parseFloat(cs.paddingLeft)+parseFloat(cs.paddingRight) : 16);
+    if(!(inner > 0)) return false;
+    var ratio = pre._ratio || measure(pre);
+    if(!ratio) return false;
+    pre._ratio = ratio;
+    var fs = Math.max(5.5, Math.min(pre._maxFont || 13.5, Math.floor((inner/(COLS*ratio))*10)/10));
+    pre.style.fontSize = fs+"px";
+    return true;
+  }
+
+  function play(pre,type,opts){
+    opts = opts || {};
+    var sc = SCENES[type] || SCENES.club;
+    var box = opts.box || pre.parentNode;
+    var hasBand = sc.band !== false, rows = hasBand ? ART : ROWS, cues = sc.cues || [], track = normTrack(sc.cam);
+    var g = new Grid(), st = {}, speed = opts.speed || 1, t = 0, cue = 0, raf = 0, last = 0, acc = 0, stopped = false;
+    var glitchUntil = 0, nextIdleGlitch = 0, lastTyped = 0, lastTick = 0, screen = "", doneFired = false, fitted = false;
+    var still = !!(opts.still || reduced);
+    var timers = [], envs = [], lfx = [], slash = null;
+    var L = HAS_DOM ? layers(pre,hasBand) : null;
+    if(opts.maxFont) pre._maxFont = opts.maxFont;
+    var ctx = { t:0, dt:50, st:st, meta:opts.meta||{}, dur:sc.dur, idle:false, still:false, screen:"", typed:0,
+      sfx:function(n){ if(!still && !ctx.sim){ var A = audio(); if(A) A.play(n,{scene:true}); } } };
+    var cap = capFor(sc,ctx.meta);
+    function later(fn,ms){ var id = setTimeout(function(){ var k = timers.indexOf(id); if(k >= 0) timers.splice(k,1); fn(); },ms); timers.push(id); return id; }
+    function clearTimers(){ for(var i=0;i<timers.length;i++) clearTimeout(timers[i]); timers.length = 0; }
+    function aspect(){ return 1.14/(pre._ratio || 0.6); }
+    function setScreen(cls){ if(cls === screen) return; if(screen) box.classList.remove(screen); screen = cls; if(cls) box.classList.add(cls); }
+    function impact(ms){
+      if(!impactOk()) return;
+      // an inverted frame that is on screen when the main thread stalls (e.g. the game still compiling behind
+      // the boot) stays up for the whole stall, so callers can veto impacts while the page is busy
+      if(opts.impactOk && !opts.impactOk()) return;
+      box.classList.remove("tst-impact"); void box.offsetWidth; box.classList.add("tst-impact");
+      later(function(){ box.classList.remove("tst-impact"); },clamp(Math.round(ms/speed),70,160));
+    }
+    function fxEl(cls,html,ms,v){
+      var el = document.createElement("span"); el.className = cls;
+      if(html) el.innerHTML = html;
+      if(v) el.style.setProperty(v,ms+"ms");
+      L.fx.appendChild(el);
+      // leave with the CSS animation, whose length follows live speed changes (--spd); the timer is a fallback
+      // for when animationend never comes (hidden tab), long enough for the slowest speed (120/260)
+      function rm(){ if(el.parentNode) el.parentNode.removeChild(el); }
+      el.addEventListener("animationend",function(e){ if(e.target === el) rm(); });
+      later(rm,Math.ceil(ms*260/120)+200);
+      return el;
+    }
+    function fire(cu){
+      if(cu.cause && cu.cause !== ctx.meta.cause) return;
+      if(cu.notCause && cu.notCause === ctx.meta.cause) return;
+      var A = audio();
+      if(cu.sfx){ if(A) A.play(cu.sfx,{scene:true}); return; }
+      if(cu.say){ if(A) A.say(cu.say,{force:true,meta:ctx.meta}); return; }
+      if(cu.amb){ if(A) A.ambient(cu.amb); return; }
+      if(still || !L) return; // reduced motion: sound only, no camera, no flashes
+      if(cu.shake){ box.classList.remove("tst-shake"); void box.offsetWidth; box.classList.add("tst-shake"); later(function(){ box.classList.remove("tst-shake"); },cu.shake); }
+      else if(cu.glitch){ glitchUntil = t + cu.glitch; box.classList.add("tst-glitch"); later(function(){ box.classList.remove("tst-glitch"); },cu.glitch); }
+      else if(cu.whip){ envs.push({k:"whip", t0:cu.t, ms:cu.ms || 360, dir:cu.whip === "l" ? -1 : 1}); }
+      else if(cu.zoom){ envs.push({k:"zoom", t0:cu.t, ms:cu.ms || 600, z:cu.zoom, fx:cu.fx, fy:cu.fy}); }
+      else if(cu.slam){ envs.push({k:"slam", t0:cu.t, ms:cu.ms || 450, z:cu.slam, fx:cu.fx, fy:cu.fy}); }
+      else if(cu.pulse){ envs.push({k:"pulse", t0:cu.t, ms:cu.ms || 300, a:cu.pulse}); }
+      else if(cu.impact){ impact(cu.impact); }
+      else if(cu.lines){ lfx.push({k:cu.lines, t0:cu.t, ms:cu.ms || 600, fx:cu.fx, fy:cu.fy, dir:cu.dir || -1, n:cu.n}); }
+      else if(cu.slash){
+        var snap = new Grid(); snap.copyFrom(g); // the last frame on screen is the shot being cut away from
+        slash = {t0:cu.t, ms:cu.slash, snap:snap};
+        fxEl("tst-slash","",cu.slash,"--slash-ms");
+      }
+      else if(cu.card){
+        var old = L.fx.querySelector(".tst-card"); if(old) old.parentNode.removeChild(old);
+        var bw = blockWord(cu.card), ms = cu.ms || 1300;
+        fxEl("tst-card "+(cu.k || (cap && cap.k) || "k-w"),
+          '<span class="tst-card-w" style="font-size:'+Math.min(1.45,58/bw[0].length).toFixed(2)+'em">'+esc(bw.join("\n").replace(/#/g,"\u2588"))+"</span>",ms,"--card-ms");
+      }
+      else if(cu.letterbox !== undefined){ L.fx.classList.toggle("tst-lb",!!cu.letterbox); }
+    }
+    // camera = keyframe track + idle drift + effect envelopes, clamped so the art always covers the window
+    function camAt(tt){
+      var b = track ? trackAt(track,tt) : CAM0, x = b.x, y = b.y, z = b.z, r = b.r, sk = 0;
+      if(tt > sc.dur && sc.drift){
+        var d = sc.drift, w = (tt-sc.dur)/(d.p || 9000)*Math.PI*2;
+        x += (d.x||0)*Math.sin(w); y += (d.y||0)*Math.sin(w*.7); z += (d.z||0)*(1-Math.cos(w))/2;
+      }
+      for(var i=envs.length-1;i>=0;i--){
+        var e = envs[i], p = (tt-e.t0)/e.ms;
+        if(p >= 1){ envs.splice(i,1); continue; }
+        if(p < 0) continue;
+        if(e.k === "whip"){ var s = Math.sin(Math.PI*p); x += e.dir*18*(p < .5 ? easeIn(p*2) : -(1-easeOut((p-.5)*2))); sk += e.dir*11*s; z *= 1+.14*s; }
+        else if(e.k === "zoom"){ var w2 = punch(p); z *= 1+(e.z-1)*w2; if(e.fx !== undefined){ x = lerp(x,e.fx+.5-COLS/2,w2*.6); y = lerp(y,e.fy+.5-rows/2,w2*.6); } }
+        else if(e.k === "slam"){
+          var q = Math.pow(1-clamp(p/.5,0,1),3);
+          z *= 1+(e.z-1)*q+.03*Math.sin(Math.PI*clamp((p-.5)/.5,0,1));
+          if(e.fx !== undefined){ x = lerp(x,e.fx+.5-COLS/2,q); y = lerp(y,e.fy+.5-rows/2,q); }
+        }
+        else if(e.k === "pulse"){ z *= 1+e.a*(p < .22 ? easeOut(p/.22) : 1-easeInOut((p-.22)/.78)); }
+      }
+      return clampCam(x,y,z,r,sk,rows,aspect());
+    }
+    function applyCam(c){
+      if(!L || still) return;
+      var asp = aspect(), a = c.r*Math.PI/180, ca = Math.cos(a), sa = Math.sin(a), ts = Math.tan(c.sk*Math.PI/180);
+      var kx = c.x + c.y*asp*ts, ky = c.y*asp;            // skew the look-at offset (column units)...
+      var tx = -c.z*(ca*kx - sa*ky), ty = -c.z*(sa*kx + ca*ky); // ...roll and scale it, then move it to the centre
+      var v = [(tx/COLS*100).toFixed(3), (ty/asp/rows*100).toFixed(3), c.z.toFixed(4), c.r.toFixed(3), c.sk.toFixed(3)], key = v.join("|");
+      if(key === L.camKey) return;
+      L.camKey = key;
+      var s = L.cam.style;
+      s.setProperty("--cx",v[0]); s.setProperty("--cy",v[1]); s.setProperty("--cz",v[2]); s.setProperty("--rot",v[3]); s.setProperty("--skew",v[4]);
+    }
+    function resetCam(){
+      if(!L) return;
+      ["--cx","--cy","--cz","--rot","--skew"].forEach(function(n){ L.cam.style.removeProperty(n); });
+      L.camKey = "";
+    }
+    function clearFx(){
+      envs.length = 0; lfx.length = 0; slash = null; glitchUntil = 0;
+      box.classList.remove("tst-glitch","tst-shake","tst-impact");
+      if(L){ L.fx.innerHTML = ""; L.fx.classList.remove("tst-lb"); }
+    }
+    function post(){
+      var asp = aspect();
+      for(var i=lfx.length-1;i>=0;i--){
+        var e = lfx[i], p = (t-e.t0)/e.ms;
+        if(p >= 1){ lfx.splice(i,1); continue; }
+        if(p < 0) continue;
+        if(e.k === "radial") radialLines(g,e,p,rows,asp); else speedLines(g,e,p,(t-e.t0)/1000,rows);
+      }
+      var s = 0, dir = 1;
+      for(var j=0;j<envs.length;j++){
+        var w = envs[j]; if(w.k !== "whip") continue;
+        var q = (t-w.t0)/w.ms; if(q > 0 && q < 1){ var sv = Math.pow(Math.sin(Math.PI*q),1.2); if(sv > s){ s = sv; dir = -w.dir; } }
+      }
+      if(s > .06) smear(g,s,dir,rows);
+      if(slash){ var sp = (t-slash.t0)/slash.ms; if(sp >= 1) slash = null; else slashWipe(g,slash.snap,Math.max(0,sp),rows); }
+    }
+    function put(el,html){ if(el._h !== html){ el._h = html; el.innerHTML = html; } }
+    function render(){
+      g.clear(); ctx.t = t; ctx.idle = t > sc.dur; ctx.screen = "";
+      sc.draw(g,ctx);
+      if(!still) post();
+      if(hasBand){
+        var typed = caption(g,cap,t,sc.dur,{still:still});
+        if(!still && t <= sc.dur && typed > lastTyped && performance.now()-lastTick > 45){ lastTick = performance.now(); var A = audio(); if(A) A.play("key",{scene:true}); }
+        lastTyped = typed;
+      } else if(ctx.typed !== undefined && !still){
+        if(ctx.typed > lastTyped && performance.now()-lastTick > 38){ lastTick = performance.now(); var A2 = audio(); if(A2) A2.play("key",{scene:true}); }
+        lastTyped = ctx.typed;
+      }
+      if(t < glitchUntil) glitchPost(g,rows);
+      setScreen(ctx.screen || "");
+      if(L){ put(L.cam,g.toHTML(0,rows)); if(hasBand) put(L.bandEl,g.toHTML(ART,ROWS)); }
+    }
+    function frame(now){
+      if(stopped) return;
+      if(!fitted && HAS_DOM) fitted = fit(pre);
+      var dt = Math.min(250, now-(last||now)); last = now; // slow frames still keep pace; a long tab-away doesn't skip the show
+      t += dt*speed; acc += dt;
+      while(cue < cues.length && cues[cue].t <= t){ fire(cues[cue]); cue++; }
+      if(sc.idleGlitch && t > sc.dur){
+        if(!nextIdleGlitch) nextIdleGlitch = t + sc.idleGlitch;
+        if(t >= nextIdleGlitch){ nextIdleGlitch = t + sc.idleGlitch*rnd(.8,1.3); glitchUntil = t + 160; }
+      }
+      if(acc >= 50){ ctx.dt = acc*speed; acc = 0; render(); }
+      applyCam(camAt(t));
+      if(t >= sc.dur && !doneFired){ doneFired = true; if(opts.onDone) opts.onDone(); }
+      raf = requestAnimationFrame(frame);
+    }
+    function start(){
+      stopped = false; t = 0; cue = 0; last = 0; acc = 0; lastTyped = 0; nextIdleGlitch = 0; doneFired = false;
+      for(var k in st) delete st[k];
+      clearTimers(); clearFx(); resetCam();
+      if(HAS_DOM){ fitted = fit(pre); box.style.setProperty("--spd",String(speed)); }
+      if(still){
+        // reduced motion: simulate quietly to the end, draw one still frame, play only the key cues
+        ctx.sim = true; ctx.still = false;
+        for(var tt=0; tt<=sc.dur; tt+=50){ g.clear(); ctx.t = tt; ctx.dt = 50; ctx.idle = false; sc.draw(g,ctx); }
+        ctx.sim = false; ctx.still = true; t = sc.dur; ctx.t = t;
+        render();
+        if(HAS_DOM && !fitted){ var tries = 0; (function refit(){ if(stopped) return; fitted = fit(pre); if(!fitted && tries++ < 40) requestAnimationFrame(refit); })(); }
+        cues.forEach(function(cu){ if(cu.key) fire(cu); });
+        if(opts.onDone) later(opts.onDone,0);
+        return;
+      }
+      if(opts.crt !== false){ pre.classList.remove("tst-crt-on"); void pre.offsetWidth; pre.classList.add("tst-crt-on"); }
+      while(cue < cues.length && cues[cue].t <= 0){ fire(cues[cue]); cue++; } // t:0 effects land on the first frame
+      applyCam(camAt(0));
+      render();
+      raf = requestAnimationFrame(frame);
+    }
+    function stop(){ stopped = true; cancelAnimationFrame(raf); clearTimers(); clearFx(); resetCam(); setScreen(""); var A = audio(); if(A) A.stopAmbient(); }
+    var onResize = function(){ if(HAS_DOM) fitted = fit(pre); };
+    if(HAS_DOM) root.addEventListener("resize",onResize);
+    start();
+    return {
+      stop: function(){ stop(); if(HAS_DOM) root.removeEventListener("resize",onResize); },
+      replay: function(){ stop(); var A = audio(); if(A) A.hush(); start(); },
+      skip: function(){
+        if(still || t >= sc.dur) return;
+        for(; cue < cues.length; cue++){ if(cues[cue].key) fire(cues[cue]); }
+        clearTimers(); clearFx();
+        // fast-forward state so particle systems are populated
+        ctx.sim = true;
+        while(t < sc.dur){ t += 50; ctx.dt = 50; g.clear(); ctx.t = t; ctx.idle = false; sc.draw(g,ctx); }
+        ctx.sim = false;
+        t = sc.dur + 1; render(); applyCam(camAt(t));
+      },
+      setSpeed: function(v){ speed = v > 0 ? v : 1; if(HAS_DOM) box.style.setProperty("--spd",String(speed)); },
+      isDone: function(){ return t >= sc.dur; },
+      summary: summaryFor(type,ctx.meta)
+    };
+  }
+
+  // text-only frame render for tests and fallbacks
+  function renderText(type,tms,meta){
+    var sc = SCENES[type]; var g = new Grid(), st = {};
+    var ctx = { t:0, dt:50, st:st, meta:meta||{}, dur:sc.dur, idle:false, still:false, sim:true, sfx:function(){} };
+    var cap = capFor(sc,ctx.meta);
+    for(var t=0;t<=tms;t+=50){ g.clear(); ctx.t = t; ctx.idle = t > sc.dur; ctx.screen = ""; sc.draw(g,ctx); if(sc.band !== false) caption(g,cap,t,sc.dur,{still:false}); }
+    return {text:g.toText(), html:g.toHTML(), screen:ctx.screen||""};
+  }
+
+  root.TST_SCENES = { play:play, renderText:renderText, SCENES:SCENES, COLS:COLS, ROWS:ROWS, reduced:reduced, fit:fit, summaryFor:summaryFor };
+})(typeof window !== "undefined" ? window : globalThis);
+
+/* ===== Tech Sales Trail v1.14: sound engine (Web Audio synth, no samples) + PA announcer ===== */
+(function(root){
+  "use strict";
+  var HAS_DOM = typeof document !== "undefined";
+  var KEY = "tst-audio-v1";
+  var A = { ctx:null, master:null, unlocked:false, voices:[], amb:null, hb:null, hbTimer:0, stress:0, lastHydrate:0,
+            settings:{ on:true, voice:true, vol:0.6 } };
+
+  /* ---------- settings ---------- */
+  try{
+    var raw = root.localStorage && root.localStorage.getItem(KEY);
+    if(raw){ var v = JSON.parse(raw); if(v && typeof v === "object"){
+      if(typeof v.on === "boolean") A.settings.on = v.on;
+      if(typeof v.voice === "boolean") A.settings.voice = v.voice;
+      if(typeof v.vol === "number" && v.vol >= 0 && v.vol <= 1) A.settings.vol = v.vol;
+    } }
+  }catch(e){}
+  function saveSettings(){ try{ root.localStorage.setItem(KEY,JSON.stringify(A.settings)); }catch(e){} }
+  function gainFor(vol){ return Math.pow(vol,1.6)*0.95; }
+
+  /* ---------- notes ---------- */
+  var IDX = {C:-9,"C#":-8,Db:-8,D:-7,"D#":-6,Eb:-6,E:-5,F:-4,"F#":-3,Gb:-3,G:-2,"G#":-1,Ab:-1,A:0,"A#":1,Bb:1,B:2};
+  function N(n){ var m = /^([A-G](?:#|b)?)(-?\d)$/.exec(n); return 440*Math.pow(2,(IDX[m[1]]+(parseInt(m[2],10)-4)*12)/12); }
+
+  /* ---------- synth primitives: each takes o = {c: context, d: destination, t: start, j: pitch jitter} ---------- */
+  function noiseBuf(c){
+    if(c._tstNoise) return c._tstNoise;
+    var len = Math.floor(c.sampleRate*2), b = c.createBuffer(1,len,c.sampleRate), d = b.getChannelData(0);
+    for(var i=0;i<len;i++) d[i] = Math.random()*2-1;
+    c._tstNoise = b; return b;
+  }
+  function env(c,g,t,v,a,hold,dur){
+    v = Math.max(0.0002,v);
+    g.gain.value = 0; // a fresh GainNode starts at 1; without this a click can leak in before the first automation event
+    g.gain.setValueAtTime(0.0001,t);
+    g.gain.exponentialRampToValueAtTime(v,t+a);
+    if(hold) g.gain.setValueAtTime(v,t+a+hold);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+Math.max(dur,a+(hold||0)+0.01));
+  }
+  function tone(o,p){
+    var c = o.c, t = o.t+(p.at||0), dur = p.dur||0.12, jj = p.nj ? 1 : o.j;
+    var osc = c.createOscillator(); osc.type = p.type||"square";
+    osc.frequency.setValueAtTime(p.f*jj,t);
+    if(p.f2){ var f2 = Math.max(20,p.f2*jj), te = t+(p.slide||dur); if(p.lin) osc.frequency.linearRampToValueAtTime(f2,te); else osc.frequency.exponentialRampToValueAtTime(f2,te); }
+    var node = osc;
+    if(p.lp || p.hp || p.bp){
+      var fl = c.createBiquadFilter(); fl.type = p.lp ? "lowpass" : p.hp ? "highpass" : "bandpass";
+      fl.frequency.setValueAtTime(p.lp||p.hp||p.bp,t); if(p.lp2) fl.frequency.exponentialRampToValueAtTime(p.lp2,t+dur);
+      fl.Q.value = p.q||0.8; node.connect(fl); node = fl;
+    }
+    if(p.vib){ var l = c.createOscillator(), lg = c.createGain(); l.frequency.value = p.vib[0]; lg.gain.value = p.vib[1]; l.connect(lg); lg.connect(osc.frequency); l.start(t); l.stop(t+dur+0.05); }
+    var g = c.createGain(); env(c,g,t,p.v==null?0.2:p.v,p.a||0.004,p.hold||0,dur);
+    if(p.trem){ var l2 = c.createOscillator(), lg2 = c.createGain(), tg = c.createGain(); l2.frequency.value = p.trem[0]; lg2.gain.value = p.trem[1]; tg.gain.value = 1-p.trem[1]; l2.connect(lg2); lg2.connect(tg.gain); node.connect(tg); node = tg; l2.start(t); l2.stop(t+dur+0.05); }
+    node.connect(g); g.connect(o.d);
+    osc.start(t); osc.stop(t+dur+0.05);
+    return t+dur;
+  }
+  function noise(o,p){
+    var c = o.c, t = o.t+(p.at||0), dur = p.dur||0.1, jj = p.nj ? 1 : o.j;
+    var src = c.createBufferSource(); src.buffer = noiseBuf(c); src.loop = true;
+    var fl = c.createBiquadFilter(); fl.type = p.ft||"bandpass";
+    fl.frequency.setValueAtTime((p.f||1200)*jj,t);
+    if(p.f2) fl.frequency.exponentialRampToValueAtTime(Math.max(20,p.f2*jj),t+(p.slide||dur));
+    fl.Q.value = p.q==null ? 1 : p.q;
+    var g = c.createGain(); env(c,g,t,p.v==null?0.2:p.v,p.a||0.002,p.hold||0,dur);
+    src.connect(fl); fl.connect(g); g.connect(o.d);
+    src.start(t,Math.random()*1.5); src.stop(t+dur+0.05);
+    return t+dur;
+  }
+  function seq(o,notes,p){
+    var e = 0, at = p.at||0;
+    for(var i=0;i<notes.length;i++){
+      var n = notes[i], f = typeof n[0] === "number" ? n[0] : N(n[0]);
+      e = tone(o,{type:p.type,f:f,nj:1,at:at,dur:n[1],v:n[2]==null?p.v:n[2],a:p.a,lp:p.lp,vib:p.vib});
+      at += n[3]==null ? (p.gap==null ? n[1] : p.gap) : n[3];
+    }
+    return e;
+  }
+  function heart(o,at,k){
+    tone(o,{type:"sine",f:82,f2:58,nj:1,at:at,dur:.13,v:.5*k,a:.006});
+    tone(o,{type:"triangle",f:164,f2:116,nj:1,at:at,dur:.09,v:.12*k,a:.006});
+    noise(o,{ft:"lowpass",f:380,q:.7,nj:1,at:at,dur:.06,v:.12*k});
+    tone(o,{type:"sine",f:70,f2:50,nj:1,at:at+.17,dur:.11,v:.36*k,a:.006});
+    return tone(o,{type:"triangle",f:140,f2:100,nj:1,at:at+.17,dur:.08,v:.08*k,a:.006});
+  }
+
+  /* ---------- presets (prio: 0 ui, 1 ambient info, 2 event, 3 your action, 4 key moment, 5 ending stinger) ---------- */
+  var P = {
+    click:   {prio:0, fn:function(o){ noise(o,{ft:"highpass",f:2600,q:.7,dur:.028,v:.09}); return tone(o,{type:"sine",f:1500,f2:950,dur:.035,v:.06}); }},
+    key:     {prio:0, free:true, fn:function(o){ noise(o,{ft:"bandpass",f:3600,q:1.3,dur:.018,v:.06}); return tone(o,{type:"square",f:170,dur:.02,v:.02,lp:900}); }},
+    tick:    {prio:0, free:true, fn:function(o){ return tone(o,{type:"square",f:2100,dur:.016,v:.018,lp:5000}); }},
+    step:    {prio:0, free:true, fn:function(o){ noise(o,{ft:"lowpass",f:420,q:.7,dur:.05,v:.07}); return tone(o,{type:"sine",f:95,f2:70,dur:.07,v:.13}); }},
+    heartbeat:{prio:1, free:true, fn:function(o){ return heart(o,0,1); }},
+
+    // your actions
+    dial:    {prio:3, fn:function(o){ var R=[697,770,852,941], C=[1209,1336,1477], t=0, e=0;
+               for(var i=0;i<4;i++){ var r = R[(Math.random()*4)|0], cl = C[(Math.random()*3)|0];
+                 tone(o,{type:"sine",f:r,nj:1,at:t,dur:.075,v:.07,hold:.05}); e = tone(o,{type:"sine",f:cl,nj:1,at:t,dur:.075,v:.06,hold:.05}); t += .095; }
+               return e; }},
+    whoosh:  {prio:3, fn:function(o){ noise(o,{ft:"bandpass",f:300,f2:2400,q:.9,dur:.3,v:.16,a:.1}); return noise(o,{ft:"bandpass",f:350,f2:4200,q:1.4,dur:.32,v:.3,a:.1}); }},
+    typewriter:{prio:3, fn:function(o){ var t=0;
+               for(var i=0;i<5;i++){ noise(o,{ft:"highpass",f:2200,q:.8,at:t,dur:.026,v:.15}); tone(o,{type:"triangle",f:140,at:t,dur:.03,v:.07}); t += .045+Math.random()*.035; }
+               return tone(o,{type:"sine",f:2637,nj:1,at:t+.04,dur:.4,v:.07}); }},
+    demo:    {prio:3, fn:function(o){ var n=["C5","E5","G5","B5"], e=0; tone(o,{type:"sine",f:N("C4"),nj:1,dur:.7,v:.07,a:.05});
+               for(var i=0;i<4;i++) e = tone(o,{type:"triangle",f:N(n[i]),nj:1,at:i*.055,dur:.6,v:.07,a:.01}); return e; }},
+    printer: {prio:3, fn:function(o){ var e=0; for(var i=0;i<3;i++){ tone(o,{type:"square",f:96,at:i*.11,dur:.08,v:.06,lp:700}); e = noise(o,{ft:"bandpass",f:1800,q:2,at:i*.11,dur:.08,v:.08}); } return e; }},
+    cash:    {prio:3, fn:function(o){ noise(o,{ft:"highpass",f:1800,q:.7,dur:.04,v:.15});
+               tone(o,{type:"square",f:N("B5"),nj:1,at:.03,dur:.07,v:.05,lp:4500}); tone(o,{type:"square",f:N("E6"),nj:1,at:.09,dur:.22,v:.05,lp:4500});
+               tone(o,{type:"sine",f:2093,nj:1,at:.05,dur:.62,v:.11}); tone(o,{type:"sine",f:4207,nj:1,at:.05,dur:.35,v:.04});
+               return noise(o,{ft:"lowpass",f:650,q:.7,at:.13,dur:.18,v:.12}); }},
+    thud:    {prio:3, fn:function(o){ noise(o,{ft:"lowpass",f:320,q:.7,dur:.15,v:.16}); return tone(o,{type:"sine",f:110,f2:55,dur:.24,v:.3}); }},
+    nope:    {prio:3, fn:function(o){ tone(o,{type:"square",f:N("E3"),nj:1,dur:.08,v:.06,lp:1300}); return tone(o,{type:"square",f:N("C3"),nj:1,at:.09,dur:.13,v:.06,lp:1300}); }},
+    ping:    {prio:3, fn:function(o){ tone(o,{type:"sine",f:N("E6"),dur:.16,v:.11}); tone(o,{type:"sine",f:N("A6"),at:.09,dur:.3,v:.11}); return tone(o,{type:"sine",f:N("A6"),at:.26,dur:.25,v:.03}); }},
+    sonar:   {prio:3, fn:function(o){ tone(o,{type:"sine",f:880,f2:830,dur:.6,v:.15}); tone(o,{type:"sine",f:440,f2:415,dur:.4,v:.05}); return tone(o,{type:"sine",f:880,f2:830,at:.45,dur:.5,v:.05}); }},
+    airport: {prio:3, fn:function(o){ var n=["F5","A5","C6"], e=0; for(var i=0;i<3;i++){ tone(o,{type:"sine",f:N(n[i]),nj:1,at:i*.2,dur:.9,v:.1}); e = tone(o,{type:"sine",f:N(n[i])*2,nj:1,at:i*.2,dur:.4,v:.022}); } return e+.5; }},
+    bowl:    {prio:3, fn:function(o){ var f = 220*o.j; tone(o,{type:"sine",f:f,nj:1,dur:1.5,v:.14,a:.01,vib:[4.5,1.2]}); tone(o,{type:"sine",f:f*2.76,nj:1,dur:1.0,v:.055,a:.01}); return tone(o,{type:"sine",f:f*5.4,nj:1,dur:.6,v:.022,a:.01}); }},
+    coffee:  {prio:3, fn:function(o){ var t=0;
+               for(var i=0;i<6;i++){ noise(o,{ft:"bandpass",f:1900-i*230,q:3,at:t,dur:.05,v:.11}); t += .055; }
+               var e=0; t += .1; for(var k=0;k<3;k++){ e = heart(o,t,.85); t += .34; } return e; }},
+    sneaky:  {prio:3, fn:function(o){ seq(o,[["E4",.07],["F4",.07],["F#4",.07],["G4",.07]],{type:"triangle",v:.12,gap:.11}); return tone(o,{type:"triangle",f:N("C4"),nj:1,at:.5,dur:.13,v:.1}); }},
+    hailmary:{prio:3, fn:function(o){ noise(o,{ft:"bandpass",f:500,f2:5000,q:1.2,dur:.5,v:.16,a:.2}); return tone(o,{type:"square",f:300,f2:1200,dur:.5,v:.06,vib:[9,25],lp:2600}); }},
+    fanfareS:{prio:3, fn:function(o){ return seq(o,[["C5",.08],["E5",.08],["G5",.08],["C6",.35]],{type:"square",v:.055,lp:3200,gap:.07}); }},
+    bad:     {prio:3, fn:function(o){ tone(o,{type:"sawtooth",f:110,f2:70,dur:.34,v:.1,lp:900}); return tone(o,{type:"sawtooth",f:116,f2:73,dur:.34,v:.08,lp:900}); }},
+    warn:    {prio:2, fn:function(o){ tone(o,{type:"square",f:N("A4"),nj:1,dur:.09,v:.05,lp:1800}); return tone(o,{type:"square",f:N("F4"),nj:1,at:.1,dur:.14,v:.05,lp:1800}); }},
+
+    // money + week
+    rent:    {prio:2, fn:function(o){ return seq(o,[["B5",.06],["G5",.06],["E5",.06],["C5",.06],["A4",.1]],{type:"square",v:.045,lp:3500,gap:.05}); }},
+    coin:    {prio:1, fn:function(o){ tone(o,{type:"square",f:N("B5"),nj:1,dur:.06,v:.05,lp:4200}); return tone(o,{type:"square",f:N("E6"),nj:1,at:.06,dur:.17,v:.05,lp:4200}); }},
+    week:    {prio:1, fn:function(o){ noise(o,{ft:"bandpass",f:2600,f2:1200,q:1.5,dur:.07,v:.1}); noise(o,{ft:"bandpass",f:2400,f2:1000,q:1.5,at:.06,dur:.07,v:.08});
+               tone(o,{type:"triangle",f:N("E5"),nj:1,at:.1,dur:.14,v:.08}); return tone(o,{type:"triangle",f:N("A5"),nj:1,at:.2,dur:.26,v:.08}); }},
+
+    // events
+    leads:   {prio:2, fn:function(o){ var n=["C5","D5","E5","G5","A5","C6"], e=0; for(var i=0;i<6;i++) e = tone(o,{type:"square",f:N(n[(Math.random()*6)|0]),nj:1,at:i*.042,dur:.05,v:.04,lp:3500}); return e; }},
+    discount:{prio:2, fn:function(o){ noise(o,{ft:"highpass",f:3000,q:.8,dur:.03,v:.12}); noise(o,{ft:"highpass",f:3000,q:.8,at:.08,dur:.03,v:.12}); return tone(o,{type:"sawtooth",f:900,f2:280,at:.12,dur:.22,v:.05,lp:2000}); }},
+    fumble:  {prio:2, fn:function(o){ var f=[230,180,140], e=0; for(var i=0;i<3;i++) e = tone(o,{type:"square",f:f[i],at:i*.06,dur:.06,v:.06,lp:1500}); noise(o,{ft:"bandpass",f:900,q:.8,at:.05,dur:.12,v:.08}); return e; }},
+    magic:   {prio:2, fn:function(o){ return seq(o,[["C6",.25],["D6",.25],["E6",.25],["G6",.25],["A6",.25],["C7",.25],["E7",.25],["G7",.3]],{type:"sine",v:.045,gap:.035}); }},
+    thunder: {prio:2, fn:function(o){ noise(o,{ft:"highpass",f:2000,q:.7,dur:.05,v:.12}); return noise(o,{ft:"lowpass",f:520,f2:70,q:.8,dur:1.1,v:.32,a:.04}); }},
+    rise:    {prio:2, fn:function(o){ return seq(o,[["C5",.12],["D5",.12],["E5",.12],["G5",.12],["C6",.22]],{type:"triangle",v:.08,gap:.05}); }},
+    chirp:   {prio:2, fn:function(o){ var e=0; for(var i=0;i<3;i++) e = tone(o,{type:"sine",f:2400,f2:4200,at:i*.09,dur:.06,v:.06}); return e; }},
+    ice:     {prio:2, fn:function(o){ var f=[2093,2349,2637,3136], e=0; for(var i=0;i<4;i++) e = Math.max(e,tone(o,{type:"sine",f:f[i],at:Math.random()*.2,dur:.22,v:.04})); noise(o,{ft:"highpass",f:6000,q:.7,dur:.3,v:.03,a:.05}); return e; }},
+    sick:    {prio:2, fn:function(o){ return tone(o,{type:"triangle",f:420,f2:190,dur:.42,v:.09,vib:[6,22]}); }},
+    shield:  {prio:2, fn:function(o){ tone(o,{type:"square",f:660,dur:.18,v:.035,lp:4000}); tone(o,{type:"square",f:990,dur:.15,v:.028,lp:4000}); tone(o,{type:"sine",f:1480,dur:.38,v:.05}); return noise(o,{ft:"bandpass",f:3200,q:3,dur:.08,v:.08}); }},
+    ghost:   {prio:2, fn:function(o){ tone(o,{type:"sine",f:760,f2:330,dur:.62,v:.1,a:.06,vib:[5,22],lin:1}); return tone(o,{type:"triangle",f:510,f2:220,dur:.62,v:.04,a:.06,vib:[5,15],lin:1}); }},
+    puzzle:  {prio:2, fn:function(o){ noise(o,{ft:"highpass",f:3000,q:.8,dur:.02,v:.1}); tone(o,{type:"triangle",f:N("G5"),nj:1,at:.03,dur:.12,v:.08}); return tone(o,{type:"triangle",f:N("D6"),nj:1,at:.11,dur:.22,v:.08}); }},
+    powerdown:{prio:2, fn:function(o){ return tone(o,{type:"square",f:440,f2:90,dur:.36,v:.05,lp:1800,lp2:300}); }},
+    ticktock:{prio:2, fn:function(o){ var e=0; for(var i=0;i<4;i++) e = tone(o,{type:"sine",f:i%2 ? 900 : 1250,at:i*.13,dur:.03,v:.1,a:.002}); return e; }},
+    busy:    {prio:2, fn:function(o){ var e=0; for(var i=0;i<2;i++){ tone(o,{type:"sine",f:480,nj:1,at:i*.25,dur:.15,v:.05,hold:.12}); e = tone(o,{type:"sine",f:620,nj:1,at:i*.25,dur:.15,v:.05,hold:.12}); } return e; }},
+    suspicion:{prio:2, fn:function(o){ tone(o,{type:"sine",f:N("E6"),nj:1,dur:.12,v:.06}); return tone(o,{type:"triangle",f:N("C3"),nj:1,at:.12,dur:.6,v:.11,a:.08,vib:[3,2]}); }},
+    hr:      {prio:4, fn:function(o){ tone(o,{type:"sawtooth",f:55,nj:1,dur:1.9,v:.08,a:.45,hold:.6,lp:320}); tone(o,{type:"sawtooth",f:58.27,nj:1,dur:1.9,v:.07,a:.5,hold:.6,lp:320}); return tone(o,{type:"sine",f:110,nj:1,dur:1.9,v:.06,a:.5,hold:.6}); }},
+    hrSoft:  {prio:2, fn:function(o){ tone(o,{type:"sawtooth",f:55,nj:1,dur:1.0,v:.05,a:.3,lp:300}); return tone(o,{type:"sine",f:110,nj:1,dur:1.0,v:.04,a:.3}); }},
+    qbr:     {prio:1, fn:function(o){ var e=0; for(var i=0;i<9;i++) e = noise(o,{ft:"highpass",f:1800,q:.7,at:i*.045,dur:.04,v:.03+i*.01}); return noise(o,{ft:"highpass",f:5000,q:.5,at:.42,dur:.5,v:.08}); }},
+    achievement:{prio:4, fn:function(o){ seq(o,[["C5",.09],["E5",.09],["G5",.09],["C6",.09]],{type:"square",v:.05,lp:3500,gap:.07});
+               var e=0, ch=["C6","E6","G6"]; for(var k=0;k<3;k++) e = tone(o,{type:"triangle",f:N(ch[k]),nj:1,at:.3,dur:.65,v:.06,vib:[6,4]}); return e; }},
+    lost:    {prio:4, fn:function(o){ tone(o,{type:"sawtooth",f:N("G3"),nj:1,dur:.2,v:.08,lp:1100}); tone(o,{type:"sawtooth",f:N("E3"),nj:1,at:.22,dur:.2,v:.08,lp:1100});
+               return tone(o,{type:"sawtooth",f:N("D3"),f2:N("C#3"),nj:1,at:.44,dur:.62,v:.08,lp:1000,vib:[5.5,4]}); }},
+    alarm:   {prio:4, fn:function(o){ var e=0; for(var i=0;i<3;i++){ tone(o,{type:"square",f:880,nj:1,at:i*.16,dur:.07,v:.045,lp:3000}); e = tone(o,{type:"square",f:660,nj:1,at:i*.16+.08,dur:.07,v:.045,lp:3000}); } return e; }},
+    modal:   {prio:4, fn:function(o){ tone(o,{type:"triangle",f:N("E5"),nj:1,dur:.26,v:.09}); tone(o,{type:"triangle",f:N("B5"),nj:1,dur:.26,v:.07}); return tone(o,{type:"sine",f:N("C7"),nj:1,at:.08,dur:.32,v:.05}); }},
+    newgame: {prio:4, fn:function(o){ return seq(o,[["C5",.09],["G5",.09],["E5",.09],["C6",.3]],{type:"square",v:.05,lp:3200,gap:.08}); }},
+    save:    {prio:3, fn:function(o){ for(var i=0;i<3;i++) noise(o,{ft:"bandpass",f:1100,q:4,at:i*.05,dur:.03,v:.1}); return tone(o,{type:"square",f:N("A5"),nj:1,at:.17,dur:.12,v:.04,lp:3000}); }},
+    load:    {prio:3, fn:function(o){ tone(o,{type:"square",f:N("A5"),nj:1,dur:.07,v:.04,lp:3000}); tone(o,{type:"square",f:N("E5"),nj:1,at:.07,dur:.1,v:.04,lp:3000}); return noise(o,{ft:"bandpass",f:1100,q:4,at:.18,dur:.04,v:.08}); }},
+    pa:      {prio:2, free:true, fn:function(o){ tone(o,{type:"sine",f:N("A5"),nj:1,dur:.7,v:.09}); tone(o,{type:"sine",f:N("A6"),nj:1,dur:.3,v:.018});
+               tone(o,{type:"sine",f:N("F5"),nj:1,at:.32,dur:.9,v:.09}); return tone(o,{type:"sine",f:N("F6"),nj:1,at:.32,dur:.35,v:.018}); }},
+
+    // scene cues
+    plane:   {prio:4, fn:function(o){ noise(o,{ft:"bandpass",f:380,f2:1500,q:.9,dur:1.0,v:.16,a:.4}); noise(o,{ft:"bandpass",f:1500,f2:300,q:.9,at:1.0,dur:1.0,v:.16,a:.02,slide:1.0});
+               return tone(o,{type:"sawtooth",f:560,f2:430,dur:2.0,v:.018,a:.5,lp:1400}); }},
+    screech: {prio:3, fn:function(o){ noise(o,{ft:"bandpass",f:3100,q:6,dur:.32,v:.1}); return tone(o,{type:"square",f:1750,f2:1500,dur:.28,v:.015,lp:4000}); }},
+    seatbelt:{prio:3, fn:function(o){ tone(o,{type:"sine",f:N("D6"),nj:1,dur:.9,v:.09}); return tone(o,{type:"sine",f:N("D7"),nj:1,dur:.3,v:.02}); }},
+    sparkle: {prio:3, fn:function(o){ var n=["C6","E6","G6","A6","C7","D7","E7","G7"], e=0; for(var i=0;i<12;i++) e = tone(o,{type:"sine",f:N(n[(Math.random()*n.length)|0]),nj:1,at:i*.06,dur:.3,v:.04}); return e; }},
+    pop:     {prio:2, fn:function(o){ noise(o,{ft:"bandpass",f:1300,q:.8,dur:.09,v:.22}); var e=0; for(var i=0;i<6;i++) e = Math.max(e,noise(o,{ft:"highpass",f:3000,q:.7,at:.1+Math.random()*.35,dur:.02,v:.05})); return e; }},
+    stingerClub:{prio:5, fn:function(o){
+               var chords = [[["C5","E5","G5"],0,.18],[["D5","F5","A5"],.2,.18],[["E5","G5","C6"],.4,.85]], e=0;
+               chords.forEach(function(ch){ ch[0].forEach(function(n){ e = Math.max(e,tone(o,{type:"sawtooth",f:N(n),nj:1,at:ch[1],dur:ch[2],v:.045,lp:2400,a:.015,vib:ch[2] > .5 ? [5.5,3] : null})); }); });
+               tone(o,{type:"triangle",f:N("C3"),nj:1,dur:.2,v:.14}); tone(o,{type:"triangle",f:N("C3"),nj:1,at:.4,dur:.8,v:.14});
+               noise(o,{ft:"highpass",f:6000,q:.5,nj:1,at:.4,dur:.9,v:.07}); return e; }},
+    beep:    {prio:3, fn:function(o){ return tone(o,{type:"square",f:1600,nj:1,dur:.09,v:.05,hold:.06,lp:5000}); }},
+    denied:  {prio:4, fn:function(o){ tone(o,{type:"square",f:140,nj:1,dur:.4,v:.08,hold:.3,lp:1500}); return tone(o,{type:"square",f:147,nj:1,dur:.4,v:.07,hold:.3,lp:1500}); }},
+    drop:    {prio:2, fn:function(o){ tone(o,{type:"triangle",f:900,f2:200,dur:.35,v:.06}); return noise(o,{ft:"lowpass",f:500,q:.7,at:.35,dur:.08,v:.12}); }},
+    doors:   {prio:3, fn:function(o){ return noise(o,{ft:"lowpass",f:700,q:.6,dur:.65,v:.1,a:.12,hold:.3}); }},
+    elevator:{prio:4, fn:function(o){ tone(o,{type:"sine",f:N("E6"),nj:1,dur:1.0,v:.1}); tone(o,{type:"sine",f:N("E7"),nj:1,dur:.3,v:.02});
+               tone(o,{type:"sine",f:N("C6"),nj:1,at:.38,dur:1.2,v:.1}); return tone(o,{type:"sine",f:N("C7"),nj:1,at:.38,dur:.3,v:.02}); }},
+    stingerFired:{prio:5, fn:function(o){ var e = seq(o,[["G4",.14],["D4",.14],["Bb3",.14],["G3",.7]],{type:"square",v:.06,lp:1600,gap:.15});
+               for(var i=0;i<4;i++) noise(o,{ft:"bandpass",f:600+Math.random()*2400,q:4,nj:1,at:.45+i*.07,dur:.03,v:.06}); return e; }},
+    meltdown:{prio:4, fn:function(o){ return tone(o,{type:"sawtooth",f:320,f2:55,dur:1.4,v:.08,lp:1300,lp2:250,vib:[7,18]}); }},
+    fire:    {prio:3, fn:function(o){ var e = noise(o,{ft:"lowpass",f:700,q:.6,dur:1.0,v:.07,a:.2}); for(var i=0;i<14;i++) noise(o,{ft:"highpass",f:2200,q:.7,at:Math.random()*.9,dur:.015,v:.06}); return e; }},
+    glitch:  {prio:4, fn:function(o){ var e=0; for(var i=0;i<7;i++) e = tone(o,{type:"square",f:200+Math.random()*1800,nj:1,at:i*.032,dur:.026,v:.05}); noise(o,{ft:"bandpass",f:1500,q:.5,dur:.25,v:.06}); return e; }},
+    bsod:    {prio:4, fn:function(o){ tone(o,{type:"sine",f:440,nj:1,dur:.16,v:.08}); return tone(o,{type:"square",f:220,nj:1,at:.14,dur:.45,v:.05,lp:800}); }},
+    stingerBurnout:{prio:5, fn:function(o){ tone(o,{type:"sawtooth",f:N("C2"),nj:1,dur:1.4,v:.06,lp:400,a:.1});
+               return seq(o,[["Eb5",.16],["C5",.16],["Ab4",.16],["F4",.9]],{type:"triangle",v:.09,gap:.17,vib:[5,3]}); }},
+    stingerMissed:{prio:5, fn:function(o){ seq(o,[["A4",.14],["C5",.14],["E5",.2]],{type:"triangle",v:.09,gap:.15});
+               return tone(o,{type:"triangle",f:N("D5"),f2:N("A4"),nj:1,at:.5,dur:.75,v:.09,slide:.7,vib:[5,3]}); }},
+    umbrella:{prio:3, fn:function(o){ noise(o,{ft:"bandpass",f:800,f2:3200,q:1.2,dur:.12,v:.12}); return tone(o,{type:"sine",f:600,f2:950,at:.1,dur:.08,v:.1}); }},
+    beeper:  {prio:3, fn:function(o){ return tone(o,{type:"square",f:1050,nj:1,dur:.32,v:.045,hold:.27,lp:3200}); }},
+    clank:   {prio:3, fn:function(o){ tone(o,{type:"square",f:420,dur:.15,v:.05,lp:3000}); tone(o,{type:"square",f:633,dur:.12,v:.04,lp:3000}); tone(o,{type:"sine",f:1170,dur:.3,v:.05}); return noise(o,{ft:"bandpass",f:2500,q:4,dur:.1,v:.1}); }},
+    engine:  {prio:3, fn:function(o){ tone(o,{type:"sawtooth",f:62,f2:44,nj:1,dur:2.3,v:.12,a:.15,lp:260,trem:[9,.5]}); return tone(o,{type:"square",f:124,f2:88,nj:1,dur:2.3,v:.025,a:.15,lp:500}); }},
+    honk:    {prio:3, fn:function(o){ var e=0; for(var i=0;i<2;i++){ tone(o,{type:"square",f:330,nj:1,at:i*.32,dur:.24,v:.05,hold:.18,lp:1600}); e = tone(o,{type:"square",f:415,nj:1,at:i*.32,dur:.24,v:.045,hold:.18,lp:1600}); } return e; }},
+    stingerRepo:{prio:5, fn:function(o){ var e = seq(o,[["C6",.05],["B5",.05],["A5",.05],["G5",.05],["F5",.05],["E5",.05],["D5",.05],["C5",.12]],{type:"square",v:.045,lp:3000,gap:.055});
+               tone(o,{type:"sine",f:140,f2:70,nj:1,at:.55,dur:.25,v:.25}); noise(o,{ft:"lowpass",f:400,q:.7,nj:1,at:.55,dur:.1,v:.12}); return Math.max(e,o.t+.8); }},
+    bootHum: {prio:4, fn:function(o){ tone(o,{type:"sine",f:52,f2:34,nj:1,dur:.45,v:.28}); noise(o,{ft:"lowpass",f:220,q:.7,nj:1,dur:.3,v:.14});
+               tone(o,{type:"sine",f:120,nj:1,dur:1.0,v:.025,a:.1}); return tone(o,{type:"sine",f:7400,nj:1,dur:.6,v:.004,a:.1}); }},
+    loadStart:{prio:2, fn:function(o){ return tone(o,{type:"square",f:N("A5"),nj:1,dur:.05,v:.03,lp:3000}); }},
+    errBeep: {prio:4, fn:function(o){ tone(o,{type:"square",f:880,nj:1,dur:.12,v:.055,hold:.08,lp:3000}); return tone(o,{type:"square",f:880,nj:1,at:.18,dur:.12,v:.055,hold:.08,lp:3000}); }},
+    chime:   {prio:4, fn:function(o){ tone(o,{type:"sine",f:N("F3"),nj:1,dur:1.8,v:.08,a:.02}); var n=["F4","A4","C5","E5","A5"], e=0;
+               for(var i=0;i<n.length;i++){ tone(o,{type:"triangle",f:N(n[i]),nj:1,at:i*.07,dur:1.7-i*.1,v:.055,a:.01}); e = tone(o,{type:"sine",f:N(n[i])*2,nj:1,at:i*.07,dur:.6,v:.012}); }
+               return o.t+1.8; }},
+    poweroff:{prio:3, fn:function(o){ noise(o,{ft:"highpass",f:2500,q:.7,nj:1,dur:.03,v:.08}); return tone(o,{type:"sine",f:900,f2:60,nj:1,dur:.24,v:.07}); }}
+  };
+  // v1.15 mechanics: CRM Cleanup (paper shuffle + trash whoosh) and the caffeine flatline (monitor beeps, then one long tone)
+  Object.assign(P,{
+    crm:     {prio:3, fn:function(o){ var t=0;
+               for(var i=0;i<4;i++){ noise(o,{ft:"bandpass",f:2400+Math.random()*900,q:1.4,at:t,dur:.05,v:.1,a:.008}); t += .05+Math.random()*.03; }
+               noise(o,{ft:"bandpass",f:2600,f2:260,q:.9,at:t+.05,dur:.34,v:.17,a:.07});
+               return tone(o,{type:"sine",f:150,f2:70,at:t+.36,dur:.12,v:.12}); }},
+    flatline:{prio:5, fn:function(o){ var e=0;
+               for(var i=0;i<2;i++) tone(o,{type:"sine",f:988,nj:1,at:i*.62,dur:.13,v:.08,hold:.09});
+               tone(o,{type:"sine",f:988,nj:1,at:1.24,dur:3.0,v:.08,a:.01,hold:2.6});
+               e = tone(o,{type:"sine",f:1976,nj:1,at:1.24,dur:3.0,v:.012,a:.01,hold:2.6}); return e; }}
+  });
+
+  /* ---------- context + voice management ---------- */
+  function ensureCtx(){
+    if(A.ctx) return A.ctx;
+    var AC = root.AudioContext || root.webkitAudioContext; if(!AC) return null;
+    try{ A.ctx = new AC(); }catch(e){ return null; }
+    var comp = A.ctx.createDynamicsCompressor();
+    try{ comp.threshold.value = -12; comp.knee.value = 10; comp.ratio.value = 5; comp.attack.value = .003; comp.release.value = .18; }catch(e){}
+    A.master = A.ctx.createGain(); A.master.gain.value = A.settings.on ? gainFor(A.settings.vol) : 0;
+    A.master.connect(comp); comp.connect(A.ctx.destination);
+    return A.ctx;
+  }
+  function jitter(){ return Math.pow(2,(Math.random()*2-1)*0.035); }
+  function play(name,opts){
+    opts = opts || {};
+    if(!A.settings.on || !A.unlocked) return null;
+    var p = P[name]; if(!p) return null;
+    var c = ensureCtx(); if(!c || c.state === "closed") return null;
+    if(c.state !== "running"){ try{ var pr = c.resume(); if(pr && pr.catch) pr.catch(function(){}); }catch(e){} }
+    var now = c.currentTime, prio = opts.prio != null ? opts.prio : p.prio;
+    A.voices = A.voices.filter(function(v){ return v.end > now; });
+    if(!p.free){
+      if(A.voices.length >= 3){
+        var low = null;
+        A.voices.forEach(function(v){ if(!low || v.prio < low.prio || (v.prio === low.prio && v.start < low.start)) low = v; });
+        if(low && low.prio < prio){ kill(low); A.voices.splice(A.voices.indexOf(low),1); }
+        else return null;
+      }
+    }
+    var bus = c.createGain(); bus.gain.value = opts.gain || 1; bus.connect(A.master);
+    var t = now + 0.01 + (opts.delay || 0), end;
+    try{ end = p.fn({c:c,d:bus,t:t,j:jitter()}); }catch(e){ try{ bus.disconnect(); }catch(_){} return null; }
+    if(!(end > t)) end = t + 0.4;
+    var voice = {bus:bus, end:end, prio:prio, start:now, name:name};
+    if(!p.free) A.voices.push(voice);
+    setTimeout(function(){ try{ bus.disconnect(); }catch(e){} }, (end-now+0.4)*1000);
+    if(A.onPlay) try{ A.onPlay(name); }catch(e){}
+    return voice;
+  }
+  function kill(v){ try{ var c = A.ctx; v.bus.gain.cancelScheduledValues(c.currentTime); v.bus.gain.setTargetAtTime(0,c.currentTime,0.015); }catch(e){} v.end = 0; }
+
+  /* ---------- ambient loop (rain) ---------- */
+  function ambient(name){
+    stopAmbient();
+    if(!A.settings.on || !A.unlocked || name !== "rain") return;
+    var c = ensureCtx(); if(!c) return;
+    var src = c.createBufferSource(); src.buffer = noiseBuf(c); src.loop = true;
+    var hp = c.createBiquadFilter(); hp.type = "highpass"; hp.frequency.value = 1400;
+    var lp = c.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 7000;
+    var g = c.createGain(); g.gain.value = 0; g.gain.setValueAtTime(0.0001,c.currentTime); g.gain.exponentialRampToValueAtTime(0.05,c.currentTime+0.8);
+    // fade out after ~9s so it doesn't hiss for the whole time the modal is open
+    g.gain.setValueAtTime(0.05,c.currentTime+8); g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+11);
+    src.connect(hp); hp.connect(lp); lp.connect(g); g.connect(A.master);
+    src.start(); src.stop(c.currentTime+11.2);
+    A.amb = {src:src, g:g};
+  }
+  function stopAmbient(){
+    if(!A.amb) return;
+    var a = A.amb; A.amb = null;
+    try{ var c = A.ctx; a.g.gain.cancelScheduledValues(c.currentTime); a.g.gain.setTargetAtTime(0,c.currentTime,0.12); a.src.stop(c.currentTime+0.6); }catch(e){}
+  }
+
+  /* ---------- stress heartbeat ---------- */
+  function setStress(s){
+    var prev = A.stress; A.stress = s;
+    if(s >= 80 && prev < 80 && prev > 0 && Date.now()-A.lastHydrate > 60000){ A.lastHydrate = Date.now(); say("hydrate"); }
+    if(s >= 70){ if(!A.hbTimer) scheduleBeat(); }
+    else if(A.hbTimer){ clearTimeout(A.hbTimer); A.hbTimer = 0; }
+  }
+  function scheduleBeat(){
+    var s = A.stress, period = 1050 - (Math.min(100,s)-70)/30*500;
+    A.hbTimer = setTimeout(function(){
+      A.hbTimer = 0;
+      if(A.stress < 70) return;
+      if(!(HAS_DOM && document.hidden)) play("heartbeat",{gain:0.45+(Math.min(100,A.stress)-70)/30*0.35});
+      scheduleBeat();
+    }, period);
+  }
+
+  /* ---------- PA announcer (speechSynthesis) ---------- */
+  var LINES = {
+    boot:["Quota assigned. Good morning."],
+    newrun:["New quarter. Same quota."],
+    club:["President's Club. Grab your jacket."],
+    fired:["Return your badge."],
+    firedOrg:["Org update. Layoffs."],
+    firedReview:["Forecast review. Exit interview."],
+    burnout:["Nervous system offline."],
+    missed:["Close. Not closed."],
+    repo:["Jacket owner to Collections."],
+    week5:["Mid-quarter reviews are in session."],
+    week7:["Quarter half over. Coffee too."],
+    week12:["One week left. Panic quietly."],
+    week13:["Final week. Commit means commit."],
+    filler:[
+      "Pipeline is not revenue.",
+      "Update opportunities before forecast call.",
+      "Hydration is a KPI.",
+      "Leaderboard updated. Do not look.",
+      "Verbal commits are not commits.",
+      "Lunch and learn. No lunch.",
+      "The CRM is always right.",
+      "Mandatory fun begins at four.",
+      "Your calendar has been optimized.",
+      "Fridge cleanout Friday. Pipeline too."
+    ],
+    hr:["HR has joined the meeting."],
+    meetings:["All meetings are logged. For forecasting."],
+    hygiene:["Pipeline hygiene is everyone's job."],
+    whale:["Whale on the board."],
+    bigClose:["Big deal closed. Ring something."],
+    sqlStorm:["Leads delivered. Quality not guaranteed."],
+    viral:["We are trending. Legal knows."],
+    outage:["The cloud is experiencing weather."],
+    freeze:["Budget freeze rumors. Remain calm."],
+    rebalance:["Territories realigned. Not in your favor."],
+    cash:["Finance would like a word."],
+    phones:["Phones are for calling."],
+    competitor:["Pricing alert. Competitor panicked."],
+    incident:["Security incident. No comment."],
+    hydrate:["Wellness reminder. Hydrate."]
+  };
+  Object.assign(LINES,{ closeOut:["Close that out."], burnoutCaffeine:["Medical to the sales floor."] });
+  var SAY = { last:0, voice:null, timer:0 };
+  function pickVoice(){
+    if(!("speechSynthesis" in root)) return null;
+    var vs = []; try{ vs = root.speechSynthesis.getVoices() || []; }catch(e){}
+    if(!vs.length) return null;
+    var prefs = ["Google UK English Male","Daniel","Microsoft Guy","Microsoft Ryan","Microsoft David","Arthur","Aaron","Alex","Fred","Google US English"];
+    for(var i=0;i<prefs.length;i++) for(var k=0;k<vs.length;k++) if(vs[k].name.indexOf(prefs[i]) === 0) return vs[k];
+    for(var j=0;j<vs.length;j++) if(/^en[-_]/i.test(vs[j].lang)) return vs[j];
+    return vs[0];
+  }
+  if(HAS_DOM && "speechSynthesis" in root){ try{ root.speechSynthesis.onvoiceschanged = function(){ SAY.voice = pickVoice(); }; }catch(e){} }
+  function say(key,opts){
+    opts = opts || {};
+    if(!A.settings.on || !A.settings.voice || !A.unlocked) return false;
+    if(!("speechSynthesis" in root)) return false;
+    if(key === "fired" && opts.meta){ if(opts.meta.cause === "org") key = "firedOrg"; else if(opts.meta.cause === "review") key = "firedReview"; }
+    if(key === "burnout" && opts.meta && opts.meta.cause === "caffeine") key = "burnoutCaffeine";
+    var bank = LINES[key], text = bank ? bank[Math.floor(Math.random()*bank.length)] : String(key);
+    var ss = root.speechSynthesis, now = Date.now();
+    if(!opts.force){
+      if(now - SAY.last < (opts.cooldown || 12000)) return false;
+      if(ss.speaking || ss.pending) return false;
+    } else { try{ ss.cancel(); }catch(e){} }
+    SAY.last = now;
+    play("pa");
+    clearTimeout(SAY.timer);
+    SAY.timer = setTimeout(function(){
+      if(!A.settings.on || !A.settings.voice) return;
+      try{
+        var u = new root.SpeechSynthesisUtterance(text), v = SAY.voice || (SAY.voice = pickVoice());
+        if(v){ u.voice = v; u.lang = v.lang; } else u.lang = "en-US";
+        u.rate = key === "firedOrg" ? 1.05 : 0.97; u.pitch = key === "firedOrg" ? 0.7 : 0.85;
+        u.volume = Math.min(1,A.settings.vol*1.15);
+        if(ss.paused) ss.resume();
+        ss.speak(u);
+        if(A.onSay) A.onSay(text);
+      }catch(e){}
+    }, 720);
+    return true;
+  }
+  function hush(){ clearTimeout(SAY.timer); try{ if("speechSynthesis" in root) root.speechSynthesis.cancel(); }catch(e){} stopAmbient(); }
+
+  /* ---------- unlock on the first gesture ---------- */
+  function unlock(){
+    var c = ensureCtx(); if(!c) return;
+    if(c.state !== "running"){ try{ var pr = c.resume(); if(pr && pr.catch) pr.catch(function(){}); }catch(e){} }
+    if(!A.unlocked){
+      A.unlocked = true;
+      try{ var b = c.createBuffer(1,1,22050), s = c.createBufferSource(); s.buffer = b; s.connect(c.destination); s.start(0); }catch(e){}
+      try{ if("speechSynthesis" in root){ var u = new root.SpeechSynthesisUtterance(" "); u.volume = 0; root.speechSynthesis.speak(u); SAY.voice = pickVoice(); } }catch(e){}
+      if(A.stress >= 70 && !A.hbTimer) scheduleBeat();
+    }
+  }
+  if(HAS_DOM){
+    ["pointerdown","touchend","keydown","click"].forEach(function(ev){ document.addEventListener(ev,unlock,{capture:true,passive:true}); });
+    document.addEventListener("click",function(e){
+      var b = e.target && e.target.closest ? e.target.closest("button") : null;
+      if(b && !b.disabled && !b.hasAttribute("data-nosfx")) play("click");
+    },true);
+  }
+
+  /* ---------- settings API ---------- */
+  function setOn(on){
+    A.settings.on = !!on; saveSettings();
+    if(A.master && A.ctx){ var t = A.ctx.currentTime; A.master.gain.cancelScheduledValues(t); A.master.gain.setTargetAtTime(A.settings.on ? gainFor(A.settings.vol) : 0,t,0.03); }
+    if(!A.settings.on) hush();
+    if(A.onChange) A.onChange(A.settings);
+  }
+  function setVoice(on){ A.settings.voice = !!on; saveSettings(); if(!on){ clearTimeout(SAY.timer); try{ root.speechSynthesis.cancel(); }catch(e){} } if(A.onChange) A.onChange(A.settings); }
+  function setVolume(v){
+    A.settings.vol = Math.max(0,Math.min(1,v)); saveSettings();
+    if(A.master && A.ctx && A.settings.on){ var t = A.ctx.currentTime; A.master.gain.cancelScheduledValues(t); A.master.gain.setTargetAtTime(gainFor(A.settings.vol),t,0.03); }
+    if(A.onChange) A.onChange(A.settings);
+  }
+
+  /* ---------- director: turn new log lines into sound + PA lines ---------- */
+  function norm(s){ return String(s||"").replace(/️/g,""); }
+  var RULES = [
+    // prefix (emoji stripped of variation selectors), sound, priority, optional PA line key
+    ["📞","dial",3], ["✉","whoosh",3], ["🔎","typewriter",3], ["🖥","demo",3], ["📑","printer",3],
+    ["🏟","airport",3], ["🧘","bowl",3], ["⏱","nope",3], ["☕","coffee",3], ["🏛","sneaky",3],
+    ["🧪 No late-stage","nope",3], ["🧪","hailmary",3], ["🌪","fanfareS",3], ["🤕","bad",3], ["📛","bad",3], ["😬","warn",3],
+    ["🏠","rent",2], ["💸 Salary","coin",1], ["💸 Matched","discount",2], ["🧱","thud",2],
+    ["📣","leads",2,"sqlStorm"], ["🛠","fumble",2], ["🧙","magic",2], ["🔦","warn",2], ["🌀","warn",2],
+    ["🌩","thunder",2,"outage"], ["🪜","rise",2], ["📘","ping",2], ["🐦","chirp",2,"viral"],
+    ["🥶 Budget","ice",2,"freeze"], ["🍂","ice",2], ["🤒","sick",2], ["📉 Territory","bad",3,"rebalance"],
+    ["🛡","shield",2], ["👻","ghost",2], ["🧩","puzzle",2], ["🪫","powerdown",2], ["🕑","ticktock",2],
+    ["📵","busy",2,"phones"], ["👀","suspicion",3,"meetings"], ["📋","suspicion",3,"hygiene"], ["🧊","hr",4,"hr"],
+    ["📆 Recurring","hrSoft",2], ["📆 Week ","week",1], ["📊","qbr",1],
+    ["🏅","achievement",4,"whale"], ["💀","lost",4], ["⚠","alarm",4,"cash"]
+  ];
+  RULES.unshift(["🧹","crm",3,"hygiene"],["🗑","lost",4,"closeOut"],["🫀","heartbeat",2],["🚑","flatline",4],["🥴","sick",2]);
+  function ruleFor(msg){
+    var m = norm(msg);
+    if(/\d+ signed, \$/.test(m)) return {sfx:"cash", prio:4, close:true};
+    if(/nobody signed/.test(m)) return {sfx:"thud", prio:3};
+    if(/nothing to close|no late-stage deals/.test(m)) return {sfx:"nope", prio:3};
+    if(m.indexOf("🧑") === 0 && /🐋/.test(m)) return {sfx:"sonar", prio:3};
+    if(m.indexOf("🧑") === 0) return {sfx:"ping", prio:3};
+    for(var i=0;i<RULES.length;i++){ var r = RULES[i]; if(m.indexOf(norm(r[0])) === 0) return {sfx:r[1], prio:r[2], say:r[3]}; }
+    return null;
+  }
+  function onLogs(entries,info){
+    info = info || {};
+    if(info.over || !entries || !entries.length) return;
+    var picks = [], speech = null;
+    for(var i=0;i<entries.length;i++){
+      var e = entries[i], r = ruleFor(e.msg);
+      if(r && r.close){ var mm = /signed, \$([\d,]+)/.exec(e.msg); var amt = mm ? parseInt(mm[1].replace(/,/g,""),10) : 0; if(amt >= 45000) r.say = "bigClose"; }
+      if(r && r.sfx === "week"){ var wm = /📆 Week (\d+)/.exec(e.msg); if(wm){ var w = ((parseInt(wm[1],10)-1)%13)+1;
+        r.say = w === 5 ? "week5" : w === 7 ? "week7" : w === 12 ? "week12" : w === 13 ? "week13" : (Math.random() < .3 ? "filler" : null); } }
+      if(r){ r.i = i; picks.push(r); if(r.say && (!speech || r.prio > speech.prio)) speech = r; }
+    }
+    // the week flip always plays (it is the End Week confirmation); the two most important others join it,
+    // all in the order they happened
+    var seen = {}, week = null;
+    picks = picks.filter(function(p){ if(p.sfx === "week"){ week = p; return false; } return true; });
+    picks = picks.sort(function(a,b){ return b.prio-a.prio || a.i-b.i; }).filter(function(p){ if(seen[p.sfx]) return false; seen[p.sfx] = 1; return true; }).slice(0,week ? 2 : 3);
+    if(week) picks.push(week);
+    picks.sort(function(a,b){ return a.i-b.i; });
+    picks.forEach(function(p,k){ play(p.sfx,{delay:k*0.17,prio:p.sfx === "week" ? 3 : undefined}); });
+    if(speech) say(speech.say,{cooldown: speech.sfx === "week" ? 9000 : 6000});
+  }
+  function onModal(title){
+    play("modal");
+    var t = norm(title);
+    if(t.indexOf("🧨") === 0) say("competitor",{cooldown:4000});
+    else if(t.indexOf("🔐") === 0) say("incident",{cooldown:4000});
+  }
+
+  // v1.15 scene cuts: whip pan, slash cut, impact frame
+  Object.assign(P,{
+    fwip:  {prio:3, free:true, fn:function(o){ noise(o,{ft:"bandpass",f:500,f2:4800,q:1.1,dur:.13,v:.5,a:.03}); return noise(o,{ft:"bandpass",f:4200,f2:900,q:1.3,at:.11,dur:.12,v:.3,a:.01}); }},
+    shing: {prio:3, free:true, fn:function(o){ noise(o,{ft:"highpass",f:5200,q:.7,dur:.07,v:.12}); tone(o,{type:"sine",f:2960,f2:3320,dur:.42,v:.05,vib:[11,18]}); return tone(o,{type:"sine",f:4440,f2:4980,dur:.3,v:.025}); }},
+    thwack:{prio:3, free:true, fn:function(o){ noise(o,{ft:"lowpass",f:900,q:.8,dur:.09,v:.22}); noise(o,{ft:"highpass",f:2600,q:.7,dur:.03,v:.1}); return tone(o,{type:"sine",f:130,f2:46,dur:.22,v:.34}); }}
+  });
+  root.TST_AUDIO = {
+    play:play, say:say, hush:hush, ambient:ambient, stopAmbient:stopAmbient, setStress:setStress,
+    onLogs:onLogs, onModal:onModal, ruleFor:ruleFor, setOn:setOn, setVoice:setVoice, setVolume:setVolume, unlock:unlock,
+    get settings(){ return A.settings; }, get unlocked(){ return A.unlocked; },
+    set onChange(fn){ A.onChange = fn; },
+    presets:P, _A:A, LINES:LINES,
+    // render a preset into an offline context (tests)
+    renderInto:function(c,name){ var p = P[name]; return p.fn({c:c,d:c.destination,t:0.01,j:1}); }
+  };
+})(typeof window !== "undefined" ? window : globalThis);
+
+/* ===== Tech Sales Trail v1.14: header sound controls, toast, SHITCORP OS boot screen ===== */
+(function(){
+  "use strict";
+  var A = window.TST_AUDIO, Sc = window.TST_SCENES;
+  if(!A || !Sc) return;
+  var reduced = !!Sc.reduced;
+
+  /* ---------- header sound controls ---------- */
+  var bS = document.getElementById("snd-toggle"), bV = document.getElementById("voice-toggle"), vol = document.getElementById("snd-vol");
+  function sync(st){
+    if(bS){
+      bS.setAttribute("aria-pressed",st.on ? "true" : "false");
+      bS.querySelector(".ico").textContent = st.on ? "🔊" : "🔇";
+      bS.querySelector(".lbl").textContent = st.on ? "Sound" : "Muted";
+    }
+    if(bV){ bV.setAttribute("aria-pressed",st.voice ? "true" : "false"); bV.disabled = !st.on; bV.querySelector(".lbl").textContent = st.voice ? "Announcer" : "No announcer"; }
+    if(vol){ vol.value = String(Math.round(st.vol*100)); vol.disabled = !st.on; vol.style.setProperty("--fill",Math.round(st.vol*100)+"%"); }
+  }
+  A.onChange = sync; sync(A.settings); // setter on TST_AUDIO forwards to the engine
+  if(bS) bS.addEventListener("click",function(){ A.setOn(!A.settings.on); if(A.settings.on){ A.unlock(); A.play("coin"); } });
+  if(bV) bV.addEventListener("click",function(){ A.setVoice(!A.settings.voice); if(A.settings.voice) A.say("Announcer on.",{force:true}); });
+  if(vol){
+    vol.addEventListener("input",function(){ A.setVolume(Number(vol.value)/100); });
+    vol.addEventListener("change",function(){ A.play("coin"); });
+  }
+  document.addEventListener("keydown",function(e){
+    if((e.key !== "m" && e.key !== "M") || e.metaKey || e.ctrlKey || e.altKey) return;
+    var tg = e.target;
+    if(tg && ((tg.tagName === "INPUT" && tg.type !== "range") || tg.tagName === "TEXTAREA" || tg.isContentEditable)) return;
+    if(document.getElementById("boot")) return;
+    A.setOn(!A.settings.on);
+    if(A.settings.on) A.play("coin");
+    window.TST_TOAST(A.settings.on ? "Sound on" : "Sound off");
+  });
+
+  /* ---------- toast (in-page replacement for alert(), which the artifact viewer blocks) ---------- */
+  // Both nodes exist before the first message, so the live region is registered when it speaks. The visible
+  // toast is a manual popover: the top layer keeps it above an open <dialog> and its backdrop.
+  function toastNodes(){
+    var el = document.getElementById("tst-toast"), live = document.getElementById("tst-live");
+    if(!document.body) return null;
+    if(!el){ el = document.createElement("div"); el.id = "tst-toast"; el.setAttribute("aria-hidden","true"); el.setAttribute("popover","manual"); document.body.appendChild(el); }
+    if(!live){ live = document.createElement("div"); live.id = "tst-live"; live.className = "sr-only"; live.setAttribute("role","status"); live.setAttribute("aria-live","polite"); document.body.appendChild(live); }
+    return {el:el, live:live};
+  }
+  toastNodes();
+  window.TST_TOAST = function(msg){
+    var n = toastNodes(); if(!n) return;
+    var el = n.el;
+    clearTimeout(el._t); clearTimeout(el._h);
+    try{ if(el.matches(":popover-open")) el.hidePopover(); el.showPopover(); }catch(e){} // re-show = topmost
+    el.textContent = msg;
+    el.classList.remove("show"); void el.offsetWidth; el.classList.add("show");
+    el._t = setTimeout(function(){ el.classList.remove("show"); el._h = setTimeout(function(){ try{ el.hidePopover(); }catch(e){} },400); },2600);
+    // an open modal makes the rest of the page inert, so screen readers hear it from the dialog's own status line
+    var live = document.querySelector("dialog[open] .tst-sr") || n.live;
+    live.textContent = ""; clearTimeout(live._t); live._t = setTimeout(function(){ live.textContent = msg; },60);
+  };
+
+  /* ---------- boot screen (once per tab session) ---------- */
+  var booted = false;
+  try{ booted = sessionStorage.getItem("tst-booted") === "1"; }catch(e){}
+  if(booted) return;
+  var saved = null;
+  try{ var raw = localStorage.getItem("tst-autosave-v4-3") || localStorage.getItem("tst-save-v4-3"); saved = raw ? JSON.parse(raw) : null; }catch(e){}
+  if(saved && (saved.fired || saved.burnedOut || saved.win || saved.missed || saved.repo)) return; // an ending modal is about to open
+  function readWeek(){ return saved && saved.week > 0 ? ((saved.week-1)%13)+1 : 1; }
+  var ov = document.createElement("div");
+  ov.id = "boot";
+  ov.setAttribute("role","dialog"); ov.setAttribute("aria-modal","true"); ov.setAttribute("aria-label","Shitcorp OS boot screen");
+  ov.innerHTML =
+    '<div class="boot-monitor">'+
+      '<div class="cutbox crt boot-screen"><pre class="cutscene" aria-hidden="true"></pre></div>'+
+      '<div class="boot-bezel">'+
+        '<span class="boot-led" aria-hidden="true"></span><span class="boot-brand">SHITCORP</span>'+
+        '<span class="boot-hint">M mutes</span>'+
+        '<button type="button" class="btn primary boot-btn" data-nosfx>Clock in</button>'+
+      '</div>'+
+    '</div>';
+  document.body.appendChild(ov);
+  document.documentElement.classList.add("tst-booting");
+  var behind = document.querySelector(".container");
+  if(behind) behind.inert = true;
+  var pre = ov.querySelector("pre"), btn = ov.querySelector(".boot-btn"), hint = ov.querySelector(".boot-hint");
+  var stage = "standby", ctrl = Sc.play(pre,"standby",{crt:false, maxFont:20});
+  try{ btn.focus({preventScroll:true}); }catch(e){}
+  function start(){
+    if(stage !== "standby") return;
+    stage = "booting"; A.unlock();
+    ctrl.stop();
+    ov.classList.add("on");
+    btn.textContent = "Skip"; hint.textContent = "Booting…";
+    // no impact frames until the game behind the boot has mounted (Babel compiling = long main-thread stall)
+    ctrl = Sc.play(pre,"boot",{crt:false, maxFont:20, meta:{week:readWeek()}, impactOk:function(){ return !!document.querySelector("#root .grid"); }, onDone:function(){ setTimeout(finish, reduced ? 2000 : 400); }});
+  }
+  function finish(){
+    if(stage === "done") return;
+    stage = "done";
+    try{ sessionStorage.setItem("tst-booted","1"); }catch(e){}
+    ctrl.stop();
+    A.play("poweroff");
+    document.removeEventListener("keydown",onKey,true);
+    document.documentElement.classList.remove("tst-booting");
+    if(behind) behind.inert = false;
+    if(reduced){ ov.remove(); return; }
+    pre.classList.remove("tst-crt-on"); pre.classList.add("tst-crt-off");
+    ov.classList.add("off");
+    setTimeout(function(){ if(ov.parentNode) ov.parentNode.removeChild(ov); },560);
+  }
+  function advance(){ if(stage === "standby") start(); else if(stage === "booting"){ ctrl.skip(); finish(); } }
+  function onKey(e){
+    if(stage === "done") return;
+    if(e.ctrlKey || e.metaKey || e.altKey) return; // browser shortcuts (reload, tabs, devtools) pass through
+    if(e.key === "Tab") return;
+    if(e.key === "m" || e.key === "M"){ // mute toggle, without clocking in
+      e.preventDefault(); e.stopPropagation();
+      if(e.repeat) return;
+      A.setOn(!A.settings.on);
+      if(A.settings.on){ A.unlock(); A.play("coin"); }
+      window.TST_TOAST(A.settings.on ? "Sound on" : "Sound off");
+      return;
+    }
+    if(e.key === "Escape"){ e.preventDefault(); if(stage === "standby") A.unlock(); finish(); return; }
+    if(/^(Shift|Control|Alt|Meta|CapsLock|Arrow|F\d)/.test(e.key)) return;
+    e.preventDefault(); e.stopPropagation();
+    if(e.repeat) return; // a held key starts the boot once, never skips it
+    advance();
+  }
+  ov.addEventListener("click",function(e){ e.stopPropagation(); advance(); });
+  document.addEventListener("keydown",onKey,true);
+})();
+
+  </script>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.28.4/babel.min.js" crossorigin="anonymous"></script>
@@ -656,6 +2684,11 @@
     const { useState, useEffect, useRef } = React;
 
     const REDUCED_MOTION = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+
+    // v1.14: sound + toast hooks. Everything below is presentation only; game state never reads from these.
+    const AUDIO=()=>window.TST_AUDIO||null;
+    const sfx=(name,opts)=>{ const a=AUDIO(); if(a) a.play(name,opts); };
+    const notify=(msg)=>{ if(window.TST_TOAST) window.TST_TOAST(msg); else alert(msg); };
 
     const QUARTER_WEEKS = 13;
     const MAX_QUARTERS = 1;
@@ -669,8 +2702,8 @@
     const rand=(a,b)=>Math.random()*(b-a)+a;
     const randi=(a,b)=>Math.floor(rand(a,b+1));
     const choice=(arr)=>arr[Math.floor(Math.random()*arr.length)];
-    // FIX: negative cash used to render as "$-1,500".
-    const money=(n)=>{const r=Math.round(n);return (r<0?"-$":"$")+Math.abs(r).toLocaleString();};
+    // FIX: negative cash used to render as "$-1,500". en-US grouping everywhere: logs, badges and the big-close PA regex.
+    const money=(n)=>{const r=Math.round(n);return (r<0?"-$":"$")+Math.abs(r).toLocaleString("en-US");};
     const pct=(p)=>Math.round(p*100);
     const now=()=>new Date().toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
     const idGen=(()=>{let i=0;return()=> (++i).toString(36)+"-"+Date.now().toString(36).slice(-4)})();
@@ -724,7 +2757,12 @@
         used:{...base.used,...(parsed.used||{})},
         repo:!!parsed.repo,
         repoWarned:!!parsed.repoWarned,
-        perfWarnings:Number.isFinite(parsed.perfWarnings)?parsed.perfWarnings:0
+        perfWarnings:Number.isFinite(parsed.perfWarnings)?parsed.perfWarnings:0,
+        // v1.15 fields; v1.14 saves don't have them
+        coffeesThisWeek:Number.isFinite(parsed.coffeesThisWeek)?Math.max(0,Math.floor(parsed.coffeesThisWeek)):0,
+        stressWarned:!!parsed.stressWarned,
+        hygieneShield:!!parsed.hygieneShield,
+        endCause:typeof parsed.endCause==="string"?parsed.endCause:null
       };
     };
 
@@ -813,8 +2851,10 @@
       );
     };
 
-    const Modal=({open,title,children,actions})=>{
+    // onDismiss: Esc may close it (info-only dialogs). Without it, Esc does nothing.
+    const Modal=({open,title,children,actions,onDismiss})=>{
       const ref=useRef(null);
+      const titleId=React.useId()+"t";
       useEffect(()=>{
         if(!ref.current)return;
         if(open){
@@ -824,8 +2864,14 @@
         }
       },[open]);
       return(
-        <dialog ref={ref} onCancel={e=>e.preventDefault()}>
-          <div className="d-header">{title}</div>
+        <dialog ref={ref} aria-labelledby={titleId}
+          onCancel={e=>{ if(!onDismiss)e.preventDefault(); }}
+          onClose={()=>{
+            if(onDismiss){ if(open)onDismiss(); return; }
+            // Chromium force-closes on a repeated Esc even when cancel is prevented; keep the dialog in step with state
+            if(open && ref.current && !ref.current.open)ref.current.showModal();
+          }}>
+          <div className="d-header" id={titleId}>{title}</div>
           <div className="d-body">{children}</div>
           <div className="d-footer">
             {actions && actions.map((a,i)=>(
@@ -839,17 +2885,31 @@
               </button>
             ))}
           </div>
+          <span className="sr-only tst-sr" role="status" aria-live="polite"></span>
         </dialog>
       );
     };
 
-    const Cutscene=({frames,speed,play})=>{
+    // v1.14: endings play on the ASCII scene engine (plain script above the React tags).
+    // The original two-frame flipbook is kept as a fallback if that engine is unavailable.
+    const Cutscene=({type,speed,play,meta,ctrlRef})=>{
+      const preRef=useRef(null);
+      const[fallback,setFallback]=useState(false);
       const[index,setIndex]=useState(0);
+      const engine=window.TST_SCENES;
       useEffect(()=>{
-        if(!play||!frames||frames.length===0){
-          setIndex(0);
-          return;
-        }
+        if(!play)return;
+        if(!engine||!preRef.current){ setFallback(true); return; }
+        let ctrl=null;
+        try{ ctrl=engine.play(preRef.current,type,{speed:120/speed,meta:meta||{}}); }
+        catch(e){ setFallback(true); return; }
+        if(ctrlRef)ctrlRef.current=ctrl;
+        return()=>{ try{ctrl.stop();}catch(e){} if(ctrlRef && ctrlRef.current===ctrl)ctrlRef.current=null; };
+      },[play,type]);
+      useEffect(()=>{ if(ctrlRef && ctrlRef.current)ctrlRef.current.setSpeed(120/speed); },[speed]);
+      const frames=CUTSCENES[type]||CUTSCENES.club;
+      useEffect(()=>{
+        if(!fallback||!play)return;
         setIndex(0);
         let i=0;
         const id=setInterval(()=>{
@@ -857,10 +2917,18 @@
           setIndex(i);
         },speed);
         return()=>clearInterval(id);
-      },[play,frames,speed]);
+      },[fallback,play,frames,speed]);
+      if(fallback || !engine){
+        return(
+          <div className="cutbox">
+            <pre className="cutscene">{frames[index]||""}</pre>
+          </div>
+        );
+      }
+      const label=(engine.summaryFor && engine.summaryFor(type,meta)) || "Ending animation";
       return(
-        <div className="cutbox">
-          <pre className="cutscene">{frames && frames[index]||""}</pre>
+        <div className="cutbox crt" role="img" aria-label={label}>
+          <pre className="cutscene" ref={preRef}></pre>
         </div>
       );
     };
@@ -898,6 +2966,10 @@
       modifiers:{conversion:0,discount:0,expiresIn:0},
       achievements:[],
       perfWarnings:0,
+      coffeesThisWeek:0,
+      stressWarned:false,
+      hygieneShield:false,
+      endCause:null,
       runId:idGen(),
       used:{
         prospect:false,
@@ -907,7 +2979,8 @@
         propose:false,
         close:false,
         network:false,
-        recharge:false
+        recharge:false,
+        crm:false
       }
     });
 
@@ -916,10 +2989,33 @@
       return{...state,logs:[entry,...state.logs].slice(0,220)};
     };
 
+    // v1.15: caffeine and stress can end a run. Numbers tuned with the Monte Carlo sim.
+    const isRunOver=(st)=>!!(st.fired||st.burnedOut||st.win||st.missed||st.repo);
+    const STRESS_WARN=70;            // 🫀 warning, once per week
+    const STRESS_DANGER=80;          // end-of-week burnout roll starts here
+    const DANGER_RATE=0.03;          // chance per point above 75
+    const CRASH_PER_SHOT=13;         // end-of-week stress per Quad Shot drunk that week
+    // n = shots already drunk this week, so these describe the NEXT shot
+    const COFFEE_ENERGY=[18,15,12,9,6];
+    const coffeeEnergy=(n)=>COFFEE_ENERGY[clamp(Math.floor(n)||0,0,COFFEE_ENERGY.length-1)];
+    const coffeeStress=(n)=>12+6*n;
+    const rechargeRelief=(n)=>Math.max(0,12-4*n); // caffeine in the system blunts the Recharge
+    const coffeeRisk=(n)=>n<2?0:n===2?0.20:n===3?0.45:Math.min(0.95,0.75+0.10*(n-4)); // palpitations from shot 3
+    const checkBurnout=(state)=>{
+      if(!state || isRunOver(state))return state; // an ending already landed; keep its priority
+      if(state.stress>=100){
+        return log({...state,burnedOut:true,endCause:state.endCause||"stress"},"🧯 Stress 100. Burnout.","bad");
+      }
+      if(state.stress>=STRESS_WARN && !state.stressWarned){
+        return log({...state,stressWarned:true},`🫀 Eye twitch. Stress ${Math.round(state.stress)}.`,"warn");
+      }
+      return state;
+    };
+
     const addAchievement=(state,key,label)=>{
       if(state.achievements.some(a=>a.key===key))return state;
       const next={...state,achievements:[...state.achievements,{key,label}]};
-      return log(next,`🏅 Achievement unlocked: ${label}`);
+      return log(next,`🏅 Unlocked: ${label}`);
     };
 
     const makeDeal=(state,{warm=false,big=false}={})=>{
@@ -971,10 +3067,11 @@
       let s={...state};
       if(s.cash<=-1500 && !s.repo && !s.fired && !s.burnedOut && !s.win && !s.missed){
         s.repo=true;
-        s=log(s,"🧥 Collections repossessed your President’s Club jacket. That was the last flex you had.","bad");
+        s.endCause="repo";
+        s=log(s,"🧥 Collections took the jacket. Last flex, gone.","bad");
       }else if(s.cash<=-1000 && !s.repo && !s.repoWarned){
         s.repoWarned=true;
-        s=log(s,"⚠️ Cash below -$1,000. Finance is side-eyeing your jacket as collateral.","warn");
+        s=log(s,"⚠️ Cash under -$1,000. Finance eyes the jacket.","warn");
       }
       return s;
     };
@@ -1013,7 +3110,7 @@
       s.deals=kept;
       s.pipeline=kept.reduce((sum,d)=>sum+d.value,0);
       if(lost>0){
-        s=log(s,`💀 Lost ${lost} deal(s) totaling ${money(lostVal)}.`,"bad");
+        s=log(s,`💀 Lost ${lost} deal(s), ${money(lostVal)}.`,"bad");
       }
       return s;
     };
@@ -1022,7 +3119,7 @@
       let s={...state};
       const candidates=s.deals.filter(d=>d.stage>=3);
       if(candidates.length===0){
-        return log(s,`${label}: nothing ready to close.`,"muted");
+        return log(s,`${label}: no late-stage deals.`,"muted");
       }
       let closedCount=0,totalWon=0,totalDiscount=0,lost=0,lostVal=0;
       const pipPenalty=s.pip ? 0.05*(s.pipLevel||1) : 0;
@@ -1076,13 +3173,13 @@
       s.discounts+=totalDiscount;
 
       if(closedCount>0){
-        s=log(s,`${label}: closed ${closedCount} deal(s) for ${money(totalWon)}. Commission ${money(totalWon*0.12)}.`);
+        s=log(s,`${label}: ${closedCount} signed, ${money(totalWon)}. You keep ${money(totalWon*0.12)}.`);
         if(totalWon>=65000)s=addAchievement(s,"whale","🐋 Whale Hunter");
       }else{
-        s=log(s,`${label}: nobody signed. Just vibes and verbal commits.`,"warn");
+        s=log(s,`${label}: nobody signed. Verbal commits only.`,"warn");
       }
       if(lost>0){
-        s=log(s,`💀 Lost ${lost} late-stage deal(s) worth ${money(lostVal)}.`,"bad");
+        s=log(s,`💀 Lost ${lost} late-stage deal(s), ${money(lostVal)}.`,"bad");
       }
       s=checkRepo(s);
       return s;
@@ -1107,16 +3204,16 @@
         const adds=Array.from({length:n},()=>makeDeal(st,{warm:true}));
         st.deals=[...adds,...st.deals];
         st.pipeline=st.deals.reduce((sum,d)=>sum+d.value,0);
-        return log(st,`📣 Marketing "SQL Storm": ${n} warm leads landed.`);
+        return log(st,`📣 Marketing delivered ${n} “warm” leads.`);
       });
 
       fire(0.18,st=>{
         setPending({
-          title:"🧨 Competitor drops a 25% discount",
-          body:"Match them and win more but cut ACV, or hold the line and protect brand?",
+          title:"🧨 Competitor Panic",
+          body:"They cut 25%. Match 20% or hold?",
           options:[
             {
-              label:"Match 20% discount (win more, earn less)",
+              label:"Match 20% (more wins, less $)",
               className:"primary",
               action:(x)=>{
                 const baseConv = x.modifiers?.conversion ?? 0;
@@ -1125,11 +3222,11 @@
                   discount:0.20,
                   expiresIn:1
                 };
-                return log(x,"💸 You matched the discount. Win-rate up, ACV down for a week.");
+                return log(x,"💸 Matched 20%. Wins up, ACV down this week.");
               }
             },
             {
-              label:"Hold the line (fewer wins, stronger rep)",
+              label:"Hold price (fewer wins, +rep)",
               className:"ghost",
               action:(x)=>{
                 const baseConv = x.modifiers?.conversion ?? 0;
@@ -1139,7 +3236,7 @@
                   discount:0,
                   expiresIn:1
                 };
-                return log(x,"🧱 You held pricing. Fewer closes this week; rep nudges up.","warn");
+                return log(x,"🧱 Held price. Fewer closes this week, +rep.","warn");
               }
             }
           ]
@@ -1152,7 +3249,7 @@
         if(!candidate)return st;
         st.product=clamp(st.product-6,0,100);
         st.stress=clamp(st.stress+4,0,100);
-        return log(st,`🛠️ SE fumbles a demo for ${candidate.account}. Product -6, stress +4.`,"warn");
+        return log(st,`🛠️ SE fumbled ${candidate.account}. -6 product, +4 stress.`,"warn");
       });
 
       fire(0.12,st=>{
@@ -1160,34 +3257,34 @@
         if(!candidate)return st;
         st.product=clamp(st.product+8,0,100);
         st.reputation=clamp(st.reputation+3,0,100);
-        return log(st,`🧙 SE hero save on ${candidate.account}. Product +8, rep +3.`);
+        return log(st,`🧙 SE saved ${candidate.account}. +8 product, +3 rep.`);
       });
 
       fire(0.10,st=>{
         setPending({
           title:"🔐 Security Incident",
-          body:"A mid-market customer had a breach. Legal wants spin, CS wants transparency.",
+          body:"A customer got breached. Own it or spin it?",
           options:[
             {
-              label:"Radical transparency (trust +, wins −)",
+              label:"Own it (+rep, fewer wins)",
               className:"primary",
               action:(x)=>{
                 x.reputation=clamp(x.reputation+6,0,100);
                 x.product=clamp(x.product-18,0,100);
                 x.modifiers={conversion:-0.15,discount:0,expiresIn:2};
                 x=killDeals(x,d=>d.stage>=2,0.30);
-                return log(x,"🧯 You told the truth. Trust builds; close rate tanks for a bit.","warn");
+                return log(x,"🔦 Came clean. +rep, closes tank for a bit.","warn");
               }
             },
             {
-              label:"Spin it (pipe saved, soul bruised)",
+              label:"Spin it (safer pipe, -\u2060rep)", // word joiner: keeps "-rep" on one line
               className:"ghost",
               action:(x)=>{
                 x.reputation=clamp(x.reputation-8,0,100);
                 x.product=clamp(x.product-12,0,100);
                 x.modifiers={conversion:-0.08,discount:0,expiresIn:1};
                 x=killDeals(x,d=>d.stage>=2,0.15);
-                return log(x,"🌀 You spun it. Pipe mostly intact; reputation takes a hit.","warn");
+                return log(x,"🌀 Spun it. Pipe mostly safe, rep takes a hit.","warn");
               }
             }
           ]
@@ -1198,7 +3295,7 @@
       fire(0.12,st=>{
         st.product=clamp(st.product-12,0,100);
         st=killDeals(st,d=>d.stage>=2,0.18);
-        return log(st,"🌩️ Cloud outage nuked demos. Product -12; some mid-funnel deals bailed.","bad");
+        return log(st,"🌩️ Cloud outage ate the demos. -12 product.","bad");
       });
 
       fire(0.11,st=>{
@@ -1209,7 +3306,7 @@
         st.pipeline=st.deals.reduce((sum,d)=>sum+d.value,0);
         st.reputation=clamp(st.reputation+3,0,100);
         st.manager=clamp(st.manager+3,0,100);
-        return log(st,`🪜 Champion promoted at ${candidate.account}. Deal moves forward and gets happier.`);
+        return log(st,`🪜 Champion promoted at ${candidate.account}. Deal moves up.`);
       });
 
       fire(0.10,st=>{
@@ -1219,7 +3316,7 @@
           discount:st.modifiers.discount||0,
           expiresIn:Math.max(1,st.modifiers.expiresIn||0)
         };
-        return log(st,"📘 New case study hits LinkedIn. +Rep, +8% close chance for a bit.");
+        return log(st,"📘 Case study live. +rep, +8% close for now.");
       });
 
       fire(0.10,st=>{
@@ -1228,7 +3325,7 @@
         st.deals=[...adds,...st.deals];
         st.pipeline=st.deals.reduce((sum,d)=>sum+d.value,0);
         st.reputation=clamp(st.reputation+4,0,100);
-        return log(st,`🐦 A meme about your product goes mildly viral. ${n} inbound whale-adjacent leads show up.`);
+        return log(st,`🐦 Product became a meme. +${n} inbound lead(s).`);
       });
 
       fire(0.10,st=>{
@@ -1237,14 +3334,14 @@
           discount:st.modifiers.discount||0,
           expiresIn:Math.max(1,st.modifiers.expiresIn||0)
         };
-        return log(st,"🥶 Budget freeze rumor. Close rates nerfed this week.","warn");
+        return log(st,"🥶 Budget freeze rumor. Closes nerfed this week.","warn");
       });
 
       fire(0.10,st=>{
         if(st.energy<55){
           st.stress=clamp(st.stress+6,0,100);
           st.energy=clamp(st.energy-10,0,100);
-          return log(st,"🤒 Conference crud: low immune system, high regret. Stress +6, Energy −10.","warn");
+          return log(st,"🤒 Conference crud. -10 energy, +6 stress.","warn");
         }
         return st;
       });
@@ -1260,7 +3357,7 @@
           return true;
         });
         st.pipeline=st.deals.reduce((sum,d)=>sum+d.value,0);
-        st=log(st,`📉 Manager “rebalances territories” and yanks ${toSteal.length} top deal(s) worth ${money(total)}.`,"bad");
+        st=log(st,`📉 Territory “rebalance.” Lost ${toSteal.length} top deal(s), ${money(total)}.`,"bad");
         return st;
       });
 
@@ -1269,13 +3366,13 @@
         if(st.pip && Math.random()<0.6){
           st.pip=false;
           st.pipLevel=0;
-          return log(st,"🛡️ Your manager quietly tears up your PIP. “Reset next quarter.”");
+          return log(st,"🛡️ Manager shredded your PIP. “Fresh start.”");
         }
         const n=randi(1,3);
         const adds=Array.from({length:n},()=>makeDeal(st,{warm:true,big:Math.random()<0.5}));
         st.deals=[...adds,...st.deals];
         st.pipeline=st.deals.reduce((sum,d)=>sum+d.value,0);
-        return log(st,`🛡️ Manager pulls strings for ${n} extra warm intro(s). Protection buff applied.`);
+        return log(st,`🛡️ Manager called in favors. +${n} warm intro(s).`);
       });
 
       return s;
@@ -1289,29 +3386,29 @@
       const mgr=s.manager;
 
       let lines=[];
-      lines.push(`📊 Quarter ${quarter} closed at ${pct(perfQ)}% of quota.`);
+      lines.push(`📊 Q${quarter} final: ${pct(perfQ)}% of quota.`);
 
       if(perfQ>=1){
         s.manager=clamp(s.manager+10,0,100);
         s.reputation=clamp(s.reputation+5,0,100);
         s.pip=false;
         s.pipLevel=0;
-        lines.push("QBR: everyone just nods and lets you cook. No PIP, no drama.");
+        lines.push("🗣️ QBR: nods all around. No PIP.");
       }else if(perfQ>=0.8){
         s.manager=clamp(s.manager+(mgr>60?2:-3),0,100);
         if(mgr<40){
           if(!s.pip){
             s.pip=true;
             s.pipLevel=1;
-            lines.push("QBR: your manager slaps you on a soft PIP. More dashboards, more meetings.");
+            lines.push("🗣️ QBR: soft PIP. More dashboards.");
           }else{
             s.pipLevel=Math.min(2,s.pipLevel+1);
-            lines.push("QBR: PIP quietly tightens. Milestones go from insane to impossible.");
+            lines.push("🗣️ QBR: PIP tightens. Milestones now fiction.");
           }
         }else if(mgr>70){
-          lines.push("QBR: your manager shields you. “Macro headwinds” take the blame.");
+          lines.push("🗣️ QBR: manager blames “macro.” You live.");
         }else{
-          lines.push("QBR: passive-aggressive comments, but you live to grind another quarter.");
+          lines.push("🗣️ QBR: passive-aggressive. You survive.");
         }
       }else{
         let fireChance=0.25;
@@ -1323,15 +3420,16 @@
         const roll=Math.random();
         if(roll<fireChance){
           s.fired=true;
-          lines.push("QBR turns into a surprise exit interview. “We’re going in a different direction.”");
+          s.endCause="qbr";
+          lines.push("🗣️ QBR became an exit interview.");
         }else{
           if(!s.pip){
             s.pip=true;
             s.pipLevel=1;
-            lines.push("You dodge being fired, but land on a PIP. Targets move farther away.");
+            lines.push("📄 Dodged the axe. Landed on a PIP.");
           }else{
             s.pipLevel=Math.min(2,s.pipLevel+1);
-            lines.push("You narrowly avoid termination. PIP escalates to hard mode.");
+            lines.push("📄 Barely kept the badge. PIP escalates.");
           }
           s.manager=clamp(s.manager-8,0,100);
         }
@@ -1339,7 +3437,8 @@
 
       if(!s.fired && perfQ>=1 && mgr<25 && Math.random()<0.06){
         s.fired=true;
-        lines.push("Your manager wanted you gone anyway. Politics > performance. You’re out.");
+        s.endCause="politics";
+        lines.push("🗡️ Hit quota, fired anyway. Politics.");
       }
 
       if(!s.fired && s.manager<30 && s.pipeline>0 && Math.random()<0.35){
@@ -1352,14 +3451,14 @@
           return true;
         });
         s.pipeline=s.deals.reduce((sum,d)=>sum+d.value,0);
-        lines.push(`Manager “reassigns” ${cut.length} big deal(s) worth ${money(total)}. Setup-to-fail buff applied.`);
+        lines.push(`📉 Manager “reassigned” ${cut.length} big deal(s), ${money(total)}.`);
       }
 
       if(!s.fired && s.manager>75 && perfQ<1 && Math.random()<0.5){
         if(s.pip){
           s.pip=false;
           s.pipLevel=0;
-          lines.push("Because your manager actually likes you, the PIP disappears in a puff of HR paperwork.");
+          lines.push("🪄 Manager likes you. PIP vanishes.");
         }
       }
 
@@ -1369,13 +3468,16 @@
       if(s.quartersSurvived>=s.maxQuarters && !s.fired && !s.burnedOut && !s.repo){
         if(perfQ>=1){
           s.win=true;
-          lines.push("Quarter done, number hit. President’s Club ticket punched.");
+          s.endCause="club";
+          lines.push("🏆 Number hit. President’s Club.");
         }else if(perfQ>=0.7){
           s.missed=true;
-          lines.push("Quarter ends with you under quota but still employed. Dignity slightly scuffed.");
+          s.endCause="missed";
+          lines.push("😮‍💨 Under quota. Still employed.");
         }else{
           s.fired=true;
-          lines.push("Quarter-end QBR: finance votes you off the island.");
+          s.endCause="qbr";
+          lines.push("🗣️ QBR: under 70%. Voted off the island.");
         }
       }
 
@@ -1481,9 +3583,9 @@
       const {weekInQuarter}=getQuarterInfo(ns.week);
       if(weekInQuarter===1||weekInQuarter===5||weekInQuarter===9){
         ns.cash-=1600;
-        ns=log(ns,"🏠 Rent hit: -$1,600.","warn");
+        ns=log(ns,"🏠 Rent: -$1,600.","warn");
       }
-      ns=log(ns,"💸 Salary processed: +$1,000.");
+      ns=log(ns,"💸 Salary: +$1,000.");
       ns=checkRepo(ns);
       return ns;
     };
@@ -1505,19 +3607,23 @@
 
       if(!Number.isFinite(ns.perfWarnings)) ns.perfWarnings=0;
       let warnedThisWeek=false;
+      // v1.15: a CRM Cleanup this week keeps the warning ladder still and takes the edge off the fire roll.
+      const shielded=!!ns.hygieneShield;
 
-      if(ns.perfWarnings===0 && Math.random()<0.7){
-        ns=log(ns,"👀 Manager asks for a detailed list of every meeting you’ve had this quarter. \"Just for forecasting.\"","warn");
+      if(shielded){
+        // clean CRM: nothing for the manager to escalate this week
+      }else if(ns.perfWarnings===0 && Math.random()<0.7){
+        ns=log(ns,"👀 Manager wants a meeting audit. “For forecasting.”","warn");
         ns.stress=clamp(ns.stress+4,0,100);
         ns.perfWarnings=1;
         warnedThisWeek=true;
       }else if(ns.perfWarnings===1 && Math.random()<0.6){
-        ns=log(ns,"📋 Enablement schedules a surprise \"pipeline hygiene\" review with you and your manager.","warn");
+        ns=log(ns,"📋 Surprise “pipeline hygiene” review.","warn");
         ns.stress=clamp(ns.stress+5,0,100);
         ns.perfWarnings=2;
         warnedThisWeek=true;
       }else if(ns.perfWarnings===2 && Math.random()<0.5){
-        ns=log(ns,"🧊 HR quietly appears on your next 1:1 invite. Nobody comments on it.","warn");
+        ns=log(ns,"🧊 HR is on your next 1:1. Nobody mentions it.","warn");
         ns.stress=clamp(ns.stress+6,0,100);
         ns.perfWarnings=3;
         warnedThisWeek=true;
@@ -1532,6 +3638,7 @@
       if(ns.pipeline<ns.quota*0.4)fireChance+=0.05;
 
       if(!warnedThisWeek && ns.perfWarnings===0) fireChance*=0.6;
+      if(shielded) fireChance-=0.06;
 
       fireChance=clamp(fireChance,0.02,0.70);
 
@@ -1539,12 +3646,13 @@
         const roll=Math.random();
         if(roll<fireChance){
           ns.fired=true;
+          ns.endCause=ns.perfWarnings>0 ? "review" : "org";
           const msg = ns.perfWarnings>0
-            ? "📉 Mid-quarter \"forecast review\" quietly becomes an exit meeting. \"We just don’t see the ramp.\""
-            : "🪓 Out of nowhere, your manager and HR pull you into a same-day \"org update\" call. By the end, you’re not on the org chart.";
+            ? "📉 Forecast review became an exit meeting."
+            : "🪓 Surprise “org update.” You’re off the chart.";
           ns=log(ns,msg,"bad");
         }else if(!warnedThisWeek && ns.perfWarnings>0 && Math.random()<0.4){
-          ns=log(ns,"📆 You notice a recurring calendar block with your name on your manager’s calendar. Nobody has invited you to it.","warn");
+          ns=log(ns,"📆 Recurring meeting about you. Not invited.","warn");
         }
       }
       return ns;
@@ -1552,7 +3660,9 @@
 
     // FIX: Actions was declared inside Game, so React saw a brand-new component type every render and
     // remounted the whole action grid on each state change (killing hover/focus and any CSS transitions).
-    const Actions=({s,setS})=>{
+    const Actions=({s,setS:commit})=>{
+      // v1.15: every action result passes through the burnout check
+      const setS=ns=>commit(checkBurnout(ns));
       const actProspect=()=>{
         // Phones cost more energy now.
         let[ns,ok]=cost(s,{energy:30,slots:1});
@@ -1565,7 +3675,7 @@
         ns.stress=clamp(ns.stress+2,0,100);
         ns.deals=[...adds,...ns.deals];
         ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
-        ns=log(ns,`📞 Prospect Blitz: -30 energy • +${adds.length} leads`);
+        ns=log(ns,`📞 Blitz: +${adds.length} lead(s). -30 energy.`);
         setS(ns);
       };
 
@@ -1578,7 +3688,7 @@
         ns.meetings=(ns.meetings||0)+randi(0,n);
         ns.deals=[...adds,...ns.deals];
         ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
-        ns=log(ns,`✉️ Email Cadence: -18 energy • ${n} warm replies`);
+        ns=log(ns,`✉️ Cadence: +${n} warm lead(s). -18 energy.`);
         setS(ns);
       };
 
@@ -1596,7 +3706,7 @@
         });
         ns.skills.discovery=clamp(ns.skills.discovery+2,0,100);
         ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
-        ns=log(ns,`🔎 Discovery Deep Dive: -22 energy • qualified ${advanced} lead(s)`);
+        ns=log(ns,`🔎 Discovery: ${advanced} qualified. -22 energy.`);
         setS(ns);
       };
 
@@ -1614,7 +3724,7 @@
         });
         ns.skills.demo=clamp(ns.skills.demo+2,0,100);
         ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
-        ns=log(ns,`🖥️ Demo Marathon: -28 energy • advanced ${advanced} opp(s)`);
+        ns=log(ns,`🖥️ Demos: ${advanced} advanced. -28 energy.`);
         setS(ns);
       };
 
@@ -1631,7 +3741,7 @@
           return d;
         });
         ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
-        ns=log(ns,`📑 Proposals & Commit: -25 energy • sent ${advanced} proposal(s)`);
+        ns=log(ns,`📑 Proposals: ${advanced} sent. -25 energy.`);
         setS(ns);
       };
 
@@ -1640,7 +3750,7 @@
         if(!ok)return;
         ns.used.close=true;
         ns.skills.negotiate=clamp(ns.skills.negotiate+1,0,100);
-        ns=tryCloseSome(ns,"🤝 Close-Won Push");
+        ns=tryCloseSome(ns,"🤝 Close push");
         setS(ns);
       };
 
@@ -1661,37 +3771,75 @@
 
         const hasWhale=adds.some(d=>d.probNote==="referral whale");
         const hasBig=adds.some(d=>d.probNote==="referral big");
-        const tag = hasWhale ? " 🐋 whale intro!" : hasBig ? " 🐳 big intro!" : "";
+        const tag = hasWhale ? " 🐋 Whale." : hasBig ? " 🐳 Big one." : "";
 
-        ns=log(ns,`🧑‍🤝‍🧑 Referrals & Social: -16 energy • +${n} intro(s)${tag}`);
+        ns=log(ns,`🧑‍🤝‍🧑 Referrals: +${n} intro(s). -16 energy.${tag}`);
         setS(ns);
       };
 
       const actRecharge=()=>{
         let[ns,ok,reason]=cost(s,{energy:0,slots:1,onceKey:"restedThisWeek"});
         if(!ok){
-          if(reason==="once")setS(log(s,"⏱️ Recharge already used this week.","warn"));
+          if(reason==="once")setS(log(s,"⏱️ Already recharged this week.","warn"));
           return;
         }
         ns.used.recharge=true;
         ns.energy=clamp(ns.energy+35,0,100);
-        ns.stress=clamp(ns.stress-12,0,100);
-        ns=log(ns,"🧘 Recharge: once per week reset. +35 energy, -12 stress.");
+        // v1.15: caffeine in the system blunts the reset
+        const relief=rechargeRelief(ns.coffeesThisWeek||0);
+        ns.stress=clamp(ns.stress-relief,0,100);
+        ns=log(ns,relief>0 ? `🧘 Recharged. +35 energy, -${relief} stress.` : "🧘 Recharged. +35 energy. Caffeine ate the calm.");
         setS(ns);
       };
 
+      // v1.15: each shot this week hits harder and does less; from shot 3 the heart rolls dice.
       const actCoffee=()=>{
         let[ns,ok]=cost(s,{energy:0,slots:1});
         if(!ok)return;
-        ns.energy=clamp(ns.energy+18,0,100);
+        const n=ns.coffeesThisWeek||0, k=n+1;
+        const e=coffeeEnergy(n), st=coffeeStress(n), risk=coffeeRisk(n);
+        ns.coffeesThisWeek=k;
+        ns.energy=clamp(ns.energy+e,0,100);
         ns.cash-=6;
-        ns.stress=clamp(ns.stress+9,0,100);
-        if(ns.stress>=100 && !ns.burnedOut){
+        ns.stress=clamp(ns.stress+st,0,100);
+        // a shot that maxes stress counts as the heart giving out too
+        if(ns.stress>=100 || (risk>0 && Math.random()<risk)){
           ns.burnedOut=true;
-          ns=log(ns,"🧯 You jitter-spammed yourself into burnout mid-week.","bad");
+          ns.endCause="caffeine";
+          setS(log(ns,`🚑 Shot #${k}. Heart said no.`,"bad"));
+          return;
         }
         ns=checkRepo(ns);
-        ns=log(ns,"☕ Quad shot: +18 energy, +9 stress, -$6.");
+        ns=log(ns,`☕ Shot #${k}. +${e} energy, +${st} stress.`);
+        setS(ns);
+      };
+
+      // v1.15: pipeline hygiene. Not a funnel motion; once per week.
+      const actCrm=()=>{
+        if(s.used && s.used.crm)return;
+        let[ns,ok]=cost(s,{energy:15,slots:1});
+        if(!ok)return;
+        ns.used.crm=true;
+        const dead=d=>d.stage<=1 && (d.mood==="skeptical" || d.age>=5);
+        const pruned=ns.deals.filter(dead).length;
+        ns.deals=ns.deals.filter(d=>!dead(d));
+        const gain=Math.min(10,5+pruned);
+        // "Close that out" reads the manager's mood before the cleanup lands
+        const nukeChance=s.manager<40?0.25:0.15;
+        ns.manager=clamp(ns.manager+gain,0,100);
+        ns.hygieneShield=true;
+        let nuked=null;
+        const pool=ns.deals.filter(d=>d.stage===1||d.stage===2);
+        if(pool.length && Math.random()<nukeChance){
+          const warm=d=>(d.mood==="happy"||d.mood==="curious")?1:0;
+          nuked=[...pool].sort((a,b)=>warm(b)-warm(a)||b.value-a.value)[0];
+          ns.deals=ns.deals.filter(d=>d.id!==nuked.id);
+        }
+        ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
+        ns=log(ns,pruned>0
+          ? `🧹 CRM cleanup. -${pruned} dead lead(s), +${gain} manager.`
+          : `🧹 CRM cleanup. Nothing dead. +${gain} manager.`);
+        if(nuked)ns=log(ns,`🗑️ “Close that out.” ${nuked.account} gone. -${money(nuked.value)}.`,"bad");
         setS(ns);
       };
 
@@ -1703,7 +3851,7 @@
         ns.product=clamp(ns.product+3,0,100);
         ns.reputation=clamp(ns.reputation-4,0,100);
         ns.stress=clamp(ns.stress+2,0,100);
-        ns=log(ns,"🏛️ Internal Politics: manager +8, product +3, rep −4. Soul slightly compromised.");
+        ns=log(ns,"🏛️ Politics: +8 manager, +3 product, -4 rep.");
         setS(ns);
       };
 
@@ -1724,13 +3872,19 @@
           };
         }
         ns=checkRepo(ns);
-        ns=log(ns,`🏟️ Conference Run: -40 energy, -$800 • +${n} leads, possible macro buff.`);
+        ns=log(ns,`🏟️ Conference: +${n} leads. -40 energy, -$800.`);
         setS(ns);
       };
 
-      const disabled=(needEnergy,needSlots)=>(
-        s.energy<needEnergy || s.slots<needSlots || s.fired || s.burnedOut || s.win || s.missed || s.repo
+      const disabled=(needEnergy,needSlots,usedKey)=>(
+        s.energy<needEnergy || s.slots<needSlots || s.fired || s.burnedOut || s.win || s.missed || s.repo ||
+        !!(usedKey && s.used && s.used[usedKey])
       );
+      const shotsNow=s.coffeesThisWeek||0;
+      // actCoffee also kills when the shot itself takes stress to 100 (cost() leaves stress alone), so show that as 100%
+      const shotLethal=(s.stress||0)+coffeeStress(shotsNow)>=100;
+      const nextShotRisk=shotLethal?1:coffeeRisk(shotsNow);
+      const crmDone=!!(s.used && s.used.crm);
 
       return(
         <div className="actions">
@@ -1768,15 +3922,19 @@
           </button>
           <button className="btn" disabled={disabled(0,1)} onClick={actRecharge}>
             <div className="title">🧘 Recharge</div>
-            <div className="desc">Once per week. Cost: 1 Slot</div>
+            <div className="desc">Once per week. Cost: 1 Slot • Stress -{rechargeRelief(shotsNow)}</div>
           </button>
           <button className="btn" disabled={disabled(0,1)} onClick={actCoffee}>
             <div className="title">☕ Quad Shot</div>
-            <div className="desc">Borrow from tomorrow. Cost: 1 Slot • $6 • Stress +9</div>
+            <div className="desc">Borrow from tomorrow. Cost: 1 Slot • $6 • Stress +{coffeeStress(shotsNow)} (+{CRASH_PER_SHOT} Fri){nextShotRisk>0 ? ` • 🫀 ${pct(nextShotRisk)}%` : ""}</div>
           </button>
           <button className="btn" disabled={disabled(20,1)} onClick={actPolitics}>
             <div className="title">🏛️ Internal Politics</div>
             <div className="desc">Buff manager, tax reputation. Cost: 20 Energy • 1 Slot</div>
+          </button>
+          <button className="btn" disabled={disabled(15,1,"crm")} onClick={actCrm} title={crmDone ? "Once per week. Back next week." : undefined}>
+            <div className="title">🧹 CRM Cleanup</div>
+            <div className="desc">{crmDone ? "Done this week. Back next week." : "Weekly. Prune dead leads, +manager. Risky. Cost: 15 Energy • 1 Slot"}</div>
           </button>
         </div>
       );
@@ -1797,6 +3955,7 @@
       const[over,setOver]=useState(null);
       const[asciiSpeed,setAsciiSpeed]=useState(120);
       const[showHelp,setShowHelp]=useState(false);
+      const sceneRef=useRef(null);
 
       // FIX: header buttons were re-bound on every state change. Bind once; read live state through a ref.
       const sRef=useRef(s);
@@ -1807,6 +3966,7 @@
         const sv=document.getElementById("save");
         const ld=document.getElementById("load");
         const onNew=()=>{
+          const a=AUDIO(); if(a){ a.hush(); a.play("newgame"); a.say("newrun",{cooldown:3000}); }
           setS(newGame());
           setPending(null);
           setOver(null);
@@ -1814,23 +3974,27 @@
         const onSave=()=>{
           try{
             localStorage.setItem(SAVE_KEY,JSON.stringify(sRef.current));
-            alert("Run saved.");
+            sfx("save");
+            notify("Run saved.");
           }catch{
-            alert("Couldn’t save — storage is blocked in this browser.");
+            sfx("nope");
+            notify("Couldn’t save — storage is blocked in this browser.");
           }
         };
         const onLoad=()=>{
           const v=readStoredRun(false);
           if(!v){
-            alert("No save found.");
+            sfx("nope");
+            notify("No save found.");
             return;
           }
           try{
+            const a=AUDIO(); if(a){ a.hush(); a.play("load"); }
             setS(mergeSaved(JSON.parse(v)));
             setPending(null);
             setOver(null);
           }catch{
-            alert("Save was corrupted. Starting a new run.");
+            notify("Save was corrupted. Starting a new run.");
             setS(newGame());
             setPending(null);
             setOver(null);
@@ -1852,13 +4016,34 @@
         }catch{}
       },[s]);
 
+      // v1.14: every new log line maps to a sound (and sometimes a PA line). Reads state only.
+      const lastLogRef=useRef(s.logs.length?s.logs[0].id:null);
+      useEffect(()=>{
+        const prev=lastLogRef.current;
+        lastLogRef.current=s.logs.length?s.logs[0].id:null;
+        const a=AUDIO(); if(!a)return;
+        let fresh;
+        if(prev===null){ fresh=s.logs.slice(); }
+        else{
+          const idx=s.logs.findIndex(e=>e.id===prev);
+          if(idx<0)return; // a whole run was swapped in (load / new game)
+          fresh=s.logs.slice(0,idx);
+        }
+        if(fresh.length===0 || fresh.length>40)return;
+        a.onLogs(fresh.reverse(),{over:!!(s.fired||s.burnedOut||s.win||s.missed||s.repo)});
+      },[s.logs]);
+      useEffect(()=>{
+        if(!pending || s.fired || s.burnedOut || s.win || s.missed || s.repo)return;
+        const a=AUDIO(); if(a) a.onModal(pending.title);
+      },[pending]);
+
       const endWeek=()=>{
         if(s.fired || s.burnedOut || s.win || s.missed || s.repo)return;
         let ns={...s};
 
         // End-of-week closes still happen with current modifiers.
         if(Math.random()<0.15){
-          ns=tryCloseSome(ns,"🕘 End-of-week closes");
+          ns=tryCloseSome(ns,"🕘 Friday closes");
         }
 
         // Tick down existing modifiers BEFORE we potentially apply new ones during this endWeek().
@@ -1867,6 +4052,9 @@
         ns=salaryAndBills(ns);
         ns=randomEvents(ns,setPending,2);
         ns=ageAndGhost(ns);
+        ns=checkBurnout(ns);
+        // a run that just ended (burnout here, repo from the bills) stops simulating, so its ending stays the last line
+        if(isRunOver(ns)){ setPending(null); setS(ns); return; }
 
         const u=ns.used;
         const didProspectish=u.prospect||u.cadence||u.network;
@@ -1885,14 +4073,14 @@
             discount:ns.modifiers.discount||0,
             expiresIn:Math.max(1,ns.modifiers.expiresIn||0)
           };
-          ns=log(ns,"🧩 Coherent week: touched most of the funnel. +6% close next week.");
+          ns=log(ns,"🧩 Full-funnel week. +6% close next week.");
         }else if(motionsSkipped>=3 && ns.pipeline>0){
           ns.modifiers={
             conversion:(ns.modifiers.conversion||0)-0.06,
             discount:ns.modifiers.discount||0,
             expiresIn:Math.max(1,ns.modifiers.expiresIn||0)
           };
-          ns=log(ns,"🪫 Funnel neglect: deals getting weird vibes. −6% close next week.","warn");
+          ns=log(ns,"🪫 Funnel neglected. -6% close next week.","warn");
         }
 
         if(!u.discovery && countStage(ns.deals,0)>=6){
@@ -1902,7 +4090,7 @@
             return true;
           });
           if(lost>0){
-            ns=log(ns,`🥶 Lead decay: ${lost} raw lead(s) went stale.`,"warn");
+            ns=log(ns,`🍂 ${lost} raw lead(s) went stale.`,"warn");
             ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
           }
         }
@@ -1917,18 +4105,30 @@
             return d;
           });
           if(reg>0){
-            ns=log(ns,`🕑 Demo backlog: ${reg} qualified lead(s) slid back to cold.`,"warn");
+            ns=log(ns,`🕑 Demo backlog: ${reg} lead(s) went cold.`,"warn");
             ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
           }
         }
 
         ns.energy=clamp(ns.energy+15,0,100);
-        ns.stress=clamp(ns.stress-4,0,100);
-
-        if(ns.stress>=100 && !ns.burnedOut){
-          ns.burnedOut=true;
-          ns=log(ns,"🧯 Burnout: nervous system filed a ticket.","bad");
+        // v1.15: caffeinated weeks crash instead of recovering
+        const shots=ns.coffeesThisWeek||0;
+        if(shots>0){
+          const crash=CRASH_PER_SHOT*shots;
+          ns.stress=clamp(ns.stress+crash,0,100);
+          ns=log(ns,`🥴 Caffeine crash. +${crash} stress.`,"warn");
+        }else{
+          ns.stress=clamp(ns.stress-4,0,100);
         }
+
+        // v1.15: burnout lands before reviews. Danger zone rolls every weekend.
+        ns=checkBurnout(ns);
+        if(!isRunOver(ns) && ns.stress>=STRESS_DANGER && Math.random()<(ns.stress-75)*DANGER_RATE){
+          ns.burnedOut=true;
+          ns.endCause="stress";
+          ns=log(ns,"🧯 Weekend didn’t help. Burnout.","bad");
+        }
+        if(isRunOver(ns)){ setPending(null); setS(ns); return; }
 
         ns=checkRepo(ns);
 
@@ -1939,7 +4139,7 @@
         // Email cadence without calling annoys the manager.
         if(ns.used.cadence && !ns.used.prospect){
           ns.manager=clamp(ns.manager-3,0,100);
-          ns=log(ns,"📵 Manager feedback: “Good emails. Now pick up the phone.” Manager -3.","warn");
+          ns=log(ns,"📵 “Nice emails. Now call someone.” -3 manager.","warn");
         }
 
         const {weekInQuarter}=getQuarterInfo(ns.week);
@@ -1947,6 +4147,7 @@
         // Early termination checks never fire on the final week (week 13); QBR handles that.
         if(weekInQuarter>=5 && weekInQuarter<QUARTER_WEEKS && behindPace(ns, weekInQuarter) && !ns.fired && !ns.burnedOut && !ns.repo && !ns.win && !ns.missed){
           ns=midQuarterRisk(ns, weekInQuarter);
+          ns=checkBurnout(ns);
         }
 
         if(weekInQuarter===QUARTER_WEEKS && !ns.fired && !ns.burnedOut && !ns.repo){
@@ -1954,15 +4155,19 @@
         }
 
         if(ns.fired || ns.burnedOut || ns.win || ns.missed || ns.repo){
+          setPending(null); // an event queued this week must not stack on the game-over dialog
           setS(ns);
           return;
         }
 
         const nextWeek=ns.week+1;
-        ns=log(ns,`📆 Week advanced to ${nextWeek}.`);
+        ns=log(ns,`📆 Week ${nextWeek}.`);
         ns.week=nextWeek;
         ns.slots=ns.maxSlots;
         ns.restedThisWeek=false;
+        ns.coffeesThisWeek=0;
+        ns.stressWarned=false;
+        ns.hygieneShield=false;
         ns.used={
           prospect:false,
           cadence:false,
@@ -1971,7 +4176,8 @@
           propose:false,
           close:false,
           network:false,
-          recharge:false
+          recharge:false,
+          crm:false
         };
 
         setS(ns);
@@ -1993,27 +4199,48 @@
             "Terminated 💼";
           const body=
             type==="club"
-              ? `Closed ${money(s.closedWon)} this quarter. Number obliterated.`
+              ? `Closed ${money(s.closedWon)}. Pack for Cabo.`
               : type==="burnout"
-                ? `Closed ${money(s.closedWon)} this quarter, but your nervous system liquidated itself.`
+                ? (s.endCause==="caffeine"
+                  ? `Closed ${money(s.closedWon)}. Heart clocked out first.`
+                  : `Closed ${money(s.closedWon)}. Body quit first.`)
                 : type==="missed"
-                  ? `Closed ${money(s.closedWon)} this quarter. Badge kept; grind continues.`
+                  ? `Closed ${money(s.closedWon)}. Badge kept. Back to the phones.`
                   : type==="repo"
-                    ? `Cash went deeply negative and collections took your flex piece.`
-                    : `Closed ${money(s.closedWon)} before HR reclaimed your dongles.`;
-          setOver({title,body,type});
+                    ? `Cash hit ${money(s.cash)}. The loan came due.`
+                    : `Closed ${money(s.closedWon)}. Your Slack is already gone.`;
+          // v1.15: endCause is set wherever an ending lands; log parsing is only for pre-v1.15 saves
+          const legacyCause=()=>{
+            if(type!=="fired")return type==="burnout" ? "stress" : type;
+            const lastBad=s.logs.find(e=>e.kind==="bad");
+            return !lastBad ? "qbr" : lastBad.msg.indexOf("🪓")===0 ? "org" : lastBad.msg.indexOf("📉 Mid-quarter")===0 ? "review" : "qbr";
+          };
+          const cause=s.endCause || legacyCause();
+          const meta={pct:s.quota>0 ? s.closedWon/s.quota : 0, cause, shots:s.coffeesThisWeek||0};
+          setPending(null);
+          setOver({title,body,type,meta});
         }else{
           setOver(null);
         }
       },[s.fired,s.burnedOut,s.win,s.missed,s.repo,s.closedWon]);
 
+      // v1.14: heartbeat under the music when stress runs hot
+      useEffect(()=>{ const a=AUDIO(); if(a) a.setStress(over ? 0 : s.stress); },[s.stress,over]);
+
       const {weekInQuarter}=getQuarterInfo(s.week);
       const hasLateDeal = s.deals.some(d=>d.stage>=3);
       const pacePercent=pct(weekInQuarter/QUARTER_WEEKS);
+      // v1.15: the caffeine crash lands inside End Week, right before the danger roll, so label stress by where it will be
+      const crashDue=CRASH_PER_SHOT*(s.coffeesThisWeek||0);
+      const projStress=Math.min(100,s.stress+crashDue);
+      const stressZone=projStress>=STRESS_DANGER ? "Danger zone" : projStress>=60 ? "Edgy" : "";
+      const stressSub=(stressZone||crashDue)
+        ? <span style={{color:projStress>=STRESS_DANGER?"var(--bad)":"var(--warn)"}}>{[stressZone,crashDue?(stressZone?`+${crashDue} Fri`:`Crash +${crashDue} Fri`):""].filter(Boolean).join(" • ")}</span>
+        : null;
 
       const tryOpportunisticClose=()=>{
         if(!hasLateDeal){
-          setS(log(s,"🧪 No late-stage deals to hail-mary. Manager would just call that LARPing.","warn"));
+          setS(log(s,"🧪 No late-stage deals to Hail-Mary.","warn"));
           return;
         }
         let[ns,ok]=cost(s,{energy:10,slots:1});
@@ -2024,22 +4251,22 @@
         ns=log(
           ns,
           miracle
-            ? "🧪 Hail-Mary Close: you carpet-bomb every decision maker with \"last chance\" messages."
-            : "🧪 Hail-Mary Close: you press every late-stage deal way past the comfort line.",
+            ? "🧪 Hail-Mary: “last chance” blast to every exec."
+            : "🧪 Hail-Mary: leaning on every late deal. Hard.",
           "warn"
         );
-        let st=tryCloseSome(ns,"🧪 Hail-Mary Close");
+        let st=tryCloseSome(ns,"🧪 Hail-Mary");
         const closedDelta=st.closedWon-beforeClosed;
 
         if(miracle){
           if(closedDelta>0){
             st.manager=clamp(st.manager+8,0,100);
             st.stress=clamp(st.stress+4,0,100);
-            st=log(st,"🌪️ Against all odds, the chaos campaign lands. Manager +8, Stress +4.");
+            st=log(st,"🌪️ Chaos worked. +8 manager, +4 stress.");
           }else{
             st.manager=clamp(st.manager-4,0,100);
             st.stress=clamp(st.stress+6,0,100);
-            st=log(st,"🤕 Chaos generated noise but no signatures. Manager -4, Stress +6.","bad");
+            st=log(st,"🤕 All noise, no ink. -4 manager, +6 stress.","bad");
           }
         }else{
           st=killDeals(st,d=>d.stage>=3,0.55);
@@ -2047,38 +4274,40 @@
           st.stress=clamp(st.stress+8,0,100);
           st.reputation=clamp(st.reputation-4,0,100);
           if(closedDelta<=0){
-            st=log(st,"📛 Your reckless push torches late-stage trust. Manager -8, Rep -4, Stress +8.","bad");
+            st=log(st,"📛 Pipe torched. -8 manager, -4 rep, +8 stress.","bad");
           }else{
             st.manager=clamp(st.manager+2,0,100);
             st.reputation=clamp(st.reputation+1,0,100);
-            st=log(st,"😬 You closed something, but cooked most of the late-stage pipe. Net Manager -6, Rep -3.","warn");
+            st=log(st,"😬 Got ink, cooked the pipe. Net -6 manager, -3 rep.","warn");
           }
         }
         st=checkRepo(st);
+        st=checkBurnout(st);
         setS(st);
       };
 
       const opportunisticDisabled=(
-        s.slots<=0 || s.fired || s.burnedOut || s.win || s.missed || s.repo || !hasLateDeal
+        s.energy<10 || s.slots<=0 || s.fired || s.burnedOut || s.win || s.missed || s.repo || !hasLateDeal
       );
 
       return(
         <>
           <div className="grid">
             <div className="panel">
-              <div className="row between" style={{marginBottom:8}}>
+              <div className="row between wrap" style={{marginBottom:8}}>
                 <h2>Quarter Map</h2>
-                <div className="row">
+                <div className="row wrap">
                   <span className="kbd">Week {weekInQuarter}/{QUARTER_WEEKS}</span>
                   <span className="kbd">Turn {s.week}</span>
                   <span className="kbd">Slots {s.slots}/{s.maxSlots}</span>
                   <span className="kbd">Run {s.runId.slice(0,5)}</span>
-                  <button className="pill-btn" onClick={()=>setShowHelp(true)}>Stats Help</button>
+                  <button className="pill-btn" onClick={()=>setShowHelp(true)}>Rules</button>
                 </div>
               </div>
               <div className="stats">
                 <Stat label="Energy" num={s.energy} fmt={v=>`${Math.round(v)}/100`} barValue={s.energy} barKind={s.energy>50?"good":s.energy>25?"warn":"bad"} />
-                <Stat label="Stress" num={s.stress} fmt={v=>`${Math.round(v)}/100`} barValue={s.stress} barKind={s.stress<40?"good":s.stress<70?"warn":"bad"} />
+                <Stat label="Stress" num={s.stress} fmt={v=>`${Math.round(v)}/100`} barValue={s.stress} barKind={s.stress<40?"good":s.stress<70?"warn":"bad"}
+                  sub={stressSub} />
                 <Stat label="Cash" num={s.cash} fmt={money} sub="Salary + commission" />
                 <Stat label="Pipeline" num={s.pipeline} fmt={money} sub={`${s.deals.length} live deals`} />
                 <Stat label="Closed (Q)" num={s.closedQuarter} fmt={money} sub={`${pct(s.closedQuarter/s.quota)}% of quota • Pace ${pacePercent}%`} />
@@ -2100,6 +4329,7 @@
                   {s.modifiers.discount>0 && <span className="badge">🧾 Discount {pct(s.modifiers.discount)}%</span>}
                   {s.modifiers.conversion!==0 && <span className="badge">🎲 Conv Mod {s.modifiers.conversion>0?"+":""}{pct(s.modifiers.conversion)}%</span>}
                   {s.restedThisWeek && <span className="badge">🧘 Rested</span>}
+                  {s.coffeesThisWeek>0 && <span className="badge">☕×{s.coffeesThisWeek}</span>}
                   {s.repo && <span className="badge">🧥 Jacket Repo’d</span>}
                 </div>
                 <div className="row right">
@@ -2108,7 +4338,7 @@
                     onClick={tryOpportunisticClose}
                     disabled={opportunisticDisabled}
                   >
-                    Hail-Mary Close (10 Energy, 1 Slot, High Risk)
+                    🧪 Hail-Mary (10 Energy • 1 Slot • Risky)
                   </button>
                   <button
                     className="btn primary"
@@ -2129,7 +4359,7 @@
                     <DealCard key={d.id} deal={d} />
                   ))
                 ) : (
-                  <div className="tiny">No active deals yet. Phone go brr.</div>
+                  <div className="tiny">No deals. Start dialing.</div>
                 )}
               </div>
               <div className="sep"></div>
@@ -2142,7 +4372,7 @@
                     </p>
                   ))
                 ) : (
-                  <p className="muted">Logs appear here once you start making noise.</p>
+                  <p className="muted">Nothing yet. Quota’s waiting.</p>
                 )}
               </div>
             </div>
@@ -2150,7 +4380,8 @@
 
           <Modal
             open={showHelp}
-            title="How This Mess Works"
+            title="How It Works"
+            onDismiss={()=>setShowHelp(false)}
             actions={[
               {
                 label:"Got it",
@@ -2159,16 +4390,18 @@
               }
             ]}
           >
-            <p className="tiny"><strong>Energy</strong> limits how many big actions you can take each week. Most actions consume it; you get a small refill at week end.</p>
-            <p className="tiny"><strong>Stress</strong> reduces your close rates and can trigger burnout at 100. Coffee and chaos raise it; rest and weekends bring it down.</p>
-            <p className="tiny"><strong>Cash</strong> comes from salary and commission, but rent and events burn it. Go too negative and collections repo your jacket.</p>
-            <p className="tiny"><strong>Pipeline</strong> is total ACV of all active deals. Where they sit in the funnel depends on which actions you run each week.</p>
-            <p className="tiny"><strong>Closed (Q)</strong> tracks revenue this quarter. Hitting quota and staying close to the Week/13 pace line keeps you safer from surprise exits.</p>
-            <p className="tiny"><strong>Manager</strong> nudges close chance and heavily influences PIPs and firing risk. Emailing without calling can ding it.</p>
-            <p className="tiny"><strong>Reputation</strong> helps random events break your way, slightly boosts close rates, and affects how big deals can get.</p>
-            <p className="tiny"><strong>Product</strong> reflects how cursed the stack is. Low product makes demos fizzle and prospects defect to competitors.</p>
-            <p className="tiny"><strong>Skills</strong> (Prospecting, Discovery, Demo, Negotiation) improve success for their motions and feed into close math.</p>
-            <p className="tiny"><strong>Modifiers</strong> like Conversion Mod and Discount are temporary buffs/nerfs from events and coherent weeks.</p>
+            <p className="tiny"><strong>Energy</strong> fuels actions. Small refill at week end.</p>
+            <p className="tiny"><strong>Stress</strong> hurts close rates. 80+ can burn you out at week end; 100 is instant.</p>
+            <p className="tiny"><strong>Quad Shot</strong> hits harder each shot that week. Shot 3+ can stop your heart; a shot to 100 stress will. Each one: +{CRASH_PER_SHOT} stress at week end, weaker Recharge.</p>
+            <p className="tiny"><strong>CRM Cleanup</strong> weekly: prunes dead leads, +manager, freezes warnings, trims fire odds. Boss may nuke a good deal.</p>
+            <p className="tiny"><strong>Cash</strong> is salary and commission in, rent out. At -$1,500 the jacket goes.</p>
+            <p className="tiny"><strong>Pipeline</strong> is the value of live deals. Actions move them down the funnel.</p>
+            <p className="tiny"><strong>Closed (Q)</strong> is revenue this quarter. Behind pace from week 5? Warnings, or a surprise exit.</p>
+            <p className="tiny"><strong>Manager</strong> nudges close odds, drives PIPs and firing. Emails without calls annoy them.</p>
+            <p className="tiny"><strong>Reputation</strong> grows deal size and nudges close odds.</p>
+            <p className="tiny"><strong>Product</strong> is how cursed the stack is. Low product sinks demos and closes.</p>
+            <p className="tiny"><strong>Skills</strong> boost their matching action and feed the close math.</p>
+            <p className="tiny"><strong>Modifiers</strong> are short-term close and discount effects from events and full-funnel weeks.</p>
           </Modal>
 
           <Modal
@@ -2178,7 +4411,7 @@
               label:opt.label,
               className:opt.className||"ghost",
               onClick:()=>{
-                let ns=opt.action({...s});
+                let ns=checkBurnout(opt.action({...s}));
                 setS(ns);
                 setPending(null);
               }
@@ -2195,7 +4428,9 @@
                 label:"New Run",
                 className:"success",
                 onClick:()=>{
+                  const a=AUDIO(); if(a){ a.hush(); a.play("newgame"); a.say("newrun",{cooldown:3000}); }
                   setS(newGame());
+                  setPending(null); // FIX: an event that fired on the final week no longer leaks into the next run
                   setOver(null);
                 }
               }
@@ -2203,10 +4438,21 @@
           >
             <p className="tiny">{over?.body}</p>
             <Cutscene
-              frames={CUTSCENES[over?.type || "club"]}
+              type={over?.type || "club"}
               speed={asciiSpeed}
               play={!!over}
+              meta={over?.meta}
+              ctrlRef={sceneRef}
             />
+            {REDUCED_MOTION && over && window.TST_SCENES && window.TST_SCENES.SCENES[over.type] && (
+              <p className="tiny scene-note">{window.TST_SCENES.summaryFor(over.type,over.meta)}</p>
+            )}
+            {!REDUCED_MOTION && window.TST_SCENES && (
+              <div className="row right scene-ctl">
+                <button className="pill-btn" onClick={()=>{ if(sceneRef.current)sceneRef.current.skip(); }}>Skip to end</button>
+                <button className="pill-btn" onClick={()=>{ if(sceneRef.current)sceneRef.current.replay(); }}>Replay</button>
+              </div>
+            )}
             <div className="row between" style={{marginTop:6}}>
               <div className="badge-row">
                 <span className="badge">Total Closed: {money(s.closedWon)}</span>

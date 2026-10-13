@@ -1,5 +1,41 @@
 # Changelog
 
+## v1.15 — CRM Cleanup, lethal caffeine, anime cutscenes
+
+### Added
+- **🧹 CRM Cleanup**, the 12th action (once a week, 15 energy): prunes dead leads, raises manager trust, and freezes this week's mid-quarter warning escalation while trimming firing odds. 15% chance (25% with a cold manager) the manager says "close that out" and a good mid-funnel deal is gone.
+- Anime-style camera for every ending: push-ins, Dutch tilt, tracking shots with parallax, whip pans with ASCII smear, slash-cut wipes, impact frames (max 2 per second), focus and speed lines, and block-letter title cards (CLUB, FIRED, BURNOUT, MISSED, REPO). Burnout has a caffeine variant (CARDIAC, flatline).
+
+### Changed
+- **Caffeine and stress now end runs.** Each Quad Shot in a week costs more stress (12, 18, 24...) for less energy; shot 3+ can stop your heart, and any shot that takes stress to 100 will. Caffeinated weeks crash +13 stress per shot at week end, skip the weekly recovery, and weaken Recharge. Stress 80+ rolls for burnout at week end; any spike to 100 mid-week burns out on the spot. The Stress card and Quad Shot button show the crash and heart risk before you commit.
+- Simulated balance (300 runs per play style): no-coffee play 0% burnout (unchanged); one coffee a week ~50% burnout (was 0%); coffee spam 100% (was 5%).
+- Boot screen cut from ~8 s to ~2.3 s from click to playable: logo slam, quota bar stalls at 74%, error, clock in. One "press any key"; M mutes during boot.
+- Announcer, activity log, event, help ("How It Works", opened from **Rules**) and ending copy rewritten shorter: log lines average 39 characters (was 64), every PA line is six words or fewer. Sounds and PA lines still fire on the same events.
+- Endings record their cause in state instead of parsing log text.
+
+### Fixed
+- Ending cutscene clipped its right-hand columns at some widths (font sizing measured a transformed box).
+- An event dialog could stack on top of the ending dialog.
+- Mid-week stress spikes from Hail-Mary, events and reviews no longer skip burnout.
+- Big-close PA line never played in locales without comma thousands separators.
+- Main panel overflowed sideways on phones; Hail-Mary button wrapped and stayed clickable below 10 energy.
+- A late Skip tap on the boot screen no longer lands on a game action; holding a key no longer skips the boot.
+- Help closes with Esc; dialogs are labelled for screen readers; toasts show above open dialogs.
+
+## v1.14 — Sound, PA announcer, ASCII scene engine
+
+### Added
+- Web Audio sound engine (synthesized, no samples): every log line maps to a sound effect; stress at 70+ adds a heartbeat that speeds up as it climbs.
+- Office PA announcer (browser speech synthesis) for week milestones, big events and endings.
+- Header controls: Sound on/off (`M` toggles), Announcer on/off, volume slider. Settings persist.
+- ASCII scene engine for the five endings (President's Club, Fired, Burnout, Barely Missed, Repo'd): multi-beat storyboards with particles, captions, glitch and shake cues, plus Skip and Replay. The old two-frame flipbook remains as a fallback.
+- SHITCORP OS boot screen, shown once per tab session.
+- In-page toast replaces `alert()` for Save/Load messages.
+
+### Fixed
+- An event that fired on the final week no longer leaks into the next run.
+- Dialogs no longer run off short screens.
+
 ## v1.13 — 2026-09-20
 
 ### Fixed
