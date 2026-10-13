@@ -5,7 +5,10 @@
 ### Added
 - The Rules now open with an onboarding memo from Shitcorp People & Culture: the next disruptor in SaaS, culture as glue, a comp plan that makes gorillionaires, and your new title, Associate Account Executive. Then the confetti cannon fizzles and HR stamps **SDR\*** over the title. Footnote: admin and streamlining purposes.
 - The gag replays every time you open the Rules. Click the memo to skip to the stamp. Reduced motion shows the stamped memo, no animation.
-- New sounds: a deflating party horn and HR's rubber stamp. The PA welcomes you once per visit.
+- New sounds: a deflating party horn and HR's rubber stamp. The PA welcomes you once per visit (reduced motion included). Close the Rules before it speaks and it waits for next time.
+
+### Fixed
+- Dialogs on phones and in landscape no longer open scrolled to the bottom: the action buttons stay pinned at the bottom of the dialog.
 
 ## v1.15 — CRM Cleanup, lethal caffeine, anime cutscenes
 
