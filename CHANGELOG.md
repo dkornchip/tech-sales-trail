@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.18 — Metal endings, HR does the firing
+
+### Changed
+- The "Burnout" and "Cardiac" endings are gone. Dying to coffee is now **ASCENSION**: the chair starts to rattle, the desk ignites, and you ride a column of espresso fire up through the drop ceiling, the plenum and the roof, past drifting Slack pings, into orbit over the curve of the Earth. Cut to the office: a smoking crater in the carpet, a Post-it on the monitor ("OOO. Forever.") and one unread. Dying to stress is **MELTDOWN**: the desk is a reactor control room, core temp climbs to quota, containment degrades, the geiger readout fills, the monitor glass cracks, the room runs to slag, and the blue screen reads `Stop code: SOUL_NOT_FOUND`.
+- Both endings have their own scores: a sub-bass rumble, ignition, a liftoff roar, ceiling tiles crashing, geiger clicks, glass, slag hiss, and a stinger each. No sirens anywhere.
+- **Terminations are read by HR** in a female voice, calmly: "As of today, you're no longer an employee of this organization." / "Thanks for coming to this meeting. Today is your last day with Shitcorp." / "We've reviewed your performance and decided to part ways." The badge-reader buzzers are gone.
+- **Recharge** luck is now 0–50%. Roll over 40% and your manager approves a trip (Japan, Whistler, Cancun, Thailand or Dubai), shown as a badge in the status row for the rest of the run.
+- Log lines and PA: "🚀 Shot #3. Liftoff.", "☢️ Stress 100. Meltdown.", "Rep has left the atmosphere.", "Containment failed. Evacuate the pod."
+
 ## v1.17 — Announcer on Windows, luckier naps, gentler coffee
 
 ### Fixed
