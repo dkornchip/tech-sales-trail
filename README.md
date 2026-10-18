@@ -1,4 +1,4 @@
-# Tech Sales Trail (v1.16)
+# Tech Sales Trail (v1.17)
 
 A single-file React-powered sales quarter simulator where you struggle against pipeline decay, burnout, PIPs, and random SaaS chaos. Your only goal: survive Q1 without being fired.
 
