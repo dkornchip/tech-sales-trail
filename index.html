@@ -1121,7 +1121,7 @@ __/_|__
   }
   // one-line description (aria-label, reduced-motion note); sc.summaryBy[meta.cause] wins over sc.summary
   function summaryFor(type,meta){
-    var sc = SCENES[type]; if(!sc) return "";
+    var sc = SCENES[sceneKey(type,meta)]; if(!sc) return "";
     return (sc.summaryBy && meta && sc.summaryBy[meta.cause]) || sc.summary || "";
   }
 
@@ -1229,9 +1229,9 @@ __/_|__
     dur: 8800,
     cap: { title:"YOU'RE DONE", a:["Badge: deactivated.","HR took the dongles."], b:["\u201cDifferent direction.\u201d","(Not you.)"], tTitle:200, tA:1100, tB:6300, k:"k-r", rule:"k-r-d" },
     cues: [
-      {t:760, sfx:"beep"}, {t:960, sfx:"denied"}, {t:960, impact:110}, {t:960, lines:"radial", ms:720, fx:24, fy:5}, {t:960, zoom:1.15, ms:620, fx:24, fy:5},
+      {t:960, sfx:"thud"}, {t:960, impact:110}, {t:960, lines:"radial", ms:720, fx:24, fy:5}, {t:960, zoom:1.15, ms:620, fx:24, fy:5},
       {t:960, glitch:320}, {t:960, shake:220},
-      {t:1520, sfx:"denied"}, {t:2050, sfx:"drop"},
+      {t:2050, sfx:"drop"},
       {t:2410, whip:"r", ms:380}, {t:2410, sfx:"fwip"},
       {t:5500, slash:340}, {t:5500, sfx:"shing"}, {t:5500, letterbox:true},
       {t:6050, sfx:"doors"}, {t:6600, sfx:"elevator"},
@@ -1350,81 +1350,217 @@ __/_|__
   };
 
   /* ---------------- BURNOUT: stress spikes, desk melts, blue screen ---------------- */
-  function drawDesk(g,t,p,bpm,caf){
+  // the open-plan desk, three ways: STRESS meter (plain), HEART meter with extra cups (caf), or the reactor room
+  // (mode "core": CORE TEMP, containment strip, geiger readout). mode "plain" skips the meter. jit rattles the rep.
+  function drawDesk(g,t,p,bpm,caf,mode,jit){
+    var core = mode === "core";
     g.spr(2,1,SPR.monitor,"k-d");
     var warn = p >= 85;
-    g.text(4,2,"Q1 FORECAST","k-c");
-    g.text(4,3,warn ? (blink(t,180) ? "> !!!!!!!" : "> ???????") : "> commit?","k-w");
-    g.text(4,4,"> ????","k-d");
-    g.spr(22,3,SPR.worker,"k-w");
+    g.text(4,2,core ? "REACTOR Q1" : "Q1 FORECAST","k-c");
+    g.text(4,3,warn ? (blink(t,180) ? "> !!!!!!!" : "> ???????") : (core ? "> rods: ok" : "> commit?"),"k-w");
+    g.text(4,4,core ? "> coolant: none" : "> ????","k-d");
+    var wx = 22 + (jit ? Math.round(rnd(-1,1)) : 0);
+    g.spr(wx,3,SPR.worker,"k-w");
     var face = p < 75 ? "(o_o)" : p < 88 ? "(O_O)" : p < 100 ? "(@_@)" : "(x_x)";
-    g.text(23,3,face,p >= 88 ? "k-r" : "k-w");
-    if(p >= 80){ g.set(21,3,blink(t,260) ? "'" : " ","k-c"); g.set(29,4,blink(t,330) ? "'" : " ","k-c"); }
-    if(p >= 90){ var sy = 2 - (Math.floor(t/160)%2); g.text(24,sy,blink(t,160) ? "~ ~" : " ~ ","k-d"); }
+    g.text(wx+1,3,face,p >= 88 ? "k-r" : "k-w");
+    if(p >= 80){ g.set(wx-1,3,blink(t,260) ? "'" : " ","k-c"); g.set(wx+7,4,blink(t,330) ? "'" : " ","k-c"); }
+    if(p >= 90){ var sy = 2 - (Math.floor(t/160)%2); g.text(wx+2,sy,blink(t,160) ? "~ ~" : " ~ ","k-d"); }
     g.text(18,6,"c[_]","k-y");
     g.text(18,5,blink(t,400) ? " ) " : " ( ","k-d");
-    if(caf){ g.text(13,6,"c[_]","k-y"); g.text(31,6,"c[_]","k-y"); }
+    if(caf){ g.text(13,6,"c[_]","k-y"); g.text(31,6,"c[_]","k-y"); if(p >= 90) g.text(8,6,"c[_]","k-y"); }
     g.spr(0,7,SPR.deskTop,"k-br");
-    // stress meter
+    if(mode === "plain") return;
+    // the meter
     var w = 20, f = Math.round(w*p/100);
     var mk = p < 70 ? "k-y" : p < 90 ? "k-o" : (blink(t,140) ? "k-r k-bold" : "k-r");
-    g.text(39,2,caf ? "HEART" : "STRESS","k-d");
+    var label = core ? "CORE TEMP" : caf ? "HEART" : "STRESS";
+    g.text(39,2,label,"k-d");
     g.text(39,3,"["+rep("\u2588",f)+rep("\u2591",w-f)+"]",mk);
-    g.text(46,2,Math.round(p)+"%",mk); // next to the label, so heartbeat push-ins never crop it
-    var flat = caf && t >= 2400, beatMs = 60000/bpm;
-    g.text(39,5,flat ? "BPM ---" : "BPM "+Math.round(bpm),flat ? "k-r k-bold" : "k-d");
-    if(!flat) g.text(48,5,(t % beatMs) < beatMs*0.35 ? "<3" : "  ","k-r");
-    // ECG trace, newest sample on the right; the caffeine ending flatlines it
+    g.text(40+label.length,2,Math.round(p)+"%",mk); // next to the label, so push-ins never crop it
+    if(core){
+      var cs = p >= 100 ? "FAILED" : p >= 80 ? "DEGRADED" : "NOMINAL";
+      g.text(39,5,"CONTAINMENT","k-d");
+      g.text(51,5,cs,p >= 100 ? (blink(t,150) ? "k-r k-bold" : "k-r") : p >= 80 ? (blink(t,300) ? "k-o" : "k-o-d") : "k-g");
+      var gl = Math.round(p >= 100 ? 22 : 4 + 18*prog(p,60,100));
+      for(var q=0;q<22;q++) g.set(39+q,6,q < gl ? (Math.random() < .7 ? "|" : "!") : ".",q < gl ? (p >= 90 ? "k-r" : "k-o") : "k-d");
+      return;
+    }
+    var beatMs = 60000/bpm;
+    g.text(39,5,"BPM "+Math.round(bpm),"k-d");
+    g.text(48,5,(t % beatMs) < beatMs*0.35 ? "<3" : "  ","k-r");
+    // ECG trace, newest sample on the right
     for(var i=0;i<22;i++){
       var tau = t-(21-i)*26, ph = Math.floor(mod(tau,beatMs)/26);
-      var ch = (caf && tau >= 2400) ? "_" : ph === 0 ? "/" : ph === 1 ? "\\" : "_";
-      g.set(39+i,6,ch,(caf && tau >= 2400) || p >= 90 ? "k-r" : "k-g");
+      g.set(39+i,6,ph === 0 ? "/" : ph === 1 ? "\\" : "_",p >= 90 ? "k-r" : "k-g");
     }
   }
-  SCENES.burnout = {
-    dur: 8000,
-    cap: { title:"(x_x) BURNOUT", a:["Neurons filed a ticket.","System on fire."], b:["You hit numbers.","Your soul did not."], tTitle:200, tA:2500, tB:5300, k:"k-o", rule:"k-o-d" },
-    capBy: { caffeine: { title:"(x_x) CARDIAC", a:function(m){ return [m.shots > 1 ? "Shot #"+m.shots+"." : "One shot too many.","Heart said no."]; }, b:["Mug still warm.","You, less so."] } },
+  // the burnout ending has two storyboards; which one plays depends on how the rep went
+  function sceneKey(type,meta){
+    if(type === "burnout") return meta && meta.cause === "caffeine" ? "ascension" : "meltdown";
+    return SCENES[type] ? type : "club";
+  }
+
+  /* ---------------- ASCENSION (caffeine): the desk ignites and the rep rides espresso fire into orbit ---------------- */
+  var ASC = { ign:2300, cut:5400 };
+  var PINGS = [[6,-9,"(1)"],[40,-12,"@matt"],[22,-16,"(3)"],[52,-19,"ping"],[12,-23,"(99+)"],[34,-27,"1:1?"],[46,-31,"(2)"],[8,-35,"re: re: re:"]];
+  SCENES.ascension = {
+    dur: 8600,
+    cap: { title:"ASCENSION", a:function(m){ return [m.shots > 1 ? "Shot #"+m.shots+"." : "One shot too many.","Orbit achieved."]; }, b:["OOO. Forever.","Badge in low orbit."], tTitle:200, tA:2500, tB:6000, k:"k-y", rule:"k-y-d" },
     cues: [
       {t:0, sfx:"heartbeat"}, {t:0, pulse:.03, ms:380}, {t:650, sfx:"heartbeat"}, {t:650, pulse:.035, ms:360},
-      {t:1200, sfx:"heartbeat"}, {t:1200, pulse:.04, ms:340}, {t:1650, sfx:"heartbeat"}, {t:1650, pulse:.045, ms:300},
-      {t:2000, sfx:"heartbeat"}, {t:2000, pulse:.05, ms:260}, {t:2260, sfx:"heartbeat"}, {t:2260, pulse:.055, ms:240},
-      {t:2400, sfx:"alarm", notCause:"caffeine"}, {t:2400, sfx:"flatline", cause:"caffeine"},
-      {t:2500, slash:320}, {t:2500, sfx:"shing"},
-      {t:2560, sfx:"meltdown"}, {t:3050, sfx:"fire"},
-      {t:4200, sfx:"glitch"}, {t:4200, glitch:460}, {t:4200, shake:320},
-      {t:4600, sfx:"bsod"},
-      {t:4900, sfx:"stingerBurnout", key:true}, {t:4900, card:"BURNOUT", ms:1400}, {t:4900, impact:100},
-      {t:5050, say:"burnout", key:true}
+      {t:1200, sfx:"heartbeat"}, {t:1200, pulse:.04, ms:340}, {t:1200, sfx:"rumble"}, {t:1650, sfx:"heartbeat"}, {t:1650, pulse:.045, ms:300},
+      {t:1950, sfx:"heartbeat"}, {t:1950, pulse:.05, ms:260}, {t:1950, shake:220}, {t:2180, sfx:"heartbeat"}, {t:2180, pulse:.06, ms:220},
+      {t:2300, sfx:"ignition"}, {t:2300, impact:120}, {t:2300, slam:1.4, ms:520, fx:24, fy:4}, {t:2300, lines:"radial", ms:720, fx:24, fy:5, n:40}, {t:2300, shake:340},
+      {t:2380, sfx:"liftoff"}, {t:2450, letterbox:true},
+      {t:3080, sfx:"ceiling"}, {t:3080, impact:90}, {t:3080, shake:260}, {t:3080, lines:"radial", ms:450, fx:24, fy:3, n:22},
+      {t:3420, sfx:"ceiling"}, {t:3420, shake:200},
+      {t:3900, sfx:"ping"}, {t:4250, sfx:"ping"}, {t:4650, sfx:"sparkle"},
+      {t:5400, slash:340}, {t:5400, sfx:"shing"}, {t:5400, letterbox:false},
+      {t:5900, sfx:"stingerAscend", key:true}, {t:5900, card:"ASCENSION", ms:1500, k:"k-y"}, {t:5900, impact:100}, {t:5900, lines:"radial", ms:900},
+      {t:6100, say:"burnout", key:true}
     ],
     cam: [
       {t:0,    x:2,  y:-0.5, z:1.08, r:0},
-      {t:1500, x:5,  y:-1.5, z:1.22, r:-1.5, e:"l"},  // face and readout share the frame through the climb
-      {t:2300, x:5,  y:-2,   z:1.24, r:-2,   e:"l"},
-      {t:2450, x:-7, y:-3.5, z:1.7,  r:-4.5, e:"i"},
-      {t:2500, x:0.6,y:0,    z:1.08, r:0,    e:"cut"},
-      {t:4150, x:0,  y:1.5,  z:1.24, r:2.5},
-      {t:4600, x:0,  y:0,    z:1,    r:0,    e:"cut"},
-      {t:7800, x:-1, y:0,    z:1.05, r:0,    e:"l"}
+      {t:1500, x:5,  y:-1.5, z:1.22, r:-1.5, e:"l"},
+      {t:2300, x:5,  y:-2,   z:1.3,  r:-3,   e:"l"},
+      {t:2650, x:0,  y:-1,   z:1.1,  r:0,    e:"o"},
+      {t:3300, x:0,  y:-1.5, z:1.14, r:2.5},
+      {t:4100, x:0,  y:-0.5, z:1.12, r:-2.5},
+      {t:4700, x:0,  y:0.5,  z:1.04, r:0},
+      {t:5400, x:0,  y:0,    z:1.06, r:0,    e:"cut"},
+      {t:5900, x:-6, y:-3,   z:1.4,  r:-1},
+      {t:7700, x:-6, y:-3,   z:1.4,  r:-1},
+      {t:8600, x:-1, y:-1,   z:1.1,  r:0}
     ],
-    idleGlitch: 5200,
-    summary: "Stress hits 100%, the desk melts, blue screen.",
-    summaryBy: { caffeine: "Heart races, flatlines, blue screen." },
+    drift: {x:.6, z:.015, p:8000},
+    summary: "The desk ignites and you ride a column of espresso fire through the ceiling into orbit. A crater and a Post-it remain.",
     draw: function(g,c){
-      var t = c.t, st = c.st, caf = !!(c.meta && c.meta.cause === "caffeine");
-      if(t < 2500){
-        var p = clamp(61 + 39*Math.pow(prog(t,0,2300),2),0,100);
-        drawDesk(g,t,p,88 + 104*Math.pow(prog(t,0,2300),2),caf);
+      var t = c.t, st = c.st, MX = 24, MY = 3; // where the rep stays framed during the climb
+      var clearChair = function(gr){ gr.text(23,3,"     ",""); gr.text(22,4,"       ",""); gr.text(22,5,"       ",""); gr.text(22,6,"       ",""); };
+      if(t < ASC.ign){
+        var p = clamp(61 + 39*Math.pow(prog(t,0,2200),2),0,99.4); // (@_@) right up to ignition
+        drawDesk(g,t,p,88 + 104*Math.pow(prog(t,0,2200),2),true,null,p >= 86);
+        if(p >= 92 && Math.random() < .5) g.set(Math.round(rnd(19,30)),Math.round(rnd(5,6)),pick(["*","'","."]),"k-y"); // sparks: the chair is rattling
         return;
       }
-      if(t < 4600){
-        // melt: render the frozen desk, then slide each column down at its own pace
-        if(!st.melt){
-          st.melt = new Grid(); drawDesk(st.melt,2500,100,192,caf);
-          st.delay = []; st.speed = [];
-          for(var i=0;i<COLS;i++){ st.delay.push(rnd(0,700)); st.speed.push(rnd(95,240)); }
+      if(t < ASC.cut){
+        // vertical tracking shot: the camera climbs with the rep while the office, the ceiling, the roof, the sky
+        // and finally space scroll DOWN past him. World row wy lands on screen row wy + oy.
+        var tau = (t-ASC.ign)/1000, oy = tau < 2.3 ? 3*tau + 4.5*tau*tau : 30.7 + 4*(tau-2.3);
+        var sky = function(wy){ return Math.round(wy + oy); };
+        if(!st.stars){ st.stars = []; for(var s=0;s<70;s++) st.stars.push([Math.floor(rnd(0,COLS)),Math.floor(rnd(-70,-24)),rnd(0,1)]); }
+        for(var si=0;si<st.stars.length;si++){ var S = st.stars[si], y0 = sky(S[1]); if(y0 >= 0 && y0 < ART && (S[2] < .5 || blink(t+si*97,700))) g.set(S[0],y0,S[2] < .25 ? "." : S[2] < .6 ? "+" : "*","k-d"); }
+        var clouds = [[4,-9],[44,-11],[20,-14],[52,-17],[8,-20],[36,-22]];
+        for(var ci=0;ci<clouds.length;ci++){ var cl = clouds[ci], cy = sky(cl[1]), cx = Math.round(cl[0] + Math.sin(t/900+ci)*2); if(cy > -3 && cy < ART) g.sprO(cx,cy,SPR.cloud,"k-d"); }
+        for(var pi=0;pi<PINGS.length;pi++){ var P = PINGS[pi], py = sky(P[1]); if(py >= 0 && py < ART) g.text(P[0]+Math.round(Math.sin(t/400+pi)*1.5),py,P[2],blink(t+pi*131,500) ? "k-m" : "k-p"); }
+        // the roof (wy -6) and the plenum (wy -4..-3)
+        var ry = sky(-6), roofHole = oy >= 8.3;
+        if(ry >= 0 && ry < ART){ g.tile(ry,"/\\/\\/\\/\\",0,"k-d"); if(roofHole){ g.text(MX-3,ry,"\\         /","k-w"); g.text(MX-2,ry,"         ",""); } if(ry-1 >= 0) g.text(50,ry-1,"[HVAC]","k-d"); }
+        var py2 = sky(-4); if(py2 >= 0 && py2 < ART) g.tile(py2,"___|___|___|",0,"k-d");
+        var py3 = sky(-3); if(py3 >= 0 && py3 < ART) g.tile(py3,"  ~  ~    ~ ",3,"k-b-d");
+        // the drop ceiling (wy -2): intact until the rep punches through at oy 5
+        var cy2 = sky(-2), hole = oy >= 4.3; // the hole opens as his head reaches the tiles
+        if(cy2 >= 0 && cy2 < ART){
+          for(var x=0;x<COLS;x++){ if(hole && x >= MX-3 && x <= MX+7) continue; g.set(x,cy2,x%8 === 0 ? "+" : "=","k-d"); }
+          if(hole){ g.set(MX-4,cy2,"\\","k-w"); g.set(MX+8,cy2,"/","k-w"); }
         }
-        var m = st.melt, el = t-2500;
+        if(hole && !st.tiles){ st.tiles = []; for(var ti=0;ti<9;ti++) st.tiles.push({x:MX+rnd(-3,8),y:-2,vx:rnd(-6,6),vy:rnd(-3,3),life:1600,ch:pick(["=","#","+","="]),k:"k-d"}); }
+        if(st.tiles){ for(var tj=0;tj<st.tiles.length;tj++){ var T = st.tiles[tj]; T.life -= c.dt; T.vy += 14*c.dt/1000; T.x += T.vx*c.dt/1000; T.y += T.vy*c.dt/1000; if(T.life > 0) g.set(T.x,sky(T.y),T.ch,T.k); } }
+        // the office (wy 0..12), falling away below
+        var oyr = Math.round(oy);
+        if(oyr < ART+2){
+          if(!st.office){
+            var off = st.office = new Grid(); drawDesk(off,ASC.ign,61,88,true,"plain",false); clearChair(off);
+            var heads = [[6,9,"(O_O)"],[48,9,"(O_O)"],[56,10,"(o_o)"]];
+            for(var h=0;h<heads.length;h++){ off.text(heads[h][0],heads[h][1],heads[h][2],"k-w"); off.text(heads[h][0]-1,heads[h][1]+1,"|=====|","k-b"); }
+            off.text(MX-4,8,"(  ~~~  )","k-r"); off.text(0,12,rep("_",COLS),"k-d");
+          }
+          for(var y=0;y<ART;y++){ var ty = y+oyr; if(ty < 0 || ty >= ART) continue; for(var x2=0;x2<COLS;x2++){ var ch2 = st.office.get(x2,y); if(ch2 !== " ") g.set(x2,ty,ch2,st.office.getK(x2,y)); } }
+        }
+        // the rep, the chair, the plume
+        var face = tau < .4 ? "(O_O)" : tau < 2.3 ? "(^o^)" : "(-_-)";
+        g.sprO(MX,MY,[" "+face," _/|\\_","  [=]"],"k-w");
+        var L = Math.round(3 + 4*clamp(tau/.6,0,1)) - (tau > 2.3 ? 2 : 0);
+        for(var fi=0;fi<L;fi++){
+          var fy2 = MY+3+fi, half = Math.max(1,Math.round(2.5-fi*.35)), fk = fi < 2 ? "k-w" : fi < 4 ? "k-y" : fi < 6 ? "k-o" : "k-r";
+          for(var fx=MX+2-half;fx<=MX+2+half;fx++) if(Math.random() < .85) g.set(fx,fy2,pick(["^","(",")","'","\"","|","^"]),fk);
+        }
+        st.ex = st.ex || [];
+        if(tau < 2.3) for(var k=0;k<3;k++) st.ex.push({x:MX+2+rnd(-2,2),y:MY+3+L,vx:rnd(-4,4),vy:rnd(10,22),life:rnd(400,800),ch:pick(["*",":","'","."]),k:pick(["k-o","k-r","k-y","k-d"])});
+        stepParts(st.ex,c.dt,g);
+        // vertical speed lines through empty cells while he's accelerating
+        if(tau > .25 && tau < 2.3){ for(var sl=0;sl<10;sl++){ var sx = (sl*7+Math.floor(t/90))%COLS, sy0 = Math.floor(mod(t/40+sl*5,ART+6))-3; for(var j=0;j<4;j++){ var yy = sy0+j; if(yy < 0 || yy >= ART) continue; var ii = yy*COLS+sx; if(g.ch[ii] === " "){ g.ch[ii] = j === 0 ? ":" : "|"; g.cl[ii] = "k-d"; } } } }
+        // the curve of the earth once he's up
+        if(tau > 2.3){ var ey = ART-1-(oy-30.7)*.5; for(var ex=0;ex<COLS;ex++){ var yy2 = Math.round(ey + Math.pow((ex-32)/32,2)*3); if(yy2 >= 0 && yy2 < ART) g.set(ex,yy2,"_","k-b"); } }
+        return;
+      }
+      // the office afterwards: a crater, a Post-it on the monitor, a growing unread count
+      drawDesk(g,ASC.cut,61,88,true,"plain",false); clearChair(g);
+      g.text(MX-4,7,"\\__( crater )__/","k-r"); g.text(MX-2,8," ~ ~ ~ ","k-d");
+      st.sm = st.sm || [];
+      if(Math.random() < (c.idle ? .35 : .7)) st.sm.push({x:MX+rnd(-2,4),y:6.2,vx:rnd(-1.5,1.5),vy:rnd(-5,-2.5),life:rnd(900,1500),ch:pick(["o","O","."]),k:"k-d",fade:400,ch2:"o"}); // starts above the crater label
+      stepParts(st.sm,c.dt,g);
+      g.text(3,2,"OOO. Forever. ","k-y k-bold"); g.text(3,3,"              ",""); g.text(3,4,"              ","");
+      g.text(4,4,blink(t,600) ? "(1) unread" : "(1)       ","k-m");
+      var heads2 = [[6,9,"(._.)"],[48,9,"(o_o)"],[56,10,"(-_-)"]];
+      for(var h2=0;h2<heads2.length;h2++){ g.text(heads2[h2][0],heads2[h2][1],heads2[h2][2],"k-w"); g.text(heads2[h2][0]-1,heads2[h2][1]+1,"|=====|","k-b"); }
+      g.text(0,12,rep("_",COLS),"k-d");
+    }
+  };
+
+  /* ---------------- MELTDOWN (stress): core temp hits quota, containment fails, the desk runs to slag ---------------- */
+  SCENES.meltdown = {
+    dur: 8200,
+    cap: { title:"MELTDOWN", a:["Core temp: quota.","Containment failed."], b:["Stop code:","SOUL_NOT_FOUND"], tTitle:200, tA:2600, tB:5400, k:"k-r", rule:"k-r-d" },
+    cues: [
+      {t:0, sfx:"rumble"}, {t:150, sfx:"geiger"}, {t:600, pulse:.03, ms:400}, {t:1100, pulse:.035, ms:380},
+      {t:1500, sfx:"geiger"}, {t:1550, pulse:.045, ms:340}, {t:1900, pulse:.05, ms:300}, {t:1900, shake:180},
+      {t:2200, pulse:.06, ms:260}, {t:2200, sfx:"rumble"},
+      {t:2400, sfx:"crack"}, {t:2400, impact:120}, {t:2400, zoom:1.22, ms:620, fx:49, fy:3}, {t:2400, lines:"radial", ms:720, fx:49, fy:3, n:36}, {t:2400, shake:320}, {t:2400, glitch:220},
+      {t:2600, slash:320}, {t:2600, sfx:"shing"},
+      {t:2650, sfx:"slag"}, {t:2700, sfx:"meltdown"}, {t:3150, sfx:"fire"}, {t:3700, sfx:"slag"},
+      {t:4300, sfx:"glitch"}, {t:4300, glitch:460}, {t:4300, shake:320},
+      {t:4700, sfx:"bsod"},
+      {t:5000, sfx:"stingerMelt", key:true}, {t:5000, card:"MELTDOWN", ms:1400, k:"k-r"}, {t:5000, impact:100}, {t:5000, lines:"radial", ms:900},
+      {t:5150, say:"burnout", key:true}
+    ],
+    cam: [
+      {t:0,    x:2,  y:-0.5, z:1.08, r:0},
+      {t:1500, x:5,  y:-1.5, z:1.22, r:-1.5, e:"l"},
+      {t:2350, x:5,  y:-2,   z:1.26, r:-2.5, e:"l"},
+      {t:2400, x:12, y:-3.5, z:1.6,  r:3,    e:"o"},
+      {t:2600, x:0.6,y:0,    z:1.08, r:0,    e:"cut"},
+      {t:4250, x:0,  y:1.5,  z:1.24, r:2.5},
+      {t:4700, x:0,  y:0,    z:1,    r:0,    e:"cut"},
+      {t:8000, x:-1, y:0,    z:1.05, r:0,    e:"l"}
+    ],
+    idleGlitch: 5200,
+    summary: "Core temp hits quota, containment fails, the desk melts to slag, blue screen.",
+    draw: function(g,c){
+      var t = c.t, st = c.st;
+      if(t < 2600){
+        var p = clamp(61 + 39*Math.pow(prog(t,0,2300),2),0,100);
+        drawDesk(g,t,p,0,false,"core",p >= 90);
+        st.steam = st.steam || [];
+        if(p >= 82 && Math.random() < .6) st.steam.push({x:rnd(2,36),y:7,vx:rnd(-1,1),vy:rnd(-4,-2),life:rnd(500,900),ch:pick(["~","}","{"]),k:"k-d"});
+        stepParts(st.steam,c.dt,g);
+        if(t >= 2400){
+          // the gauge overflows and the monitor glass goes
+          g.text(61,3,blink(t,120) ? "\u2588\u2588" : "\u2588 ","k-r k-bold");
+          if(!st.cracks){ st.cracks = []; for(var i=0;i<9;i++) st.cracks.push([Math.floor(rnd(3,16)),Math.floor(rnd(1,6)),pick(["\\","/","|","X"])]); }
+          for(var ck=0;ck<st.cracks.length;ck++){ var C = st.cracks[ck]; g.set(C[0],C[1],C[2],"k-w"); }
+          if(blink(t,100)) g.text(2,0,"!! CONTAINMENT FAILED !!","k-r k-bold");
+        }
+        return;
+      }
+      if(t < 4700){
+        // melt: render the frozen room, then slide each column down at its own pace, flames at the floor
+        if(!st.melt){
+          st.melt = new Grid(); drawDesk(st.melt,2600,100,0,false,"core",false);
+          st.delay = []; st.speed = [];
+          for(var i2=0;i2<COLS;i2++){ st.delay.push(rnd(0,700)); st.speed.push(rnd(95,240)); }
+        }
+        var m = st.melt, el = t-2600;
         for(var x=0;x<COLS;x++){
           var off = Math.max(0,Math.floor((el-st.delay[x])/st.speed[x]));
           for(var y=ART-1;y>=0;y--){
@@ -1434,26 +1570,27 @@ __/_|__
             if(off > 0 && y+off-1 >= 0 && g.get(x,y+off-1) === " " && (x+y)%3 === 0) g.set(x,y+off-1,"'","k-d");
           }
         }
+        // heat haze: a few rows shimmer sideways
+        if(el > 300) for(var hz=0;hz<3;hz++){ var ry = Math.floor(rnd(0,ART)), sh = Math.random() < .5 ? -1 : 1, o = ry*COLS, row = g.ch.slice(o,o+COLS), rk = g.cl.slice(o,o+COLS); for(var hx=0;hx<COLS;hx++){ var sx = hx-sh; g.ch[o+hx] = sx >= 0 && sx < COLS ? row[sx] : " "; g.cl[o+hx] = sx >= 0 && sx < COLS ? rk[sx] : ""; } }
         if(el > 400){
           var dens = clamp((el-400)/1400,0,1);
-          for(var fx=0;fx<COLS;fx++){
-            for(var fy=10;fy<=12;fy++){
-              var chance = dens*(fy === 12 ? .85 : fy === 11 ? .55 : .25);
-              if(Math.random() < chance) g.set(fx,fy,pick(["^","(",")","'","\"","^"]),pick(["k-r","k-o","k-y","k-o"]));
-            }
+          for(var fx=0;fx<COLS;fx++) for(var fy=10;fy<=12;fy++){
+            var chance = dens*(fy === 12 ? .85 : fy === 11 ? .55 : .25);
+            if(Math.random() < chance) g.set(fx,fy,pick(["^","(",")","'","\"","^"]),pick(["k-r","k-o","k-y","k-o"]));
           }
+          if(el > 1200) g.tile(12,"~~__~~~___~~_~~~",Math.floor(t/300),"k-o"); // slag pooling on the floor
         }
         return;
       }
       // blue screen
       c.screen = "bsod";
-      var pctDone = t <= c.dur ? Math.floor(37*prog(t,4800,c.dur)) : Math.min(99, 37 + Math.floor((t-c.dur)/900));
+      var pctDone = t <= c.dur ? Math.floor(37*prog(t,4900,c.dur)) : Math.min(99, 37 + Math.floor((t-c.dur)/900));
       g.text(3,1,":(","k-bs k-bold");
-      g.text(3,3,caf ? "Your heart ran into a problem." : "Your nervous system ran into a problem.","k-bs");
-      g.text(3,4,"Restarting you Monday.","k-bs");
+      g.text(3,3,"Your rep ran into a problem and needs to cool down.","k-bs");
+      g.text(3,4,"Core temp: QUOTA. Containment: none.","k-bs");
       g.text(3,6,pctDone+"% complete","k-bs");
-      g.text(3,8,"Stop code: "+(caf ? "QUAD_SHOT_OVERFLOW" : "QUOTA_EXCEEDS_SOUL"),"k-bs");
-      g.text(3,9,"What failed: "+(caf ? "heart.sys" : "work_life_balance.sys"),"k-bs");
+      g.text(3,8,"Stop code: SOUL_NOT_FOUND","k-bs");
+      g.text(3,9,"What failed: containment.sys","k-bs");
       if(blink(t,500)) g.text(3+(""+pctDone).length+10,6,"_","k-bs");
     }
   };
@@ -1638,7 +1775,8 @@ __/_|__
   /* ---------------- BOOT: SHITCORP OS ---------------- */
   // 5-row block font (6 columns a letter with the gap): the logo and the title cards
   var FONT = {S:[" ####","#    "," ### ","    #","#### "],H:["#   #","#   #","#####","#   #","#   #"],I:["###"," # "," # "," # ","###"],T:["#####","  #  ","  #  ","  #  ","  #  "],C:[" ####","#    ","#    ","#    "," ####"],O:[" ### ","#   #","#   #","#   #"," ### "],R:["#### ","#   #","#### ","#  # ","#   #"],P:["#### ","#   #","#### ","#    ","#    "],
-    L:["#    ","#    ","#    ","#    ","#####"],U:["#   #","#   #","#   #","#   #"," ### "],B:["#### ","#   #","#### ","#   #","#### "],F:["#####","#    ","#### ","#    ","#    "],E:["#####","#    ","#### ","#    ","#####"],D:["#### ","#   #","#   #","#   #","#### "],N:["#   #","##  #","# # #","#  ##","#   #"],M:["#   #","## ##","# # #","#   #","#   #"]};
+    L:["#    ","#    ","#    ","#    ","#####"],U:["#   #","#   #","#   #","#   #"," ### "],B:["#### ","#   #","#### ","#   #","#### "],F:["#####","#    ","#### ","#    ","#    "],E:["#####","#    ","#### ","#    ","#####"],D:["#### ","#   #","#   #","#   #","#### "],N:["#   #","##  #","# # #","#  ##","#   #"],M:["#   #","## ##","# # #","#   #","#   #"],
+    A:[" ### ","#   #","#####","#   #","#   #"],W:["#   #","#   #","# # #","## ##","#   #"]};
   function blockWord(word){
     var out = [];
     for(var r=0;r<5;r++) out.push(word.split("").map(function(ch){ return (FONT[ch] || FONT.O)[r]; }).join(" "));
@@ -1874,7 +2012,7 @@ __/_|__
 
   function play(pre,type,opts){
     opts = opts || {};
-    var sc = SCENES[type] || SCENES.club;
+    var sc = SCENES[sceneKey(type,opts.meta)];
     var box = opts.box || pre.parentNode;
     var hasBand = sc.band !== false, rows = hasBand ? ART : ROWS, cues = sc.cues || [], track = normTrack(sc.cam);
     var g = new Grid(), st = {}, speed = opts.speed || 1, t = 0, cue = 0, raf = 0, last = 0, acc = 0, stopped = false;
@@ -2077,7 +2215,7 @@ __/_|__
 
   // text-only frame render for tests and fallbacks
   function renderText(type,tms,meta){
-    var sc = SCENES[type]; var g = new Grid(), st = {};
+    var sc = SCENES[sceneKey(type,meta)]; var g = new Grid(), st = {};
     var ctx = { t:0, dt:50, st:st, meta:meta||{}, dur:sc.dur, idle:false, still:false, sim:true, sfx:function(){} };
     var cap = capFor(sc,ctx.meta);
     for(var t=0;t<=tms;t+=50){ g.clear(); ctx.t = t; ctx.idle = t > sc.dur; ctx.screen = ""; sc.draw(g,ctx); if(sc.band !== false) caption(g,cap,t,sc.dur,{still:false}); }
@@ -2385,14 +2523,17 @@ __/_|__
   }
 
   /* ---------- PA announcer (speechSynthesis) ---------- */
+  // v1.18: terminations are read by HR, calmly, in a female voice
+  var HR_LINES = ["As of today, you're no longer an employee of this organization.","Thanks for coming to this meeting. Today is your last day with Shitcorp.","We've reviewed your performance and decided to part ways."];
+  var HR_KEYS = { fired:1, firedOrg:1, firedReview:1 };
   var LINES = {
     boot:["Quota assigned. Good morning."],
     newrun:["New quarter. Same quota."],
     club:["President's Club. Grab your jacket."],
-    fired:["Return your badge."],
-    firedOrg:["Org update. Layoffs."],
-    firedReview:["Forecast review. Exit interview."],
-    burnout:["Nervous system offline."],
+    fired:HR_LINES,
+    firedOrg:HR_LINES,
+    firedReview:HR_LINES,
+    burnout:["Containment failed. Evacuate the pod."],
     missed:["Close. Not closed."],
     repo:["Jacket owner to Collections."],
     week5:["Mid-quarter reviews are in session."],
@@ -2427,7 +2568,7 @@ __/_|__
     incident:["Security incident. No comment."],
     hydrate:["Wellness reminder. Hydrate."]
   };
-  Object.assign(LINES,{ closeOut:["Close that out."], burnoutCaffeine:["Medical to the sales floor."] });
+  Object.assign(LINES,{ closeOut:["Close that out."], burnoutCaffeine:["Rep has left the atmosphere."] });
   Object.assign(LINES,{ welcome:["Welcome to Shitcorp. Culture is glue."] }); // v1.16 onboarding memo
   // v1.17: the PA went silent on Windows Chromium/Edge. Three things in that engine bite a naive speak():
   //  - voice objects go stale when the browser reloads its list (voiceschanged fires more than once) and a stale
@@ -2436,12 +2577,16 @@ __/_|__
   //    no network, our silent primer), which made every non-forced line bail, so busy-ness is tracked here;
   //  - an utterance the page no longer references can be garbage-collected mid-queue, so the current one is held.
   // Edge lists its "Online (Natural)" voices first; they need the network, so a local voice of the same family wins.
-  var SAY = { last:0, voiceName:null, timer:0, current:null, since:0, primer:null };
+  var SAY = { last:0, voiceName:{m:null,f:null}, timer:0, current:null, since:0, primer:null };
+  var VOICE_PREFS = {
+    m: ["Google UK English Male","Daniel","Microsoft Guy","Microsoft Ryan","Microsoft David","Microsoft Mark","Arthur","Aaron","Alex","Fred","Google US English"],
+    f: ["Microsoft Aria","Microsoft Jenny","Microsoft Zira","Microsoft Sonia","Microsoft Michelle","Google UK English Female","Samantha","Karen","Moira","Tessa","Victoria","Fiona","Google US English"]
+  };
   function voiceList(){ try{ return root.speechSynthesis.getVoices() || []; }catch(e){ return []; } }
-  function pickVoice(){
+  function pickVoice(kind){
     if(!("speechSynthesis" in root)) return null;
     var vs = voiceList(); if(!vs.length) return null;
-    var prefs = ["Google UK English Male","Daniel","Microsoft Guy","Microsoft Ryan","Microsoft David","Microsoft Mark","Arthur","Aaron","Alex","Fred","Google US English"];
+    var prefs = VOICE_PREFS[kind || "m"];
     var best = null, bestRank = Infinity;
     for(var k=0;k<vs.length;k++){
       var v = vs[k], rank = Infinity, i;
@@ -2451,13 +2596,16 @@ __/_|__
     }
     return best || vs[0];
   }
-  function rememberVoice(){ var v = pickVoice(); SAY.voiceName = v ? v.name : null; return v; }
-  function voiceFor(){
+  function rememberVoice(kind){ kind = kind || "m"; var v = pickVoice(kind); SAY.voiceName[kind] = v ? v.name : null; return v; }
+  function rememberVoices(){ rememberVoice("m"); rememberVoice("f"); }
+  function voiceFor(kind){
+    kind = kind || "m";
     var vs = voiceList(); if(!vs.length) return null;
-    if(SAY.voiceName) for(var i=0;i<vs.length;i++) if(vs[i].name === SAY.voiceName) return vs[i];
-    return rememberVoice();
+    var name = SAY.voiceName[kind];
+    if(name) for(var i=0;i<vs.length;i++) if(vs[i].name === name) return vs[i];
+    return rememberVoice(kind);
   }
-  if(HAS_DOM && "speechSynthesis" in root){ try{ root.speechSynthesis.onvoiceschanged = rememberVoice; }catch(e){} }
+  if(HAS_DOM && "speechSynthesis" in root){ try{ root.speechSynthesis.onvoiceschanged = rememberVoices; }catch(e){} }
   // true while a line of ours is still going; a browser flag stuck on with nothing of ours in flight is cleared
   function speechBusy(){
     var ss = root.speechSynthesis;
@@ -2467,10 +2615,11 @@ __/_|__
     if(ss.speaking || ss.pending){ try{ ss.cancel(); }catch(e){} }
     return false;
   }
-  function utter(text,key,voice,isRetry){
+  function utter(text,key,voice,isRetry,kind){
     var ss = root.speechSynthesis, u = new root.SpeechSynthesisUtterance(text);
     if(voice){ u.voice = voice; u.lang = voice.lang; } else u.lang = "en-US";
-    u.rate = key === "firedOrg" ? 1.05 : 0.97; u.pitch = key === "firedOrg" ? 0.7 : 0.85;
+    // HR is measured and level; the PA is a tired baritone
+    u.rate = kind === "f" ? 0.95 : 0.97; u.pitch = kind === "f" ? 1.0 : 0.85;
     u.volume = Math.min(1,A.settings.vol*1.15);
     var done = function(){ if(SAY.current === u) SAY.current = null; };
     u.onend = done;
@@ -2480,8 +2629,8 @@ __/_|__
       A.lastSpeechError = err;
       // the chosen voice failed (an online voice offline, a voice gone from the list): one retry on the browser default
       if(voice && !isRetry && err !== "interrupted" && err !== "canceled" && err !== "not-allowed"){
-        SAY.voiceName = null;
-        setTimeout(function(){ if(A.settings.on && A.settings.voice){ try{ utter(text,key,null,true); }catch(e){} } },150);
+        SAY.voiceName[kind || "m"] = null;
+        setTimeout(function(){ if(A.settings.on && A.settings.voice){ try{ utter(text,key,null,true,kind); }catch(e){} } },150);
       }
     };
     SAY.current = u; SAY.since = Date.now();
@@ -2508,7 +2657,8 @@ __/_|__
     SAY.timer = setTimeout(function(){
       SAY.timer = 0;
       if(!A.settings.on || !A.settings.voice) return;
-      try{ utter(text,key,voiceFor(),false); }catch(e){ A.lastSpeechError = String(e && e.message || e); }
+      var kind = HR_KEYS[key] ? "f" : "m";
+      try{ utter(text,key,voiceFor(kind),false,kind); }catch(e){ A.lastSpeechError = String(e && e.message || e); }
     }, 720);
     return true;
   }
@@ -2530,7 +2680,7 @@ __/_|__
         u.onend = u.onerror = function(){ if(SAY.primer === u) SAY.primer = null; };
         SAY.primer = u; ss.speak(u);
         setTimeout(function(){ if(SAY.primer === u){ SAY.primer = null; if(!SAY.current){ try{ ss.cancel(); }catch(e){} } } },1500);
-        rememberVoice();
+        rememberVoices();
       } }catch(e){}
       if(A.stress >= 70 && !A.hbTimer) scheduleBeat();
     }
@@ -2573,7 +2723,7 @@ __/_|__
     ["📆 Recurring","hrSoft",2], ["📆 Week ","week",1], ["📊","qbr",1],
     ["🏅","achievement",4,"whale"], ["💀","lost",4], ["⚠","alarm",4,"cash"]
   ];
-  RULES.unshift(["🧹","crm",3,"hygiene"],["🗑","lost",4,"closeOut"],["🫀","heartbeat",2],["🚑","flatline",4],["🥴","sick",2]);
+  RULES.unshift(["🧹","crm",3,"hygiene"],["🗑","lost",4,"closeOut"],["🫀","heartbeat",2],["🚀","ignition",4],["☢","crack",4],["🏝","airport",3],["🥴","sick",2]);
   function ruleFor(msg){
     var m = norm(msg);
     if(/\d+ signed, \$/.test(m)) return {sfx:"cash", prio:4, close:true};
@@ -2618,6 +2768,28 @@ __/_|__
     shing: {prio:3, free:true, fn:function(o){ noise(o,{ft:"highpass",f:5200,q:.7,dur:.07,v:.12}); tone(o,{type:"sine",f:2960,f2:3320,dur:.42,v:.05,vib:[11,18]}); return tone(o,{type:"sine",f:4440,f2:4980,dur:.3,v:.025}); }},
     thwack:{prio:3, free:true, fn:function(o){ noise(o,{ft:"lowpass",f:900,q:.8,dur:.09,v:.22}); noise(o,{ft:"highpass",f:2600,q:.7,dur:.03,v:.1}); return tone(o,{type:"sine",f:130,f2:46,dur:.22,v:.34}); }}
   });
+  // v1.18 endings: ASCENSION (rumble, ignition, liftoff roar, ceiling tiles, stinger) and MELTDOWN (geiger, glass
+  // crack, slag hiss, stinger). No sirens anywhere: the dread is in the low end.
+  Object.assign(P,{
+    rumble:  {prio:3, fn:function(o){ tone(o,{type:"sawtooth",f:44,nj:1,dur:2.6,v:.14,a:.5,hold:1.4,lp:220,trem:[6,.5]}); tone(o,{type:"sawtooth",f:46.5,nj:1,dur:2.6,v:.1,a:.5,hold:1.4,lp:220});
+               return noise(o,{ft:"lowpass",f:160,q:.7,nj:1,dur:2.6,v:.12,a:.6,hold:1.2}); }},
+    ignition:{prio:4, fn:function(o){ noise(o,{ft:"lowpass",f:900,f2:120,q:.8,dur:.9,v:.4,a:.005}); tone(o,{type:"sine",f:90,f2:28,dur:.8,v:.4});
+               for(var i=0;i<14;i++) noise(o,{ft:"highpass",f:2500,q:.7,at:.05+Math.random()*.7,dur:.02,v:.12});
+               return tone(o,{type:"sawtooth",f:60,f2:140,dur:.9,v:.06,lp:600,a:.2}); }},
+    liftoff: {prio:4, fn:function(o){ noise(o,{ft:"bandpass",f:180,f2:2200,q:.8,dur:2.6,v:.34,a:.3,hold:1.6,slide:2.2}); tone(o,{type:"sawtooth",f:50,f2:130,dur:2.6,v:.07,a:.3,hold:1.6,lp:500,slide:2.2});
+               return tone(o,{type:"sine",f:38,f2:70,dur:2.6,v:.2,a:.2,hold:1.6,slide:2.2}); }},
+    ceiling: {prio:3, fn:function(o){ var e=0; for(var i=0;i<3;i++){ noise(o,{ft:"lowpass",f:700,q:.8,at:i*.09,dur:.12,v:.26}); e = tone(o,{type:"sine",f:130,f2:55,at:i*.09,dur:.2,v:.28}); }
+               for(var k=0;k<8;k++) noise(o,{ft:"bandpass",f:1400+Math.random()*2200,q:3,at:.05+Math.random()*.4,dur:.03,v:.1}); return e; }},
+    geiger:  {prio:2, free:true, fn:function(o){ var e=0,t=0,n=0; while(t<2.2 && n<60){ e = noise(o,{ft:"bandpass",f:3200,q:6,at:t,dur:.012,v:.16}); t += .03+Math.random()*(.3-.12*t/2.2); n++; } return e; }},
+    crack:   {prio:4, fn:function(o){ noise(o,{ft:"highpass",f:4500,q:.7,dur:.05,v:.22}); tone(o,{type:"square",f:3400,f2:700,dur:.12,v:.06,lp:6000});
+               for(var i=0;i<6;i++) noise(o,{ft:"bandpass",f:2000+Math.random()*4000,q:4,at:.06+Math.random()*.3,dur:.025,v:.1}); return tone(o,{type:"sine",f:110,f2:48,at:.02,dur:.3,v:.3}); }},
+    slag:    {prio:3, fn:function(o){ noise(o,{ft:"lowpass",f:900,f2:220,q:.6,dur:2.4,v:.14,a:.4,hold:1.2}); for(var i=0;i<10;i++) noise(o,{ft:"bandpass",f:600+Math.random()*900,q:2,at:Math.random()*2,dur:.08,v:.06});
+               return tone(o,{type:"sawtooth",f:95,f2:58,dur:2.2,v:.05,lp:400,a:.3,vib:[4,6]}); }},
+    stingerAscend:{prio:5, fn:function(o){ seq(o,[["E3",.14],["G3",.14],["B3",.14],["E4",.9]],{type:"square",v:.05,lp:2400,gap:.15}); tone(o,{type:"sawtooth",f:N("E2"),nj:1,dur:1.6,v:.07,lp:500,a:.1});
+               noise(o,{ft:"bandpass",f:300,f2:5000,q:.8,dur:1.2,v:.12,a:.5}); return tone(o,{type:"triangle",f:N("B4"),nj:1,at:.45,dur:1.2,v:.06,vib:[5.5,4]}); }},
+    stingerMelt:{prio:5, fn:function(o){ var e = seq(o,[["C4",.16],["Ab3",.16],["F3",.16],["C3",1.0]],{type:"sawtooth",v:.06,lp:1400,gap:.17}); tone(o,{type:"sine",f:N("C2"),nj:1,at:.5,dur:1.4,v:.2});
+               noise(o,{ft:"lowpass",f:300,q:.7,at:.5,dur:.3,v:.2}); return e; }}
+  });
   // v1.16 onboarding memo (Rules): a party horn that deflates, and HR's rubber stamp
   Object.assign(P,{
     sadHorn:{prio:3, fn:function(o){ noise(o,{ft:"bandpass",f:1800,q:.9,dur:.07,v:.1});
@@ -2630,7 +2802,7 @@ __/_|__
     play:play, say:say, cancelSay:cancelSay, hush:hush, ambient:ambient, stopAmbient:stopAmbient, setStress:setStress,
     onLogs:onLogs, onModal:onModal, ruleFor:ruleFor, setOn:setOn, setVoice:setVoice, setVolume:setVolume, unlock:unlock,
     get settings(){ return A.settings; }, get unlocked(){ return A.unlocked; },
-    get lastSpeechError(){ return A.lastSpeechError || null; }, get voiceName(){ return SAY.voiceName; },
+    get lastSpeechError(){ return A.lastSpeechError || null; }, get voiceName(){ return SAY.voiceName.m; }, get voiceNames(){ return SAY.voiceName; },
     set onChange(fn){ A.onChange = fn; },
     presets:P, _A:A, LINES:LINES,
     // render a preset into an offline context (tests)
@@ -2857,6 +3029,7 @@ __/_|__
         // v1.15 fields; v1.14 saves don't have them
         coffeesThisWeek:Number.isFinite(parsed.coffeesThisWeek)?Math.max(0,Math.floor(parsed.coffeesThisWeek)):0,
         stressWarned:!!parsed.stressWarned,
+        trip:typeof parsed.trip==="string"?parsed.trip:null,
         hygieneShield:!!parsed.hygieneShield,
         endCause:typeof parsed.endCause==="string"?parsed.endCause:null
       };
@@ -3117,6 +3290,7 @@ __/_|__
       coffeesThisWeek:0,
       stressWarned:false,
       hygieneShield:false,
+      trip:null,
       endCause:null,
       runId:idGen(),
       used:{
@@ -3149,13 +3323,15 @@ __/_|__
     const coffeeStress=(n)=>12+3*n;        // v1.17: was 12+6n
     const rechargeRelief=(n)=>Math.max(0,12-2*n); // caffeine in the system blunts the Recharge (v1.17: was 4 per shot)
     const RECHARGE_ENERGY=35;
-    const RECHARGE_LUCK=0.25;        // v1.17: each Recharge rolls a 0-25% bonus on both energy and relief
+    const RECHARGE_LUCK=0.5;         // v1.18: each Recharge rolls a 0-50% bonus on both energy and relief
+    const TRIP_AT=0.40;              // a roll above this and your manager signs off a trip
+    const TRIPS=["Japan","Whistler","Cancun","Thailand","Dubai"];
     const rechargeMax=(base)=>base+Math.round(base*RECHARGE_LUCK);
     const coffeeRisk=(n)=>n<2?0:n===2?0.20:n===3?0.45:Math.min(0.95,0.75+0.10*(n-4)); // palpitations from shot 3
     const checkBurnout=(state)=>{
       if(!state || isRunOver(state))return state; // an ending already landed; keep its priority
       if(state.stress>=100){
-        return log({...state,burnedOut:true,endCause:state.endCause||"stress"},"🧯 Stress 100. Burnout.","bad");
+        return log({...state,burnedOut:true,endCause:state.endCause||"stress"},"☢️ Stress 100. Meltdown.","bad");
       }
       if(state.stress>=STRESS_WARN && !state.stressWarned){
         return log({...state,stressWarned:true},`🫀 Eye twitch. Stress ${Math.round(state.stress)}.`,"warn");
@@ -3944,6 +4120,7 @@ __/_|__
         ns.stress=clamp(ns.stress-relief,0,100);
         const tag=luck>=0.15 ? ` Good nap, +${pct(luck)}%.` : "";
         ns=log(ns,relief>0 ? `🧘 Recharged. +${gain} energy, -${relief} stress.${tag}` : `🧘 Recharged. +${gain} energy. Caffeine ate the calm.`);
+        if(luck>TRIP_AT){ ns.trip=choice(TRIPS); ns=log(ns,`🏝️ Manager approved your ${ns.trip} trip.`); }
         setS(ns);
       };
 
@@ -3961,7 +4138,7 @@ __/_|__
         if(ns.stress>=100 || (risk>0 && Math.random()<risk)){
           ns.burnedOut=true;
           ns.endCause="caffeine";
-          setS(log(ns,`🚑 Shot #${k}. Heart said no.`,"bad"));
+          setS(log(ns,`🚀 Shot #${k}. Liftoff.`,"bad"));
           return;
         }
         ns=checkRepo(ns);
@@ -4282,7 +4459,7 @@ __/_|__
         if(!isRunOver(ns) && ns.stress>=STRESS_DANGER && Math.random()<(ns.stress-75)*DANGER_RATE){
           ns.burnedOut=true;
           ns.endCause="stress";
-          ns=log(ns,"🧯 Weekend didn’t help. Burnout.","bad");
+          ns=log(ns,"☢️ Weekend didn’t help. Meltdown.","bad");
         }
         if(isRunOver(ns)){ setPending(null); setS(ns); return; }
 
@@ -4347,24 +4524,6 @@ __/_|__
             s.win ? "club" :
             s.missed ? "missed" :
             "fired";
-          const title=
-            type==="club" ? "President’s Club ✨" :
-            type==="burnout" ? "Burnout 🧯" :
-            type==="missed" ? "Barely Missed 😮‍💨" :
-            type==="repo" ? "Jacket Repo’d 🧥" :
-            "Terminated 💼";
-          const body=
-            type==="club"
-              ? `Closed ${money(s.closedWon)}. Pack for Cabo.`
-              : type==="burnout"
-                ? (s.endCause==="caffeine"
-                  ? `Closed ${money(s.closedWon)}. Heart clocked out first.`
-                  : `Closed ${money(s.closedWon)}. Body quit first.`)
-                : type==="missed"
-                  ? `Closed ${money(s.closedWon)}. Badge kept. Back to the phones.`
-                  : type==="repo"
-                    ? `Cash hit ${money(s.cash)}. The loan came due.`
-                    : `Closed ${money(s.closedWon)}. Your Slack is already gone.`;
           // v1.15: endCause is set wherever an ending lands; log parsing is only for pre-v1.15 saves
           const legacyCause=()=>{
             if(type!=="fired")return type==="burnout" ? "stress" : type;
@@ -4372,6 +4531,24 @@ __/_|__
             return !lastBad ? "qbr" : lastBad.msg.indexOf("🪓")===0 ? "org" : lastBad.msg.indexOf("📉 Mid-quarter")===0 ? "review" : "qbr";
           };
           const cause=s.endCause || legacyCause();
+          const title=
+            type==="club" ? "President’s Club ✨" :
+            type==="burnout" ? (cause==="caffeine" ? "Ascension 🚀" : "Meltdown ☢️") :
+            type==="missed" ? "Barely Missed 😮‍💨" :
+            type==="repo" ? "Jacket Repo’d 🧥" :
+            "Terminated 💼";
+          const body=
+            type==="club"
+              ? `Closed ${money(s.closedWon)}. Pack for Cabo.`
+              : type==="burnout"
+                ? (cause==="caffeine"
+                  ? `Closed ${money(s.closedWon)}. Then you went orbital.`
+                  : `Closed ${money(s.closedWon)}. Core breached.`)
+                : type==="missed"
+                  ? `Closed ${money(s.closedWon)}. Badge kept. Back to the phones.`
+                  : type==="repo"
+                    ? `Cash hit ${money(s.cash)}. The loan came due.`
+                    : `Closed ${money(s.closedWon)}. Your Slack is already gone.`;
           const meta={pct:s.quota>0 ? s.closedWon/s.quota : 0, cause, shots:s.coffeesThisWeek||0};
           setPending(null);
           setOver({title,body,type,meta});
@@ -4485,6 +4662,7 @@ __/_|__
                   {s.modifiers.discount>0 && <span className="badge">🧾 Discount {pct(s.modifiers.discount)}%</span>}
                   {s.modifiers.conversion!==0 && <span className="badge">🎲 Conv Mod {s.modifiers.conversion>0?"+":""}{pct(s.modifiers.conversion)}%</span>}
                   {s.restedThisWeek && <span className="badge">🧘 Rested</span>}
+                  {s.trip && <span className="badge">🏝️ {s.trip} trip approved</span>}
                   {s.coffeesThisWeek>0 && <span className="badge">☕×{s.coffeesThisWeek}</span>}
                   {s.repo && <span className="badge">🧥 Jacket Repo’d</span>}
                 </div>
@@ -4548,9 +4726,9 @@ __/_|__
           >
             {helpOpens>0 && <WelcomeMemo key={helpOpens} active={showHelp} />}
             <p className="tiny"><strong>Energy</strong> fuels actions. Small refill at week end.</p>
-            <p className="tiny"><strong>Recharge</strong> once a week: +{RECHARGE_ENERGY} energy, -12 stress, plus a 0–{pct(RECHARGE_LUCK)}% lucky bonus. Coffee blunts it.</p>
-            <p className="tiny"><strong>Stress</strong> hurts close rates. 80+ can burn you out at week end; 100 is instant.</p>
-            <p className="tiny"><strong>Quad Shot</strong> hits harder each shot that week. Shot 3+ can stop your heart; a shot to 100 stress will. Each one: +{CRASH_PER_SHOT} stress at week end, weaker Recharge.</p>
+            <p className="tiny"><strong>Recharge</strong> once a week: +{RECHARGE_ENERGY} energy, -12 stress, plus a 0–{pct(RECHARGE_LUCK)}% lucky bonus. Over {pct(TRIP_AT)}% and your manager signs off a trip. Coffee blunts it.</p>
+            <p className="tiny"><strong>Stress</strong> hurts close rates. 80+ can melt you down at week end; 100 is instant.</p>
+            <p className="tiny"><strong>Quad Shot</strong> hits harder each shot that week. Shot 3+ can put you in orbit; a shot to 100 stress will. Each one: +{CRASH_PER_SHOT} stress at week end, weaker Recharge.</p>
             <p className="tiny"><strong>CRM Cleanup</strong> weekly: prunes dead leads, +manager, freezes warnings, trims fire odds. Boss may nuke a good deal.</p>
             <p className="tiny"><strong>Cash</strong> is salary and commission in, rent out. At -$1,500 the jacket goes.</p>
             <p className="tiny"><strong>Pipeline</strong> is the value of live deals. Actions move them down the funnel.</p>
@@ -4602,7 +4780,7 @@ __/_|__
               meta={over?.meta}
               ctrlRef={sceneRef}
             />
-            {REDUCED_MOTION && over && window.TST_SCENES && window.TST_SCENES.SCENES[over.type] && (
+            {REDUCED_MOTION && over && window.TST_SCENES && window.TST_SCENES.summaryFor(over.type,over.meta) && (
               <p className="tiny scene-note">{window.TST_SCENES.summaryFor(over.type,over.meta)}</p>
             )}
             {!REDUCED_MOTION && window.TST_SCENES && (
