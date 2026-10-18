@@ -2429,17 +2429,66 @@ __/_|__
   };
   Object.assign(LINES,{ closeOut:["Close that out."], burnoutCaffeine:["Medical to the sales floor."] });
   Object.assign(LINES,{ welcome:["Welcome to Shitcorp. Culture is glue."] }); // v1.16 onboarding memo
-  var SAY = { last:0, voice:null, timer:0 };
+  // v1.17: the PA went silent on Windows Chromium/Edge. Three things in that engine bite a naive speak():
+  //  - voice objects go stale when the browser reloads its list (voiceschanged fires more than once) and a stale
+  //    voice speaks nothing, so the choice is kept by NAME and resolved against the live list at speak time;
+  //  - speechSynthesis.speaking can stick at true after an utterance that never ends (Edge's online voices with
+  //    no network, our silent primer), which made every non-forced line bail, so busy-ness is tracked here;
+  //  - an utterance the page no longer references can be garbage-collected mid-queue, so the current one is held.
+  // Edge lists its "Online (Natural)" voices first; they need the network, so a local voice of the same family wins.
+  var SAY = { last:0, voiceName:null, timer:0, current:null, since:0, primer:null };
+  function voiceList(){ try{ return root.speechSynthesis.getVoices() || []; }catch(e){ return []; } }
   function pickVoice(){
     if(!("speechSynthesis" in root)) return null;
-    var vs = []; try{ vs = root.speechSynthesis.getVoices() || []; }catch(e){}
-    if(!vs.length) return null;
-    var prefs = ["Google UK English Male","Daniel","Microsoft Guy","Microsoft Ryan","Microsoft David","Arthur","Aaron","Alex","Fred","Google US English"];
-    for(var i=0;i<prefs.length;i++) for(var k=0;k<vs.length;k++) if(vs[k].name.indexOf(prefs[i]) === 0) return vs[k];
-    for(var j=0;j<vs.length;j++) if(/^en[-_]/i.test(vs[j].lang)) return vs[j];
-    return vs[0];
+    var vs = voiceList(); if(!vs.length) return null;
+    var prefs = ["Google UK English Male","Daniel","Microsoft Guy","Microsoft Ryan","Microsoft David","Microsoft Mark","Arthur","Aaron","Alex","Fred","Google US English"];
+    var best = null, bestRank = Infinity;
+    for(var k=0;k<vs.length;k++){
+      var v = vs[k], rank = Infinity, i;
+      for(i=0;i<prefs.length;i++) if(v.name.indexOf(prefs[i]) === 0){ rank = i*2 + (v.localService === false ? 1 : 0); break; }
+      if(rank === Infinity && /^en[-_]/i.test(v.lang || "")) rank = 1000 + (v.localService === false ? 1 : 0);
+      if(rank < bestRank){ bestRank = rank; best = v; }
+    }
+    return best || vs[0];
   }
-  if(HAS_DOM && "speechSynthesis" in root){ try{ root.speechSynthesis.onvoiceschanged = function(){ SAY.voice = pickVoice(); }; }catch(e){} }
+  function rememberVoice(){ var v = pickVoice(); SAY.voiceName = v ? v.name : null; return v; }
+  function voiceFor(){
+    var vs = voiceList(); if(!vs.length) return null;
+    if(SAY.voiceName) for(var i=0;i<vs.length;i++) if(vs[i].name === SAY.voiceName) return vs[i];
+    return rememberVoice();
+  }
+  if(HAS_DOM && "speechSynthesis" in root){ try{ root.speechSynthesis.onvoiceschanged = rememberVoice; }catch(e){} }
+  // true while a line of ours is still going; a browser flag stuck on with nothing of ours in flight is cleared
+  function speechBusy(){
+    var ss = root.speechSynthesis;
+    if(SAY.current && Date.now()-SAY.since < 15000) return true;
+    SAY.current = null;
+    if(SAY.primer) return false; // the unlock primer is still playing; a queued line simply follows it
+    if(ss.speaking || ss.pending){ try{ ss.cancel(); }catch(e){} }
+    return false;
+  }
+  function utter(text,key,voice,isRetry){
+    var ss = root.speechSynthesis, u = new root.SpeechSynthesisUtterance(text);
+    if(voice){ u.voice = voice; u.lang = voice.lang; } else u.lang = "en-US";
+    u.rate = key === "firedOrg" ? 1.05 : 0.97; u.pitch = key === "firedOrg" ? 0.7 : 0.85;
+    u.volume = Math.min(1,A.settings.vol*1.15);
+    var done = function(){ if(SAY.current === u) SAY.current = null; };
+    u.onend = done;
+    u.onerror = function(ev){
+      done();
+      var err = (ev && ev.error) || "error";
+      A.lastSpeechError = err;
+      // the chosen voice failed (an online voice offline, a voice gone from the list): one retry on the browser default
+      if(voice && !isRetry && err !== "interrupted" && err !== "canceled" && err !== "not-allowed"){
+        SAY.voiceName = null;
+        setTimeout(function(){ if(A.settings.on && A.settings.voice){ try{ utter(text,key,null,true); }catch(e){} } },150);
+      }
+    };
+    SAY.current = u; SAY.since = Date.now();
+    if(ss.paused) ss.resume();
+    ss.speak(u);
+    if(A.onSay) A.onSay(text);
+  }
   function say(key,opts){
     opts = opts || {};
     if(!A.settings.on || !A.settings.voice || !A.unlocked) return false;
@@ -2450,29 +2499,22 @@ __/_|__
     var ss = root.speechSynthesis, now = Date.now();
     if(!opts.force){
       if(now - SAY.last < (opts.cooldown || 12000)) return false;
-      if(ss.speaking || ss.pending) return false;
-    } else { try{ ss.cancel(); }catch(e){} }
+      if(speechBusy()) return false;
+    } else { try{ ss.cancel(); }catch(e){} SAY.current = null; SAY.primer = null; }
     SAY.last = now;
     play("pa");
     clearTimeout(SAY.timer);
+    // the chime leads the voice by 720ms, which also keeps speak() clear of a cancel() (back to back they can drop the line)
     SAY.timer = setTimeout(function(){
       SAY.timer = 0;
       if(!A.settings.on || !A.settings.voice) return;
-      try{
-        var u = new root.SpeechSynthesisUtterance(text), v = SAY.voice || (SAY.voice = pickVoice());
-        if(v){ u.voice = v; u.lang = v.lang; } else u.lang = "en-US";
-        u.rate = key === "firedOrg" ? 1.05 : 0.97; u.pitch = key === "firedOrg" ? 0.7 : 0.85;
-        u.volume = Math.min(1,A.settings.vol*1.15);
-        if(ss.paused) ss.resume();
-        ss.speak(u);
-        if(A.onSay) A.onSay(text);
-      }catch(e){}
+      try{ utter(text,key,voiceFor(),false); }catch(e){ A.lastSpeechError = String(e && e.message || e); }
     }, 720);
     return true;
   }
   // drop a line say() has queued but not spoken yet; unlike hush(), nothing already playing is touched
   function cancelSay(){ var queued = !!SAY.timer; clearTimeout(SAY.timer); SAY.timer = 0; return queued; }
-  function hush(){ clearTimeout(SAY.timer); SAY.timer = 0; try{ if("speechSynthesis" in root) root.speechSynthesis.cancel(); }catch(e){} stopAmbient(); }
+  function hush(){ clearTimeout(SAY.timer); SAY.timer = 0; SAY.current = null; SAY.primer = null; try{ if("speechSynthesis" in root) root.speechSynthesis.cancel(); }catch(e){} stopAmbient(); }
 
   /* ---------- unlock on the first gesture ---------- */
   function unlock(){
@@ -2481,7 +2523,15 @@ __/_|__
     if(!A.unlocked){
       A.unlocked = true;
       try{ var b = c.createBuffer(1,1,22050), s = c.createBufferSource(); s.buffer = b; s.connect(c.destination); s.start(0); }catch(e){}
-      try{ if("speechSynthesis" in root){ var u = new root.SpeechSynthesisUtterance(" "); u.volume = 0; root.speechSynthesis.speak(u); SAY.voice = pickVoice(); } }catch(e){}
+      // a silent utterance inside the gesture is what lets later lines speak on iOS; it is watched so a primer
+      // that never ends (seen with Edge's online voices) cannot leave the engine reporting "speaking" forever
+      try{ if("speechSynthesis" in root){
+        var ss = root.speechSynthesis, u = new root.SpeechSynthesisUtterance(" "); u.volume = 0;
+        u.onend = u.onerror = function(){ if(SAY.primer === u) SAY.primer = null; };
+        SAY.primer = u; ss.speak(u);
+        setTimeout(function(){ if(SAY.primer === u){ SAY.primer = null; if(!SAY.current){ try{ ss.cancel(); }catch(e){} } } },1500);
+        rememberVoice();
+      } }catch(e){}
       if(A.stress >= 70 && !A.hbTimer) scheduleBeat();
     }
   }
@@ -2580,6 +2630,7 @@ __/_|__
     play:play, say:say, cancelSay:cancelSay, hush:hush, ambient:ambient, stopAmbient:stopAmbient, setStress:setStress,
     onLogs:onLogs, onModal:onModal, ruleFor:ruleFor, setOn:setOn, setVoice:setVoice, setVolume:setVolume, unlock:unlock,
     get settings(){ return A.settings; }, get unlocked(){ return A.unlocked; },
+    get lastSpeechError(){ return A.lastSpeechError || null; }, get voiceName(){ return SAY.voiceName; },
     set onChange(fn){ A.onChange = fn; },
     presets:P, _A:A, LINES:LINES,
     // render a preset into an offline context (tests)
@@ -3093,10 +3144,13 @@ __/_|__
     const DANGER_RATE=0.03;          // chance per point above 75
     const CRASH_PER_SHOT=13;         // end-of-week stress per Quad Shot drunk that week
     // n = shots already drunk this week, so these describe the NEXT shot
-    const COFFEE_ENERGY=[18,15,12,9,6];
+    const COFFEE_ENERGY=[18,16,15,14,12]; // v1.17: fade per extra shot halved
     const coffeeEnergy=(n)=>COFFEE_ENERGY[clamp(Math.floor(n)||0,0,COFFEE_ENERGY.length-1)];
-    const coffeeStress=(n)=>12+6*n;
-    const rechargeRelief=(n)=>Math.max(0,12-4*n); // caffeine in the system blunts the Recharge
+    const coffeeStress=(n)=>12+3*n;        // v1.17: was 12+6n
+    const rechargeRelief=(n)=>Math.max(0,12-2*n); // caffeine in the system blunts the Recharge (v1.17: was 4 per shot)
+    const RECHARGE_ENERGY=35;
+    const RECHARGE_LUCK=0.25;        // v1.17: each Recharge rolls a 0-25% bonus on both energy and relief
+    const rechargeMax=(base)=>base+Math.round(base*RECHARGE_LUCK);
     const coffeeRisk=(n)=>n<2?0:n===2?0.20:n===3?0.45:Math.min(0.95,0.75+0.10*(n-4)); // palpitations from shot 3
     const checkBurnout=(state)=>{
       if(!state || isRunOver(state))return state; // an ending already landed; keep its priority
@@ -3881,11 +3935,15 @@ __/_|__
           return;
         }
         ns.used.recharge=true;
-        ns.energy=clamp(ns.energy+35,0,100);
-        // v1.15: caffeine in the system blunts the reset
-        const relief=rechargeRelief(ns.coffeesThisWeek||0);
+        // v1.15: caffeine in the system blunts the reset. v1.17: a lucky nap adds 0-25% to both, one roll per use.
+        const luck=Math.random()*RECHARGE_LUCK;
+        const gain=RECHARGE_ENERGY+Math.round(RECHARGE_ENERGY*luck);
+        const base=rechargeRelief(ns.coffeesThisWeek||0);
+        const relief=base+Math.round(base*luck);
+        ns.energy=clamp(ns.energy+gain,0,100);
         ns.stress=clamp(ns.stress-relief,0,100);
-        ns=log(ns,relief>0 ? `🧘 Recharged. +35 energy, -${relief} stress.` : "🧘 Recharged. +35 energy. Caffeine ate the calm.");
+        const tag=luck>=0.15 ? ` Good nap, +${pct(luck)}%.` : "";
+        ns=log(ns,relief>0 ? `🧘 Recharged. +${gain} energy, -${relief} stress.${tag}` : `🧘 Recharged. +${gain} energy. Caffeine ate the calm.`);
         setS(ns);
       };
 
@@ -4019,7 +4077,7 @@ __/_|__
           </button>
           <button className="btn" disabled={disabled(0,1)} onClick={actRecharge}>
             <div className="title">🧘 Recharge</div>
-            <div className="desc">Once per week. Cost: 1 Slot • Stress -{rechargeRelief(shotsNow)}</div>
+            <div className="desc">Once per week. Cost: 1 Slot • Energy +{RECHARGE_ENERGY}–{rechargeMax(RECHARGE_ENERGY)} • Stress -{rechargeRelief(shotsNow)}{rechargeMax(rechargeRelief(shotsNow))>rechargeRelief(shotsNow) ? `–${rechargeMax(rechargeRelief(shotsNow))}` : ""}</div>
           </button>
           <button className="btn" disabled={disabled(0,1)} onClick={actCoffee}>
             <div className="title">☕ Quad Shot</div>
@@ -4490,6 +4548,7 @@ __/_|__
           >
             {helpOpens>0 && <WelcomeMemo key={helpOpens} active={showHelp} />}
             <p className="tiny"><strong>Energy</strong> fuels actions. Small refill at week end.</p>
+            <p className="tiny"><strong>Recharge</strong> once a week: +{RECHARGE_ENERGY} energy, -12 stress, plus a 0–{pct(RECHARGE_LUCK)}% lucky bonus. Coffee blunts it.</p>
             <p className="tiny"><strong>Stress</strong> hurts close rates. 80+ can burn you out at week end; 100 is instant.</p>
             <p className="tiny"><strong>Quad Shot</strong> hits harder each shot that week. Shot 3+ can stop your heart; a shot to 100 stress will. Each one: +{CRASH_PER_SHOT} stress at week end, weaker Recharge.</p>
             <p className="tiny"><strong>CRM Cleanup</strong> weekly: prunes dead leads, +manager, freezes warnings, trims fire odds. Boss may nuke a good deal.</p>

@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.17 — Announcer on Windows, luckier naps, gentler coffee
+
+### Fixed
+- The PA announcer was silent on Windows in Edge and Chrome. Three engine quirks were to blame: voice objects go stale when the browser reloads its voice list (a stale voice speaks nothing), the engine can report "speaking" forever after an utterance that never ends (Edge's online voices with no network, or the silent unlock primer), and an unreferenced utterance can be dropped mid-queue. The voice is now kept by name and resolved at speak time, busy-ness is tracked by the game rather than the browser flag, the current line is held, local voices win over Edge's "Online (Natural)" ones, and a voice that fails gets one retry on the browser default.
+
+### Changed
+- **Recharge** rolls a lucky-nap bonus of 0–25% on both the energy gain and the stress relief, once per use (+35–44 energy, -12–15 stress on a clean week). The button shows the range.
+- **Caffeine compounds half as hard.** Each extra Quad Shot in a week now adds +3 stress instead of +6 (12, 15, 18…), energy fades 18→16→15→14→12 instead of 18→15→12→9→6, and each shot blunts Recharge by 2 instead of 4. The week-end crash and heart risk are unchanged.
+
 ## v1.16 — Welcome to Shitcorp
 
 ### Added
