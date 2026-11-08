@@ -4923,7 +4923,9 @@ __/_|__
               {c.last && c.last.ping && <div className="claink-ping"><span className="who">👔 Your manager</span><span>{c.last.ping}</span></div>}
               <div className="claink-flags">Trust &amp; Safety: <span className={"ts "+(flags>=2?"r":flags===1?"y":"g")}>
                 {flags>=2 ? "🔴 Founders 'at an offsite'" : flags===1 ? "🟡 Status page says 'vibes'" : "🟢 All systems autonomous"}</span></div>
-              {flags>=CLAINK.RUG_FLAGS-1 && <div className="claink-warn">🚩🚩 One more fake and we pivot. The “annual prepay” maxes out your card (you'd end near {money(-CLAINK.RUG_OVER[0])} to {money(-CLAINK.RUG_OVER[1])}) and we sell a deal.</div>}
+              {flags>=CLAINK.RUG_FLAGS-1 && <div className="claink-warn">🚩🚩 One more fake and we pivot. The “annual prepay” maxes out your card:
+                you land around {money(-CLAINK.RUG_OVER[0])} to {money(-CLAINK.RUG_OVER[1])}, worse if you're already in the red
+                (Collections takes the jacket at {money(CLAINK.REPO_AT)}). And we sell a deal.</div>}
               <div className="claink-usage">Usage this week: <b>{money(c.due)}</b>, due Friday · Paid so far {money(c.billed)}</div>
               <div className="claink-upsell">Upgrade to Pro ($4,999/wk) for 21% success.</div>
               {!confirmCancel
