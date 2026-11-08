@@ -790,11 +790,12 @@
     .claink-fine{font-size:10px;line-height:1.4;color:#918cc2;margin:0;padding-top:4px}
 
     .claink-console{right:calc(16px + env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));width:min(340px,calc(100vw - 24px));
-      max-height:calc(100vh - 24px);overflow:auto;overscroll-behavior:contain;border-radius:15px;
+      max-height:calc(100vh - 24px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));overflow:auto;overscroll-behavior:contain;border-radius:15px;
+      scroll-padding-top:48px; /* keyboard focus never lands under the sticky title bar */
       background:linear-gradient(180deg,#15112f,#0a0a1c);border:1px solid var(--ck-line);
       box-shadow:0 24px 64px rgba(0,0,0,.85),0 0 34px rgba(34,211,238,.14);animation:clainkIn .45s var(--ease) both}
     @keyframes clainkIn{0%{opacity:0;transform:translateY(16px) scale(.97)}100%{opacity:1;transform:none}} /* stays focusable while it animates */
-    @supports (height:100dvh){ .claink-console{max-height:calc(100dvh - 24px)} }
+    @supports (height:100dvh){ .claink-console{max-height:calc(100dvh - 24px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))} }
     .claink-console.is-placed{right:auto;bottom:auto}
     .claink-console.is-mini{width:auto;max-width:calc(100vw - 24px);border-radius:999px;overflow:hidden}
     .claink-titlebar{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:8px;padding:7px 8px 7px 10px;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;
@@ -4260,7 +4261,9 @@ __/_|__
       const signed=[];
       if(own){ s.deals=s.deals.filter(d=>d.id!==own.id); signed.push({account:own.account,value:own.value,own:true}); }
       const rest=target-(own?own.value:0);
-      if(rest>0) signed.push({account:ckPick(ACCOUNT_NAMES),value:rest,own:false}); // a miracle always lands the full target
+      // a miracle always lands the full target: a real new logo for the rest, or an upsell on your deal when the rest is small
+      if(own && rest>0 && rest<2500){ signed[0].value+=rest; signed[0].upsell=rest; }
+      else if(rest>0) signed.push({account:ckPick(ACCOUNT_NAMES),value:rest,own:false});
       const order=s.deals.filter(d=>d.stage<4).map(d=>({id:d.id,k:ckR()})).sort((a,b)=>a.k-b.k);
       const nudged=new Set(order.slice(0,CLAINK.MIRACLE_NUDGE).map(x=>x.id));
       if(nudged.size) s.deals=s.deals.map(d=>nudged.has(d.id)?{...d,stage:d.stage+1,mood:d.mood==="skeptical"?"neutral":d.mood,probNote:"AI-touched"}:d);
@@ -4272,7 +4275,7 @@ __/_|__
       const c=s.claink;
       s.claink={...c,miracles:c.miracles+1,delivered:c.delivered+total,claims:c.claims+signed.length,due:c.due+fees,
         last:ckLast({kind:"miracle",week:s.week,revenue:total,
-          lines:[...signed.map(d=>`Signed ${d.account} · ${money(d.value)}${d.own?"":" (new logo)"}`),
+          lines:[...signed.map(d=>`Signed ${d.account} · ${money(d.value)}${!d.own?" (new logo)":d.upsell?" (upsold)":""}`),
             ...(nudged.size?[`Moved ${nudged.size} deal${nudged.size>1?"s":""} a stage`]:[]),
             `Closed (Q) +${money(total)} · verified by Finance`],
           announce:`It actually worked: ${signed.length} signed for ${money(total)}.`})};
@@ -4728,7 +4731,8 @@ __/_|__
       return {x:null,y:null,mini:false,chosen:false};
     };
     // until you choose, a short screen (landscape phone) gets the pill so the console doesn't sit on End Week
-    const clainkUiFor=(u)=>u.chosen ? u : {...u,mini:typeof window!=="undefined" && window.innerHeight>0 && window.innerHeight<=600};
+    const isShortScreen=()=>typeof window!=="undefined" && window.innerHeight>0 && window.innerHeight<=600;
+    const clainkUiFor=(u,short)=>u.chosen ? u : {...u,mini:short};
     // safe-area insets (the page uses viewport-fit=cover), read once from a probe element
     let clainkInsets=null;
     const safeInsets=()=>{
@@ -4763,13 +4767,21 @@ __/_|__
       clainkHeldKey=block;
     };
     const swallowRepeat=(e)=>{ if(e.repeat && (e.key==="Enter" || e.key===" ")){ e.preventDefault(); return true; } guardHeldKey(e); return false; };
-    // A pointer close/minimize makes its control vanish (or move); the second click of a double-click or double-tap must not
-    // land on the game button underneath. UI-only timer: it never touches game state.
+    // A pointer close/minimize makes its control vanish (or move); the rest of that double/triple click or tap must not land on
+    // the game button underneath. Only clicks of the same burst, near the same spot, are swallowed (each extends the burst);
+    // keyboard clicks and deliberate clicks elsewhere pass. UI-only timer: it never touches game state.
     const shieldNextClick=(e)=>{
       if(!e || e.detail===0)return;
-      const swallow=ev=>{ ev.preventDefault(); ev.stopPropagation(); document.removeEventListener("click",swallow,true); };
+      const x0=e.clientX, y0=e.clientY;
+      let t=0;
+      const off=()=>{ document.removeEventListener("click",swallow,true); clearTimeout(t); };
+      const arm=()=>{ clearTimeout(t); t=setTimeout(off,600); };
+      const swallow=ev=>{
+        if(ev.detail===0 || Math.abs(ev.clientX-x0)>40 || Math.abs(ev.clientY-y0)>40)return;
+        ev.preventDefault(); ev.stopPropagation(); arm();
+      };
       document.addEventListener("click",swallow,true);
-      setTimeout(()=>document.removeEventListener("click",swallow,true),450);
+      arm();
     };
     // keyboard-activated close: send focus somewhere useful instead of <body> (held-key repeats are already swallowed)
     const focusEndWeek=(e)=>{ if(e && e.detail===0){ const b=document.querySelector(".footer .btn.primary"); if(b) try{ b.focus(); }catch(_){} } else shieldNextClick(e); };
@@ -4880,7 +4892,7 @@ __/_|__
       const bodyIdRef=useRef(null);
       if(bodyIdRef.current===null) bodyIdRef.current="claink-body-"+(++clainkMarkSeq);
       const bodyId=bodyIdRef.current;
-      const place=p=>{ setPos(p); setShown(p); setUi(u=>({...u,x:p.x,y:p.y})); }; // user moves only
+      const place=p=>{ setPos(p); setShown(p); setUi(u=>({...u,x:p.x,y:p.y,mini})); }; // user moves only; keeps what you see (pill or console)
       const fit=()=>{
         const el=ref.current;
         if(!el || !pos || drag.current)return;
@@ -4942,12 +4954,13 @@ __/_|__
         const r=el.getBoundingClientRect(), step=e.shiftKey?64:16;
         place(clampToView(r.left+dir[0]*step,r.top+dir[1]*step,el));
       };
-      // minimizing keeps the top-left corner where you see it, so the pill stays put
+      // minimize/expand keeps your parked spot (the console may sit higher only while it needs the room); with no spot yet,
+      // the top-left corner you see becomes it, so the pill stays put
       const toggle=(e)=>{
         const el=ref.current;
-        let p=shown||pos;
-        if(el){ const r=el.getBoundingClientRect(); p={x:Math.round(r.left),y:Math.round(r.top)}; }
-        if(p){ setPos(p); setShown(p); }
+        let p=pos;
+        if(!p && el){ const r=el.getBoundingClientRect(); p={x:Math.round(r.left),y:Math.round(r.top)}; }
+        if(p){ setPos(p); setShown(null); }
         setUi(u=>({...u,x:p?p.x:u.x,y:p?p.y:u.y,mini:!mini}));
         focusNext.current="toggle";
         shieldNextClick(e); // the toggle moves out from under the pointer
@@ -4995,9 +5008,10 @@ __/_|__
               {flags>=CLAINK.RUG_FLAGS-1 && <div className="claink-warn"><span aria-hidden="true">🚩🚩 </span>One more fake and we pivot. The “annual prepay” maxes out your card:
                 you land around {money(-CLAINK.RUG_OVER[0])} to {money(-CLAINK.RUG_OVER[1])}, worse if you're already in the red
                 (Collections takes the jacket at {money(CLAINK.REPO_AT)}). And we sell a deal.</div>}
-              <div className="claink-usage">Usage this week: <b>{money(c.due)}</b>, due Friday · Paid so far {money(c.billed)}</div>
+              <div className="claink-usage">{frozen ? <>Quarter-end freeze: nothing more gets billed · Paid so far {money(c.billed)}</>
+                : <>Usage this week: <b>{money(c.due)}</b>, due Friday · Paid so far {money(c.billed)}</>}</div>
               <div className="claink-upsell">Upgrade to Pro ($4,999/wk) for 21% success.</div>
-              {!confirmCancel
+              {frozen ? null : !confirmCancel
                 ? <button type="button" ref={cancelRef} className="claink-cancel-link"
                     onClick={()=>{ focusNext.current="keep"; setConfirmCancel(true); }}>Cancel subscription</button>
                 : <div className="claink-cancel-box" role="group" aria-label="Cancel clAInk">
@@ -5067,6 +5081,8 @@ __/_|__
       const[claUi,setClaUi]=useState(readClainkUi); // v1.19: clAInk console position + minimized (a UI preference, not run state)
       const[epoch,setEpoch]=useState(0);            // v1.19: New Game, Load and New Run remount clAInk's local UI state
       const setClaUiByYou=fn=>setClaUi(u=>({...(typeof fn==="function"?fn(u):fn),chosen:true})); // only your own moves/toggles are saved
+      const[shortScreen,setShortScreen]=useState(isShortScreen); // re-checked on rotation, for the pill default
+      useEffect(()=>{ const on=()=>setShortScreen(isShortScreen()); window.addEventListener("resize",on); return()=>window.removeEventListener("resize",on); },[]);
       useEffect(()=>{ if(!claUi.chosen)return; try{ localStorage.setItem(CLAINK_UI_KEY,JSON.stringify({x:claUi.x,y:claUi.y,mini:claUi.mini})); }catch{} },[claUi]);
       const sceneRef=useRef(null);
 
@@ -5502,7 +5518,7 @@ __/_|__
             </div>
           </div>
 
-          <ClainkDock key={s.runId+":"+epoch} s={s} setS={setS} ui={clainkUiFor(claUi)} setUi={setClaUiByYou}
+          <ClainkDock key={s.runId+":"+epoch} s={s} setS={setS} ui={clainkUiFor(claUi,shortScreen)} setUi={setClaUiByYou}
             onEvent={ev=>setPending({title:ev.title,body:ev.body,options:[{label:ev.label,className:"primary",action:x=>x}]})} />
 
           <Modal
