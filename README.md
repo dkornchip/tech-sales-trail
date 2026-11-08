@@ -29,14 +29,14 @@ The pilot results, straight from the fine print: **1 in 5 agent runs closed real
 
 How it works:
 
-- **It shows up as an ad** at the start of every run. Close it and clAInk is off for that run. Ignore it and the pilot offer ends after week 10.
+- **It shows up as an ad** at the start of every run. Minimize it to a pill if it's in your way. Close it and clAInk is off for that run. Ignore it and the pilot offer ends after week 3, gone for the rest of the run.
 - **A seat costs $500.** You get one agent run per week. It costs no energy and no action slots; the bill comes on Friday.
 - **1 in 5 runs actually works.** It signs $12,000 to $22,000 of real business and nudges two more deals forward. A great week.
 - **The other runs deliver "outcomes."** "Influenced $78,000 of pipeline (all of it)." "Drafted 1,400 emails. Sent 0." "Booked 3 meetings with other agents." Every outcome is billed, and so are the tokens. Nothing closes.
 - **Every run that closes $0 earns a strike** from Shitcorp's AI Governance Council, filed by whoever noticed: Finance wants to know about the token bill, Procurement caught the agent trying to buy itself a seat, Legal found the 45% discount it offered "in writing." Some strikes do real damage to your deals, your closed revenue, your reputation or your manager's patience.
 - **Three strikes and your seat is revoked.** Finance runs the token true-up, which somehow comes to everything in your account and then some. On its way out, the agent emails your best deal to say goodbye. They take it badly.
 - **The bill comes every Friday.** Even idle weeks cost money, because background agents keep "thinking."
-- **Your manager may notice.** "Always on ChatGDP, huh?" The first time is a remark. After that, he might take your best deal and close it himself, to teach you about writing.
+- **Your manager may notice.** "Always on ChatGDP, huh?" The first time is a warning, delivered as an event you have to acknowledge: improve your writing skills, or management will start intervening in your deals. After that, he might take your best deal and close it himself, to teach you about writing.
 
 > **Tip:** clAInk is a gamble, not a strategy. It's at its best as a late-quarter desperation play when you're behind. Quit before the third strike if you can't afford the true-up.
 
@@ -162,7 +162,8 @@ Every action takes one slot, except the Conference (two) and clAInk's runs (none
 - **Rules** (top of the Quarter Map) opens the in-game guide, with a warm welcome from Shitcorp HR.
 - **Sound:** synthesized sound effects, a stress heartbeat and an office PA announcer. Toggle sound with the 🔊 button or the **M** key, turn the announcer off with 📢, and set the volume with the slider.
 - **Save, Load, New Game** are in the header. The game also autosaves after every move and picks up where you left off when you come back.
-- **The clAInk window** can be dragged anywhere by its title bar, or minimized to a small pill.
+- **The clAInk window** can be dragged anywhere by its title bar, or minimized to a small pill. The clAInk ad minimizes to a pill too (the – button, or Esc).
+- **Desktop displays:** on a 16:9 PC screen the whole game fits on one screen, with no page scrolling. The activity log and the deal list scroll inside their own boxes.
 - **Reduced motion** is respected: if your device asks for less motion, the animations and cutscenes calm down.
 
 ---
@@ -177,7 +178,7 @@ Every action takes one slot, except the Conference (two) and clAInk's runs (none
 
 ## What's new
 
-**v1.20: the game now ships with AI** (see [clAInk](#-now-ships-with-ai-meet-claink) above), and it's much lighter on your graphics card. The full version history is in [CHANGELOG.md](CHANGELOG.md).
+**v1.21: fits a desktop screen.** The game fits a 16:9 PC display with no scrolling, the clAInk ad minimizes to a pill and its pilot offer ends after week 3, and your manager's first "Always on ChatGDP?" is a proper warning event. **v1.20: the game now ships with AI** (see [clAInk](#-now-ships-with-ai-meet-claink) above), and it's much lighter on your graphics card. The full version history is in [CHANGELOG.md](CHANGELOG.md).
 
 On the roadmap: an Account Executive mode, a Customer Success and renewals mode, and stats for your past runs.
 

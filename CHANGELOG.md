@@ -1,5 +1,31 @@
 # Changelog
 
+## v1.21 — one screen, a smaller ad, a shorter offer, a clearer warning
+
+### Changed: the whole game fits a 16:9 desktop display, with no page scrolling
+- On a two-column display at least 620px tall, the page is one screen: the header keeps its size and the two panels share the rest of the height. The activity log and the deal list scroll inside their own boxes; the Quarter Map spreads its stat cards and action buttons over the height it has, with End Week pinned to its bottom edge. The layout also uses the width of a wide screen (it was capped at 1,400px). A window that is too short for the Quarter Map's content scrolls the page as before.
+- Checked headless: at 1920×1080, 1920×950 (a browser window on a 1080p display), 1536×864, 1366×768 and 1280×720 the page height equals the viewport height, with or without deals on the board and with the clAInk ad up or minimized. Phones and tablets keep the stacked, scrolling layout.
+- On a desktop display the clAInk ad no longer reserves page space under itself (that reserve is what made the page scroll). It stands at most 60% of the screen tall and scrolls inside itself beyond that, and the activity log keeps a spacer at the end of its own scroll so its last entries can always be scrolled clear of the ad.
+- A roomy display (1500×900 and up) gets slightly larger type on the stats, actions, deals and the log.
+
+### Changed: the clAInk ad minimizes
+- The ad has a – button next to its ×. Minimized, it's a pill in the same corner: the clAInk mark, the name and the deadline ("Pilot pricing ends Week 3", or "ends this week" in week 3), with expand and close buttons. Esc minimizes the open ad (on the policy step, Esc goes back to the pitch first). Focus follows the button you used, and the rest of a double click can't land on the game behind it.
+- Minimized is a UI preference, like the workspace's: it survives a reload, and a new run (New Game, or New Run after an ending) pops the ad up expanded again. Short screens (landscape phones) start with the pill.
+- × still turns clAInk off for the run.
+
+### Changed: the pilot offer ends after week 3
+- The ad now says "Pilot pricing ends Week 3" (it was week 10). An ad nobody answered expires at End Week of week 3 ("⏳ clAInk's pilot pricing ended. Offer gone.") and disappears for the rest of the run. The fine print and the Rules say so too.
+- Saves made past week 3 with the ad still up load with the offer expired.
+
+### Changed: "Always on ChatGDP?" is a warning event
+- The first time your manager notices clAInk, it opens as an event like any other, after the run's report has played: "👔 Always on ChatGDP?" — "Always on ChatGDP, huh? That's not writing. Improve your writing skills, or management will start intervening in your deals. Consider this your warning." (After a run that actually worked: "Nice week. ChatGDP do that? Enjoy it. Improve your writing skills, or…".) You acknowledge it with "…Noted, boss".
+- The log line carries the warning too: "👔 'Always on ChatGDP, huh?' -9 manager. Warning: improve your writing, or he steps into your deals." The workspace's manager note reads "Work on your writing, or I step in on your deals."
+- The PA reads the manager's line when the dialog opens (the workspace no longer reads it at the same time). The Writing Lesson (the second notice onward, when he takes a deal) is unchanged.
+- Odds and numbers are unchanged: the 25% notice chance, the -9 manager hit, and the yoink from the second notice on are all v1.19's.
+
+### Changed: the background
+- A slight touch-up of the backdrop: a second, finer hatch, a dot weave and a soft vignette over the still gradients. Painted once like the rest of the background: no animation, no blur, no blend modes.
+
 ## v1.20 — clAInk goes enterprise, the GPU gets a day off
 
 ### Fixed: the game no longer runs your GPU like a jet engine

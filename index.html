@@ -64,7 +64,15 @@
         radial-gradient(1400px 900px at 0% 0%,rgba(31,122,255,.22) 0,transparent 60%),
         radial-gradient(1300px 900px at 100% 100%,rgba(25,168,255,.18) 0,transparent 65%),
         repeating-linear-gradient(135deg,rgba(255,255,255,.03) 0,rgba(255,255,255,.03) 1px,transparent 1px,transparent 8px),
+        repeating-linear-gradient(45deg,rgba(255,255,255,.016) 0,rgba(255,255,255,.016) 1px,transparent 1px,transparent 11px),
         linear-gradient(135deg,#030617 0,#050b1f 45%,#02030a 100%)}
+    /* v1.21: a slight touch-up. A fine dot weave over the hatch, and a soft vignette, so the backdrop reads as a
+       textured surface instead of a flat gradient. Still painted once: no animation, no blur, no blend modes. */
+    .aurora::after{content:"";position:absolute;inset:0;pointer-events:none;
+      background:
+        radial-gradient(ellipse 80% 70% at 50% 42%,transparent 55%,rgba(1,3,12,.42) 100%),
+        radial-gradient(rgba(190,210,255,.07) .8px,transparent 1.3px) 0 0/22px 22px,
+        radial-gradient(rgba(190,210,255,.045) .8px,transparent 1.3px) 11px 11px/22px 22px}
     .gridfloor{
       position:fixed;left:-10%;right:-10%;bottom:-2%;height:42vh;pointer-events:none;z-index:0;opacity:.28;
       background:
@@ -720,9 +728,21 @@
     @keyframes clainkPop{0%{opacity:0;visibility:hidden;transform:translateY(28px) scale(.95)}100%{opacity:1;visibility:visible;transform:none}}
     .claink-ad-top{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px} /* the x stays above the pinned buttons */
     .claink-sponsored{font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--ck-mut)}
-    .claink-ad-close{flex:none;width:30px;height:30px;border-radius:10px;border:1px solid var(--ck-line);background:#16123a;color:#ddd8ff;
-      font-size:18px;line-height:1;cursor:pointer;transition:border-color .2s,color .2s}
+    .claink-ad-btns{flex:none;display:flex;gap:5px}
+    .claink-ad-close,.claink-ad-min{flex:none;width:30px;height:30px;border-radius:10px;border:1px solid var(--ck-line);background:#16123a;color:#ddd8ff;
+      font-size:18px;line-height:1;cursor:pointer;padding:0;transition:border-color .2s,color .2s}
+    .claink-ad-min{font-size:15px}
     .claink-ad-close:hover{border-color:var(--ck-p);color:#fff}
+    .claink-ad-min:hover{border-color:var(--ck-c);color:#fff}
+    /* v1.21: minimized, the ad is a pill in the same corner: the mark, the name, the deadline, expand and close */
+    .claink-ad.is-mini{width:auto;max-width:calc(100vw - 32px);max-height:none;overflow:hidden;border-radius:999px;padding:5px 6px 5px 12px}
+    .claink-ad.is-mini .claink-ad-top{margin:0;gap:10px}
+    .claink-ad-pill{display:inline-flex;align-items:center;gap:7px;min-width:0;font-size:11px;color:#ddd8ff;white-space:nowrap}
+    .claink-ad-pill .claink-mark{filter:none}
+    .claink-ad-pill .claink-word{font-size:14px;letter-spacing:-.4px}
+    .claink-ad-pill .ends{overflow:hidden;text-overflow:ellipsis;color:#ffd59e}
+    .claink-ad-pill .ends::before{content:"· ";color:var(--ck-mut)}
+    .claink-ad.is-mini .claink-ad-btns button{width:28px;height:26px;border-radius:8px}
     .claink-announce{display:inline-flex;align-items:center;gap:6px;max-width:100%;font-size:11px;font-weight:600;color:#ece6ff;
       padding:4px 11px;border-radius:999px;border:1px solid #5d4cb5;background:linear-gradient(90deg,#2b2066,#10324c);margin:0 0 12px}
     .claink-announce b{color:var(--ck-c)}
@@ -867,6 +887,52 @@
       .claink-ad.confirming{max-height:calc(100vh - 32px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))}
       @supports (height:100dvh){ .claink-ad.confirming{max-height:calc(100dvh - 32px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))} } }
     @media (prefers-reduced-motion: reduce){ .claink-ad,.claink-console,.ck-beat{animation:none!important} }
+
+    /* ---------- v1.21: the whole game fits a 16:9 desktop display, no page scrolling ---------- */
+    /* Two columns and enough height: the page is one screen. The header keeps its size, the two panels share the rest,
+       and what can grow without end (deals, the activity log) scrolls inside its own box. The left panel spreads its
+       stat cards and action buttons over the height it has, with End Week pinned to its bottom edge. The container
+       scrolls only as a fallback, if a font or zoom setting ever makes the fixed part taller than the screen.
+       Phones and tablets keep the stacked, scrolling layout above. */
+    @media (min-width:1025px) and (min-height:620px){
+      html,body{height:100%;overflow:hidden}
+      .container{height:100vh;max-width:1880px;display:flex;flex-direction:column;padding:10px 14px 12px;overflow:auto;overscroll-behavior:contain}
+      header{flex:none}
+      /* the row is at least the Quarter Map's content (so a window that is too short scrolls the page, the fallback)
+         and otherwise exactly the screen; only the right panel may be shorter than its content (its log scrolls) */
+      #root{flex:1 1 auto;display:flex;flex-direction:column}
+      .grid{flex:1 1 auto;grid-template-rows:1fr}
+      .grid>.panel{display:flex;flex-direction:column}
+      .grid>.panel:nth-child(2){min-height:0}
+      .grid>.panel>*{flex:none}
+      /* rows keep their natural height when space is tight; spare height spreads over them (grid's default stretch) */
+      .grid>.panel:nth-child(1) .stats{flex:1 1 auto;max-height:250px}
+      .grid>.panel:nth-child(1) .stat{justify-content:flex-start}
+      .grid>.panel:nth-child(1) .stat .bar{margin-top:auto}
+      .grid>.panel:nth-child(1) .actions{flex:3 1 auto;max-height:600px}
+      .grid>.panel:nth-child(1) .actions .btn{display:flex;flex-direction:column;justify-content:center;min-height:0}
+      .grid>.panel:nth-child(1) .footer{margin-top:auto;padding-top:6px}
+      .grid>.panel:nth-child(2) .deal-list{flex:0 1 auto;min-height:60px;max-height:260px}
+      /* the log takes the rest. Size containment keeps its entries out of the row's intrinsic height (a 1fr row would
+         otherwise grow with the log instead of letting it scroll). A spacer at the end of its scroll keeps the last
+         entries reachable while the clAInk ad is up (a spacer, not padding: padding would set the box's minimum height) */
+      .grid>.panel:nth-child(2) .log{flex:1 1 auto;height:auto;min-height:96px;contain:size}
+      .grid>.panel:nth-child(2) .log::after{content:"";display:block;height:max(0px,calc(var(--claink-h,0px) - 24px))}
+      /* the ad never stands taller than most of the screen: it scrolls inside itself (the buttons stay pinned) */
+      .claink-ad{max-height:min(calc(100vh - 32px),60vh)}
+    }
+    @supports (height:100dvh){ @media (min-width:1025px) and (min-height:620px){ .container{height:100dvh} } }
+    /* a roomy display (a full 1080p window): slightly larger type, so the space reads as design, not as air */
+    @media (min-width:1500px) and (min-height:900px){
+      body{font-size:15px}
+      .stat .value{font-size:19px}
+      .stat .label,.stat .sub{font-size:12px}
+      .actions .btn .title{font-size:13.5px}
+      .actions .btn .desc{font-size:12px}
+      .log{font-size:14px}
+      .deal-title{font-size:14px}
+      h2{font-size:15px}
+    }
   </style>
 </head>
 <body>
@@ -2894,7 +2960,7 @@ __/_|__
     var t = norm(title);
     if(t.indexOf("🧨") === 0) say("competitor",{cooldown:4000});
     else if(t.indexOf("🔐") === 0) say("incident",{cooldown:4000});
-    else if(t.indexOf("👔") === 0) say("yoink",{cooldown:4000}); // v1.19: the Writing Lesson
+    else if(t.indexOf("👔") === 0) say(/chatgdp/i.test(t) ? "chatgdp" : "yoink",{cooldown:4000}); // v1.21: the warning; v1.19: the Writing Lesson
   }
 
   // v1.15 scene cuts: whip pan, slash cut, impact frame
@@ -4136,7 +4202,8 @@ __/_|__
       rng:()=>Math.random(),
       flavor:ckMulberry(Date.now()^0x5eed1e55),
       INSTALL:500, CANCEL:250, REPO_AT:-1500,
-      OFFER_LAST_WEEK:10,                 // "Pilot pricing ends Week 10": the activation deadline
+      OFFER_LAST_WEEK:3,                  // "Pilot pricing ends Week 3": the activation deadline (v1.21: was week 10). End Week of
+                                          // week 3 expires an unanswered ad, and the offer never comes back for the rest of the run
       MIRACLE_P:0.20,                     // first draw of every run
       MIRACLE:[12000,22000],              // real revenue a miracle closes (about 1-1.5 weeks of quota pace)
       MIRACLE_NUDGE:2,                    // other deals it moves one stage
@@ -4174,7 +4241,7 @@ __/_|__
     const ckPipe=(s)=>({...s,pipeline:s.deals.reduce((sum,d)=>sum+d.value,0)});
     const ckTok=(dollars)=>Math.max(0,Math.round(dollars*CLAINK.TOKENS_PER_DOLLAR*(0.88+0.24*ckF())));
     const fmtTok=(n)=>n>=1e9 ? `${(n/1e9).toFixed(1)}B` : n>=1e6 ? `${(n/1e6).toFixed(1)}M` : n>=1e3 ? `${Math.round(n/1e3)}K` : String(Math.round(n||0));
-    const ckLast=(o)=>({kind:"strike",week:0,run:0,tokens:0,revenue:0,lines:[],strike:null,clear:"",farewell:"",ping:"",yoink:false,cashWarn:false,announce:"",...o});
+    const ckLast=(o)=>({kind:"strike",week:0,run:0,tokens:0,revenue:0,lines:[],strike:null,clear:"",farewell:"",ping:"",yoink:false,warn:false,cashWarn:false,announce:"",...o});
     const newClaink=()=>({status:"ad",hidden:false,deployed:false,strikes:0,claims:0,due:0,weekTokens:0,mgr:{noticed:false,yoinks:0},
       last:null,strikeLog:[],deploys:0,miracles:0,fakes:0,incidents:0,claimed:0,delivered:0,billed:0,lastInvoice:0,tokens:0});
 
@@ -4215,7 +4282,7 @@ __/_|__
 
     // saves are user data: coerce every field. v1.19 saves say "rugged", "scam"/"rug" and flags; the v1.16 prototype's
     // shape ({active, usedThisWeek, runs, totalBilled, ...}) still maps too. `week` lets an ad from a save made before
-    // clAInk existed respect the Week 10 deadline. Names are matched exactly (a save is user data: "constructor" is not a status).
+    // clAInk existed respect the Week 3 deadline. Names are matched exactly (a save is user data: "constructor" is not a status).
     const sanitizeClaink=(raw,week)=>{
       const pastOffer=getQuarterInfo(Number.isFinite(week)&&week>0?week:1).weekInQuarter>CLAINK.OFFER_LAST_WEEK;
       const b=newClaink();
@@ -4273,7 +4340,7 @@ __/_|__
           run:L.run!==undefined ? n(L.run,0,999) : (kind==="onboarded" || kind==="cancelled" ? 0 : deploys),
           tokens:n(L.tokens,0,1e12), revenue:n(L.revenue),
           lines:oldKind==="rug" || !Array.isArray(L.lines) ? [] : L.lines.filter(x=>typeof x==="string" && !(kind==="miracle" && /^Closed \(Q\) \+\$/.test(x))).slice(0,8).map(x=>x.slice(0,120)),
-          strike, clear:str(L.clear,120), farewell:str(L.farewell,60), ping:str(L.ping), yoink:!!L.yoink, cashWarn:!!L.cashWarn,
+          strike, clear:str(L.clear,120), farewell:str(L.farewell,60), ping:str(L.ping), yoink:!!L.yoink, warn:!!L.warn, cashWarn:!!L.cashWarn,
           announce:oldKind ? "" : str(L.announce,320)}) : null,
         strikeLog:[...filed.values()].sort((x,y)=>x.n-y.n),
         deploys, miracles:n(raw.miracles), fakes:n(raw.fakes), incidents:n(raw.incidents),
@@ -4462,19 +4529,25 @@ __/_|__
       return hurt ? ckRepo(state,s) : s;
     };
 
-    // "Always on ChatGDP?" The first time the manager only remarks (once per run); after that, any use can get a deal yoinked.
-    // A relationship hit every time. Returns {state, event}; event is the acknowledgement dialog for a yoink.
+    // "Always on ChatGDP?" The first time the manager issues a warning (once per run): it opens as an event, like any other
+    // event, so you can't miss it: improve your writing, or management steps into your deals. After that, any use can get
+    // a deal yoinked. A relationship hit every time. Returns {state, event}; event is the acknowledgement dialog (the
+    // warning, or the Writing Lesson for a yoink).
+    const CK_WARNING="Improve your writing skills, or management will start intervening in your deals. Consider this your warning.";
     const clainkManager=(state,rMgr)=>{
       if(rMgr>=CLAINK.MGR_P || isRunOver(state) || !state.claink)return {state,event:null};
       let s={...state};
       const hit=CLAINK.MGR_HIT;
       s.manager=clamp(s.manager-hit,0,100);
       const c=s.claink;
-      const withLast=(ping,say,yoink=false)=>c.last ? {...c.last,ping,yoink,announce:`${c.last.announce} ${say}`} : c.last;
+      const withLast=(ping,say,yoink=false,warn=false)=>c.last ? {...c.last,ping,yoink,warn,announce:`${c.last.announce} ${say}`} : c.last;
       if(!c.mgr.noticed){
         const miracle=!!(c.last && c.last.kind==="miracle");
-        s.claink={...c,mgr:{...c.mgr,noticed:true},last:withLast(miracle?"Nice week. ChatGDP do that?":"always on ChatGDP huh","Your manager noticed.")};
-        return {state:log(s,miracle?`👔 'ChatGDP do that?' -${hit} manager.`:`👔 'Always on ChatGDP?' -${hit} manager.`,"warn"),event:null};
+        const quip=miracle?"Nice week. ChatGDP do that?":"Always on ChatGDP, huh?";
+        s.claink={...c,mgr:{...c.mgr,noticed:true},last:withLast(`${quip} Work on your writing, or I step in on your deals.`,
+          `Your manager noticed. ${CK_WARNING}`,false,true)};
+        return {state:log(s,`👔 '${quip}' -${hit} manager. Warning: improve your writing, or he steps into your deals.`,"warn"),
+          event:{title:"👔 Always on ChatGDP?",body:`“${quip} ${miracle?"Enjoy it. ":"That's not writing. "}${CK_WARNING}”`,label:"…Noted, boss"}};
       }
       const victim=[...s.deals].filter(d=>d.stage>=2).sort(ckRank)[0] || [...s.deals].sort((a,b)=>b.value-a.value)[0] || null;
       if(!victim){
@@ -4819,13 +4892,13 @@ __/_|__
     const readClainkUi=()=>{
       try{
         const v=JSON.parse(localStorage.getItem(CLAINK_UI_KEY)||"null");
-        if(v && typeof v==="object") return {x:Number.isFinite(v.x)?v.x:null, y:Number.isFinite(v.y)?v.y:null, mini:!!v.mini, chosen:true};
+        if(v && typeof v==="object") return {x:Number.isFinite(v.x)?v.x:null, y:Number.isFinite(v.y)?v.y:null, mini:!!v.mini, adMini:!!v.adMini, chosen:true};
       }catch{}
-      return {x:null,y:null,mini:false,chosen:false};
+      return {x:null,y:null,mini:false,adMini:false,chosen:false};
     };
-    // until you choose, a short screen (landscape phone) gets the pill so the console doesn't sit on End Week
+    // until you choose, a short screen (landscape phone) gets the pills so neither the console nor the ad sits on End Week
     const isShortScreen=()=>typeof window!=="undefined" && window.innerHeight>0 && window.innerHeight<=600;
-    const clainkUiFor=(u,short)=>u.chosen ? u : {...u,mini:short};
+    const clainkUiFor=(u,short)=>u.chosen ? u : {...u,mini:short,adMini:short};
     // safe-area insets (the page uses viewport-fit=cover), read once from a probe element
     let clainkInsets=null;
     const safeInsets=()=>{
@@ -4904,21 +4977,27 @@ __/_|__
       </span>
     );
 
-    const ClainkAd=({s,onInstall,onDismiss})=>{
-      const ref=useRef(null), ctaRef=useRef(null), notNowRef=useRef(null);
+    // v1.21: the ad minimizes to a pill (the – button, or Esc) and expands again from it; × still turns clAInk off for the
+    // run. Minimized is a UI preference like the workspace's (it survives a reload, and a new run expands the ad again).
+    const ClainkAd=({s,mini,onToggle,onInstall,onDismiss})=>{
+      const ref=useRef(null), ctaRef=useRef(null), notNowRef=useRef(null), toggleRef=useRef(null);
       const[step,setStep]=useState(0); // 0: CTA, 1: the AI use policy + confirm
       const focusNext=useRef(null);
       const policyIdRef=useRef(null);
       if(policyIdRef.current===null) policyIdRef.current="claink-policy-"+(++clainkMarkSeq);
-      const policyId=policyIdRef.current;
+      const policyId=policyIdRef.current, bodyId=policyId+"-body";
       const can=clainkCanInstall(s);
       const declined=!isRunOver(s) && s.cash-CLAINK.INSTALL<=CLAINK.REPO_AT;
+      const lastWeek=getQuarterInfo(s.week).weekInQuarter>=CLAINK.OFFER_LAST_WEEK;
+      const ends=lastWeek ? "Pilot pricing ends this week" : `Pilot pricing ends Week ${CLAINK.OFFER_LAST_WEEK}`;
+      // focus follows the control that replaced the one you used (never back to <body>)
       useEffect(()=>{
-        const el=focusNext.current==="notnow" ? notNowRef.current : focusNext.current==="cta" ? ctaRef.current : null;
-        focusNext.current=null;
+        const k=focusNext.current; focusNext.current=null;
+        const el=k==="notnow" ? notNowRef.current : k==="cta" ? ctaRef.current : k==="toggle" ? toggleRef.current : null;
         if(el) try{ el.focus({preventScroll:true}); }catch(_){}
-      },[step]);
+      });
       // the ad is bottom-anchored: reserve that much page under it so End Week, deals and the log always scroll clear
+      // (on a desktop display the page doesn't scroll; the activity log scrolls clear of it instead, see the CSS)
       useEffect(()=>{
         const el=ref.current, root=document.documentElement;
         if(!el)return;
@@ -4929,42 +5008,59 @@ __/_|__
         window.addEventListener("resize",set);
         return()=>{ if(ro)ro.disconnect(); window.removeEventListener("resize",set); root.style.removeProperty("--claink-h"); };
       },[]);
+      const toggle=(e)=>{ focusNext.current="toggle"; onToggle(); shieldNextClick(e); }; // the toggle moves out from under the pointer
+      const onKeyDown=e=>{
+        if(swallowRepeat(e))return;
+        if(e.key!=="Escape")return;
+        if(e.repeat){ e.preventDefault(); return; }
+        if(step===1){ e.preventDefault(); focusNext.current="cta"; setStep(0); }
+        else if(!mini){ e.preventDefault(); toggle(e); }
+      };
       return(
-        <aside ref={ref} className={"claink-ad"+(step===1?" confirming":"")} aria-label="Sponsored: clAInk Enterprise" onKeyDown={swallowRepeat}>
+        <aside ref={ref} className={"claink-ad"+(mini?" is-mini":"")+(step===1 && !mini?" confirming":"")} aria-label={"Sponsored: clAInk Enterprise"+(mini?" (minimized)":"")} onKeyDown={onKeyDown}>
           <div className="claink-ad-top">
-            <span className="claink-sponsored">Sponsored · Enterprise pilot</span>
-            <button type="button" className="claink-ad-close" aria-label="Close ad. clAInk will be off for this run"
-              title="Close (turns clAInk off for this run)" onClick={onDismiss}><span aria-hidden="true">×</span></button>
+            {mini
+              ? <span className="claink-ad-pill"><ClainkMark size={16}/><span className="claink-word" aria-hidden="true">cl<b>AI</b>nk</span><span className="sr-only">clAInk. </span><span className="ends">{ends}</span></span>
+              : <span className="claink-sponsored">Sponsored · Enterprise pilot</span>}
+            <span className="claink-ad-btns">
+              <button type="button" ref={toggleRef} className="claink-ad-min" aria-expanded={!mini} aria-controls={bodyId}
+                aria-label={mini ? "Expand clAInk ad" : "Minimize clAInk ad"} title={mini ? "Expand" : "Minimize"}
+                onClick={toggle}><span aria-hidden="true">{mini ? "▢" : "–"}</span></button>
+              <button type="button" className="claink-ad-close" aria-label="Close ad. clAInk will be off for this run"
+                title="Close (turns clAInk off for this run)" onClick={onDismiss}><span aria-hidden="true">×</span></button>
+            </span>
           </div>
-          <div className="claink-announce"><span aria-hidden="true">✦</span><span>New: <b>Autonomous Pipeline</b> is GA</span><span aria-hidden="true">→</span></div>
-          <ClainkLogo/>
-          <h3 className="claink-headline">Your reps sell. Our agents do everything else.</h3>
-          <p className="claink-sub">Up to 70% of a rep's week is busywork. clAInk runs a team of autonomous agents that research accounts, write the outreach and advance your deals, around the clock.</p>
-          <div className="claink-chips"><span>Account research</span><span>Outreach at scale</span><span>Deal advancement</span></div>
-          <p className="claink-proof">“Our agents completed 1.2 million tasks last quarter.”<span>VP of RevOps, Fortune 500 logistics company</span></p>
-          <div className="claink-price"><b>Outcome-based pricing.</b> Pay for every outcome, plus the tokens it took to get there.</div>
-          <div className="claink-badges"><span>SOC 2 Type II</span><span>SSO</span><span>Human-in-the-loop (optional)</span><span className="urgent"><span aria-hidden="true">⏳ </span>Pilot pricing ends Week {CLAINK.OFFER_LAST_WEEK}</span></div>
-          <div className="claink-actions">
-            {step===0
-              ? <button type="button" ref={ctaRef} className="claink-cta" disabled={!can}
-                  onClick={()=>{ focusNext.current="notnow"; setStep(1); }}>{declined ? "Declined · cash too low" : `Activate seat · ${money(CLAINK.INSTALL)}`}</button>
-              : <>
-                  <div className="claink-policy" id={policyId} role="group" aria-labelledby={policyId+"-hd"}>
-                    <div className="hd" id={policyId+"-hd"}>Shitcorp AI Use Policy <span>v3 (final) (2)</span></div>
-                    <ul>
-                      <li>The seat, the tokens and every “outcome” come out of your commission.</li>
-                      <li>A run that closes $0 earns a strike from the AI Governance Council.</li>
-                      <li>Strike {CLAINK.STRIKES}: seat revoked, plus the token true-up.</li>
-                    </ul>
-                  </div>
-                  <div className="claink-confirm-row">
-                    <button type="button" className="claink-confirm" disabled={!can} onClick={onInstall} aria-describedby={policyId}>Accept · {money(CLAINK.INSTALL)}</button>
-                    <button type="button" ref={notNowRef} className="claink-notnow" onClick={()=>{ focusNext.current="cta"; setStep(0); }} aria-describedby={policyId}>Not now</button>
-                  </div>
-                </>}
+          <div className="claink-ad-body" id={bodyId} hidden={mini}>
+            <div className="claink-announce"><span aria-hidden="true">✦</span><span>New: <b>Autonomous Pipeline</b> is GA</span><span aria-hidden="true">→</span></div>
+            <ClainkLogo/>
+            <h3 className="claink-headline">Your reps sell. Our agents do everything else.</h3>
+            <p className="claink-sub">Up to 70% of a rep's week is busywork. clAInk runs a team of autonomous agents that research accounts, write the outreach and advance your deals, around the clock.</p>
+            <div className="claink-chips"><span>Account research</span><span>Outreach at scale</span><span>Deal advancement</span></div>
+            <p className="claink-proof">“Our agents completed 1.2 million tasks last quarter.”<span>VP of RevOps, Fortune 500 logistics company</span></p>
+            <div className="claink-price"><b>Outcome-based pricing.</b> Pay for every outcome, plus the tokens it took to get there.</div>
+            <div className="claink-badges"><span>SOC 2 Type II</span><span>SSO</span><span>Human-in-the-loop (optional)</span><span className="urgent"><span aria-hidden="true">⏳ </span>{ends}</span></div>
+            <div className="claink-actions">
+              {step===0
+                ? <button type="button" ref={ctaRef} className="claink-cta" disabled={!can}
+                    onClick={()=>{ focusNext.current="notnow"; setStep(1); }}>{declined ? "Declined · cash too low" : `Activate seat · ${money(CLAINK.INSTALL)}`}</button>
+                : <>
+                    <div className="claink-policy" id={policyId} role="group" aria-labelledby={policyId+"-hd"}>
+                      <div className="hd" id={policyId+"-hd"}>Shitcorp AI Use Policy <span>v3 (final) (2)</span></div>
+                      <ul>
+                        <li>The seat, the tokens and every “outcome” come out of your commission.</li>
+                        <li>A run that closes $0 earns a strike from the AI Governance Council.</li>
+                        <li>Strike {CLAINK.STRIKES}: seat revoked, plus the token true-up.</li>
+                      </ul>
+                    </div>
+                    <div className="claink-confirm-row">
+                      <button type="button" className="claink-confirm" disabled={!can} onClick={onInstall} aria-describedby={policyId}>Accept · {money(CLAINK.INSTALL)}</button>
+                      <button type="button" ref={notNowRef} className="claink-notnow" onClick={()=>{ focusNext.current="cta"; setStep(0); }} aria-describedby={policyId}>Not now</button>
+                    </div>
+                  </>}
+            </div>
+            <p className="claink-fine">Charged back to you under the Shitcorp AI Use Policy. Usage is invoiced Fridays.
+              Pilot results: 1 in 5 agent runs closed real revenue. The other 4 delivered outcomes. Offer ends after Week {CLAINK.OFFER_LAST_WEEK}.</p>
           </div>
-          <p className="claink-fine">Charged back to you under the Shitcorp AI Use Policy. Usage is invoiced Fridays.
-            Pilot results: 1 in 5 agent runs closed real revenue. The other 4 delivered outcomes.</p>
         </aside>
       );
     };
@@ -5109,8 +5205,9 @@ __/_|__
         const isRun=!!L && (L.kind==="miracle" || L.kind==="strike" || L.kind==="revoked");
         if(!isRun){ setBeat(99); r.timers.push(setTimeout(finishReveal,0)); return; }
         const out=L.kind==="revoked", win=L.kind==="miracle", hurt=!!(L.strike && L.strike.hurt);
-        // one PA line per run: HR offboarding the agent, else the manager (a yoink speaks when its dialog opens), else the result
-        const managerPa=L.ping && !L.yoink && !out ? "chatgdp" : null;
+        // one PA line per run: HR offboarding the agent, else the manager (the warning and a yoink speak when their dialog
+        // opens), else the result
+        const managerPa=L.ping && !L.yoink && !L.warn && !out ? "chatgdp" : null;
         const resultPa=out ? "clainkRevoked" : L.ping ? null : win ? "claink" : hurt ? "sev1" : "strike";
         const hit=out ? "bsod" : win ? "cash" : hurt ? "glitch" : "stamp";
         // nothing to watch: hand over right after this commit (so the page's own effects have seen the new state)
@@ -5301,7 +5398,8 @@ __/_|__
       const commit=fn=>setS(p=>checkBurnout(fn(p)));
       if(c.status==="ad"){
         if(isRunOver(s) || getQuarterInfo(s.week).weekInQuarter>CLAINK.OFFER_LAST_WEEK)return null;
-        return <ClainkAd s={s} onInstall={()=>commit(buyClaink)} onDismiss={e=>{ commit(dismissClaink); focusEndWeek(e); }}/>;
+        return <ClainkAd s={s} mini={!!ui.adMini} onToggle={()=>setUi(u=>({...u,adMini:!u.adMini}))}
+          onInstall={()=>commit(buyClaink)} onDismiss={e=>{ commit(dismissClaink); focusEndWeek(e); }}/>;
       }
       if(c.status==="active" || ((c.status==="cancelled" || c.status==="revoked") && !c.hidden)){
         return <ClainkConsole s={s} ui={ui} setUi={setUi} focusOnMount={justInstalled}
@@ -5338,7 +5436,8 @@ __/_|__
       const setClaUiByYou=fn=>setClaUi(u=>({...(typeof fn==="function"?fn(u):fn),chosen:true})); // only your own moves/toggles are saved
       const[shortScreen,setShortScreen]=useState(isShortScreen); // re-checked on rotation, for the pill default
       useEffect(()=>{ const on=()=>setShortScreen(isShortScreen()); window.addEventListener("resize",on); return()=>window.removeEventListener("resize",on); },[]);
-      useEffect(()=>{ if(!claUi.chosen)return; try{ localStorage.setItem(CLAINK_UI_KEY,JSON.stringify({x:claUi.x,y:claUi.y,mini:claUi.mini})); }catch{} },[claUi]);
+      useEffect(()=>{ if(!claUi.chosen)return; try{ localStorage.setItem(CLAINK_UI_KEY,JSON.stringify({x:claUi.x,y:claUi.y,mini:claUi.mini,adMini:claUi.adMini})); }catch{} },[claUi]);
+      const expandAd=()=>setClaUi(u=>u.adMini ? {...u,adMini:false} : u); // v1.21: a new run's ad pops up expanded again
       const sceneRef=useRef(null);
 
       // FIX: header buttons were re-bound on every state change. Bind once; read live state through a ref.
@@ -5353,6 +5452,7 @@ __/_|__
           const a=AUDIO(); if(a){ a.hush(); a.play("newgame"); a.say("newrun",{cooldown:3000}); }
           setS(newGame());
           setEpoch(e=>e+1); // v1.19: fresh clAInk UI state
+          expandAd();
           setPending(null);
           setOver(null);
         };
@@ -5811,7 +5911,7 @@ __/_|__
             <p className="tiny"><strong>Stress</strong> hurts close rates. 80+ can melt you down at week end; 100 is instant.</p>
             <p className="tiny"><strong>Quad Shot</strong> hits harder each shot that week. Shot 3+ can put you in orbit; a shot to 100 stress will. Each one: +{CRASH_PER_SHOT} stress at week end, weaker Recharge.</p>
             <p className="tiny"><strong>CRM Cleanup</strong> weekly: prunes dead leads, +manager, freezes warnings, trims fire odds. Boss may nuke a good deal.</p>
-            <p className="tiny"><strong>clAInk</strong> is a sponsored AI pilot. Close the ad and it's gone this run. A {money(CLAINK.INSTALL)} seat buys one agent run a week (no energy or slots; billed Friday, idle weeks too): 1 in 5 closes real deals, the rest burn tokens on billed “outcomes” and earn a strike from the AI Governance Council, sometimes with damage. Strike {CLAINK.STRIKES}: seat revoked, a deal walks, and a token true-up that takes all your cash and leaves you {money(CLAINK.TRUEUP_OVER[0])}–{money(CLAINK.TRUEUP_OVER[1])} in the red (more if you're already there). Your manager may notice.</p>
+            <p className="tiny"><strong>clAInk</strong> is a sponsored AI pilot. Close the ad and it's gone this run. A {money(CLAINK.INSTALL)} seat buys one agent run a week (no energy or slots; billed Friday, idle weeks too): 1 in 5 closes real deals, the rest burn tokens on billed “outcomes” and earn a strike from the AI Governance Council, sometimes with damage. Strike {CLAINK.STRIKES}: seat revoked, a deal walks, and a token true-up that takes all your cash and leaves you {money(CLAINK.TRUEUP_OVER[0])}–{money(CLAINK.TRUEUP_OVER[1])} in the red (more if you're already there). The pilot offer ends after week {CLAINK.OFFER_LAST_WEEK}. Your manager may notice: the first time is a warning to improve your writing, after that he steps into your deals.</p>
             <p className="tiny"><strong>Cash</strong> is salary and commission in, rent out. At -$1,500 the jacket goes.</p>
             <p className="tiny"><strong>Pipeline</strong> is the value of live deals. Actions move them down the funnel.</p>
             <p className="tiny"><strong>Closed (Q)</strong> is revenue this quarter. Behind pace from week 5? Warnings, or a surprise exit.</p>
@@ -5849,6 +5949,7 @@ __/_|__
                   const a=AUDIO(); if(a){ a.hush(); a.play("newgame"); a.say("newrun",{cooldown:3000}); }
                   setS(newGame());
                   setEpoch(e=>e+1); // v1.19: fresh clAInk UI state
+                  expandAd();
                   setPending(null); // FIX: an event that fired on the final week no longer leaks into the next run
                   setOver(null);
                 }
