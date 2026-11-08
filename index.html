@@ -2868,9 +2868,11 @@ __/_|__
   function onLogs(entries,info){
     info = info || {};
     if(info.over || !entries || !entries.length) return;
-    var picks = [], speech = null;
+    var picks = [], speech = null, runBatch = false;
+    for(var k=0;k<entries.length;k++){ if(isClainkRun(entries[k].msg)){ runBatch = true; break; } }
     for(var i=0;i<entries.length;i++){
-      if(isClainkRun(entries[i].msg)) continue;
+      // a run owns its whole batch: its "Cash under -$1,000" warning sounds when the strike card lands, and the PA line is the run's
+      if(isClainkRun(entries[i].msg) || (runBatch && norm(entries[i].msg).indexOf("⚠") === 0)) continue;
       var e = entries[i], r = ruleFor(e.msg);
       if(r && r.close){ var mm = /signed, \$([\d,]+)/.exec(e.msg); var amt = mm ? parseInt(mm[1].replace(/,/g,""),10) : 0; if(amt >= 45000) r.say = "bigClose"; }
       if(r && r.sfx === "week"){ var wm = /📆 Week (\d+)/.exec(e.msg); if(wm){ var w = ((parseInt(wm[1],10)-1)%13)+1;
@@ -2885,7 +2887,7 @@ __/_|__
     if(week) picks.push(week);
     picks.sort(function(a,b){ return a.i-b.i; });
     picks.forEach(function(p,k){ play(p.sfx,{delay:k*0.17,prio:p.sfx === "week" ? 3 : undefined}); });
-    if(speech) say(speech.say,{cooldown: speech.sfx === "week" ? 9000 : 6000});
+    if(speech && !runBatch) say(speech.say,{cooldown: speech.sfx === "week" ? 9000 : 6000});
   }
   function onModal(title){
     play("modal");
@@ -4172,7 +4174,7 @@ __/_|__
     const ckPipe=(s)=>({...s,pipeline:s.deals.reduce((sum,d)=>sum+d.value,0)});
     const ckTok=(dollars)=>Math.max(0,Math.round(dollars*CLAINK.TOKENS_PER_DOLLAR*(0.88+0.24*ckF())));
     const fmtTok=(n)=>n>=1e9 ? `${(n/1e9).toFixed(1)}B` : n>=1e6 ? `${(n/1e6).toFixed(1)}M` : n>=1e3 ? `${Math.round(n/1e3)}K` : String(Math.round(n||0));
-    const ckLast=(o)=>({kind:"strike",week:0,run:0,tokens:0,revenue:0,lines:[],strike:null,clear:"",farewell:"",ping:"",yoink:false,announce:"",...o});
+    const ckLast=(o)=>({kind:"strike",week:0,run:0,tokens:0,revenue:0,lines:[],strike:null,clear:"",farewell:"",ping:"",yoink:false,cashWarn:false,announce:"",...o});
     const newClaink=()=>({status:"ad",hidden:false,deployed:false,strikes:0,claims:0,due:0,weekTokens:0,mgr:{noticed:false,yoinks:0},
       last:null,strikeLog:[],deploys:0,miracles:0,fakes:0,incidents:0,claimed:0,delivered:0,billed:0,lastInvoice:0,tokens:0});
 
@@ -4270,8 +4272,8 @@ __/_|__
         last:L ? ckLast({kind, week:n(L.week,0,999),
           run:L.run!==undefined ? n(L.run,0,999) : (kind==="onboarded" || kind==="cancelled" ? 0 : deploys),
           tokens:n(L.tokens,0,1e12), revenue:n(L.revenue),
-          lines:oldKind==="rug" || !Array.isArray(L.lines) ? [] : L.lines.filter(x=>typeof x==="string").slice(0,8).map(x=>x.slice(0,120)),
-          strike, clear:str(L.clear,120), farewell:str(L.farewell,60), ping:str(L.ping), yoink:!!L.yoink,
+          lines:oldKind==="rug" || !Array.isArray(L.lines) ? [] : L.lines.filter(x=>typeof x==="string" && !(kind==="miracle" && /^Closed \(Q\) \+\$/.test(x))).slice(0,8).map(x=>x.slice(0,120)),
+          strike, clear:str(L.clear,120), farewell:str(L.farewell,60), ping:str(L.ping), yoink:!!L.yoink, cashWarn:!!L.cashWarn,
           announce:oldKind ? "" : str(L.announce,320)}) : null,
         strikeLog:[...filed.values()].sort((x,y)=>x.n-y.n),
         deploys, miracles:n(raw.miracles), fakes:n(raw.fakes), incidents:n(raw.incidents),
@@ -4494,7 +4496,11 @@ __/_|__
       const c=state.claink;
       let s={...state,claink:{...c,deployed:true,deploys:c.deploys+1,due:c.due+CLAINK.RETAINER}};
       s=rMiracle<CLAINK.MIRACLE_P ? clainkMiracle(s) : clainkStrikeRun(s,rInc,rKind);
-      return clainkManager(s,rMgr);
+      const r=clainkManager(s,rMgr);
+      // the workspace sounds the "Cash under -$1,000" alarm with the strike card, if this run is what tipped it
+      if(!state.repoWarned && r.state.repoWarned && r.state.claink && r.state.claink.last)
+        return {...r,state:{...r.state,claink:{...r.state.claink,last:{...r.state.claink.last,cashWarn:true}}}};
+      return r;
     };
 
     const cancelClaink=(state)=>{
@@ -5108,7 +5114,7 @@ __/_|__
         const resultPa=out ? "clainkRevoked" : L.ping ? null : win ? "claink" : hurt ? "sev1" : "strike";
         const hit=out ? "bsod" : win ? "cash" : hurt ? "glitch" : "stamp";
         // nothing to watch: hand over right after this commit (so the page's own effects have seen the new state)
-        if(reducedNow() || mini){ setBeat(99); cue(hit,resultPa||managerPa); r.timers.push(setTimeout(finishReveal,0)); return; }
+        if(reducedNow() || mini){ setBeat(99); cue(hit,resultPa||managerPa); if(L.cashWarn) cue("alarm"); r.timers.push(setTimeout(finishReveal,0)); return; }
         const nL=L.lines.length, beats=nL+2+(L.ping?1:0)+(out?1:0), tok=L.tokens||0;
         const at=b=>CK_WORK_MS+(b-1)*CK_BEAT_MS, later=(ms,fn)=>r.timers.push(setTimeout(fn,ms));
         setBeat(0); setWorkTok(Math.round(tok*0.06)); cue("beep");
@@ -5117,7 +5123,7 @@ __/_|__
         // the cues ride the same beats: a tick per outcome, the net, the strike (or the all-clear), the manager, the farewell
         for(let b=1;b<=nL;b++) later(at(b),()=>cue(b===1 && win ? "sparkle" : "tick"));
         later(at(nL+1),()=>cue(win ? "cash" : "thud"));
-        later(at(nL+2),()=>cue(win ? null : hit,resultPa));
+        later(at(nL+2),()=>{ cue(win ? null : hit,resultPa); if(L.cashWarn) cue("alarm"); });
         if(L.ping) later(at(nL+3),()=>cue(L.yoink ? "lost" : "suspicion",managerPa));
         if(out && L.farewell) later(at(beats),()=>cue("lost"));
         later(CK_WORK_MS+beats*CK_BEAT_MS,finishReveal);
@@ -5200,6 +5206,7 @@ __/_|__
       };
       const onKeyDown=e=>{
         if(swallowRepeat(e))return;
+        if(e.key==="Escape" && e.repeat){ e.preventDefault(); return; }
         if(e.key==="Escape" && beat<99){ e.preventDefault(); finishReveal(); return; }
         if(e.key==="Escape" && !end && !ui.mini){ e.preventDefault(); toggle(); }
       };
@@ -5216,7 +5223,7 @@ __/_|__
       const frozen=clainkFrozen(s);
       const pill=end ? (c.status==="revoked" ? "Revoked" : "Cancelled") : frozen ? "Frozen" : c.deployed ? "Ran" : "Ready";
       const at=shown||pos;
-      const hold=beat<99 && holdH.current ? holdH.current : 0;
+      const hold=beat<99 && holdH.current && !mini && c.status!=="cancelled" ? Math.min(holdH.current,window.innerHeight-24) : 0;
       const style=at || hold ? {...(at?{left:at.x+"px",top:at.y+"px"}:{}),...(hold?{minHeight:hold+"px"}:{})} : undefined;
       const skip=beat<99 ? finishReveal : null;
       return(

@@ -44,7 +44,7 @@
 
 ### Changed: one thing at a time
 - A run plays out in the workspace beat by beat: agents working, with the token count ticking up, then the outcomes one at a time, then "Closed: $0", then the strike card, then your manager. It takes about 2.5 seconds; click the report or press Esc to skip. Reduced motion (even switched on mid-game), a minimized workspace or a reload shows it all at once.
-- Each beat is voiced as it lands: a tick per outcome, then a stamp, a glitch or a blue screen when the strike card lands, then your manager. The workspace holds its height while a report plays, so nothing moves under your pointer.
+- Each beat is voiced as it lands: a tick per outcome, then a stamp, a glitch or a blue screen when the strike card lands (with the cash alarm, if the run took you under -$1,000), then your manager. The workspace doesn't shrink while a report plays, so a double click on Run agents can't land on the game behind it.
 - The strike box fills when the strike card lands, and this week's bill shows after the report, not while the agents are still "working".
 - The Writing Lesson (your manager takes a deal) waits until the report has played instead of popping over it, and the PA still reads it. It waits for the Rules to close. If the week has moved on, the run has ended or been replaced (New Game, Load), or another event is waiting, it stays in the log only.
 - A run logs two lines (three at strike 3, plus your manager if he noticed), down from as many as five. The strike's line carries its damage: the deal that fled, the discount and the manager hit, the deals shared, or the churn and its commission clawback.
