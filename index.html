@@ -4143,21 +4143,21 @@ __/_|__
       MIRACLE:[12000,22000],              // real revenue a miracle closes (about 1-1.5 weeks of quota pace)
       MIRACLE_NUDGE:2,                    // other deals it moves one stage
       RUG_FLAGS:3,                        // the third fake is the rug pull
-      RUG_OVER:[500,2400],                // the "annual prepay" maxes out the card on file: you end at -$500..-$2,400
-      RUG_MIN:1200,                       // ...or at least this much (plus the week's usage) when there's nothing left to max
+      RUG_OVER:[200,1800],                // the "annual prepay" maxes out the card on file: you end at -$200..-$1,800
+      RUG_MIN:0,                          // ...and it always takes at least the week's usage when there's nothing left to max
       RUG_MGR:8,                          // the forecast had its fake wins in it
-      INCIDENT_P:0.25,                    // a fake also causes a SEV-1
+      INCIDENT_P:0.38,                    // a fake also causes a SEV-1
       INC:{
-        slop:{w:0.30, rep:10, mgr:6},             // best deal flees
-        discount:{w:0.20, cut:0.45, mgr:10, rep:4},// hallucinated 45% off
-        leak:{w:0.20, n:2, rep:12, mgr:8},         // pipeline emailed to a rival
-        churn:{w:0.30, frac:0.15, lo:4000, hi:30000} // auto-renewed at 3x, customer churned: a slice of closed revenue and its commission come back
+        slop:{w:0.20, rep:10, mgr:6},             // best deal flees
+        discount:{w:0.15, cut:0.45, mgr:10, rep:4},// hallucinated 45% off
+        leak:{w:0.15, n:2, rep:12, mgr:8},         // pipeline emailed to a rival
+        churn:{w:0.50, frac:0.22, lo:1500, hi:45000} // auto-renewed at 3x, customer churned: a slice of closed revenue and its commission come back
       },
       MGR_P:0.25,                         // manager notice (once per run), then yoink chance per deploy
-      MGR_HIT:6,                          // relationship hit on every manager event
-      RETAINER:149,                       // every deployed week
-      PER_OUTCOME:[60,140],               // every claimed outcome, fake or real
-      IDLE:[60,120],                      // an active week with no deploy
+      MGR_HIT:9,                          // relationship hit on every manager event
+      RETAINER:249,                       // every deployed week
+      PER_OUTCOME:[140,280],              // every claimed outcome, fake or real
+      IDLE:[150,300],                     // an active week with no deploy
       OVERAGE_P:0.10, OVERAGE:[200,600],  // surprise token overage on the Friday invoice
       FAKE_CLAIMS:[2,5]
     };
@@ -5452,7 +5452,7 @@ __/_|__
             <p className="tiny"><strong>Stress</strong> hurts close rates. 80+ can melt you down at week end; 100 is instant.</p>
             <p className="tiny"><strong>Quad Shot</strong> hits harder each shot that week. Shot 3+ can put you in orbit; a shot to 100 stress will. Each one: +{CRASH_PER_SHOT} stress at week end, weaker Recharge.</p>
             <p className="tiny"><strong>CRM Cleanup</strong> weekly: prunes dead leads, +manager, freezes warnings, trims fire odds. Boss may nuke a good deal.</p>
-            <p className="tiny"><strong>clAInk.io</strong> pops up each run. Close it and it's gone. Install {money(CLAINK.INSTALL)}: free weekly deploys, 20% real deals, 80% fake wins billed as outcomes. Third fake, it vanishes with a big charge. Your manager may notice.</p>
+            <p className="tiny"><strong>clAInk.io</strong> pops up each run. Close it and it's gone. Install {money(CLAINK.INSTALL)}: free weekly deploys, 20% real deals, 80% fake wins billed as outcomes. Third fake, it maxes out your card and vanishes. Your manager may notice.</p>
             <p className="tiny"><strong>Cash</strong> is salary and commission in, rent out. At -$1,500 the jacket goes.</p>
             <p className="tiny"><strong>Pipeline</strong> is the value of live deals. Actions move them down the funnel.</p>
             <p className="tiny"><strong>Closed (Q)</strong> is revenue this quarter. Behind pace from week 5? Warnings, or a surprise exit.</p>
