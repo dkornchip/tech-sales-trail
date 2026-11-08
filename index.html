@@ -846,7 +846,8 @@
     .claink-404 .code{font-size:44px;font-weight:800;letter-spacing:-2px;line-height:1;
       background:linear-gradient(100deg,var(--ck-p),var(--ck-v));-webkit-background-clip:text;background-clip:text;color:transparent}
     .claink-404 p,.claink-offboarded p{margin:0}
-    .claink-404 .stats,.claink-offboarded .stats{color:#94a3b8;font-size:11px}
+    .claink-stats{color:#94a3b8;font-size:11px}
+    .claink-404 .claink-statusline{text-transform:none;letter-spacing:0;font-size:12px;color:#e2e8f0} /* keep the cl-AI-nk casing */
     .claink-ad button:focus-visible,.claink-console button:focus-visible{outline:2px solid var(--ck-c);outline-offset:2px}
     .badge.claink-badge{border-color:#4c3d99;color:#ddd6fe}
     @media (max-width:640px){
@@ -4338,8 +4339,9 @@ __/_|__
       const real=[...s.deals].sort(ckRank);
       const lines=[];
       let claimed=0, ri=0;
+      const kinds=["signed","meetings","pipeline","hours","churn","signed"]; // drawn without replacement: no brag repeats
       for(let i=0;i<n;i++){
-        const kind=i===0 || ckR()<0.5 ? "signed" : ckPick(["meetings","pipeline","hours","churn"]);
+        const kind=i===0 ? "signed" : kinds.splice(1+Math.floor(ckR()*(kinds.length-1)),1)[0];
         if(kind==="signed"){
           const d=real[ri++]||null;
           const v=Math.round((d?d.value:ckInt(9000,26000))*(1.3+ckR())/100)*100;
@@ -4951,12 +4953,12 @@ __/_|__
               <div className="code" aria-hidden="true">404</div>
               <div className="claink-statusline" tabIndex={-1} ref={statusRef}>clAInk.io not found</div>
               <p>This domain is for sale. The founders are building “agents for agents” in stealth.</p>
-              <p className="stats">Claimed {money(c.claimed)} · Delivered {money(c.delivered)} · Billed {money(c.billed)}</p>
+              <p className="claink-stats">Claimed {money(c.claimed)} · Delivered {money(c.delivered)} · Billed {money(c.billed)}</p>
             </div>}
             {c.status==="cancelled" && <div className="claink-offboarded">
               <div className="claink-statusline" tabIndex={-1} ref={statusRef}>Offboarded</div>
               <p>We kept your data. And your vibes. <span aria-hidden="true">💜</span></p>
-              <p className="stats">Delivered {money(c.delivered)} · Billed {money(c.billed)}</p>
+              <p className="claink-stats">Delivered {money(c.delivered)} · Billed {money(c.billed)}</p>
             </div>}
           </div>
           <div className="claink-live sr-only" aria-live="polite">{c.last && c.last.announce ? `Deploy ${c.deploys}: ${c.last.announce}` : ""}</div>
