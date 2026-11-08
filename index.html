@@ -4834,7 +4834,14 @@ __/_|__
         const el=k==="status" ? (mini ? toggleRef.current : statusRef.current) : k==="toggle" ? toggleRef.current : k==="cancel" ? cancelRef.current : k==="keep" ? keepRef.current : null;
         if(el) try{ el.focus({preventScroll:true}); }catch(_){}
       });
-      // keep it on screen across minimize/expand, end cards, growing content (cancel confirm, results) and window resizes
+      // re-clamp before paint after every render, so content that just grew (cancel confirm, results) never flashes off-screen
+      (React.useLayoutEffect||useEffect)(()=>{
+        const el=ref.current;
+        if(!el || !pos || drag.current)return;
+        const p=clampToView(pos.x,pos.y,el);
+        if(p.x!==pos.x || p.y!==pos.y) place(p);
+      });
+      // ...and on size changes React didn't cause (fonts loading) and window resizes
       useEffect(()=>{
         const el=ref.current;
         const fix=()=>{ if(!el || !pos || drag.current)return; const p=clampToView(pos.x,pos.y,el); if(p.x!==pos.x || p.y!==pos.y) place(p); };
