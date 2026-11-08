@@ -580,7 +580,8 @@
     .cutbox.crt::after{z-index:3;border-radius:inherit}
     .cutbox.crt pre{position:relative;z-index:1;margin:0;font-family:ui-monospace,Menlo,Consolas,"DejaVu Sans Mono","Courier New",monospace;
       font-size:11px;line-height:1.14;white-space:pre;color:var(--ink);text-shadow:0 0 5px currentColor;transform-origin:50% 50%}
-    /* v1.20: the CRT flickers only while a scene is playing; a scene that settles on its last frame goes still */
+    /* v1.20: the CRT flickers only while a scene is live (in practice the boot screen: an ending's pre keeps its finished
+       power-on animation, which outranks this rule) */
     .cutbox.crt.tst-live pre{animation:flicker 6s steps(1,end) infinite}
     .cutbox.crt.bsod{background:#0b3fb8}
     .cutbox.crt.bsod pre{text-shadow:0 0 3px rgba(255,255,255,.55)}
@@ -717,7 +718,7 @@
       -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
     .tst-booting .claink-ad{animation-play-state:paused}
     @keyframes clainkPop{0%{opacity:0;visibility:hidden;transform:translateY(28px) scale(.95)}100%{opacity:1;visibility:visible;transform:none}}
-    .claink-ad-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+    .claink-ad-top{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px} /* the x stays above the pinned buttons */
     .claink-sponsored{font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--ck-mut)}
     .claink-ad-close{flex:none;width:30px;height:30px;border-radius:10px;border:1px solid var(--ck-line);background:#16123a;color:#ddd8ff;
       font-size:18px;line-height:1;cursor:pointer;transition:border-color .2s,color .2s}
@@ -794,7 +795,7 @@
     .claink-strikes .row1{display:flex;align-items:center;gap:8px}
     .claink-strikes .lbl{font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--ck-mut)}
     .claink-strikes .boxes{display:flex;gap:5px}
-    .ck-box{width:22px;height:22px;border-radius:6px;display:grid;place-items:center;font-size:11px;font-weight:800;line-height:1;color:#6c66a3;border:1px dashed #4a4385}
+    .ck-box{width:22px;height:22px;border-radius:6px;display:grid;place-items:center;font-size:11px;font-weight:800;line-height:1;color:#8a84c4;border:1px dashed #4a4385}
     .ck-box.on{color:#fff;border:1px solid #e11d48;background:linear-gradient(180deg,#be123c,#881337);box-shadow:0 0 10px rgba(225,29,72,.32)}
     .claink-strikes .who{margin-left:auto;font-size:10.5px;color:var(--ck-mut);text-align:right}
     .claink-strikes .note{font-size:11px;line-height:1.38;color:#c9c4ef}
@@ -860,8 +861,11 @@
       .claink-console{right:calc(10px + env(safe-area-inset-right,0px));bottom:calc(10px + env(safe-area-inset-bottom,0px))}
     }
     @media (max-width:640px){ @supports (height:100dvh){ .claink-ad{max-height:50dvh} } }
-    /* short screens (landscape phones): the ad scrolls inside itself so the page can always scroll clear of it */
-    @media (max-height:600px){ .claink-ad{max-height:58vh} @supports (height:100dvh){ .claink-ad{max-height:58dvh} } }
+    /* short screens (landscape phones): the ad scrolls inside itself so the page can always scroll clear of it. The policy
+       step takes the full height it needs, so the pinned policy and buttons never cover the x or the whole pitch. */
+    @media (max-height:600px){ .claink-ad{max-height:58vh} @supports (height:100dvh){ .claink-ad{max-height:58dvh} }
+      .claink-ad.confirming{max-height:calc(100vh - 32px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))}
+      @supports (height:100dvh){ .claink-ad.confirming{max-height:calc(100dvh - 32px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))} } }
     @media (prefers-reduced-motion: reduce){ .claink-ad,.claink-console,.ck-beat{animation:none!important} }
   </style>
 </head>
@@ -2857,11 +2861,16 @@ __/_|__
     for(var i=0;i<RULES.length;i++){ var r = RULES[i]; if(m.indexOf(norm(r[0])) === 0) return {sfx:r[1], prio:r[2], say:r[3]}; }
     return null;
   }
+  // v1.20: a clAInk run's report is voiced by the agent workspace as each beat lands (see ClainkConsole), so the director
+  // leaves those lines alone; installs, invoices, cancels and the rest still sound here. ruleFor still maps them (tests).
+  var CLAINK_RUN = ["🤖 clAInk run","🤖 clAInk:","✨","⚖","💥","🔒","💔","👔"];
+  function isClainkRun(msg){ var m = norm(msg); for(var i=0;i<CLAINK_RUN.length;i++){ if(m.indexOf(norm(CLAINK_RUN[i])) === 0) return true; } return false; }
   function onLogs(entries,info){
     info = info || {};
     if(info.over || !entries || !entries.length) return;
     var picks = [], speech = null;
     for(var i=0;i<entries.length;i++){
+      if(isClainkRun(entries[i].msg)) continue;
       var e = entries[i], r = ruleFor(e.msg);
       if(r && r.close){ var mm = /signed, \$([\d,]+)/.exec(e.msg); var amt = mm ? parseInt(mm[1].replace(/,/g,""),10) : 0; if(amt >= 45000) r.say = "bigClose"; }
       if(r && r.sfx === "week"){ var wm = /📆 Week (\d+)/.exec(e.msg); if(wm){ var w = ((parseInt(wm[1],10)-1)%13)+1;
@@ -4163,7 +4172,7 @@ __/_|__
     const ckPipe=(s)=>({...s,pipeline:s.deals.reduce((sum,d)=>sum+d.value,0)});
     const ckTok=(dollars)=>Math.max(0,Math.round(dollars*CLAINK.TOKENS_PER_DOLLAR*(0.88+0.24*ckF())));
     const fmtTok=(n)=>n>=1e9 ? `${(n/1e9).toFixed(1)}B` : n>=1e6 ? `${(n/1e6).toFixed(1)}M` : n>=1e3 ? `${Math.round(n/1e3)}K` : String(Math.round(n||0));
-    const ckLast=(o)=>({kind:"strike",week:0,run:0,tokens:0,revenue:0,lines:[],strike:null,clear:"",farewell:"",ping:"",announce:"",...o});
+    const ckLast=(o)=>({kind:"strike",week:0,run:0,tokens:0,revenue:0,lines:[],strike:null,clear:"",farewell:"",ping:"",yoink:false,announce:"",...o});
     const newClaink=()=>({status:"ad",hidden:false,deployed:false,strikes:0,claims:0,due:0,weekTokens:0,mgr:{noticed:false,yoinks:0},
       last:null,strikeLog:[],deploys:0,miracles:0,fakes:0,incidents:0,claimed:0,delivered:0,billed:0,lastInvoice:0,tokens:0});
 
@@ -4204,7 +4213,7 @@ __/_|__
 
     // saves are user data: coerce every field. v1.19 saves say "rugged", "scam"/"rug" and flags; the v1.16 prototype's
     // shape ({active, usedThisWeek, runs, totalBilled, ...}) still maps too. `week` lets an ad from a save made before
-    // clAInk existed respect the Week 10 deadline.
+    // clAInk existed respect the Week 10 deadline. Names are matched exactly (a save is user data: "constructor" is not a status).
     const sanitizeClaink=(raw,week)=>{
       const pastOffer=getQuarterInfo(Number.isFinite(week)&&week>0?week:1).weekInQuarter>CLAINK.OFFER_LAST_WEEK;
       const b=newClaink();
@@ -4212,8 +4221,7 @@ __/_|__
       if(!raw || typeof raw!=="object" || Array.isArray(raw))return b;
       const n=(v,lo=0,hi=1e9)=>Number.isFinite(v)?Math.max(lo,Math.min(hi,Math.round(v))):lo;
       const str=(v,max=160)=>typeof v==="string"?v.slice(0,max):"";
-      const V19_STATUS={rugged:"revoked"}, V19_KIND={scam:"strike",rug:"revoked"};
-      let status=CLAINK_STATUSES.includes(raw.status)?raw.status:(V19_STATUS[raw.status]||null);
+      let status=CLAINK_STATUSES.includes(raw.status) ? raw.status : raw.status==="rugged" ? "revoked" : null;
       const legacy=!status;
       if(legacy){
         // prototype buy/cancel never touched runs/totalBilled, but they always wrote lastReport (and invoices wrote lastInvoice)
@@ -4230,9 +4238,26 @@ __/_|__
       const due=raw.due!==undefined || !(legacy && status==="active" && raw.usedThisWeek) ? n(raw.due,0,1e6)
         : CLAINK.RETAINER+n(raw.outcomesThisWeek,0,99)*CLAINK.PER_OUTCOME[0];
       const billed=n(raw.billed!==undefined ? raw.billed : raw.totalBilled);
-      // a v1.19 report kept its incident as plain text: show it as the strike it now is
-      const strike=S ? {n:n(S.n,1,CLAINK.STRIKES),who:str(S.who,40),why:str(S.why,200),fx:str(S.fx,160)}
-        : L && typeof L.incident==="string" && L.incident ? {n:n(L.flags,1,CLAINK.STRIKES),who:"Incident review",why:str(L.incident,200),fx:""} : null;
+      const lastInvoice=n(raw.lastInvoice);
+      const deploys=n(raw.deploys!==undefined ? raw.deploys : raw.runs);
+      // a v1.19 report: its rug-pull lines go (the revoked card tells that story now), its incident becomes its strike card
+      const oldKind=L && (L.kind==="scam" || L.kind==="rug") ? L.kind : null;
+      const kind=L ? (CLAINK_KINDS.includes(L.kind) ? L.kind : L.kind==="rug" ? "revoked" : "strike") : null;
+      const revokedNote=lastInvoice>0 ? `Seat revoked. True-up: -${money(lastInvoice)}.` : "Seat revoked.";
+      const strike=S ? {n:n(S.n,1,CLAINK.STRIKES),who:str(S.who,40),why:str(S.why,200),fx:str(S.fx,160),hurt:!!S.hurt}
+        : oldKind==="rug" ? {n:CLAINK.STRIKES,who:"AI Governance Council",why:"Three strikes. Your seat is revoked, effective immediately. Finance has the true-up.",
+            fx:lastInvoice>0 ? `Token true-up -${money(lastInvoice)}` : "",hurt:false}
+        : L && typeof L.incident==="string" && L.incident ? {n:n(L.flags,1,CLAINK.STRIKES),who:"Incident review",why:str(L.incident,200),fx:"",hurt:true} : null;
+      // the strike log matches the strike count: one entry per strike, in order; strikes filed before v1.20 get a plain one
+      const filed=new Map();
+      (Array.isArray(raw.strikeLog) ? raw.strikeLog : []).forEach(x=>{
+        if(!x || typeof x!=="object" || !Number.isFinite(x.n))return;
+        const k=Math.round(x.n);
+        if(k>=1 && k<=strikes) filed.set(k,{n:k,who:str(x.who,40),line:str(x.line,120)});
+      });
+      if(strike && strike.who==="Incident review" && strike.n<=strikes && !filed.has(strike.n)) filed.set(strike.n,{n:strike.n,who:strike.who,line:str(L.incident,120)});
+      for(let k=1;k<=strikes;k++) if(!filed.has(k)) filed.set(k,{n:k,who:"AI Governance Council",
+        line:k===CLAINK.STRIKES && status==="revoked" ? revokedNote : "A run that closed $0."});
       return{
         status,
         hidden:ended && !!raw.hidden,
@@ -4242,14 +4267,15 @@ __/_|__
         due,
         weekTokens:raw.weekTokens!==undefined ? n(raw.weekTokens,0,1e12) : due*CLAINK.TOKENS_PER_DOLLAR,
         mgr:{noticed:!!mgr.noticed, yoinks:n(mgr.yoinks,0,999)},
-        last:L ? ckLast({kind:CLAINK_KINDS.includes(L.kind)?L.kind:(V19_KIND[L.kind]||"strike"), week:n(L.week,0,999), run:n(L.run,0,999),
+        last:L ? ckLast({kind, week:n(L.week,0,999),
+          run:L.run!==undefined ? n(L.run,0,999) : (kind==="onboarded" || kind==="cancelled" ? 0 : deploys),
           tokens:n(L.tokens,0,1e12), revenue:n(L.revenue),
-          lines:Array.isArray(L.lines)?L.lines.filter(x=>typeof x==="string").slice(0,8).map(x=>x.slice(0,120)):[],
-          strike, clear:str(L.clear,120), farewell:str(L.farewell,60), ping:str(L.ping), announce:str(L.announce,320)}) : null,
-        strikeLog:Array.isArray(raw.strikeLog) ? raw.strikeLog.filter(x=>x && typeof x==="object").slice(-CLAINK.STRIKES)
-          .map(x=>({n:n(x.n,1,CLAINK.STRIKES),who:str(x.who,40),line:str(x.line,120)})) : [],
-        deploys:n(raw.deploys!==undefined ? raw.deploys : raw.runs), miracles:n(raw.miracles), fakes:n(raw.fakes), incidents:n(raw.incidents),
-        claimed:n(raw.claimed,0,1e12), delivered:n(raw.delivered), billed, lastInvoice:n(raw.lastInvoice),
+          lines:oldKind==="rug" || !Array.isArray(L.lines) ? [] : L.lines.filter(x=>typeof x==="string").slice(0,8).map(x=>x.slice(0,120)),
+          strike, clear:str(L.clear,120), farewell:str(L.farewell,60), ping:str(L.ping), yoink:!!L.yoink,
+          announce:oldKind ? "" : str(L.announce,320)}) : null,
+        strikeLog:[...filed.values()].sort((x,y)=>x.n-y.n),
+        deploys, miracles:n(raw.miracles), fakes:n(raw.fakes), incidents:n(raw.incidents),
+        claimed:n(raw.claimed,0,1e12), delivered:n(raw.delivered), billed, lastInvoice,
         tokens:raw.tokens!==undefined ? n(raw.tokens,0,1e13) : billed*CLAINK.TOKENS_PER_DOLLAR
       };
     };
@@ -4352,7 +4378,7 @@ __/_|__
         s.reputation=clamp(s.reputation-I.discount.rep,0,100);
         who="Legal";
         why=`Your agent's negotiation sub-agent offered ${v.account} ${pct(I.discount.cut)}% off “to accelerate the outcome.” In writing.`;
-        line=`It offered ${v.account} ${pct(I.discount.cut)}% off. In writing.`;
+        line=`It offered ${v.account} ${pct(I.discount.cut)}% off. In writing. -${I.discount.mgr} mgr.`;
         fx=`${v.account} -${pct(I.discount.cut)}% · -${I.discount.mgr} mgr · -${I.discount.rep} rep`;
       }else if(kind==="leak"){
         const lost=ranked.slice(0,I.leak.n);
@@ -4373,7 +4399,7 @@ __/_|__
         const a=ckFreshName(s);
         who="Customer Success";
         why=`Your agent auto-upgraded ${a} to the 3x tier “to drive outcomes.” They churned.`;
-        line=`${a} upgraded to 3x, then churned. -${money(amt)}.`;
+        line=`${a} upgraded to 3x, then churned. -${money(amt)} closed, -${money(back)} clawback.`;
         fx=`-${money(amt)} closed · -${money(back)} commission clawback`;
       }
       return {s:ckPipe(s),who,why,fx,line};
@@ -4428,7 +4454,7 @@ __/_|__
       const cc=s.claink;
       s.claink={...cc,incidents:cc.incidents+(hurt?1:0),
         strikeLog:[...cc.strikeLog,{n:strikes,who:r.who,line:r.line}].slice(-CLAINK.STRIKES),
-        last:{...cc.last,strike:{n:strikes,who:r.who,why:r.why,fx:r.fx},
+        last:{...cc.last,strike:{n:strikes,who:r.who,why:r.why,fx:r.fx||"",hurt},
           announce:`${cc.last.announce} Strike ${strikes} of ${CLAINK.STRIKES}, filed by ${r.who}: ${r.line}`}};
       s=log(s,`${hurt?"💥":"⚖️"} Strike ${strikes}/${CLAINK.STRIKES} (${r.who}): ${r.line}`,hurt?"bad":"warn");
       return hurt ? ckRepo(state,s) : s;
@@ -4442,7 +4468,7 @@ __/_|__
       const hit=CLAINK.MGR_HIT;
       s.manager=clamp(s.manager-hit,0,100);
       const c=s.claink;
-      const withLast=(ping,say)=>c.last ? {...c.last,ping,announce:`${c.last.announce} ${say}`} : c.last;
+      const withLast=(ping,say,yoink=false)=>c.last ? {...c.last,ping,yoink,announce:`${c.last.announce} ${say}`} : c.last;
       if(!c.mgr.noticed){
         const miracle=!!(c.last && c.last.kind==="miracle");
         s.claink={...c,mgr:{...c.mgr,noticed:true},last:withLast(miracle?"Nice week. ChatGDP do that?":"always on ChatGDP huh","Your manager noticed.")};
@@ -4455,7 +4481,7 @@ __/_|__
       }
       s.deals=s.deals.filter(d=>d.id!==victim.id);
       s=ckPipe(s);
-      s.claink={...c,mgr:{...c.mgr,yoinks:c.mgr.yoinks+1},last:withLast(`I'll close ${victim.account} myself. Work on your writing skills.`,`Your manager took ${victim.account}.`)};
+      s.claink={...c,mgr:{...c.mgr,yoinks:c.mgr.yoinks+1},last:withLast(`I'll close ${victim.account} myself. Work on your writing skills.`,`Your manager took ${victim.account}.`,true)};
       s=log(s,`👔 Boss took ${victim.account}. 'Writing lesson.' -${hit} mgr.`,"bad");
       return {state:s,event:{title:"👔 Writing Lesson",
         body:`“Always on ChatGDP, huh? I'll close ${victim.account} myself. Watch and work on your writing skills.”`,label:"…Thanks, boss"}};
@@ -4876,6 +4902,9 @@ __/_|__
       const ref=useRef(null), ctaRef=useRef(null), notNowRef=useRef(null);
       const[step,setStep]=useState(0); // 0: CTA, 1: the AI use policy + confirm
       const focusNext=useRef(null);
+      const policyIdRef=useRef(null);
+      if(policyIdRef.current===null) policyIdRef.current="claink-policy-"+(++clainkMarkSeq);
+      const policyId=policyIdRef.current;
       const can=clainkCanInstall(s);
       const declined=!isRunOver(s) && s.cash-CLAINK.INSTALL<=CLAINK.REPO_AT;
       useEffect(()=>{
@@ -4895,7 +4924,7 @@ __/_|__
         return()=>{ if(ro)ro.disconnect(); window.removeEventListener("resize",set); root.style.removeProperty("--claink-h"); };
       },[]);
       return(
-        <aside ref={ref} className="claink-ad" aria-label="Sponsored: clAInk Enterprise" onKeyDown={swallowRepeat}>
+        <aside ref={ref} className={"claink-ad"+(step===1?" confirming":"")} aria-label="Sponsored: clAInk Enterprise" onKeyDown={swallowRepeat}>
           <div className="claink-ad-top">
             <span className="claink-sponsored">Sponsored · Enterprise pilot</span>
             <button type="button" className="claink-ad-close" aria-label="Close ad. clAInk will be off for this run"
@@ -4914,8 +4943,8 @@ __/_|__
               ? <button type="button" ref={ctaRef} className="claink-cta" disabled={!can}
                   onClick={()=>{ focusNext.current="notnow"; setStep(1); }}>{declined ? "Declined · cash too low" : `Activate seat · ${money(CLAINK.INSTALL)}`}</button>
               : <>
-                  <div className="claink-policy">
-                    <div className="hd">Shitcorp AI Use Policy <span>v3 (final) (2)</span></div>
+                  <div className="claink-policy" id={policyId} role="group" aria-labelledby={policyId+"-hd"}>
+                    <div className="hd" id={policyId+"-hd"}>Shitcorp AI Use Policy <span>v3 (final) (2)</span></div>
                     <ul>
                       <li>The seat, the tokens and every “outcome” come out of your commission.</li>
                       <li>A run that closes $0 earns a strike from the AI Governance Council.</li>
@@ -4923,24 +4952,36 @@ __/_|__
                     </ul>
                   </div>
                   <div className="claink-confirm-row">
-                    <button type="button" className="claink-confirm" disabled={!can} onClick={onInstall}>Accept · {money(CLAINK.INSTALL)}</button>
-                    <button type="button" ref={notNowRef} className="claink-notnow" onClick={()=>{ focusNext.current="cta"; setStep(0); }}>Not now</button>
+                    <button type="button" className="claink-confirm" disabled={!can} onClick={onInstall} aria-describedby={policyId}>Accept · {money(CLAINK.INSTALL)}</button>
+                    <button type="button" ref={notNowRef} className="claink-notnow" onClick={()=>{ focusNext.current="cta"; setStep(0); }} aria-describedby={policyId}>Not now</button>
                   </div>
                 </>}
           </div>
-          <p className="claink-fine">Charged back under Shitcorp's AI Enablement Policy. Usage is invoiced Fridays.
+          <p className="claink-fine">Charged back to you under the Shitcorp AI Use Policy. Usage is invoiced Fridays.
             Pilot results: 1 in 5 agent runs closed real revenue. The other 4 delivered outcomes.</p>
         </aside>
       );
     };
 
     // Three boxes, filled by Shitcorp's AI Governance Council. The note under them says what the next strike costs.
-    const ClainkStrikes=({n,log})=>{
+    // At two strikes it works out where the true-up leaves you: max(the run's usage, all your cash + $200-1,800), so a
+    // player already in the red lands at cash minus the run's usage, which can be Collections outright.
+    const ckTrueUpRange=(cash,due)=>{
+      const lo=CLAINK.RETAINER+CLAINK.OUTCOMES[0]*CLAINK.PER_OUTCOME[0], hi=CLAINK.RETAINER+CLAINK.OUTCOMES[1]*CLAINK.PER_OUTCOME[1];
+      return [Math.min(-CLAINK.TRUEUP_OVER[0],cash-(due+lo)), Math.min(-CLAINK.TRUEUP_OVER[1],cash-(due+hi))];
+    };
+    const ClainkStrikes=({n,log,cash,due,ran})=>{
       const S=CLAINK.STRIKES, hot=n>=S-1;
-      const note=hot
-        ? `Next $0 run is strike ${S}: seat revoked, a deal walks, and the token true-up leaves you around ${money(-CLAINK.TRUEUP_OVER[0])} to ${money(-CLAINK.TRUEUP_OVER[1])}. Collections comes at ${money(CLAINK.REPO_AT)}.`
-        : n===0 ? `Every run that closes $0 is a strike. ${S} and the seat is revoked.`
+      let note;
+      if(!hot) note=n===0 ? `Every run that closes $0 is a strike. ${S} and the seat is revoked.`
         : `${n} down. Strike ${S} revokes the seat and runs the token true-up.`;
+      else{
+        // after this week's run the next one waits for Friday's bill and payday, so only the usual range holds
+        const [best,worst]=ran ? [-CLAINK.TRUEUP_OVER[0],-CLAINK.TRUEUP_OVER[1]] : ckTrueUpRange(cash,due);
+        const head=`Next $0 run is strike ${S}: seat revoked, a deal walks, and the token true-up `;
+        note=!ran && best<=CLAINK.REPO_AT ? head+"sends you to Collections."
+          : head+`leaves you around ${money(best)} to ${money(worst)}${ran?", worse if you're in the red":""}. Collections comes at ${money(CLAINK.REPO_AT)}.`;
+      }
       return(
         <div className={"claink-strikes"+(hot?" hot":"")}>
           <div className="row1">
@@ -4978,19 +5019,19 @@ __/_|__
         </div>
       );
       if(!all && beat<=0) return(
-        <div className="claink-report working" onClick={onSkip||undefined} title="Click to skip">
+        <div className="claink-report working" onClick={onSkip||undefined} title="Click or press Esc to skip">
           <span aria-hidden="true">◌ </span>Agents working… <b>{fmtTok(workTok)}</b> tokens
         </div>
       );
       const miracle=k==="miracle", shown=all ? nL : Math.min(nL,beat);
       const net=all || beat>nL, card=all || beat>nL+1;
       return(<>
-        <div className={"claink-report "+(miracle?"miracle":"strike")+(onSkip?" revealing":"")} onClick={onSkip||undefined} title={onSkip?"Click to skip":undefined}>
-          <div className="hd"><span>{miracle ? <><span aria-hidden="true">✨ </span>It actually worked</> : `Run ${last.run||""} · outcomes delivered`}</span>
-            <span className="tok">{fmtTok(last.tokens)} tokens</span></div>
+        {nL>0 && <div className={"claink-report "+(miracle?"miracle":"strike")+(onSkip?" revealing":"")} onClick={onSkip||undefined} title={onSkip?"Click or press Esc to skip":undefined}>
+          <div className="hd"><span>{miracle ? <><span aria-hidden="true">✨ </span>It actually worked</> : last.run ? `Run ${last.run} · outcomes delivered` : "Outcomes delivered"}</span>
+            {last.tokens>0 && <span className="tok">{fmtTok(last.tokens)} tokens</span>}</div>
           <ul>{last.lines.slice(0,shown).map((l,i)=><li key={i} className={"ck-beat"+(/^\d+ more outcome/.test(l)?" more":"")}>{l}</li>)}</ul>
           {net && <div className={"net ck-beat"+(miracle?"":" zero")}>{miracle ? `Closed +${money(last.revenue)} · verified by Finance` : "Closed: $0"}</div>}
-        </div>
+        </div>}
         {card && (last.strike ? <ClainkStrikeCard st={last.strike}/> : miracle && last.clear ? <div className="claink-clear ck-beat">{last.clear}</div> : null)}
       </>);
     };
@@ -5001,8 +5042,8 @@ __/_|__
         <div className="stamp" aria-hidden="true">REVOKED</div>
         <p>The AI Governance Council has sunset your agents. They will be missed by no one.</p>
         {c.last && c.last.farewell && <p className="farewell">Its farewell email to {c.last.farewell}: “It's not you, it's me.” They agreed.</p>}
-        {c.strikeLog.length>0 && <ol className="claink-recap">{c.strikeLog.map(e=>(
-          <li key={e.n}><span className="num" aria-hidden="true">{e.n}</span><span className="sr-only">Strike {e.n}: </span><b>{e.who}</b> · {e.line}</li>
+        {c.strikeLog.length>0 && <ol className="claink-recap">{c.strikeLog.map((e,i)=>(
+          <li key={`${e.n}-${i}`}><span className="num" aria-hidden="true">{e.n}</span><span className="sr-only">Strike {e.n}: </span><b>{e.who}</b> · {e.line}</li>
         ))}</ol>}
         <p className="claink-stats">{fmtTok(c.tokens)} tokens · Influenced {money(c.claimed)} · Closed {money(c.delivered)} · Charged back {money(c.billed)}</p>
       </div>
@@ -5027,36 +5068,61 @@ __/_|__
       if(bodyIdRef.current===null) bodyIdRef.current="claink-body-"+(++clainkMarkSeq);
       const bodyId=bodyIdRef.current;
       // v1.20: a run plays out beat by beat (tokens tick up, outcomes land one at a time, then the strike lands), so a run
-      // reads as a short story instead of a wall of text. Only a run you just started plays: a reload, a minimized console
-      // or reduced motion shows the whole report at once. Click the report to skip. onRevealDone hands over the Writing
+      // reads as a short story instead of a wall of text, and each beat is voiced as it lands (the activity log leaves these
+      // lines to the workspace). Only a run you just started plays: a reload, a minimized workspace or reduced motion gets
+      // the whole report, and one cue, at once. Click the report or press Esc to skip. onRevealDone hands over the Writing
       // Lesson (if the manager took a deal) once the report has had its say.
       const[beat,setBeat]=useState(99);
       const[workTok,setWorkTok]=useState(0);
       const seenRun=useRef(c.deploys);
       const reveal=useRef({timers:[],live:false});
+      const holdH=useRef(0); // the window keeps its height while a report replays, so nothing moves under the pointer
       const doneRef=useRef(onRevealDone); doneRef.current=onRevealDone;
+      const liveS=useRef(s); liveS.current=s;
       const handOver=()=>{ const r=reveal.current; if(r.live){ r.live=false; if(doneRef.current) doneRef.current(); } };
       const finishReveal=()=>{
         const r=reveal.current;
         r.timers.forEach(clearTimeout); r.timers=[];
+        holdH.current=0;
         setBeat(99);
         handOver();
       };
-      useEffect(()=>{
+      // one beat's sound and PA line; silent once an ending is playing its own score
+      const cue=(sound,pa)=>{
+        if(isRunOver(liveS.current))return;
+        const a=AUDIO(); if(!a)return;
+        if(sound) a.play(sound);
+        if(pa) a.say(pa,{cooldown:4000});
+      };
+      // a layout effect, so the finished report never paints ahead of "Agents working…"
+      (React.useLayoutEffect||useEffect)(()=>{
         if(c.deploys===seenRun.current)return;
         seenRun.current=c.deploys;
         const r=reveal.current, L=c.last;
         r.timers.forEach(clearTimeout); r.timers=[]; r.live=true;
         const isRun=!!L && (L.kind==="miracle" || L.kind==="strike" || L.kind==="revoked");
+        if(!isRun){ setBeat(99); r.timers.push(setTimeout(finishReveal,0)); return; }
+        const out=L.kind==="revoked", win=L.kind==="miracle", hurt=!!(L.strike && L.strike.hurt);
+        // one PA line per run: HR offboarding the agent, else the manager (a yoink speaks when its dialog opens), else the result
+        const managerPa=L.ping && !L.yoink && !out ? "chatgdp" : null;
+        const resultPa=out ? "clainkRevoked" : L.ping ? null : win ? "claink" : hurt ? "sev1" : "strike";
+        const hit=out ? "bsod" : win ? "cash" : hurt ? "glitch" : "stamp";
         // nothing to watch: hand over right after this commit (so the page's own effects have seen the new state)
-        if(REDUCED_MOTION || mini || !isRun){ setBeat(99); r.timers.push(setTimeout(finishReveal,0)); return; }
-        const beats=L.lines.length+2+(L.ping?1:0)+(L.kind==="revoked"?1:0), tok=L.tokens||0;
-        setBeat(0); setWorkTok(Math.round(tok*0.06));
-        for(let i=1;i<6;i++) r.timers.push(setTimeout(()=>setWorkTok(Math.round(tok*Math.min(1,0.06+i*0.19))),i*CK_WORK_MS/6));
-        for(let b=1;b<=beats;b++) r.timers.push(setTimeout(()=>setBeat(b),CK_WORK_MS+(b-1)*CK_BEAT_MS));
-        r.timers.push(setTimeout(finishReveal,CK_WORK_MS+beats*CK_BEAT_MS));
+        if(reducedNow() || mini){ setBeat(99); cue(hit,resultPa||managerPa); r.timers.push(setTimeout(finishReveal,0)); return; }
+        const nL=L.lines.length, beats=nL+2+(L.ping?1:0)+(out?1:0), tok=L.tokens||0;
+        const at=b=>CK_WORK_MS+(b-1)*CK_BEAT_MS, later=(ms,fn)=>r.timers.push(setTimeout(fn,ms));
+        setBeat(0); setWorkTok(Math.round(tok*0.06)); cue("beep");
+        for(let i=1;i<6;i++) later(i*CK_WORK_MS/6,()=>setWorkTok(Math.round(tok*Math.min(1,0.06+i*0.19))));
+        for(let b=1;b<=beats;b++) later(at(b),()=>setBeat(b));
+        // the cues ride the same beats: a tick per outcome, the net, the strike (or the all-clear), the manager, the farewell
+        for(let b=1;b<=nL;b++) later(at(b),()=>cue(b===1 && win ? "sparkle" : "tick"));
+        later(at(nL+1),()=>cue(win ? "cash" : "thud"));
+        later(at(nL+2),()=>cue(win ? null : hit,resultPa));
+        if(L.ping) later(at(nL+3),()=>cue(L.yoink ? "lost" : "suspicion",managerPa));
+        if(out && L.farewell) later(at(beats),()=>cue("lost"));
+        later(CK_WORK_MS+beats*CK_BEAT_MS,finishReveal);
       },[c.deploys]);
-      // closed mid-report (the end card's ×): still hand over, the page decides whether it still applies
+      // closed mid-report (the end card's × finishes it first; an unmount here means New Game or Load, and the page drops it)
       useEffect(()=>()=>{ const r=reveal.current; r.timers.forEach(clearTimeout); r.timers=[]; handOver(); },[]);
       const place=p=>{ setPos(p); setShown(p); setUi(u=>({...u,x:p.x,y:p.y,mini})); }; // user moves only; keeps what you see (pill or console)
       const fit=()=>{
@@ -5081,8 +5147,9 @@ __/_|__
         window.addEventListener("resize",fit);
         return()=>{ if(ro)ro.disconnect(); window.removeEventListener("resize",fit); };
       },[pos,shown,mini,end]);
-      // a run result also reaches screen readers while the Writing Lesson dialog has made the page inert
-      // (only for results that happen while you're here: a reload must not replay an old one into an ending dialog)
+      // a run result also reaches screen readers when a dialog has already made the page inert (an ending that the run
+      // caused; the delayed Writing Lesson carries its own copy). Only for results that happen while you're here: a reload
+      // must not replay an old one into an ending dialog.
       const heard=useRef(`${c.deploys}|${c.status}`);
       useEffect(()=>{
         const key=`${c.deploys}|${c.status}`;
@@ -5133,6 +5200,7 @@ __/_|__
       };
       const onKeyDown=e=>{
         if(swallowRepeat(e))return;
+        if(e.key==="Escape" && beat<99){ e.preventDefault(); finishReveal(); return; }
         if(e.key==="Escape" && !end && !ui.mini){ e.preventDefault(); toggle(); }
       };
       const L=c.last;
@@ -5148,7 +5216,8 @@ __/_|__
       const frozen=clainkFrozen(s);
       const pill=end ? (c.status==="revoked" ? "Revoked" : "Cancelled") : frozen ? "Frozen" : c.deployed ? "Ran" : "Ready";
       const at=shown||pos;
-      const style=at ? {left:at.x+"px",top:at.y+"px"} : undefined;
+      const hold=beat<99 && holdH.current ? holdH.current : 0;
+      const style=at || hold ? {...(at?{left:at.x+"px",top:at.y+"px"}:{}),...(hold?{minHeight:hold+"px"}:{})} : undefined;
       const skip=beat<99 ? finishReveal : null;
       return(
         <aside ref={ref} style={style} onKeyDown={onKeyDown} aria-label="clAInk agent workspace"
@@ -5165,18 +5234,18 @@ __/_|__
                 aria-label={mini ? "Expand clAInk workspace" : "Minimize clAInk workspace"} title={mini ? "Expand" : "Minimize"}
                 onClick={toggle}><span aria-hidden="true">{mini ? "▢" : "–"}</span></button>}
               {end && <button type="button" className="claink-end-close" aria-label="Close clAInk window" title="Close"
-                onClick={onHide}><span aria-hidden="true">×</span></button>}
+                onClick={e=>{ if(beat<99) finishReveal(); onHide(e); }}><span aria-hidden="true">×</span></button>}
             </span>
           </div>
           <div className="claink-body" id={bodyId} hidden={mini}>
             {c.status==="active" && <>
               <div className="claink-statusline" tabIndex={-1} ref={statusRef}><span aria-hidden="true">● </span>{frozen ? "Quarter-end freeze · no runs" : c.deployed ? "Agents ran this week" : "Agents idle · awaiting delegation"}</div>
               <button type="button" className="claink-deploy" disabled={!clainkCanDeploy(s)}
-                onClick={()=>{ focusNext.current="status"; onDeploy(); }}>
+                onClick={e=>{ focusNext.current="status"; holdH.current=ref.current ? ref.current.offsetHeight : 0; shieldNextClick(e); onDeploy(); }}>
                 <span><span aria-hidden="true">{frozen ? "🔒 " : c.deployed ? "✓ " : "▶ "}</span>{frozen ? "Quarter-end freeze" : c.deployed ? "Ran this week" : "Run agents"}</span>
-                <small>{frozen ? "no runs in week 13" : c.deployed ? "next run: next week" : "free · 0 energy · 0 slots"}</small>
+                <small>{frozen ? "no runs in week 13" : c.deployed ? (getQuarterInfo(s.week).weekInQuarter>=QUARTER_WEEKS-1 ? "last run this quarter" : "next run: next week") : "0 energy · 0 slots · billed Fri"}</small>
               </button>
-              <ClainkStrikes n={shownStrikes} log={c.strikeLog}/>
+              <ClainkStrikes n={shownStrikes} log={c.strikeLog} cash={s.cash} due={c.due} ran={c.deployed}/>
             </>}
             {c.status==="revoked" && <div className="claink-statusline" tabIndex={-1} ref={statusRef}><span aria-hidden="true">● </span>{endIn ? "Seat revoked" : "Agents running…"}</div>}
             {L && c.status!=="cancelled" && (isRun || L.kind==="onboarded") && <ClainkReport last={L} beat={beat} workTok={workTok} onSkip={skip}/>}
@@ -5218,6 +5287,9 @@ __/_|__
       const justInstalled=prev.current==="ad" && !!c && c.status==="active";
       useEffect(()=>{ prev.current=c ? c.status : null; });
       const lesson=useRef(null); // the Writing Lesson waits for the run's report to finish
+      // New Game / Load remount the dock: React tears a deleted tree down parent first, so this drops a held lesson before
+      // the workspace's own cleanup could hand it over into the next run
+      useEffect(()=>()=>{ lesson.current=null; },[]);
       if(!c)return null;
       const commit=fn=>setS(p=>checkBurnout(fn(p)));
       if(c.status==="ad"){
@@ -5226,7 +5298,11 @@ __/_|__
       }
       if(c.status==="active" || ((c.status==="cancelled" || c.status==="revoked") && !c.hidden)){
         return <ClainkConsole s={s} ui={ui} setUi={setUi} focusOnMount={justInstalled}
-          onDeploy={()=>{ const r=deployClaink(s); lesson.current=r.event ? {...r.event,week:r.state.week,runId:r.state.runId} : null; setS(checkBurnout(r.state)); }}
+          onDeploy={()=>{
+            const r=deployClaink(s), L=r.state.claink && r.state.claink.last;
+            lesson.current=r.event ? {...r.event,week:r.state.week,runId:r.state.runId,run:r.state.claink.deploys,announce:(L && L.announce)||""} : null;
+            setS(checkBurnout(r.state));
+          }}
           onRevealDone={()=>{ const ev=lesson.current; lesson.current=null; if(ev) onEvent(ev); }}
           onCancel={()=>commit(cancelClaink)}
           onHide={e=>{ commit(hideClainkCard); focusEndWeek(e); }}/>;
@@ -5260,7 +5336,7 @@ __/_|__
 
       // FIX: header buttons were re-bound on every state change. Bind once; read live state through a ref.
       const sRef=useRef(s);
-      useEffect(()=>{ sRef.current=s; },[s]);
+      (React.useLayoutEffect||useEffect)(()=>{ sRef.current=s; },[s]);
 
       useEffect(()=>{
         const ng=document.getElementById("new-game");
@@ -5524,7 +5600,7 @@ __/_|__
                 : type==="missed"
                   ? `Closed ${money(s.closedWon)}. Badge kept. Back to the phones.`
                   : type==="repo"
-                    ? (cause==="claink" ? `Cash hit ${money(s.cash)}. clAInk's token bill sent you to Collections.` : `Cash hit ${money(s.cash)}. The loan came due.`)
+                    ? (cause==="claink" ? `Cash hit ${money(s.cash)}. clAInk sent you to Collections.` : `Cash hit ${money(s.cash)}. The loan came due.`)
                     : `Closed ${money(s.closedWon)}. Your Slack is already gone.`;
           const meta={pct:s.quota>0 ? s.closedWon/s.quota : 0, cause, shots:s.coffeesThisWeek||0};
           setPending(null);
@@ -5595,6 +5671,24 @@ __/_|__
         st=checkBurnout(st);
         setS(st);
       };
+
+      // v1.20: the Writing Lesson arrives after the run's report has played. It only opens on the run, week and clAInk run
+      // that produced it (New Game or Load mid-report drop it), waits for the Rules to close, and gives way to any other
+      // dialog: then it stays in the log only. It brings the run's result for screen readers, as v1.19's did.
+      const helpOpen=useRef(false); helpOpen.current=showHelp;
+      const lessonWait=useRef(null);
+      const offerLesson=ev=>{
+        const cur=sRef.current;
+        if(!cur || isRunOver(cur) || ev.runId!==cur.runId || ev.week!==cur.week || !cur.claink || cur.claink.deploys!==ev.run)return;
+        if(helpOpen.current){ lessonWait.current=ev; return; }
+        setPending(p=>p||{title:ev.title,body:ev.body,options:[{label:ev.label,className:"primary",action:x=>x}]});
+        if(ev.announce) setTimeout(()=>{
+          const d=[...document.querySelectorAll("dialog[open]")].find(x=>{ const h=x.querySelector(".d-header"); return h && h.textContent===ev.title; });
+          const sr=d && d.querySelector(".tst-sr");
+          if(sr && sr.textContent!==ev.announce){ sr.textContent=""; sr.textContent=ev.announce; } // once, even if the run's own effect got there first
+        },120);
+      };
+      useEffect(()=>{ if(!showHelp && lessonWait.current){ const ev=lessonWait.current; lessonWait.current=null; offerLesson(ev); } },[showHelp]);
 
       const opportunisticDisabled=(
         s.energy<10 || s.slots<=0 || s.fired || s.burnedOut || s.win || s.missed || s.repo || !hasLateDeal
@@ -5690,14 +5784,7 @@ __/_|__
             </div>
           </div>
 
-          {/* v1.20: the Writing Lesson arrives after the run's report has played; by then the week may have moved on, the
-              run may have ended, or another event may be waiting, and then it stays in the log only */}
-          <ClainkDock key={s.runId+":"+epoch} s={s} setS={setS} ui={clainkUiFor(claUi,shortScreen)} setUi={setClaUiByYou}
-            onEvent={ev=>{
-              const cur=sRef.current;
-              if(!cur || isRunOver(cur) || ev.runId!==cur.runId || ev.week!==cur.week)return;
-              setPending(p=>p||{title:ev.title,body:ev.body,options:[{label:ev.label,className:"primary",action:x=>x}]});
-            }} />
+          <ClainkDock key={s.runId+":"+epoch} s={s} setS={setS} ui={clainkUiFor(claUi,shortScreen)} setUi={setClaUiByYou} onEvent={offerLesson} />
 
           <Modal
             open={showHelp}
@@ -5717,7 +5804,7 @@ __/_|__
             <p className="tiny"><strong>Stress</strong> hurts close rates. 80+ can melt you down at week end; 100 is instant.</p>
             <p className="tiny"><strong>Quad Shot</strong> hits harder each shot that week. Shot 3+ can put you in orbit; a shot to 100 stress will. Each one: +{CRASH_PER_SHOT} stress at week end, weaker Recharge.</p>
             <p className="tiny"><strong>CRM Cleanup</strong> weekly: prunes dead leads, +manager, freezes warnings, trims fire odds. Boss may nuke a good deal.</p>
-            <p className="tiny"><strong>clAInk</strong> is a sponsored AI pilot. Close the ad and it's gone this run. A {money(CLAINK.INSTALL)} seat buys one free agent run a week: 1 in 5 closes real deals, the rest burn tokens on billed “outcomes” and earn a strike from the AI Governance Council, sometimes with damage. Strike {CLAINK.STRIKES}: seat revoked plus a token true-up that empties your cash. It all comes out of your pocket. Your manager may notice.</p>
+            <p className="tiny"><strong>clAInk</strong> is a sponsored AI pilot. Close the ad and it's gone this run. A {money(CLAINK.INSTALL)} seat buys one agent run a week (no energy or slots; billed Friday, idle weeks too): 1 in 5 closes real deals, the rest burn tokens on billed “outcomes” and earn a strike from the AI Governance Council, sometimes with damage. Strike {CLAINK.STRIKES}: seat revoked, a deal walks, and a token true-up that takes all your cash and leaves you {money(CLAINK.TRUEUP_OVER[0])}–{money(CLAINK.TRUEUP_OVER[1])} in the red (more if you're already there). Your manager may notice.</p>
             <p className="tiny"><strong>Cash</strong> is salary and commission in, rent out. At -$1,500 the jacket goes.</p>
             <p className="tiny"><strong>Pipeline</strong> is the value of live deals. Actions move them down the funnel.</p>
             <p className="tiny"><strong>Closed (Q)</strong> is revenue this quarter. Behind pace from week 5? Warnings, or a surprise exit.</p>

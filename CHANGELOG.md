@@ -3,15 +3,15 @@
 ## v1.20 — clAInk goes enterprise, the GPU gets a day off
 
 ### Fixed: the game no longer runs your GPU like a jet engine
-- The main screen ran 65 animations that never stopped:
+- The main screen ran 65 animations that never stopped on a fresh run, and more once deals were on the board:
   - three 55vw aurora blobs drifting under a 70px blur with a screen blend
   - a scrolling synthwave grid and 28 floating particles
   - a spinning conic border on both panels and on the clAInk ad
   - a shimmering title, a breathing chip, floating badges, a pulsing End Week
-  - a drifting sheen on every stat, scrolling stripes on every bar, a glowing or wobbling mood pill on every deal
-  - a cursor glow and a full-screen noise overlay
+  - a drifting sheen on every stat and scrolling stripes on every bar
+  - on every deal you added, a glowing or wobbling mood pill
 
-  Most of these can't run on the compositor, so the browser repainted large parts of the screen every frame, and every mouse move rewrote a style on both panels.
+  Most of these can't run on the compositor, so the browser repainted large parts of the screen every frame. On top of that, every mouse move rewrote a style on both panels (for a cursor glow and a spotlight), and a full-screen noise layer sat over everything.
 - Now nothing loops on the main screen. The look is the same, painted once: soft static blobs, a still grid, corner-lit panel borders, static glows. Entrances, pops and the hover shine still play. End Week pulses three times when you're out of slots, and a stat bar that turns red pulses three times.
 - Dialogs, the boot screen and the clAInk ad no longer blur what's behind them. The page background no longer repaints the whole page on every scroll. The button shine moves by transform.
 - Once an ending's timeline has played, it ticks at the 20 fps it draws at, and after 12 seconds it settles on its last frame (Replay restarts it). The boot standby screen ticks at 20 fps instead of every display frame.
@@ -24,11 +24,11 @@
 | clAInk workspace after a run | n/a | 0 |
 | Boot standby screen | 759 raster tasks (2.2 s) | 30 (4 ms) |
 | An ending, 14 s in | 570 raster tasks (1.4 s) | 59 (27 ms), then 0 once it settles |
-| Mouse sweeping across the panels | 1,112 raster tasks (2.5 s), 21 fps | 736 (0.55 s), 45 fps |
+| Mouse sweeping across the panels (2.7 s trace) | 1,112 raster tasks (2.5 s), about 8 fps | 736 (0.55 s), about 50 fps |
 
 ### Changed: clAInk is a real enterprise vendor now
 - No more startup begging for a Series A, no founders at an offsite, no rug pull. clAInk is an enterprise agentic platform on pilot at Shitcorp, with a thesis and a use case: "Your reps sell. Our agents do everything else." Its agents research accounts, write the outreach and advance your deals. Outcome-based pricing: you pay for every outcome, plus the tokens it took to get there. SOC 2 Type II, SSO, human-in-the-loop (optional). Fine print: "Pilot results: 1 in 5 agent runs closed real revenue. The other 4 delivered outcomes."
-- Activating a seat ($500) first shows Shitcorp's AI Use Policy:
+- Activating a seat ($500) first shows the Shitcorp AI Use Policy. Screen readers hear it with the Accept and Not now buttons, and on landscape phones it fits without covering the ad's ×:
   - the seat, the tokens and every "outcome" come out of your commission
   - a run that closes $0 earns a strike from the AI Governance Council
   - strike 3: seat revoked, plus the token true-up
@@ -36,25 +36,28 @@
   - a run that only wasted money: Finance ("5.6M tokens. $0 closed. Please explain, in fewer tokens."), IT Security (it asked for admin on the CEO's inbox, 4,000 times), Procurement (it tried to buy itself a second seat), HR (it nominated itself Rep of the Month), Facilities, Legal, RevOps or the CRO's office
   - a run that did damage names it: Marketing Ops (24 "quick follow-ups" in an hour, your best deal fled), Legal (a negotiation sub-agent offered 45% off, in writing), IT Security (it "shared context" with Scheisskorp's agent, two deals gone), Customer Success (it auto-upgraded a customer to the 3x tier, they churned, commission clawed back)
 
-  The note under the boxes says what the next strike costs. At two strikes it spells out strike 3 in numbers.
-- **Strike 3** is the Council revoking your seat. Finance runs the token true-up: clAInk's billing agent, the one agent with a perfect record, works out that it comes to everything you have, plus a bit. On its way out, your agent emails your best deal: "It's not you, it's me." They agree. The end card recaps all three strikes and what the pilot cost (tokens, pipeline "influenced", real revenue, charged back). HR reads the PA line: "Your agent has been offboarded."
+  The note under the boxes says what the next strike costs. At two strikes it works out where the true-up would leave you, and says so plainly when that's Collections.
+- **Strike 3** is the Council revoking your seat. Finance runs the token true-up: clAInk's billing agent, the one agent with a perfect record, works out that it comes to everything you have, plus a bit (and more if you're already in the red). On its way out, your agent emails your best deal: "It's not you, it's me." They agree. The end card recaps all three strikes and what the pilot cost (tokens, pipeline "influenced", real revenue, charged back). HR reads the PA line: "Your agent has been offboarded."
 - **Token burn is the pitfall.** Every run report, invoice and true-up says how many tokens it took. Idle weeks still bill, because background agents keep "thinking". The overage is an agent that looped all weekend.
 - A run that closes nothing reports its vanity metric first ("Influenced $78,000 of pipeline (all of it)"), then the billed busywork: "Drafted 1,400 emails. Sent 0.", "Booked 3 meetings with other agents", "Wrote Pinecone Pizza a haiku. Unprompted.", "Spun up 600 sub-agents to agree on tone".
 - Cancelling is an early termination fee ($250 plus the week's usage), with a retention offer: "Enterprise Plus hits 21% success. Just $4,999/wk." Your data stays "to improve the models."
 
 ### Changed: one thing at a time
-- A run plays out in the workspace beat by beat: agents working, with the token count ticking up, then the outcomes one at a time, then "Closed: $0", then the strike card, then your manager. It takes about 2.5 seconds; click the report to skip. Reduced motion, a minimized workspace or a reload shows it all at once.
+- A run plays out in the workspace beat by beat: agents working, with the token count ticking up, then the outcomes one at a time, then "Closed: $0", then the strike card, then your manager. It takes about 2.5 seconds; click the report or press Esc to skip. Reduced motion (even switched on mid-game), a minimized workspace or a reload shows it all at once.
+- Each beat is voiced as it lands: a tick per outcome, then a stamp, a glitch or a blue screen when the strike card lands, then your manager. The workspace holds its height while a report plays, so nothing moves under your pointer.
 - The strike box fills when the strike card lands, and this week's bill shows after the report, not while the agents are still "working".
-- The Writing Lesson (your manager takes a deal) waits until the report has played instead of popping over it. If the week has moved on, the run has ended or another event is waiting by then, it stays in the log only.
-- A run logs two lines (three at strike 3, plus your manager if he noticed), down from as many as five. Damage is folded into the strike's line.
+- The Writing Lesson (your manager takes a deal) waits until the report has played instead of popping over it, and the PA still reads it. It waits for the Rules to close. If the week has moved on, the run has ended or been replaced (New Game, Load), or another event is waiting, it stays in the log only.
+- A run logs two lines (three at strike 3, plus your manager if he noticed), down from as many as five. The strike's line carries its damage: the deal that fled, the discount and the manager hit, the deals shared, or the churn and its commission clawback.
 - The always-on upsell line is gone from the workspace (it's the retention offer now).
 
 ### Balance
 - Unchanged. Every number is v1.19's (odds, fees, damage, the true-up), so v1.19's tables below still apply. The jokes draw from their own random stream now, so a punchline can't move a mechanical draw.
-- Checked by running the v1.19 and v1.20 engines headless through the same 100,000 randomized install, run and invoice sequences, once riding to strike 3 and once cancelling at two strikes. Across cash, closed revenue, deals, pipeline, manager, reputation, revoked, repo, runs, billed and strikes, the largest gap between the versions was 1.06 standard errors: noise.
+- Checked two ways, running the v1.19 and v1.20 engines headless:
+  - With v1.19's cosmetic draws moved to their own stream the way v1.20 does it, both engines give identical results over 20,000 random install, run, invoice and cancel sequences (108,611 steps): 0 differences in cash, deals, closed revenue, manager, reputation, status, strikes, bills, Collections or the manager's deal grabs.
+  - Over 100,000 randomized sequences per policy (riding to strike 3, cancelling at two strikes), the largest gap between the versions in any outcome was 1.06 standard errors.
 
 ### Saves
-- v1.19 saves load: red flags become strikes, a rug-pulled console becomes a revoked seat, and a v1.19 incident shows as its strike card.
+- v1.19 saves load. Red flags become strikes (strikes filed before v1.20 read "A run that closed $0."). A rug-pulled console becomes a revoked seat with its strike-3 card and recap. A v1.19 incident shows as its strike card.
 
 ## v1.19 — clAInk.io, the AI agent that works 20% of the time
 
