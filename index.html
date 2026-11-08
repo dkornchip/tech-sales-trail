@@ -4143,14 +4143,15 @@ __/_|__
       MIRACLE:[12000,22000],              // real revenue a miracle closes (about 1-1.5 weeks of quota pace)
       MIRACLE_NUDGE:2,                    // other deals it moves one stage
       RUG_FLAGS:3,                        // the third fake is the rug pull
-      RUG_CHARGE:[1500,3000],             // "non-refundable annual prepay"
+      RUG_OVER:[500,2400],                // the "annual prepay" maxes out the card on file: you end at -$500..-$2,400
+      RUG_MIN:1200,                       // ...or at least this much (plus the week's usage) when there's nothing left to max
       RUG_MGR:8,                          // the forecast had its fake wins in it
       INCIDENT_P:0.25,                    // a fake also causes a SEV-1
       INC:{
         slop:{w:0.30, rep:10, mgr:6},             // best deal flees
         discount:{w:0.20, cut:0.45, mgr:10, rep:4},// hallucinated 45% off
         leak:{w:0.20, n:2, rep:12, mgr:8},         // pipeline emailed to a rival
-        churn:{w:0.30, lo:6000, hi:16000}          // auto-renewed at 3x, customer churned: closed revenue and commission come back
+        churn:{w:0.30, frac:0.15, lo:4000, hi:30000} // auto-renewed at 3x, customer churned: a slice of closed revenue and its commission come back
       },
       MGR_P:0.25,                         // manager notice (once per run), then yoink chance per deploy
       MGR_HIT:6,                          // relationship hit on every manager event
@@ -4298,7 +4299,7 @@ __/_|__
         note="clAInk emailed your pipeline to a rival.";
         extra=`💀 Lost ${lost.length} deal(s), ${money(lost.reduce((t,d)=>t+d.value,0))}.`;
       }else{
-        const amt=Math.min(s.closedQuarter,ckInt(I.churn.lo,I.churn.hi));
+        const amt=Math.min(s.closedQuarter,Math.max(I.churn.lo,Math.min(I.churn.hi,Math.round(s.closedQuarter*I.churn.frac))));
         const back=Math.round(amt*0.12);
         s.closedWon-=amt; s.closedQuarter-=amt; s.cash-=back;
         note=`clAInk auto-renewed ${ckPick(ACCOUNT_NAMES)} at 3x. They churned: -${money(amt)}.`;
@@ -4311,11 +4312,12 @@ __/_|__
       return ckRepo(state,s);
     };
 
-    // the third fake: the founders cash the "annual prepay" and leave
+    // the third fake: the founders max out the card on file ("annual prepay") and leave. It lands you at about the same place
+    // whatever you had, so going broke is a real risk in week 9 as much as in week 3.
     const clainkRug=(state)=>{
       let s={...state};
       const c=s.claink;
-      const charge=ckInt(CLAINK.RUG_CHARGE[0],CLAINK.RUG_CHARGE[1])+c.due;
+      const charge=Math.max(CLAINK.RUG_MIN+c.due,s.cash+ckInt(CLAINK.RUG_OVER[0],CLAINK.RUG_OVER[1]));
       const sold=[...s.deals].sort(ckRank)[0]||null;
       if(sold){ s.deals=s.deals.filter(d=>d.id!==sold.id); s=ckPipe(s); }
       s.manager=clamp(s.manager-CLAINK.RUG_MGR,0,100);
@@ -4325,7 +4327,7 @@ __/_|__
           announce:`Rug pull. clAInk.io vanished with ${money(charge)}.`})};
       s=log(s,"🎭 clAInk's 'AI' was the founder, typing fast.","bad");
       if(sold) s=log(s,`💀 It sold your CRM. ${sold.account} gone. -${CLAINK.RUG_MGR} mgr.`,"bad");
-      return clainkCharge(s,charge,`🪦 clAInk.io vanished. Final charge -${money(charge)}.`,"bad");
+      return clainkCharge(s,charge,`🪦 clAInk.io vanished. Maxed your card: -${money(charge)}.`,"bad");
     };
 
     // 80%: fake wins. The dashboard brags about deals still sitting in your pipeline; nothing real changes, but it all gets billed.
@@ -4832,12 +4834,15 @@ __/_|__
         const el=k==="status" ? (mini ? toggleRef.current : statusRef.current) : k==="toggle" ? toggleRef.current : k==="cancel" ? cancelRef.current : k==="keep" ? keepRef.current : null;
         if(el) try{ el.focus({preventScroll:true}); }catch(_){}
       });
-      // keep it on screen across minimize/expand, end cards and window resizes
+      // keep it on screen across minimize/expand, end cards, growing content (cancel confirm, results) and window resizes
       useEffect(()=>{
-        const fix=()=>{ const el=ref.current; if(!el || !pos)return; const p=clampToView(pos.x,pos.y,el); if(p.x!==pos.x || p.y!==pos.y) place(p); };
+        const el=ref.current;
+        const fix=()=>{ if(!el || !pos || drag.current)return; const p=clampToView(pos.x,pos.y,el); if(p.x!==pos.x || p.y!==pos.y) place(p); };
         fix();
+        let ro=null;
+        if(el && typeof ResizeObserver!=="undefined"){ ro=new ResizeObserver(fix); ro.observe(el); }
         window.addEventListener("resize",fix);
-        return()=>window.removeEventListener("resize",fix);
+        return()=>{ if(ro)ro.disconnect(); window.removeEventListener("resize",fix); };
       },[pos,mini,end]);
       // a deploy result also reaches screen readers while the Writing Lesson dialog has made the page inert
       useEffect(()=>{
@@ -4918,7 +4923,7 @@ __/_|__
               {c.last && c.last.ping && <div className="claink-ping"><span className="who">👔 Your manager</span><span>{c.last.ping}</span></div>}
               <div className="claink-flags">Trust &amp; Safety: <span className={"ts "+(flags>=2?"r":flags===1?"y":"g")}>
                 {flags>=2 ? "🔴 Founders 'at an offsite'" : flags===1 ? "🟡 Status page says 'vibes'" : "🟢 All systems autonomous"}</span></div>
-              {flags>=CLAINK.RUG_FLAGS-1 && <div className="claink-warn">🚩🚩 One more fake and we pivot: a {money(CLAINK.RUG_CHARGE[0])}–{money(CLAINK.RUG_CHARGE[1])} “annual prepay”, plus a deal.</div>}
+              {flags>=CLAINK.RUG_FLAGS-1 && <div className="claink-warn">🚩🚩 One more fake and we pivot. The “annual prepay” maxes out your card (you'd end near {money(-CLAINK.RUG_OVER[0])} to {money(-CLAINK.RUG_OVER[1])}) and we sell a deal.</div>}
               <div className="claink-usage">Usage this week: <b>{money(c.due)}</b>, due Friday · Paid so far {money(c.billed)}</div>
               <div className="claink-upsell">Upgrade to Pro ($4,999/wk) for 21% success.</div>
               {!confirmCancel
