@@ -4,13 +4,14 @@
 
 ### Changed: the whole game fits a 16:9 desktop display, with no page scrolling
 - On a two-column display at least 620px tall, the page is one screen: the header keeps its size and the two panels share the rest of the height. The activity log and the deal list scroll inside their own boxes; the Quarter Map spreads its stat cards and action buttons over the height it has, with End Week pinned to its bottom edge. The layout also uses the width of a wide screen (it was capped at 1,400px). A window that is too short for the Quarter Map's content scrolls the page as before.
-- Checked headless: at 1920×1080, 1920×950 (a browser window on a 1080p display), 1536×864, 1366×768 and 1280×720 the page height equals the viewport height, with or without deals on the board and with the clAInk ad up or minimized. Phones and tablets keep the stacked, scrolling layout.
-- On a desktop display the clAInk ad no longer reserves page space under itself (that reserve is what made the page scroll). It stands at most 60% of the screen tall and scrolls inside itself beyond that, and the activity log keeps a spacer at the end of its own scroll so its last entries can always be scrolled clear of the ad.
-- A roomy display (1500×900 and up) gets slightly larger type on the stats, actions, deals and the log.
+- A narrow two-column window (1025 to 1200px wide) shows the stats four to a row, three rows, instead of the tablet's three to a row: the row saved is what lets a 1200×800 window fit on one screen.
+- Checked headless: at 1920×1080, 1920×950 (a browser window on a 1080p display), 1536×864, 1366×768, 1280×720 and 1200×800 the page height equals the viewport height, with or without deals on the board, with the clAInk ad up or minimized, and after a full quarter of play. Phones and tablets keep the stacked, scrolling layout.
+- On a desktop display the clAInk ad no longer reserves page space under itself (that reserve is what made the page scroll). It stands at most about two thirds of the screen tall and scrolls inside itself beyond that (its buttons stay pinned); under 900px tall it drops its "New: Autonomous Pipeline" banner, so the whole pitch still fits at 1536×864. The activity log keeps a spacer at the end of its own scroll so its last entries can always be scrolled clear of the ad.
+- A roomy display (1500×900 and up) gets slightly larger type on the stats, actions, deals and the log; a 1440p display at 100% lets the cards and buttons grow further, with type to match.
 
 ### Changed: the clAInk ad minimizes
-- The ad has a – button next to its ×. Minimized, it's a pill in the same corner: the clAInk mark, the name and the deadline ("Pilot pricing ends Week 3", or "ends this week" in week 3), with expand and close buttons. Esc minimizes the open ad (on the policy step, Esc goes back to the pitch first). Focus follows the button you used, and the rest of a double click can't land on the game behind it.
-- Minimized is a UI preference, like the workspace's: it survives a reload, and a new run (New Game, or New Run after an ending) pops the ad up expanded again. Short screens (landscape phones) start with the pill.
+- The ad has a – button next to its ×. Minimized, it's a pill in the same corner (on phones too): the clAInk mark, the name and the deadline ("Pilot pricing ends Week 3", or "ends this week" in week 3), with expand and close buttons. Esc minimizes the open ad (on the policy step, Esc goes back to the pitch first). Focus follows the button you used, and the rest of a double click can't land on the game behind it.
+- Minimized is a UI preference, like the workspace's: it survives a reload, and a new run (New Game, or New Run after an ending) shows the ad fresh again. Short screens (landscape phones) start with the pill until you expand it yourself; moving the workspace window doesn't count as choosing.
 - × still turns clAInk off for the run.
 
 ### Changed: the pilot offer ends after week 3

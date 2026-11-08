@@ -735,7 +735,7 @@
     .claink-ad-close:hover{border-color:var(--ck-p);color:#fff}
     .claink-ad-min:hover{border-color:var(--ck-c);color:#fff}
     /* v1.21: minimized, the ad is a pill in the same corner: the mark, the name, the deadline, expand and close */
-    .claink-ad.is-mini{width:auto;max-width:calc(100vw - 32px);max-height:none;overflow:hidden;border-radius:999px;padding:5px 6px 5px 12px}
+    .claink-ad.is-mini{left:auto;width:auto;max-width:calc(100vw - 32px);max-height:none;overflow:hidden;border-radius:999px;padding:5px 6px 5px 12px}
     .claink-ad.is-mini .claink-ad-top{margin:0;gap:10px}
     .claink-ad-pill{display:inline-flex;align-items:center;gap:7px;min-width:0;font-size:11px;color:#ddd8ff;white-space:nowrap}
     .claink-ad-pill .claink-mark{filter:none}
@@ -896,7 +896,7 @@
        Phones and tablets keep the stacked, scrolling layout above. */
     @media (min-width:1025px) and (min-height:620px){
       html,body{height:100%;overflow:hidden}
-      .container{height:100vh;max-width:1880px;display:flex;flex-direction:column;padding:10px 14px 12px;overflow:auto;overscroll-behavior:contain}
+      .container{height:100vh;max-width:1880px;display:flex;flex-direction:column;padding:10px 14px 12px;overflow:hidden auto;overscroll-behavior:contain}
       header{flex:none}
       /* the row is at least the Quarter Map's content (so a window that is too short scrolls the page, the fallback)
          and otherwise exactly the screen; only the right panel may be shorter than its content (its log scrolls) */
@@ -906,22 +906,33 @@
       .grid>.panel:nth-child(2){min-height:0}
       .grid>.panel>*{flex:none}
       /* rows keep their natural height when space is tight; spare height spreads over them (grid's default stretch) */
-      .grid>.panel:nth-child(1) .stats{flex:1 1 auto;max-height:250px}
       .grid>.panel:nth-child(1) .stat{justify-content:flex-start}
       .grid>.panel:nth-child(1) .stat .bar{margin-top:auto}
-      .grid>.panel:nth-child(1) .actions{flex:3 1 auto;max-height:600px}
+      .grid>.panel:nth-child(1) .actions{flex:3 1 auto;max-height:700px}
       .grid>.panel:nth-child(1) .actions .btn{display:flex;flex-direction:column;justify-content:center;min-height:0}
       .grid>.panel:nth-child(1) .footer{margin-top:auto;padding-top:6px}
-      .grid>.panel:nth-child(2) .deal-list{flex:0 1 auto;min-height:60px;max-height:260px}
+      .grid>.panel:nth-child(2) .deal-list{flex:0 1 auto;max-height:260px}
       /* the log takes the rest. Size containment keeps its entries out of the row's intrinsic height (a 1fr row would
          otherwise grow with the log instead of letting it scroll). A spacer at the end of its scroll keeps the last
          entries reachable while the clAInk ad is up (a spacer, not padding: padding would set the box's minimum height) */
       .grid>.panel:nth-child(2) .log{flex:1 1 auto;height:auto;min-height:96px;contain:size}
       .grid>.panel:nth-child(2) .log::after{content:"";display:block;height:max(0px,calc(var(--claink-h,0px) - 24px))}
-      /* the ad never stands taller than most of the screen: it scrolls inside itself (the buttons stay pinned) */
-      .claink-ad{max-height:min(calc(100vh - 32px),60vh)}
+      /* the ad never stands taller than about two thirds of the screen: beyond that it scrolls inside itself (the
+         buttons stay pinned). A 1080p browser window (about 950px tall) still shows all of it. */
+      .claink-ad{max-height:min(calc(100vh - 32px),max(68vh,480px))}
     }
+    /* on a shorter desktop window the ad drops its "New: Autonomous Pipeline" banner so the pitch fits without scrolling */
+    @media (min-width:1025px) and (min-height:620px) and (max-height:900px){ .claink-announce{display:none} }
     @supports (height:100dvh){ @media (min-width:1025px) and (min-height:620px){ .container{height:100dvh} } }
+    /* the stat cards grow too, but only with six to a row: at fewer to a row a cap would cut the last row off, so
+       there they keep their natural height. A narrow two-column window (up to 1200px) fits four to a row, three
+       rows, instead of the tablet's three to a row: one row less is what lets 1200×800 fit on one screen */
+    @media (min-width:1201px) and (min-height:620px){
+      .grid>.panel:nth-child(1) .stats{flex:1 1 auto;max-height:270px}
+    }
+    @media (min-width:1025px) and (max-width:1200px) and (min-height:620px){
+      .stats{grid-template-columns:repeat(4,1fr)}
+    }
     /* a roomy display (a full 1080p window): slightly larger type, so the space reads as design, not as air */
     @media (min-width:1500px) and (min-height:900px){
       body{font-size:15px}
@@ -932,6 +943,14 @@
       .log{font-size:14px}
       .deal-title{font-size:14px}
       h2{font-size:15px}
+    }
+    /* taller still (1440p at 100%): the cards and buttons may grow further, with type to match */
+    @media (min-width:1500px) and (min-height:1300px){
+      .grid>.panel:nth-child(1) .stats{max-height:300px}
+      .grid>.panel:nth-child(1) .actions{max-height:820px}
+      .stat .value{font-size:21px}
+      .actions .btn .title{font-size:15px}
+      .actions .btn .desc{font-size:13px}
     }
   </style>
 </head>
@@ -4892,13 +4911,14 @@ __/_|__
     const readClainkUi=()=>{
       try{
         const v=JSON.parse(localStorage.getItem(CLAINK_UI_KEY)||"null");
-        if(v && typeof v==="object") return {x:Number.isFinite(v.x)?v.x:null, y:Number.isFinite(v.y)?v.y:null, mini:!!v.mini, adMini:!!v.adMini, chosen:true};
+        // adMini is null until you minimize or expand the ad yourself (moving the console doesn't decide it for you)
+        if(v && typeof v==="object") return {x:Number.isFinite(v.x)?v.x:null, y:Number.isFinite(v.y)?v.y:null, mini:!!v.mini, adMini:typeof v.adMini==="boolean"?v.adMini:null, chosen:true};
       }catch{}
-      return {x:null,y:null,mini:false,adMini:false,chosen:false};
+      return {x:null,y:null,mini:false,adMini:null,chosen:false};
     };
     // until you choose, a short screen (landscape phone) gets the pills so neither the console nor the ad sits on End Week
     const isShortScreen=()=>typeof window!=="undefined" && window.innerHeight>0 && window.innerHeight<=600;
-    const clainkUiFor=(u,short)=>u.chosen ? u : {...u,mini:short,adMini:short};
+    const clainkUiFor=(u,short)=>({...(u.chosen ? u : {...u,mini:short}), adMini:u.adMini===null ? short : u.adMini});
     // safe-area insets (the page uses viewport-fit=cover), read once from a probe element
     let clainkInsets=null;
     const safeInsets=()=>{
@@ -5398,7 +5418,9 @@ __/_|__
       const commit=fn=>setS(p=>checkBurnout(fn(p)));
       if(c.status==="ad"){
         if(isRunOver(s) || getQuarterInfo(s.week).weekInQuarter>CLAINK.OFFER_LAST_WEEK)return null;
-        return <ClainkAd s={s} mini={!!ui.adMini} onToggle={()=>setUi(u=>({...u,adMini:!u.adMini}))}
+        // toggle from what you see, not from the stored preference (a short screen shows the pill before you chose)
+        const adMini=!!ui.adMini;
+        return <ClainkAd s={s} mini={adMini} onToggle={()=>setUi(u=>({...u,adMini:!adMini}))}
           onInstall={()=>commit(buyClaink)} onDismiss={e=>{ commit(dismissClaink); focusEndWeek(e); }}/>;
       }
       if(c.status==="active" || ((c.status==="cancelled" || c.status==="revoked") && !c.hidden)){
@@ -5437,7 +5459,7 @@ __/_|__
       const[shortScreen,setShortScreen]=useState(isShortScreen); // re-checked on rotation, for the pill default
       useEffect(()=>{ const on=()=>setShortScreen(isShortScreen()); window.addEventListener("resize",on); return()=>window.removeEventListener("resize",on); },[]);
       useEffect(()=>{ if(!claUi.chosen)return; try{ localStorage.setItem(CLAINK_UI_KEY,JSON.stringify({x:claUi.x,y:claUi.y,mini:claUi.mini,adMini:claUi.adMini})); }catch{} },[claUi]);
-      const expandAd=()=>setClaUi(u=>u.adMini ? {...u,adMini:false} : u); // v1.21: a new run's ad pops up expanded again
+      const expandAd=()=>setClaUi(u=>u.adMini===null ? u : {...u,adMini:null}); // v1.21: a new run's ad starts fresh (expanded; the pill on a short screen)
       const sceneRef=useRef(null);
 
       // FIX: header buttons were re-bound on every state change. Bind once; read live state through a ref.
