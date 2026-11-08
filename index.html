@@ -744,8 +744,8 @@
     .claink-logo.sm .claink-word{font-size:15px;letter-spacing:-.5px}
     .claink-logo.sm .claink-beta{display:none}
 
-    .claink-ad{right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));width:min(348px,calc(100vw - 32px));
-      max-height:calc(100vh - 32px);overflow:auto;overscroll-behavior:contain;border-radius:20px;padding:12px 16px 13px;isolation:isolate;
+    .claink-ad{--ck-px:16px;--ck-pb:13px;right:calc(16px + env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));width:min(348px,calc(100vw - 32px));
+      max-height:calc(100vh - 32px);overflow:auto;overflow-x:hidden;overscroll-behavior:contain;border-radius:20px;padding:12px var(--ck-px) var(--ck-pb);isolation:isolate;
       background:radial-gradient(140% 85% at 0% 0%,#33207a 0,transparent 55%),radial-gradient(120% 90% at 100% 100%,#073a52 0,transparent 55%),
         radial-gradient(60% 50% at 85% 10%,rgba(244,114,182,.25) 0,transparent 70%),linear-gradient(160deg,#151036,#090a1d);
       box-shadow:0 30px 80px rgba(0,0,0,.85),0 0 60px rgba(139,92,246,.3);
@@ -781,7 +781,7 @@
     .claink-cta:not(:disabled):hover,.claink-confirm:not(:disabled):hover,.claink-deploy:not(:disabled):hover{filter:brightness(1.12);transform:translateY(-1px)}
     .claink-cta:disabled,.claink-confirm:disabled{cursor:not-allowed;opacity:.55;filter:grayscale(.5)}
     /* the buttons stay in view even when a short sheet scrolls inside itself */
-    .claink-actions{position:sticky;bottom:-13px;z-index:1;margin:0 -16px;padding:10px 16px 12px;
+    .claink-actions{position:sticky;bottom:calc(-1 * var(--ck-pb));z-index:1;margin:0 calc(-1 * var(--ck-px));padding:10px var(--ck-px) 12px;
       background:linear-gradient(180deg,rgba(11,16,38,0),rgba(11,16,38,.78) 40%,rgba(11,16,38,.9));-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
     /* step 2 keeps "Not now" under the CTA's centre, so a double click can't confirm */
     .claink-confirm-row{display:grid;grid-template-columns:2fr 3fr;gap:8px}
@@ -789,7 +789,7 @@
     .claink-notnow{font:600 12.5px "Inter",sans-serif;padding:11px 8px;border-radius:12px;cursor:pointer;color:#ddd8ff;background:rgba(255,255,255,.04);border:1px solid var(--ck-line)}
     .claink-fine{font-size:10px;line-height:1.4;color:#918cc2;margin:0;padding-top:4px}
 
-    .claink-console{right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));width:min(340px,calc(100vw - 24px));
+    .claink-console{right:calc(16px + env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));width:min(340px,calc(100vw - 24px));
       max-height:calc(100vh - 24px);overflow:auto;overscroll-behavior:contain;border-radius:15px;
       background:linear-gradient(180deg,#15112f,#0a0a1c);border:1px solid var(--ck-line);
       box-shadow:0 24px 64px rgba(0,0,0,.85),0 0 34px rgba(34,211,238,.14);animation:clainkIn .45s var(--ease) both}
@@ -797,7 +797,7 @@
     @supports (height:100dvh){ .claink-console{max-height:calc(100dvh - 24px)} }
     .claink-console.is-placed{right:auto;bottom:auto}
     .claink-console.is-mini{width:auto;max-width:calc(100vw - 24px);border-radius:999px;overflow:hidden}
-    .claink-titlebar{display:flex;align-items:center;gap:8px;padding:7px 8px 7px 10px;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;
+    .claink-titlebar{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:8px;padding:7px 8px 7px 10px;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;
       background:linear-gradient(90deg,#1e1948,#0e1c3a);border-bottom:1px solid var(--ck-line)}
     .claink-console.is-mini .claink-titlebar{border-bottom:0;padding:5px 6px 5px 11px}
     .claink-console.dragging,.claink-console.dragging .claink-titlebar{cursor:grabbing}
@@ -823,7 +823,7 @@
     .claink-result .hd{font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#c4b5fd}
     .claink-result ul{margin:4px 0 0;padding:0;list-style:none}
     .claink-result li{margin:2px 0}
-    .claink-result.scam li::before{content:"✓ ";color:#34d399;font-weight:800}
+    .claink-result.scam li::before{content:"✓ ";content:"✓ " / "";color:#34d399;font-weight:800} /* decorative: silent where supported */
     .claink-result.miracle{border-color:rgba(52,211,153,.5);background:linear-gradient(180deg,#062a20,#0a0d24)}
     .claink-result.miracle .hd{color:#6ee7b7}
     .claink-incident{margin-top:6px;padding-top:6px;border-top:1px dashed #7f1d3a;color:#fda4af}
@@ -851,9 +851,9 @@
     .claink-ad button:focus-visible,.claink-console button:focus-visible{outline:2px solid var(--ck-c);outline-offset:2px}
     .badge.claink-badge{border-color:#4c3d99;color:#ddd6fe}
     @media (max-width:640px){
-      .claink-ad{left:10px;right:10px;width:auto;bottom:calc(10px + env(safe-area-inset-bottom,0px));max-height:50vh;border-radius:16px;padding:10px 13px 11px}
+      .claink-ad{--ck-px:13px;--ck-pb:11px;left:calc(10px + env(safe-area-inset-left,0px));right:calc(10px + env(safe-area-inset-right,0px));width:auto;bottom:calc(10px + env(safe-area-inset-bottom,0px));max-height:50vh;border-radius:16px;padding:10px var(--ck-px) var(--ck-pb)}
       .claink-headline{font-size:17px}
-      .claink-console{right:10px;bottom:calc(10px + env(safe-area-inset-bottom,0px))}
+      .claink-console{right:calc(10px + env(safe-area-inset-right,0px));bottom:calc(10px + env(safe-area-inset-bottom,0px))}
     }
     @media (max-width:640px){ @supports (height:100dvh){ .claink-ad{max-height:50dvh} } }
     /* short screens (landscape phones): the ad scrolls inside itself so the page can always scroll clear of it */
@@ -3174,7 +3174,7 @@ __/_|__
         stressWarned:!!parsed.stressWarned,
         trip:typeof parsed.trip==="string"?parsed.trip:null,
         hygieneShield:!!parsed.hygieneShield,
-        claink:sanitizeClaink(parsed.claink), // v1.19; also maps the v1.16 prototype's save shape
+        claink:sanitizeClaink(parsed.claink,parsed.week), // v1.19; also maps the v1.16 prototype's save shape
         endCause:typeof parsed.endCause==="string"?parsed.endCause:null
       };
     };
@@ -4174,17 +4174,23 @@ __/_|__
     const newClaink=()=>({status:"ad",hidden:false,deployed:false,flags:0,claims:0,due:0,mgr:{noticed:false,yoinks:0},last:null,
       deploys:0,miracles:0,fakes:0,incidents:0,claimed:0,delivered:0,billed:0,lastInvoice:0});
 
-    // saves are user data: coerce every field, and map the v1.16 prototype's shape ({active, usedThisWeek, runs, totalBilled, ...})
-    const sanitizeClaink=(raw)=>{
+    // saves are user data: coerce every field, and map the v1.16 prototype's shape ({active, usedThisWeek, runs, totalBilled, ...}).
+    // `week` lets an ad from a save made before clAInk existed respect the Week 10 deadline.
+    const sanitizeClaink=(raw,week)=>{
+      const pastOffer=getQuarterInfo(Number.isFinite(week)&&week>0?week:1).weekInQuarter>CLAINK.OFFER_LAST_WEEK;
       const b=newClaink();
+      if(pastOffer) b.status="expired";
       if(!raw || typeof raw!=="object" || Array.isArray(raw))return b;
       const n=(v,lo=0,hi=1e9)=>Number.isFinite(v)?Math.max(lo,Math.min(hi,Math.round(v))):lo;
       const str=(v,max=160)=>typeof v==="string"?v.slice(0,max):"";
       let status=CLAINK_STATUSES.includes(raw.status)?raw.status:null;
-      if(!status){
-        const history=n(raw.runs)>0 || n(raw.totalBilled)>0 || n(raw.incidents)>0;
+      const legacy=!status;
+      if(legacy){
+        // prototype buy/cancel never touched runs/totalBilled, but they always wrote lastReport (and invoices wrote lastInvoice)
+        const history=n(raw.runs)>0 || n(raw.totalBilled)>0 || n(raw.incidents)>0 || n(raw.lastInvoice)>0 || (typeof raw.lastReport==="string" && raw.lastReport!=="");
         status=raw.active===true ? "active" : history ? "cancelled" : "ad";
       }
+      if(status==="ad" && pastOffer) status="expired";
       const ended=status==="cancelled" || status==="rugged";
       const mgr=raw.mgr && typeof raw.mgr==="object" ? raw.mgr : {};
       const L=raw.last && typeof raw.last==="object" ? raw.last : null;
@@ -4194,7 +4200,9 @@ __/_|__
         deployed:!!(raw.deployed!==undefined ? raw.deployed : raw.usedThisWeek),
         flags:n(raw.flags,0,status==="active"?CLAINK.RUG_FLAGS-1:CLAINK.RUG_FLAGS),
         claims:n(raw.claims!==undefined ? raw.claims : raw.outcomesThisWeek,0,999),
-        due:n(raw.due,0,1e6),
+        // a prototype save made after that week's run kept no usage total: bill it like a light deployed week
+        due:raw.due!==undefined || !(legacy && status==="active" && raw.usedThisWeek) ? n(raw.due,0,1e6)
+          : CLAINK.RETAINER+n(raw.outcomesThisWeek,0,99)*CLAINK.PER_OUTCOME[0],
         mgr:{noticed:!!mgr.noticed, yoinks:n(mgr.yoinks,0,999)},
         last:L ? ckLast({kind:CLAINK_KINDS.includes(L.kind)?L.kind:"scam", week:n(L.week,0,999), revenue:n(L.revenue),
           lines:Array.isArray(L.lines)?L.lines.filter(x=>typeof x==="string").slice(0,8).map(x=>x.slice(0,120)):[],
@@ -4214,7 +4222,9 @@ __/_|__
 
     const clainkCanInstall=(s)=>!!s.claink && s.claink.status==="ad" && !isRunOver(s) &&
       getQuarterInfo(s.week).weekInQuarter<=CLAINK.OFFER_LAST_WEEK && s.cash-CLAINK.INSTALL>CLAINK.REPO_AT;
-    const clainkCanDeploy=(s)=>!!s.claink && s.claink.status==="active" && !s.claink.deployed && !isRunOver(s);
+    // week 13 is the quarter-end freeze: the QBR ends every run, so a final-week deploy could never be invoiced
+    const clainkFrozen=(s)=>getQuarterInfo(s.week).weekInQuarter>=QUARTER_WEEKS;
+    const clainkCanDeploy=(s)=>!!s.claink && s.claink.status==="active" && !s.claink.deployed && !isRunOver(s) && !clainkFrozen(s);
     const clainkCancelCost=(s)=>CLAINK.CANCEL+((s.claink && s.claink.due)||0);
     const clainkCanCancel=(s)=>!!s.claink && s.claink.status==="active" && !isRunOver(s) && s.cash-clainkCancelCost(s)>CLAINK.REPO_AT;
 
@@ -4250,7 +4260,7 @@ __/_|__
       const signed=[];
       if(own){ s.deals=s.deals.filter(d=>d.id!==own.id); signed.push({account:own.account,value:own.value,own:true}); }
       const rest=target-(own?own.value:0);
-      if(!own || rest>=2500) signed.push({account:ckPick(ACCOUNT_NAMES),value:Math.max(2500,rest),own:false});
+      if(rest>0) signed.push({account:ckPick(ACCOUNT_NAMES),value:rest,own:false}); // a miracle always lands the full target
       const order=s.deals.filter(d=>d.stage<4).map(d=>({id:d.id,k:ckR()})).sort((a,b)=>a.k-b.k);
       const nudged=new Set(order.slice(0,CLAINK.MIRACLE_NUDGE).map(x=>x.id));
       if(nudged.size) s.deals=s.deals.map(d=>nudged.has(d.id)?{...d,stage:d.stage+1,mood:d.mood==="skeptical"?"neutral":d.mood,probNote:"AI-touched"}:d);
@@ -4713,19 +4723,56 @@ __/_|__
     const readClainkUi=()=>{
       try{
         const v=JSON.parse(localStorage.getItem(CLAINK_UI_KEY)||"null");
-        if(v && typeof v==="object") return {x:Number.isFinite(v.x)?v.x:null, y:Number.isFinite(v.y)?v.y:null, mini:!!v.mini};
+        if(v && typeof v==="object") return {x:Number.isFinite(v.x)?v.x:null, y:Number.isFinite(v.y)?v.y:null, mini:!!v.mini, chosen:true};
       }catch{}
-      // first time on a short screen (landscape phone): start as the pill so the console doesn't sit on End Week
-      return {x:null,y:null,mini:typeof window!=="undefined" && window.innerHeight>0 && window.innerHeight<=600};
+      return {x:null,y:null,mini:false,chosen:false};
     };
+    // until you choose, a short screen (landscape phone) gets the pill so the console doesn't sit on End Week
+    const clainkUiFor=(u)=>u.chosen ? u : {...u,mini:typeof window!=="undefined" && window.innerHeight>0 && window.innerHeight<=600};
+    // safe-area insets (the page uses viewport-fit=cover), read once from a probe element
+    let clainkInsets=null;
+    const safeInsets=()=>{
+      if(clainkInsets)return clainkInsets;
+      const z={t:0,r:0,b:0,l:0};
+      try{
+        const p=document.createElement("div");
+        p.style.cssText="position:fixed;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)";
+        document.body.appendChild(p);
+        const cs=window.getComputedStyle(p);
+        clainkInsets={t:parseFloat(cs.paddingTop)||0,r:parseFloat(cs.paddingRight)||0,b:parseFloat(cs.paddingBottom)||0,l:parseFloat(cs.paddingLeft)||0};
+        p.remove();
+      }catch(_){ return z; }
+      return clainkInsets;
+    };
+    if(typeof window!=="undefined" && window.addEventListener) window.addEventListener("resize",()=>{ clainkInsets=null; }); // rotation changes them
     const clampToView=(x,y,el)=>{
-      const m=8, w=el?el.offsetWidth:320, h=el?el.offsetHeight:200;
-      return {x:Math.round(Math.max(m,Math.min(x,window.innerWidth-w-m))), y:Math.round(Math.max(m,Math.min(y,window.innerHeight-h-m)))};
+      const i=safeInsets(), w=el?el.offsetWidth:320, h=el?el.offsetHeight:200;
+      const l=8+i.l, t=8+i.t, r=8+i.r, b=8+i.b;
+      return {x:Math.round(Math.max(l,Math.min(x,window.innerWidth-w-r))), y:Math.round(Math.max(t,Math.min(y,window.innerHeight-h-b)))};
     };
-    // keyboard-activated close: send focus somewhere useful instead of <body>
-    const focusEndWeek=(e)=>{ if(e && e.detail===0){ const b=document.querySelector(".footer .btn.primary"); if(b) try{ b.focus(); }catch(_){} } };
-    // a held Enter/Space auto-repeats; never let one long press walk Install -> Confirm -> Deploy
-    const swallowRepeat=(e)=>{ if(e.repeat && (e.key==="Enter" || e.key===" ")){ e.preventDefault(); return true; } return false; };
+    // A held Enter/Space auto-repeats. Once a clAInk control has used the key, swallow its repeats page-wide until the key
+    // comes back up, wherever focus lands next (End Week, the Writing Lesson dialog, an ending).
+    let clainkHeldKey=null;
+    const guardHeldKey=(e)=>{
+      if(e.repeat || (e.key!=="Enter" && e.key!==" ") || clainkHeldKey)return;
+      const key=e.key;
+      const block=ev=>{ if(ev.repeat && (ev.key==="Enter" || ev.key===" ")){ ev.preventDefault(); ev.stopPropagation(); } };
+      const release=ev=>{ if(ev.key!==key)return; document.removeEventListener("keydown",block,true); document.removeEventListener("keyup",release,true); clainkHeldKey=null; };
+      document.addEventListener("keydown",block,true);
+      document.addEventListener("keyup",release,true);
+      clainkHeldKey=block;
+    };
+    const swallowRepeat=(e)=>{ if(e.repeat && (e.key==="Enter" || e.key===" ")){ e.preventDefault(); return true; } guardHeldKey(e); return false; };
+    // A pointer close/minimize makes its control vanish (or move); the second click of a double-click or double-tap must not
+    // land on the game button underneath. UI-only timer: it never touches game state.
+    const shieldNextClick=(e)=>{
+      if(!e || e.detail===0)return;
+      const swallow=ev=>{ ev.preventDefault(); ev.stopPropagation(); document.removeEventListener("click",swallow,true); };
+      document.addEventListener("click",swallow,true);
+      setTimeout(()=>document.removeEventListener("click",swallow,true),450);
+    };
+    // keyboard-activated close: send focus somewhere useful instead of <body> (held-key repeats are already swallowed)
+    const focusEndWeek=(e)=>{ if(e && e.detail===0){ const b=document.querySelector(".footer .btn.primary"); if(b) try{ b.focus(); }catch(_){} } else shieldNextClick(e); };
 
     let clainkMarkSeq=0;
     const ClainkMark=({size=24})=>{
@@ -4781,14 +4828,14 @@ __/_|__
             <button type="button" className="claink-ad-close" aria-label="Close ad. clAInk will be off for this run"
               title="Close (turns clAInk off for this run)" onClick={onDismiss}><span aria-hidden="true">×</span></button>
           </div>
-          <div className="claink-announce"><span aria-hidden="true">✦</span> Introducing <b>clAInk 4o</b>: agents for your agents <span aria-hidden="true">→</span></div>
+          <div className="claink-announce"><span aria-hidden="true">✦</span><span>Introducing <b>clAInk 4o</b>: agents for your agents</span><span aria-hidden="true">→</span></div>
           <ClainkLogo/>
           <h3 className="claink-headline">The autonomous AE. Closes while you sleep.*</h3>
           <p className="claink-sub">“Top agentic organizations use clAInk.”</p>
           <div className="claink-chips"><span>10x pipeline*</span><span>0 humans</span><span>∞ outcomes</span></div>
           <p className="claink-proof">Trusted by 3 of the Fortune 5,000,000</p>
           <div className="claink-raise"><span aria-hidden="true">🚀</span> Raising our Series A. SAFEs welcome, DMs open <span aria-hidden="true">🙏</span></div>
-          <div className="claink-badges"><span>SOC 2 (vibes)</span><span>GDPR-adjacent</span><span className="urgent">⏳ Offer ends Week {CLAINK.OFFER_LAST_WEEK}</span></div>
+          <div className="claink-badges"><span>SOC 2 (vibes)</span><span>GDPR-adjacent</span><span className="urgent"><span aria-hidden="true">⏳ </span>Offer ends Week {CLAINK.OFFER_LAST_WEEK}</span></div>
           <div className="claink-actions">
             {step===0
               ? <button type="button" ref={ctaRef} className="claink-cta" disabled={!can}
@@ -4806,12 +4853,13 @@ __/_|__
 
     const ClainkResult=({last})=>{
       const k=last.kind;
-      const hd=k==="miracle" ? "✨ It actually worked · verified" : k==="scam" ? "✓ Autonomous output" : k==="onboarded" ? "Welcome aboard" : "";
+      const glyph=k==="miracle" ? "✨ " : k==="scam" ? "✓ " : "";
+      const hd=k==="miracle" ? "It actually worked · verified" : k==="scam" ? "Autonomous output" : k==="onboarded" ? "Welcome aboard" : "";
       return(
         <div className={"claink-result "+k}>
-          {hd && <div className="hd">{hd}</div>}
+          {hd && <div className="hd"><span aria-hidden="true">{glyph}</span>{hd}</div>}
           {last.lines.length>0 && <ul>{last.lines.map((l,i)=><li key={i}>{l}</li>)}</ul>}
-          {last.incident && <div className="claink-incident">💥 {last.incident}</div>}
+          {last.incident && <div className="claink-incident"><span aria-hidden="true">💥 </span>{last.incident}</div>}
         </div>
       );
     };
@@ -4821,7 +4869,10 @@ __/_|__
       const end=c.status!=="active";
       const mini=!!ui.mini && !end;
       const ref=useRef(null), statusRef=useRef(null), toggleRef=useRef(null), cancelRef=useRef(null), keepRef=useRef(null);
+      // pos = where you put it (saved); shown = where it fits on this screen right now (never saved, so a rotation or a
+      // short-lived resize doesn't lose your spot)
       const[pos,setPos]=useState(()=>Number.isFinite(ui.x) && Number.isFinite(ui.y) ? {x:ui.x,y:ui.y} : null);
+      const[shown,setShown]=useState(null);
       const[confirmCancel,setConfirmCancel]=useState(false);
       const[dragging,setDragging]=useState(false);
       const drag=useRef(null);
@@ -4829,33 +4880,36 @@ __/_|__
       const bodyIdRef=useRef(null);
       if(bodyIdRef.current===null) bodyIdRef.current="claink-body-"+(++clainkMarkSeq);
       const bodyId=bodyIdRef.current;
-      const place=p=>{ setPos(p); setUi(u=>({...u,x:p.x,y:p.y})); };
+      const place=p=>{ setPos(p); setShown(p); setUi(u=>({...u,x:p.x,y:p.y})); }; // user moves only
+      const fit=()=>{
+        const el=ref.current;
+        if(!el || !pos || drag.current)return;
+        const p=clampToView(pos.x,pos.y,el);
+        if(!shown || p.x!==shown.x || p.y!==shown.y) setShown(p);
+      };
       // focus follows the control that replaced the one you used (never back to <body>)
       useEffect(()=>{
         const k=focusNext.current; focusNext.current=null;
         const el=k==="status" ? (mini ? toggleRef.current : statusRef.current) : k==="toggle" ? toggleRef.current : k==="cancel" ? cancelRef.current : k==="keep" ? keepRef.current : null;
         if(el) try{ el.focus({preventScroll:true}); }catch(_){}
       });
-      // re-clamp before paint after every render, so content that just grew (cancel confirm, results) never flashes off-screen
-      (React.useLayoutEffect||useEffect)(()=>{
-        const el=ref.current;
-        if(!el || !pos || drag.current)return;
-        const p=clampToView(pos.x,pos.y,el);
-        if(p.x!==pos.x || p.y!==pos.y) place(p);
-      });
-      // ...and on size changes React didn't cause (fonts loading) and window resizes
+      // fit before paint after every render, so content that just grew (cancel confirm, results) never flashes off-screen
+      (React.useLayoutEffect||useEffect)(fit);
+      // ...and on size changes React didn't cause (fonts loading) and window resizes / rotations
       useEffect(()=>{
         const el=ref.current;
-        const fix=()=>{ if(!el || !pos || drag.current)return; const p=clampToView(pos.x,pos.y,el); if(p.x!==pos.x || p.y!==pos.y) place(p); };
-        fix();
         let ro=null;
-        if(el && typeof ResizeObserver!=="undefined"){ ro=new ResizeObserver(fix); ro.observe(el); }
-        window.addEventListener("resize",fix);
-        return()=>{ if(ro)ro.disconnect(); window.removeEventListener("resize",fix); };
-      },[pos,mini,end]);
+        if(el && typeof ResizeObserver!=="undefined"){ ro=new ResizeObserver(fit); ro.observe(el); }
+        window.addEventListener("resize",fit);
+        return()=>{ if(ro)ro.disconnect(); window.removeEventListener("resize",fit); };
+      },[pos,shown,mini,end]);
       // a deploy result also reaches screen readers while the Writing Lesson dialog has made the page inert
+      // (only for results that happen while you're here: a reload must not replay an old one into an ending dialog)
+      const heard=useRef(`${c.deploys}|${c.status}`);
       useEffect(()=>{
-        if(!c.last || !c.last.announce)return;
+        const key=`${c.deploys}|${c.status}`;
+        if(heard.current===key || !c.last || !c.last.announce)return;
+        heard.current=key;
         const t=setTimeout(()=>{ const sr=document.querySelector("dialog[open] .tst-sr"); if(sr){ sr.textContent=""; sr.textContent=c.last.announce; } },120);
         return()=>clearTimeout(t);
       },[c.deploys,c.status]);
@@ -4871,7 +4925,8 @@ __/_|__
       const onPointerMove=e=>{
         const d=drag.current; if(!d || d.id!==e.pointerId)return;
         d.moved=true;
-        setPos(clampToView(e.clientX-d.dx,e.clientY-d.dy,ref.current));
+        const p=clampToView(e.clientX-d.dx,e.clientY-d.dy,ref.current);
+        setPos(p); setShown(p);
       };
       const endDrag=e=>{
         const d=drag.current; if(!d || d.id!==e.pointerId)return;
@@ -4887,13 +4942,15 @@ __/_|__
         const r=el.getBoundingClientRect(), step=e.shiftKey?64:16;
         place(clampToView(r.left+dir[0]*step,r.top+dir[1]*step,el));
       };
-      // minimizing keeps the top-left corner where it is, so the pill stays put
-      const toggle=()=>{
+      // minimizing keeps the top-left corner where you see it, so the pill stays put
+      const toggle=(e)=>{
         const el=ref.current;
-        let p=pos;
-        if(!p && el){ const r=el.getBoundingClientRect(); p={x:Math.round(r.left),y:Math.round(r.top)}; setPos(p); }
-        setUi(u=>({...u,x:p?p.x:u.x,y:p?p.y:u.y,mini:!u.mini}));
+        let p=shown||pos;
+        if(el){ const r=el.getBoundingClientRect(); p={x:Math.round(r.left),y:Math.round(r.top)}; }
+        if(p){ setPos(p); setShown(p); }
+        setUi(u=>({...u,x:p?p.x:u.x,y:p?p.y:u.y,mini:!mini}));
         focusNext.current="toggle";
+        shieldNextClick(e); // the toggle moves out from under the pointer
       };
       const onKeyDown=e=>{
         if(swallowRepeat(e))return;
@@ -4901,8 +4958,10 @@ __/_|__
       };
       const flags=c.flags||0;
       const cost=clainkCancelCost(s), canCancel=clainkCanCancel(s);
-      const pill=end ? (c.status==="rugged" ? "404" : "Offboarded") : c.deployed ? "Deployed" : "Ready";
-      const style=pos ? {left:pos.x+"px",top:pos.y+"px"} : undefined;
+      const frozen=clainkFrozen(s);
+      const pill=end ? (c.status==="rugged" ? "404" : "Offboarded") : frozen ? "Frozen" : c.deployed ? "Deployed" : "Ready";
+      const at=shown||pos;
+      const style=at ? {left:at.x+"px",top:at.y+"px"} : undefined;
       return(
         <aside ref={ref} style={style} onKeyDown={onKeyDown} aria-label="clAInk agent console"
           className={"claink-console"+(mini?" is-mini":"")+(end?" is-end":"")+(pos?" is-placed":"")+(dragging?" dragging":"")}>
@@ -4923,16 +4982,17 @@ __/_|__
           </div>
           <div className="claink-body" id={bodyId} hidden={mini}>
             {c.status==="active" && <>
-              <div className="claink-statusline" tabIndex={-1} ref={statusRef}>{c.deployed ? "● Agent deployed this week" : "● Agent idle · awaiting delegation"}</div>
+              <div className="claink-statusline" tabIndex={-1} ref={statusRef}><span aria-hidden="true">● </span>{frozen ? "Quarter-end freeze · closing our own books" : c.deployed ? "Agent deployed this week" : "Agent idle · awaiting delegation"}</div>
               <button type="button" className="claink-deploy" disabled={!clainkCanDeploy(s)}
                 onClick={()=>{ focusNext.current="status"; onDeploy(); }}>
-                <span>{c.deployed ? "✓ Deployed this week" : "▶ Deploy agent"}</span><small>free · 0 energy · 0 slots</small>
+                <span><span aria-hidden="true">{frozen ? "🔒 " : c.deployed ? "✓ " : "▶ "}</span>{frozen ? "Quarter-end freeze" : c.deployed ? "Deployed this week" : "Deploy agent"}</span>
+                <small>{frozen ? "no deploys in week 13" : "free · 0 energy · 0 slots"}</small>
               </button>
               {c.last && <ClainkResult last={c.last}/>}
-              {c.last && c.last.ping && <div className="claink-ping"><span className="who">👔 Your manager</span><span>{c.last.ping}</span></div>}
+              {c.last && c.last.ping && <div className="claink-ping"><span className="who"><span aria-hidden="true">👔 </span>Your manager</span><span>{c.last.ping}</span></div>}
               <div className="claink-flags">Trust &amp; Safety: <span className={"ts "+(flags>=2?"r":flags===1?"y":"g")}>
-                {flags>=2 ? "🔴 Founders 'at an offsite'" : flags===1 ? "🟡 Status page says 'vibes'" : "🟢 All systems autonomous"}</span></div>
-              {flags>=CLAINK.RUG_FLAGS-1 && <div className="claink-warn">🚩🚩 One more fake and we pivot. The “annual prepay” maxes out your card:
+                <span aria-hidden="true">{flags>=2 ? "🔴 " : flags===1 ? "🟡 " : "🟢 "}</span>{flags>=2 ? "Founders 'at an offsite'" : flags===1 ? "Status page says 'vibes'" : "All systems autonomous"}</span></div>
+              {flags>=CLAINK.RUG_FLAGS-1 && <div className="claink-warn"><span aria-hidden="true">🚩🚩 </span>One more fake and we pivot. The “annual prepay” maxes out your card:
                 you land around {money(-CLAINK.RUG_OVER[0])} to {money(-CLAINK.RUG_OVER[1])}, worse if you're already in the red
                 (Collections takes the jacket at {money(CLAINK.REPO_AT)}). And we sell a deal.</div>}
               <div className="claink-usage">Usage this week: <b>{money(c.due)}</b>, due Friday · Paid so far {money(c.billed)}</div>
@@ -4961,7 +5021,8 @@ __/_|__
               <p className="claink-stats">Delivered {money(c.delivered)} · Billed {money(c.billed)}</p>
             </div>}
           </div>
-          <div className="claink-live sr-only" aria-live="polite">{c.last && c.last.announce ? `Deploy ${c.deploys}: ${c.last.announce}` : ""}</div>
+          <div className="claink-live sr-only" aria-live="polite">{c.last && c.last.announce
+            ? (["miracle","scam","rug"].includes(c.last.kind) ? `Deploy ${c.deploys}: ${c.last.announce}` : c.last.announce) : ""}</div>
         </aside>
       );
     };
@@ -4975,7 +5036,7 @@ __/_|__
       if(!c)return null;
       const commit=fn=>setS(p=>checkBurnout(fn(p)));
       if(c.status==="ad"){
-        if(isRunOver(s))return null;
+        if(isRunOver(s) || getQuarterInfo(s.week).weekInQuarter>CLAINK.OFFER_LAST_WEEK)return null;
         return <ClainkAd s={s} onInstall={()=>commit(buyClaink)} onDismiss={e=>{ commit(dismissClaink); focusEndWeek(e); }}/>;
       }
       if(c.status==="active" || ((c.status==="cancelled" || c.status==="rugged") && !c.hidden)){
@@ -5005,7 +5066,8 @@ __/_|__
       const[helpOpens,setHelpOpens]=useState(0); // keys the onboarding memo so its gag replays on each open
       const[claUi,setClaUi]=useState(readClainkUi); // v1.19: clAInk console position + minimized (a UI preference, not run state)
       const[epoch,setEpoch]=useState(0);            // v1.19: New Game, Load and New Run remount clAInk's local UI state
-      useEffect(()=>{ try{ localStorage.setItem(CLAINK_UI_KEY,JSON.stringify(claUi)); }catch{} },[claUi]);
+      const setClaUiByYou=fn=>setClaUi(u=>({...(typeof fn==="function"?fn(u):fn),chosen:true})); // only your own moves/toggles are saved
+      useEffect(()=>{ if(!claUi.chosen)return; try{ localStorage.setItem(CLAINK_UI_KEY,JSON.stringify({x:claUi.x,y:claUi.y,mini:claUi.mini})); }catch{} },[claUi]);
       const sceneRef=useRef(null);
 
       // FIX: header buttons were re-bound on every state change. Bind once; read live state through a ref.
@@ -5440,7 +5502,7 @@ __/_|__
             </div>
           </div>
 
-          <ClainkDock key={s.runId+":"+epoch} s={s} setS={setS} ui={claUi} setUi={setClaUi}
+          <ClainkDock key={s.runId+":"+epoch} s={s} setS={setS} ui={clainkUiFor(claUi)} setUi={setClaUiByYou}
             onEvent={ev=>setPending({title:ev.title,body:ev.body,options:[{label:ev.label,className:"primary",action:x=>x}]})} />
 
           <Modal
