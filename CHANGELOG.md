@@ -1,5 +1,58 @@
 # Changelog
 
+## v1.19 — clAInk.io, the AI agent that works 20% of the time
+
+### Added
+- **clAInk.io**, a sponsored AI sales agent from a frontier startup that is very much raising. Its ad pops up at the start of every run: "✦ Introducing clAInk 4o: agents for your agents", "Trusted by 3 of the Fortune 5,000,000", "🚀 Raising our Series A. SAFEs welcome, DMs open 🙏", "SOC 2 (vibes)", "⏳ Offer ends Week 10". **Close the ad and clAInk is off for the rest of the run.** Install takes two clicks ($500). The card is declined if it would send you to Collections, and the offer ends after week 10.
+- Buying swaps the ad for **clAInk's own Agent Console**. Drag it anywhere by its title bar, or with the arrow keys on the ⠿ grip. Minimize it to a pill that stays put and drags too. It remembers where you left it, and short screens start with the pill.
+- **Deploy once a week, free** (no energy, no slots). Week 13 is a quarter-end freeze: no deploys. Every deploy rolls on its own:
+  - **20%: "✨ It actually worked."** It signs exactly its $12–22k target in real deals: your most advanced deal at stage 2 or later that fits, plus a buyer nobody had met for the rest. A small remainder is upsold onto your deal instead. It also moves two more deals a stage. A big week, but one week.
+  - **80%: fake wins.** The dashboard brags ("Signed Pinecone Pizza · $27,300") about deals that are still sitting in your pipeline. Nothing real changes, every claimed "outcome" goes on Friday's invoice, and a 🚩 goes up. 38% of the first two fakes also cause a SEV-1:
+    - a slop grenade (your best deal flees)
+    - a hallucinated 45% discount
+    - your pipeline emailed to a rival
+    - a customer auto-renewed at 3x who churned (22% of your closed revenue, at least $1,500 and at most $45,000, comes back with its commission)
+  - **The third fake is the rug pull.** clAInk maxes out your card with an "annual prepay": you land around -$200 to -$1,800, worse if you were already in the red. It also sells your CRM (a deal is gone), costs some of your manager's trust, and the console turns into a 404 page. At two red flags the console warns you, with those numbers.
+- **"Always on ChatGDP?"** Each use has a 25% chance your manager notices (once per run, -9 manager). After that, any use has a 25% chance he takes your best deal "to show you how to work on your writing skills": a Writing Lesson dialog and another -9 each time.
+- **A real chance of bankruptcy.** Every charge comes out of your cash:
+  - $249 for each week you deploy
+  - $140–280 per claimed outcome
+  - $150–300 for an idle week
+  - a 10% chance of a $200–600 token overage on any Friday invoice
+  - a $250 exit fee plus the week's usage (refused if it would repo you)
+  If clAInk sends you to Collections, the ending, the scene note and the PA ("Collections thanks the agent.") say so.
+- Sounds and PA lines for every clAInk event.
+
+### Balance
+Simulated by running the game's own code headless, against the same seeds without clAInk:
+- **Regular bot:** reaches President's Club 6% of the time without clAInk. Pooled over 60,000 runs per policy.
+- **Strong bot:** reaches it 19%. Pooled over 20,000 runs per policy.
+
+| How you use clAInk | Club, regular bot | Club, strong bot | Goes broke |
+|---|---|---|---|
+| Ride it to the third fake, from week 1 | -3.9 pp | -11.0 pp | 56% |
+| Ride it to the third fake, from week 5 | -2.2 pp | -6.3 pp | 12–16% |
+| Quit after the first miracle, from week 1 | -2.2 pp | -5.4 pp | 40–43% |
+| Stop at two red flags, from week 1 | -0.9 pp | -1.1 pp | 6% |
+| Stop at two red flags, from week 5 | -0.4 pp | -0.4 pp | 0% |
+
+- **Best as a desperation play.** Installing at week 5 or later and deploying only after a week you're behind pace (stopping at two red flags) roughly breaks even for the regular bot (+0.1 to +0.2 pp). For the strong bot it edges out not installing by about +1 pp. A single deploy, then cancel, is about 0 pp for the regular bot and +0.3 pp for the strong one. From week 1 the same plays cost 0.4–1.3 pp and about 6% go broke, and deploying while you're on pace costs you.
+- **The tradeoff.** The plan aimed for riding it out to go broke about 25% of the time, careful play at least 10%, and careful week-1 play within ±0.5 pp. Those can't all hold together: a rider pays every fee a careful player pays, plus more weeks of them, plus the rug pull. So any fee level that puts careful players at risk sends riders broke about half the time. The tuning puts a real bankruptcy risk on anyone who installs while broke or rides it to the rug pull, steepest for whoever ignores two red flags. Careful play from week 5 never goes broke. Careful week-1 play costs about 0.9 pp, most of it that 6% bankruptcy risk. Damage that would also erase the strong bot's comeback edge drags ordinary careful play down further, so the edge stays.
+- Miracles land 20% of the time, and the manager's notice and deal grabs 25%.
+- A run that never installs clAInk plays like v1.18: the same endings and the same random draws. The only change is that a rent repo now ends the week right away, so the ending is the last log line.
+
+### Fixed (vs the clAInk prototype)
+- The window's × only minimized it, to a pill that could never be dismissed. It reopened on every reload and kept stale state across New Game and Load. Now the ad's × turns clAInk off for the run, and the console minimizes, drags and stays inside the screen and its safe areas.
+- The window covered the bottom of the deals and the log on phones. The ad now reserves page space and scrolls inside itself on short screens.
+- These no longer happen:
+  - One click installed (a double click installed and deployed).
+  - A held Enter or a double click on clAInk's controls carried on into the game (End Week, Discovery, Conference).
+  - Cancelling and re-buying gave a second deploy in the same week.
+  - Buying, deploying and cancelling skipped the invoice.
+  - A week-13 invoice could turn President's Club into a repo.
+  - Saves weren't validated.
+- Built on v1.18. The prototype was a v1.16 copy that would have undone the v1.17 and v1.18 changes.
+
 ## v1.18 — Metal endings, HR does the firing
 
 ### Changed

@@ -726,6 +726,140 @@
 
     /* elements using the hidden attribute stay hidden even when a rule sets display */
     [hidden]:not([hidden=until-found i]){display:none!important}
+
+    /* ---------- v1.19: clAInk.io, a frontier AI startup begging for VC money ---------- */
+    /* The ad pops up at run start (it waits behind the boot screen) and reserves page space under itself.
+       The bought console is its own app window: drag it by the title bar, minimize it to a pill. */
+    .container{padding-bottom:calc(12px + var(--claink-h,0px))}
+    .claink-ad,.claink-console{--ck-v:#a78bfa;--ck-c:#22d3ee;--ck-p:#f472b6;--ck-ink:#eeeaff;--ck-mut:#aaa5da;--ck-line:#3a3270;
+      position:fixed;z-index:12;color:var(--ck-ink);font-family:"Inter",ui-sans-serif,system-ui,sans-serif;text-align:left;line-height:1.4}
+    .claink-ad *,.claink-console *{box-sizing:border-box}
+    .claink-logo{display:inline-flex;align-items:center;gap:9px;line-height:1}
+    .claink-mark{flex:none;filter:drop-shadow(0 0 10px rgba(167,139,250,.55))}
+    .claink-word{font-family:"Sora","Inter",sans-serif;font-weight:800;font-size:26px;letter-spacing:-1.2px;color:#fff}
+    .claink-word b{font-weight:800;background:linear-gradient(100deg,var(--ck-v),var(--ck-c) 55%,var(--ck-p));-webkit-background-clip:text;background-clip:text;color:transparent}
+    .claink-word small{font-size:12px;font-weight:600;letter-spacing:0;color:var(--ck-mut);margin-left:2px}
+    .claink-beta{font-size:9px;font-weight:800;letter-spacing:.16em;padding:3px 7px;border-radius:999px;color:#0b0a1f;
+      background:linear-gradient(90deg,var(--ck-c),var(--ck-v));box-shadow:0 0 12px rgba(34,211,238,.45)}
+    .claink-logo.sm .claink-word{font-size:15px;letter-spacing:-.5px}
+    .claink-logo.sm .claink-beta{display:none}
+
+    .claink-ad{--ck-px:16px;--ck-pb:13px;right:calc(16px + env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));width:min(348px,calc(100vw - 32px));
+      max-height:calc(100vh - 32px);overflow:auto;overflow-x:hidden;overscroll-behavior:contain;border-radius:20px;padding:12px var(--ck-px) var(--ck-pb);isolation:isolate;
+      background:radial-gradient(140% 85% at 0% 0%,#33207a 0,transparent 55%),radial-gradient(120% 90% at 100% 100%,#073a52 0,transparent 55%),
+        radial-gradient(60% 50% at 85% 10%,rgba(244,114,182,.25) 0,transparent 70%),linear-gradient(160deg,#151036,#090a1d);
+      box-shadow:0 30px 80px rgba(0,0,0,.85),0 0 60px rgba(139,92,246,.3);
+      animation:clainkPop .6s 1.2s var(--ease) both}
+    @supports (height:100dvh){ .claink-ad{max-height:calc(100dvh - 32px)} }
+    .claink-ad::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1.5px;pointer-events:none;z-index:-1;--angle:0deg;
+      background:conic-gradient(from var(--angle),#a78bfa,#22d3ee,#f472b6,#fde68a,#a78bfa);
+      -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;
+      animation:spinAngle 5s linear infinite}
+    .tst-booting .claink-ad{animation-play-state:paused}
+    @keyframes clainkPop{0%{opacity:0;visibility:hidden;transform:translateY(28px) scale(.95)}100%{opacity:1;visibility:visible;transform:none}}
+    .claink-ad-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+    .claink-sponsored{font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--ck-mut)}
+    .claink-ad-close{flex:none;width:30px;height:30px;border-radius:10px;border:1px solid var(--ck-line);background:#16123a;color:#ddd8ff;
+      font-size:18px;line-height:1;cursor:pointer;transition:border-color .2s,color .2s}
+    .claink-ad-close:hover{border-color:var(--ck-p);color:#fff}
+    .claink-announce{display:inline-flex;align-items:center;gap:6px;max-width:100%;font-size:11px;font-weight:600;color:#ece6ff;
+      padding:4px 11px;border-radius:999px;border:1px solid #5d4cb5;background:linear-gradient(90deg,#2b2066,#10324c);margin:0 0 12px}
+    .claink-announce b{color:var(--ck-c)}
+    .claink-headline{font-family:"Sora","Inter",sans-serif;font-size:19px;line-height:1.18;font-weight:800;letter-spacing:-.5px;margin:12px 0 4px;color:#fff}
+    .claink-sub{font-size:12.5px;color:#d3cdf7;margin:0 0 10px;font-style:italic}
+    .claink-chips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
+    .claink-chips span{font-size:11px;font-weight:700;padding:4px 9px;border-radius:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12)}
+    .claink-proof{font-size:11px;color:var(--ck-mut);margin:0 0 9px}
+    .claink-raise{font-size:11.5px;font-weight:600;padding:8px 10px;border-radius:11px;margin:0 0 10px;color:#ffe4f3;
+      background:linear-gradient(90deg,#3d1342,#1e1b52);border:1px dashed rgba(244,114,182,.55)}
+    .claink-badges{display:flex;flex-wrap:wrap;gap:5px;margin:0 0 12px}
+    .claink-badges>span{font-size:10px;font-weight:700;letter-spacing:.04em;padding:3px 7px;border-radius:6px;color:#c2bbf1;border:1px solid var(--ck-line)}
+    .claink-badges>.urgent{color:#ffd59e;border-color:#a8641d;background:#2c1a07}
+    .claink-cta,.claink-confirm,.claink-deploy{font:700 13px "Inter",sans-serif;border:0;cursor:pointer;color:#0b0a1f;transition:filter .2s,transform .2s}
+    .claink-cta{width:100%;padding:12px;border-radius:13px;background:linear-gradient(100deg,var(--ck-v),var(--ck-c) 60%,var(--ck-p));
+      box-shadow:0 0 26px rgba(34,211,238,.4),0 8px 20px rgba(0,0,0,.5)}
+    .claink-cta:not(:disabled):hover,.claink-confirm:not(:disabled):hover,.claink-deploy:not(:disabled):hover{filter:brightness(1.12);transform:translateY(-1px)}
+    .claink-cta:disabled,.claink-confirm:disabled{cursor:not-allowed;opacity:.55;filter:grayscale(.5)}
+    /* the buttons stay in view even when a short sheet scrolls inside itself */
+    .claink-actions{position:sticky;bottom:calc(-1 * var(--ck-pb));z-index:1;margin:0 calc(-1 * var(--ck-px));padding:10px var(--ck-px) 12px;
+      background:linear-gradient(180deg,rgba(11,16,38,0),rgba(11,16,38,.78) 40%,rgba(11,16,38,.9));-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+    /* step 2 keeps "Not now" under the CTA's centre, so a double click can't confirm */
+    .claink-confirm-row{display:grid;grid-template-columns:2fr 3fr;gap:8px}
+    .claink-confirm{padding:11px 8px;border-radius:12px;background:linear-gradient(100deg,var(--ck-v),var(--ck-c))}
+    .claink-notnow{font:600 12.5px "Inter",sans-serif;padding:11px 8px;border-radius:12px;cursor:pointer;color:#ddd8ff;background:rgba(255,255,255,.04);border:1px solid var(--ck-line)}
+    .claink-fine{font-size:10px;line-height:1.4;color:#918cc2;margin:0;padding-top:4px}
+
+    .claink-console{right:calc(16px + env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));width:min(340px,calc(100vw - 24px));
+      max-height:calc(100vh - 24px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));overflow:auto;overscroll-behavior:contain;border-radius:15px;
+      scroll-padding-top:48px; /* keyboard focus never lands under the sticky title bar */
+      background:linear-gradient(180deg,#15112f,#0a0a1c);border:1px solid var(--ck-line);
+      box-shadow:0 24px 64px rgba(0,0,0,.85),0 0 34px rgba(34,211,238,.14);animation:clainkIn .45s var(--ease) both}
+    @keyframes clainkIn{0%{opacity:0;transform:translateY(16px) scale(.97)}100%{opacity:1;transform:none}} /* stays focusable while it animates */
+    @supports (height:100dvh){ .claink-console{max-height:calc(100dvh - 24px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))} }
+    .claink-console.is-placed{right:auto;bottom:auto}
+    .claink-console.is-mini{width:auto;max-width:calc(100vw - 24px);border-radius:999px;overflow:hidden}
+    .claink-titlebar{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:8px;padding:7px 8px 7px 10px;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;
+      background:linear-gradient(90deg,#1e1948,#0e1c3a);border-bottom:1px solid var(--ck-line)}
+    .claink-console.is-mini .claink-titlebar{border-bottom:0;padding:5px 6px 5px 11px}
+    .claink-console.dragging,.claink-console.dragging .claink-titlebar{cursor:grabbing}
+    .claink-title{font-family:"Sora","Inter",sans-serif;font-weight:800;font-size:12.5px;letter-spacing:-.2px;white-space:nowrap}
+    .claink-title span{font-weight:600;color:var(--ck-mut)}
+    .claink-pilltext{font-size:11px;color:#ddd8ff;white-space:nowrap}
+    .claink-dot{width:8px;height:8px;border-radius:50%;flex:none;background:#34d399;box-shadow:0 0 8px #34d399}
+    .claink-dot.busy{background:#fbbf24;box-shadow:0 0 8px #fbbf24}
+    .claink-dot.dead{background:#f43f5e;box-shadow:0 0 8px #f43f5e}
+    .claink-tb-btns{margin-left:auto;display:flex;gap:4px}
+    .claink-tb-btns button{width:28px;height:26px;border-radius:8px;border:1px solid var(--ck-line);background:#161238;color:#ddd8ff;
+      cursor:pointer;font-size:13px;line-height:1;padding:0}
+    .claink-tb-btns button:hover{border-color:var(--ck-c);color:#fff}
+    .claink-grip{cursor:move!important}
+    .claink-body{padding:10px 12px 12px;display:grid;gap:9px}
+    .claink-statusline{font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--ck-mut);outline:none;border-radius:4px}
+    .claink-statusline:focus-visible{outline:2px solid var(--ck-c);outline-offset:2px}
+    .claink-deploy{width:100%;padding:11px 12px;border-radius:12px;display:flex;align-items:center;justify-content:space-between;gap:8px;
+      background:linear-gradient(100deg,var(--ck-c),var(--ck-v));box-shadow:0 0 20px rgba(34,211,238,.3)}
+    .claink-deploy small{font-weight:600;opacity:.75;font-size:10.5px}
+    .claink-deploy:disabled{cursor:default;color:#cfc9f5;background:#1c1842;box-shadow:none}
+    .claink-result{border-radius:11px;padding:8px 10px;font-size:12px;background:#0a0d24;border:1px solid #2b2b5c}
+    .claink-result .hd{font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#c4b5fd}
+    .claink-result ul{margin:4px 0 0;padding:0;list-style:none}
+    .claink-result li{margin:2px 0}
+    .claink-result.scam li::before{content:"✓ ";content:"✓ " / "";color:#34d399;font-weight:800} /* decorative: silent where supported */
+    .claink-result.miracle{border-color:rgba(52,211,153,.5);background:linear-gradient(180deg,#062a20,#0a0d24)}
+    .claink-result.miracle .hd{color:#6ee7b7}
+    .claink-incident{margin-top:6px;padding-top:6px;border-top:1px dashed #7f1d3a;color:#fda4af}
+    .claink-ping{display:flex;flex-direction:column;gap:2px;font-size:12px;padding:7px 10px;border-radius:11px;background:#1d1a12;border:1px solid #6b5f3a}
+    .claink-ping .who{font-weight:800;font-size:11px;color:#fde68a}
+    .claink-flags{font-size:11.5px;color:#d3cdf7}
+    .claink-flags .ts{font-weight:700}
+    .claink-flags .ts.g{color:#6ee7b7}.claink-flags .ts.y{color:#fcd34d}.claink-flags .ts.r{color:#fda4af}
+    .claink-warn{font-size:11.5px;color:#fecdd3;background:#2a0b14;border:1px solid #9f1239;border-radius:10px;padding:7px 9px}
+    .claink-usage{font-size:11px;color:var(--ck-mut)}
+    .claink-usage b{color:#fff}
+    .claink-upsell{font-size:10.5px;color:#8c87bd}
+    .claink-cancel-link{justify-self:start;background:none;border:0;padding:0;font:10px "Inter",sans-serif;color:#716c9f;text-decoration:underline;cursor:pointer}
+    .claink-cancel-box{font-size:11.5px;color:#fecdd3;background:#1c0a14;border:1px solid #7f1d3a;border-radius:11px;padding:8px 9px;display:grid;gap:7px}
+    .claink-cancel-box .row2{display:flex;gap:6px;flex-wrap:wrap}
+    .claink-cancel-box button{font:600 11.5px "Inter",sans-serif;padding:7px 9px;border-radius:8px;cursor:pointer;border:1px solid #7f1d3a;background:#2a0b14;color:#ffe4e6}
+    .claink-cancel-box button:disabled{opacity:.55;cursor:not-allowed}
+    .claink-404,.claink-offboarded{display:grid;gap:6px;font-size:12px;color:#cbd5e1}
+    .claink-404{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+    .claink-404 .code{font-size:44px;font-weight:800;letter-spacing:-2px;line-height:1;
+      background:linear-gradient(100deg,var(--ck-p),var(--ck-v));-webkit-background-clip:text;background-clip:text;color:transparent}
+    .claink-404 p,.claink-offboarded p{margin:0}
+    .claink-stats{color:#94a3b8;font-size:11px}
+    .claink-404 .claink-statusline{text-transform:none;letter-spacing:0;font-size:12px;color:#e2e8f0} /* keep the cl-AI-nk casing */
+    .claink-ad button:focus-visible,.claink-console button:focus-visible{outline:2px solid var(--ck-c);outline-offset:2px}
+    .badge.claink-badge{border-color:#4c3d99;color:#ddd6fe}
+    @media (max-width:640px){
+      .claink-ad{--ck-px:13px;--ck-pb:11px;left:calc(10px + env(safe-area-inset-left,0px));right:calc(10px + env(safe-area-inset-right,0px));width:auto;bottom:calc(10px + env(safe-area-inset-bottom,0px));max-height:50vh;border-radius:16px;padding:10px var(--ck-px) var(--ck-pb)}
+      .claink-headline{font-size:17px}
+      .claink-console{right:calc(10px + env(safe-area-inset-right,0px));bottom:calc(10px + env(safe-area-inset-bottom,0px))}
+    }
+    @media (max-width:640px){ @supports (height:100dvh){ .claink-ad{max-height:50dvh} } }
+    /* short screens (landscape phones): the ad scrolls inside itself so the page can always scroll clear of it */
+    @media (max-height:600px){ .claink-ad{max-height:58vh} @supports (height:100dvh){ .claink-ad{max-height:58dvh} } }
+    @media (prefers-reduced-motion: reduce){ .claink-ad,.claink-console,.claink-ad::before{animation:none!important} }
   </style>
 </head>
 <body>
@@ -1715,6 +1849,7 @@ __/_|__
     ],
     drift: {x:1, z:.015, p:8000},
     summary: "A tow truck hauls off the President's Club jacket.",
+    summaryBy: { claink: "A tow truck hauls off the jacket. clAInk's final invoice said 'outcomes'." },
     draw: function(g,c){
       var t = c.t, st = c.st;
       var hookX = 34, TIP = 26, ty = 3; // boom tip column inside the truck sprite; truck top row
@@ -2570,6 +2705,9 @@ __/_|__
   };
   Object.assign(LINES,{ closeOut:["Close that out."], burnoutCaffeine:["Rep has left the atmosphere."] });
   Object.assign(LINES,{ welcome:["Welcome to Shitcorp. Culture is glue."] }); // v1.16 onboarding memo
+  // v1.19 clAInk.io. Six words or fewer, and never "AI" or "clAInk": speech engines spell them out.
+  Object.assign(LINES,{ claink:["Agent outperforming staff. Please clap."], sev1:["Sev one. The agent did it."], clainkRug:["Vendor has left the chat."],
+    chatgdp:["Always on Chat GDP, huh?"], yoink:["Manager closing your deal. Take notes."], repoClaink:["Collections thanks the agent."] });
   // v1.17: the PA went silent on Windows Chromium/Edge. Three things in that engine bite a naive speak():
   //  - voice objects go stale when the browser reloads its list (voiceschanged fires more than once) and a stale
   //    voice speaks nothing, so the choice is kept by NAME and resolved against the live list at speak time;
@@ -2644,6 +2782,7 @@ __/_|__
     if(!("speechSynthesis" in root)) return false;
     if(key === "fired" && opts.meta){ if(opts.meta.cause === "org") key = "firedOrg"; else if(opts.meta.cause === "review") key = "firedReview"; }
     if(key === "burnout" && opts.meta && opts.meta.cause === "caffeine") key = "burnoutCaffeine";
+    if(key === "repo" && opts.meta && opts.meta.cause === "claink") key = "repoClaink";
     var bank = LINES[key], text = bank ? bank[Math.floor(Math.random()*bank.length)] : String(key);
     var ss = root.speechSynthesis, now = Date.now();
     if(!opts.force){
@@ -2724,6 +2863,10 @@ __/_|__
     ["🏅","achievement",4,"whale"], ["💀","lost",4], ["⚠","alarm",4,"cash"]
   ];
   RULES.unshift(["🧹","crm",3,"hygiene"],["🗑","lost",4,"closeOut"],["🫀","heartbeat",2],["🚀","ignition",4],["☢","crack",4],["🏝","airport",3],["🥴","sick",2]);
+  // v1.19 clAInk.io: specific prefixes first ("🤖 clAInk: N signed, $X" already plays cash through the close regex in ruleFor)
+  RULES.unshift(["🤖 clAInk on.","chime",3],["🤖","beep",2],["✨","sparkle",4,"claink"],["🚩","suspicion",3],["💥","glitch",4,"sev1"],
+    ["🧾","stamp",2],["🪦","bsod",5,"clainkRug"],["🎭","sadHorn",3],["🔌","poweroff",3],["🙅","whoosh",2],["⏳","nope",2],
+    ["💸 Commission","bad",3],["👔 Boss took","lost",4],["👔","suspicion",3,"chatgdp"]);
   function ruleFor(msg){
     var m = norm(msg);
     if(/\d+ signed, \$/.test(m)) return {sfx:"cash", prio:4, close:true};
@@ -2760,6 +2903,7 @@ __/_|__
     var t = norm(title);
     if(t.indexOf("🧨") === 0) say("competitor",{cooldown:4000});
     else if(t.indexOf("🔐") === 0) say("incident",{cooldown:4000});
+    else if(t.indexOf("👔") === 0) say("yoink",{cooldown:4000}); // v1.19: the Writing Lesson
   }
 
   // v1.15 scene cuts: whip pan, slash cut, impact frame
@@ -3031,6 +3175,7 @@ __/_|__
         stressWarned:!!parsed.stressWarned,
         trip:typeof parsed.trip==="string"?parsed.trip:null,
         hygieneShield:!!parsed.hygieneShield,
+        claink:sanitizeClaink(parsed.claink,parsed.week), // v1.19; also maps the v1.16 prototype's save shape
         endCause:typeof parsed.endCause==="string"?parsed.endCause:null
       };
     };
@@ -3291,6 +3436,7 @@ __/_|__
       stressWarned:false,
       hygieneShield:false,
       trip:null,
+      claink:newClaink(),
       endCause:null,
       runId:idGen(),
       used:{
@@ -3985,6 +4131,307 @@ __/_|__
       return ns;
     };
 
+    // ---------- v1.19: clAInk.io, the AI agent that works 20% of the time ----------
+    // One subscription per run: ad -> active -> cancelled | rugged, or ad -> dismissed (closed) | expired (offer ran out).
+    // Each weekly deploy: 20% it really closes (miracle), 80% it fakes wins and bills them anyway; the third fake is the rug pull.
+    // Any use can catch the manager's eye (25%): the first time he only remarks, after that he yoinks deals.
+    // Every clAInk random number comes from CLAINK.rng (the sim swaps in its own stream), so a run that never installs
+    // draws exactly the same Math.random calls as v1.18. Numbers tuned with the Monte Carlo sim.
+    const CLAINK={
+      rng:()=>Math.random(),
+      INSTALL:500, CANCEL:250, REPO_AT:-1500,
+      OFFER_LAST_WEEK:10,                 // "Offer ends Week 10": the install deadline
+      MIRACLE_P:0.20,                     // first draw of every deploy
+      MIRACLE:[12000,22000],              // real revenue a miracle closes (about 1-1.5 weeks of quota pace)
+      MIRACLE_NUDGE:2,                    // other deals it moves one stage
+      RUG_FLAGS:3,                        // the third fake is the rug pull
+      RUG_OVER:[200,1800],                // the "annual prepay" maxes out the card on file: you end at -$200..-$1,800
+      RUG_MIN:0,                          // ...and it always takes at least the week's usage when there's nothing left to max
+      RUG_MGR:8,                          // the forecast had its fake wins in it
+      INCIDENT_P:0.38,                    // a fake also causes a SEV-1
+      INC:{
+        slop:{w:0.20, rep:10, mgr:6},             // best deal flees
+        discount:{w:0.15, cut:0.45, mgr:10, rep:4},// hallucinated 45% off
+        leak:{w:0.15, n:2, rep:12, mgr:8},         // pipeline emailed to a rival
+        churn:{w:0.50, frac:0.22, lo:1500, hi:45000} // auto-renewed at 3x, customer churned: a slice of closed revenue and its commission come back
+      },
+      MGR_P:0.25,                         // manager notice (once per run), then yoink chance per deploy
+      MGR_HIT:9,                          // relationship hit on every manager event
+      RETAINER:249,                       // every deployed week
+      PER_OUTCOME:[140,280],              // every claimed outcome, fake or real
+      IDLE:[150,300],                     // an active week with no deploy
+      OVERAGE_P:0.10, OVERAGE:[200,600],  // surprise token overage on the Friday invoice
+      FAKE_CLAIMS:[2,5]
+    };
+    if(typeof window!=="undefined") window.TST_CLAINK=CLAINK; // debug/test hook: UI tests script outcomes through CLAINK.rng
+    const CLAINK_STATUSES=["ad","dismissed","expired","active","cancelled","rugged"];
+    const CLAINK_KINDS=["onboarded","miracle","scam","rug","cancelled"];
+    const ckR=()=>{ const v=Number(CLAINK.rng()); return Number.isFinite(v) ? Math.min(0.999999,Math.max(0,v)) : 0; };
+    const ckInt=(a,b)=>a+Math.floor(ckR()*(b-a+1));
+    const ckPick=(arr)=>arr[Math.floor(ckR()*arr.length)];
+    const ckRank=(a,b)=>b.stage-a.stage || b.value-a.value;
+    const ckPipe=(s)=>({...s,pipeline:s.deals.reduce((sum,d)=>sum+d.value,0)});
+    const ckLast=(o)=>({kind:"scam",week:0,revenue:0,lines:[],flags:0,incident:"",ping:"",announce:"",...o});
+    const newClaink=()=>({status:"ad",hidden:false,deployed:false,flags:0,claims:0,due:0,mgr:{noticed:false,yoinks:0},last:null,
+      deploys:0,miracles:0,fakes:0,incidents:0,claimed:0,delivered:0,billed:0,lastInvoice:0});
+
+    // saves are user data: coerce every field, and map the v1.16 prototype's shape ({active, usedThisWeek, runs, totalBilled, ...}).
+    // `week` lets an ad from a save made before clAInk existed respect the Week 10 deadline.
+    const sanitizeClaink=(raw,week)=>{
+      const pastOffer=getQuarterInfo(Number.isFinite(week)&&week>0?week:1).weekInQuarter>CLAINK.OFFER_LAST_WEEK;
+      const b=newClaink();
+      if(pastOffer) b.status="expired";
+      if(!raw || typeof raw!=="object" || Array.isArray(raw))return b;
+      const n=(v,lo=0,hi=1e9)=>Number.isFinite(v)?Math.max(lo,Math.min(hi,Math.round(v))):lo;
+      const str=(v,max=160)=>typeof v==="string"?v.slice(0,max):"";
+      let status=CLAINK_STATUSES.includes(raw.status)?raw.status:null;
+      const legacy=!status;
+      if(legacy){
+        // prototype buy/cancel never touched runs/totalBilled, but they always wrote lastReport (and invoices wrote lastInvoice)
+        const history=n(raw.runs)>0 || n(raw.totalBilled)>0 || n(raw.incidents)>0 || n(raw.lastInvoice)>0 || (typeof raw.lastReport==="string" && raw.lastReport!=="");
+        status=raw.active===true ? "active" : history ? "cancelled" : "ad";
+      }
+      if(status==="ad" && pastOffer) status="expired";
+      const ended=status==="cancelled" || status==="rugged";
+      const mgr=raw.mgr && typeof raw.mgr==="object" ? raw.mgr : {};
+      const L=raw.last && typeof raw.last==="object" ? raw.last : null;
+      return{
+        status,
+        hidden:ended && !!raw.hidden,
+        deployed:!!(raw.deployed!==undefined ? raw.deployed : raw.usedThisWeek),
+        flags:n(raw.flags,0,status==="active"?CLAINK.RUG_FLAGS-1:CLAINK.RUG_FLAGS),
+        claims:n(raw.claims!==undefined ? raw.claims : raw.outcomesThisWeek,0,999),
+        // a prototype save made after that week's run kept no usage total: bill it like a light deployed week
+        due:raw.due!==undefined || !(legacy && status==="active" && raw.usedThisWeek) ? n(raw.due,0,1e6)
+          : CLAINK.RETAINER+n(raw.outcomesThisWeek,0,99)*CLAINK.PER_OUTCOME[0],
+        mgr:{noticed:!!mgr.noticed, yoinks:n(mgr.yoinks,0,999)},
+        last:L ? ckLast({kind:CLAINK_KINDS.includes(L.kind)?L.kind:"scam", week:n(L.week,0,999), revenue:n(L.revenue),
+          lines:Array.isArray(L.lines)?L.lines.filter(x=>typeof x==="string").slice(0,8).map(x=>x.slice(0,120)):[],
+          flags:n(L.flags,0,CLAINK.RUG_FLAGS), incident:str(L.incident), ping:str(L.ping), announce:str(L.announce,240)}) : null,
+        deploys:n(raw.deploys!==undefined ? raw.deploys : raw.runs), miracles:n(raw.miracles), fakes:n(raw.fakes), incidents:n(raw.incidents),
+        claimed:n(raw.claimed), delivered:n(raw.delivered), billed:n(raw.billed!==undefined ? raw.billed : raw.totalBilled), lastInvoice:n(raw.lastInvoice)
+      };
+    };
+
+    // a clAInk charge that sends you to Collections is clAInk's fault, and the ending says so
+    const ckRepo=(before,s)=>{ const r=checkRepo(s); return (r.repo && !before.repo) ? {...r,endCause:"claink"} : r; };
+    const clainkCharge=(state,amount,msg,kind="warn")=>{
+      const amt=Math.max(0,Math.round(amount));
+      const s=log({...state,cash:state.cash-amt,claink:{...state.claink,billed:state.claink.billed+amt}},msg,kind);
+      return ckRepo(state,s);
+    };
+
+    const clainkCanInstall=(s)=>!!s.claink && s.claink.status==="ad" && !isRunOver(s) &&
+      getQuarterInfo(s.week).weekInQuarter<=CLAINK.OFFER_LAST_WEEK && s.cash-CLAINK.INSTALL>CLAINK.REPO_AT;
+    // week 13 is the quarter-end freeze: the QBR ends every run, so a final-week deploy could never be invoiced
+    const clainkFrozen=(s)=>getQuarterInfo(s.week).weekInQuarter>=QUARTER_WEEKS;
+    const clainkCanDeploy=(s)=>!!s.claink && s.claink.status==="active" && !s.claink.deployed && !isRunOver(s) && !clainkFrozen(s);
+    const clainkCancelCost=(s)=>CLAINK.CANCEL+((s.claink && s.claink.due)||0);
+    const clainkCanCancel=(s)=>!!s.claink && s.claink.status==="active" && !isRunOver(s) && s.cash-clainkCancelCost(s)>CLAINK.REPO_AT;
+
+    const buyClaink=(state)=>{
+      if(!clainkCanInstall(state))return state;
+      const s={...state,claink:{...state.claink,status:"active",deployed:false,flags:0,claims:0,due:0,
+        last:ckLast({kind:"onboarded",week:state.week,lines:["Agent onboarded.","Alignment workshop complete."],announce:"clAInk installed."})}};
+      return clainkCharge(s,CLAINK.INSTALL,`🤖 clAInk on. -${money(CLAINK.INSTALL)}. Workflows disrupted.`);
+    };
+
+    const dismissClaink=(state)=>{
+      if(!state.claink || state.claink.status!=="ad")return state;
+      return log({...state,claink:{...state.claink,status:"dismissed"}},"🙅 Ad closed. clAInk is off this run.","muted");
+    };
+
+    // End Week of the deadline week: an ad nobody answered disappears
+    const expireClaink=(state)=>{
+      if(!state.claink || state.claink.status!=="ad" || getQuarterInfo(state.week).weekInQuarter<CLAINK.OFFER_LAST_WEEK)return state;
+      return log({...state,claink:{...state.claink,status:"expired"}},"⏳ clAInk's offer expired. It pivoted to enterprise.","muted");
+    };
+
+    const hideClainkCard=(state)=>{
+      const c=state.claink;
+      if(!c || (c.status!=="cancelled" && c.status!=="rugged") || c.hidden)return state;
+      return {...state,claink:{...c,hidden:true}};
+    };
+
+    // 20%: it actually works. Signs your most advanced stage 2+ deal that fits the budget, finds a buyer nobody met for the rest.
+    const clainkMiracle=(state)=>{
+      let s={...state};
+      const target=ckInt(CLAINK.MIRACLE[0],CLAINK.MIRACLE[1]);
+      const own=[...s.deals].filter(d=>d.stage>=2 && d.value<=target).sort(ckRank)[0]||null;
+      const signed=[];
+      if(own){ s.deals=s.deals.filter(d=>d.id!==own.id); signed.push({account:own.account,value:own.value,own:true}); }
+      const rest=target-(own?own.value:0);
+      // a miracle always lands the full target: a real new logo for the rest, or an upsell on your deal when the rest is small
+      if(own && rest>0 && rest<2500){ signed[0].value+=rest; signed[0].upsell=rest; }
+      else if(rest>0) signed.push({account:ckPick(ACCOUNT_NAMES),value:rest,own:false});
+      const order=s.deals.filter(d=>d.stage<4).map(d=>({id:d.id,k:ckR()})).sort((a,b)=>a.k-b.k);
+      const nudged=new Set(order.slice(0,CLAINK.MIRACLE_NUDGE).map(x=>x.id));
+      if(nudged.size) s.deals=s.deals.map(d=>nudged.has(d.id)?{...d,stage:d.stage+1,mood:d.mood==="skeptical"?"neutral":d.mood,probNote:"AI-touched"}:d);
+      const total=signed.reduce((t,d)=>t+d.value,0);
+      const keep=Math.round(total*0.12);
+      s.closedWon+=total; s.closedQuarter+=total; s.cash+=keep;
+      s=ckPipe(s);
+      let fees=0; for(let i=0;i<signed.length;i++) fees+=ckInt(CLAINK.PER_OUTCOME[0],CLAINK.PER_OUTCOME[1]);
+      const c=s.claink;
+      s.claink={...c,miracles:c.miracles+1,delivered:c.delivered+total,claims:c.claims+signed.length,due:c.due+fees,
+        last:ckLast({kind:"miracle",week:s.week,revenue:total,
+          lines:[...signed.map(d=>`Signed ${d.account} · ${money(d.value)}${!d.own?" (new logo)":d.upsell?" (upsold)":""}`),
+            ...(nudged.size?[`Moved ${nudged.size} deal${nudged.size>1?"s":""} a stage`]:[]),
+            `Closed (Q) +${money(total)} · verified by Finance`],
+          announce:`It actually worked: ${signed.length} signed for ${money(total)}.`})};
+      s=log(s,"✨ clAInk actually worked.");
+      return log(s,`🤖 clAInk: ${signed.length} signed, ${money(total)}. You keep ${money(keep)}.`);
+    };
+
+    // a SEV-1 picked by weight; it falls back to what it can actually hit
+    const clainkIncident=(state,rKind)=>{
+      let s={...state};
+      const I=CLAINK.INC;
+      const ranked=[...s.deals].sort(ckRank);
+      let kind=rKind<I.slop.w ? "slop" : rKind<I.slop.w+I.discount.w ? "discount" : rKind<I.slop.w+I.discount.w+I.leak.w ? "leak" : "churn";
+      if(kind==="churn" && s.closedQuarter<=0) kind="slop";
+      if(kind!=="churn" && kind!=="slop" && !ranked.length) kind=s.closedQuarter>0 ? "churn" : "slop";
+      let note="", extra=null;
+      if(kind==="slop"){
+        const v=ranked[0];
+        if(v) s.deals=s.deals.filter(d=>d.id!==v.id);
+        s.reputation=clamp(s.reputation-I.slop.rep,0,100);
+        s.manager=clamp(s.manager-I.slop.mgr,0,100);
+        note=v ? `Slop grenade: 24 AI emails. ${v.account} fled.` : `Slop grenade hit an empty CRM. -${I.slop.rep} rep.`;
+      }else if(kind==="discount"){
+        const v=ranked.find(d=>d.stage>=2)||ranked[0];
+        s.deals=s.deals.map(d=>d.id===v.id?{...d,value:Math.round(d.value*(1-I.discount.cut)),mood:"skeptical",probNote:"AI-promised discount"}:d);
+        s.manager=clamp(s.manager-I.discount.mgr,0,100);
+        s.reputation=clamp(s.reputation-I.discount.rep,0,100);
+        note=`clAInk gave ${v.account} ${pct(I.discount.cut)}% off. -${I.discount.mgr} mgr.`;
+      }else if(kind==="leak"){
+        const lost=ranked.slice(0,I.leak.n);
+        const ids=new Set(lost.map(d=>d.id));
+        s.deals=s.deals.filter(d=>!ids.has(d.id));
+        s.reputation=clamp(s.reputation-I.leak.rep,0,100);
+        s.manager=clamp(s.manager-I.leak.mgr,0,100);
+        note="clAInk emailed your pipeline to a rival.";
+        extra=`💀 Lost ${lost.length} deal(s), ${money(lost.reduce((t,d)=>t+d.value,0))}.`;
+      }else{
+        const amt=Math.min(s.closedQuarter,Math.max(I.churn.lo,Math.min(I.churn.hi,Math.round(s.closedQuarter*I.churn.frac))));
+        const back=Math.round(amt*0.12);
+        s.closedWon-=amt; s.closedQuarter-=amt; s.cash-=back;
+        note=`clAInk auto-renewed ${ckPick(ACCOUNT_NAMES)} at 3x. They churned: -${money(amt)}.`;
+        extra=`💸 Commission clawback: -${money(back)}.`;
+      }
+      s=ckPipe(s);
+      s.claink={...s.claink,incidents:s.claink.incidents+1,last:s.claink.last?{...s.claink.last,incident:note,announce:`${s.claink.last.announce} Incident: ${note}`}:s.claink.last};
+      s=log(s,`💥 ${note}`,"bad");
+      if(extra) s=log(s,extra,"bad");
+      return ckRepo(state,s);
+    };
+
+    // the third fake: the founders max out the card on file ("annual prepay") and leave. It lands you at about the same place
+    // whatever you had, so going broke is a real risk in week 9 as much as in week 3.
+    const clainkRug=(state)=>{
+      let s={...state};
+      const c=s.claink;
+      const charge=Math.max(CLAINK.RUG_MIN+c.due,s.cash+ckInt(CLAINK.RUG_OVER[0],CLAINK.RUG_OVER[1]));
+      const sold=[...s.deals].sort(ckRank)[0]||null;
+      if(sold){ s.deals=s.deals.filter(d=>d.id!==sold.id); s=ckPipe(s); }
+      s.manager=clamp(s.manager-CLAINK.RUG_MGR,0,100);
+      s.claink={...c,status:"rugged",due:0,claims:0,lastInvoice:charge,
+        last:ckLast({kind:"rug",week:s.week,flags:CLAINK.RUG_FLAGS,
+          lines:["clAInk.io not found.",`Final invoice ${money(charge)}`].concat(sold?[`Sold your CRM. ${sold.account} gone.`]:[]),
+          announce:`Rug pull. clAInk.io vanished with ${money(charge)}.`})};
+      s=log(s,"🎭 clAInk's 'AI' was the founder, typing fast.","bad");
+      if(sold) s=log(s,`💀 It sold your CRM. ${sold.account} gone. -${CLAINK.RUG_MGR} mgr.`,"bad");
+      return clainkCharge(s,charge,`🪦 clAInk.io vanished. Maxed your card: -${money(charge)}.`,"bad");
+    };
+
+    // 80%: fake wins. The dashboard brags about deals still sitting in your pipeline; nothing real changes, but it all gets billed.
+    const clainkScam=(state,rInc,rKind)=>{
+      let s={...state};
+      const c=s.claink;
+      const n=ckInt(CLAINK.FAKE_CLAIMS[0],CLAINK.FAKE_CLAIMS[1]);
+      const real=[...s.deals].sort(ckRank);
+      const lines=[];
+      let claimed=0, ri=0;
+      const kinds=["signed","meetings","pipeline","hours","churn","signed"]; // drawn without replacement: no brag repeats
+      for(let i=0;i<n;i++){
+        const kind=i===0 ? "signed" : kinds.splice(1+Math.floor(ckR()*(kinds.length-1)),1)[0];
+        if(kind==="signed"){
+          const d=real[ri++]||null;
+          const v=Math.round((d?d.value:ckInt(9000,26000))*(1.3+ckR())/100)*100;
+          claimed+=v;
+          lines.push(`Signed ${d?d.account:ckPick(ACCOUNT_NAMES)} · ${money(v)}`);
+        }else if(kind==="meetings") lines.push(`Booked ${ckInt(4,12)} meetings`);
+        else if(kind==="pipeline") lines.push(`Pipeline +${money(ckInt(40,120)*1000)}`);
+        else if(kind==="hours") lines.push(`Saved your team ${ckInt(40,160)} hours`);
+        else lines.push(`Churn risk -${ckInt(20,60)}%`);
+      }
+      let fees=0; for(let i=0;i<n;i++) fees+=ckInt(CLAINK.PER_OUTCOME[0],CLAINK.PER_OUTCOME[1]);
+      const flags=c.flags+1;
+      s.claink={...c,fakes:c.fakes+1,flags,claims:c.claims+n,due:c.due+fees,claimed:c.claimed+claimed,
+        last:ckLast({kind:"scam",week:s.week,lines,flags,announce:`Claims ${n} wins. Nothing real changed. Red flag ${flags} of ${CLAINK.RUG_FLAGS}.`})};
+      s=log(s,`🤖 clAInk claims ${n} wins. Closed (Q): +$0.`);
+      if(flags>=CLAINK.RUG_FLAGS)return clainkRug(s);
+      s=log(s,flags===1 ? `🚩 Red flag 1/${CLAINK.RUG_FLAGS}: status page says 'vibes'.` : `🚩 Red flag ${flags}/${CLAINK.RUG_FLAGS}: founders 'at an offsite'.`,"warn");
+      return rInc<CLAINK.INCIDENT_P ? clainkIncident(s,rKind) : s;
+    };
+
+    // "Always on ChatGDP?" The first time the manager only remarks (once per run); after that, any use can get a deal yoinked.
+    // A relationship hit every time. Returns {state, event}; event is the acknowledgement dialog for a yoink.
+    const clainkManager=(state,rMgr)=>{
+      if(rMgr>=CLAINK.MGR_P || isRunOver(state) || !state.claink)return {state,event:null};
+      let s={...state};
+      const hit=CLAINK.MGR_HIT;
+      s.manager=clamp(s.manager-hit,0,100);
+      const c=s.claink;
+      const withLast=(ping,say)=>c.last ? {...c.last,ping,announce:`${c.last.announce} ${say}`} : c.last;
+      if(!c.mgr.noticed){
+        const miracle=!!(c.last && c.last.kind==="miracle");
+        s.claink={...c,mgr:{...c.mgr,noticed:true},last:withLast(miracle?"Nice week. ChatGDP do that?":"always on ChatGDP huh","Your manager noticed.")};
+        return {state:log(s,miracle?`👔 'ChatGDP do that?' -${hit} manager.`:`👔 'Always on ChatGDP?' -${hit} manager.`,"warn"),event:null};
+      }
+      const victim=[...s.deals].filter(d=>d.stage>=2).sort(ckRank)[0] || [...s.deals].sort((a,b)=>b.value-a.value)[0] || null;
+      if(!victim){
+        s.claink={...c,last:withLast("ChatGDP again? I'll circle back.","Your manager will circle back.")};
+        return {state:log(s,`👔 'ChatGDP again?' -${hit} manager. He'll circle back.`,"warn"),event:null};
+      }
+      s.deals=s.deals.filter(d=>d.id!==victim.id);
+      s=ckPipe(s);
+      s.claink={...c,mgr:{...c.mgr,yoinks:c.mgr.yoinks+1},last:withLast(`I'll close ${victim.account} myself. Work on your writing skills.`,`Your manager took ${victim.account}.`)};
+      s=log(s,`👔 Boss took ${victim.account}. 'Writing lesson.' -${hit} mgr.`,"bad");
+      return {state:s,event:{title:"👔 Writing Lesson",
+        body:`“Always on ChatGDP, huh? I'll close ${victim.account} myself. Watch and work on your writing skills.”`,label:"…Thanks, boss"}};
+    };
+
+    const deployClaink=(state)=>{
+      if(!clainkCanDeploy(state))return {state,event:null};
+      // decision draws come first, so tuning a size never reshuffles which deploys are miracles, incidents or yoinks
+      const rMiracle=ckR(), rMgr=ckR(), rInc=ckR(), rKind=ckR();
+      const c=state.claink;
+      let s={...state,claink:{...c,deployed:true,deploys:c.deploys+1,due:c.due+CLAINK.RETAINER}};
+      s=rMiracle<CLAINK.MIRACLE_P ? clainkMiracle(s) : clainkScam(s,rInc,rKind);
+      return clainkManager(s,rMgr);
+    };
+
+    const cancelClaink=(state)=>{
+      if(!clainkCanCancel(state))return state;
+      const cost=clainkCancelCost(state);
+      const s={...state,claink:{...state.claink,status:"cancelled",due:0,claims:0,lastInvoice:cost,
+        last:ckLast({kind:"cancelled",week:state.week,lines:["Offboarded. We kept your data."],announce:`Cancelled. Paid ${money(cost)}.`})}};
+      return clainkCharge(s,cost,`🔌 clAInk off. -${money(cost)} exit fee. It kept your data.`);
+    };
+
+    // Friday invoice: the last step of End Week, only for a run that carries on
+    const billClaink=(state)=>{
+      const c=state.claink;
+      if(!c || c.status!=="active" || isRunOver(state))return state;
+      const base=c.deployed ? c.due : ckInt(CLAINK.IDLE[0],CLAINK.IDLE[1]);
+      const over=ckR()<CLAINK.OVERAGE_P ? ckInt(CLAINK.OVERAGE[0],CLAINK.OVERAGE[1]) : 0;
+      const total=base+over;
+      const why=c.deployed ? `${c.claims} 'outcome${c.claims===1?"":"s"}'` : "idle capacity";
+      const s={...state,claink:{...c,deployed:false,claims:0,due:0,lastInvoice:total}};
+      return clainkCharge(s,total,`🧾 clAInk invoice: -${money(total)}. ${why}${over?", token overage":""}.`);
+    };
+
     // FIX: Actions was declared inside Game, so React saw a brand-new component type every render and
     // remounted the whole action grid on each state change (killing hover/focus and any CSS transitions).
     const Actions=({s,setS:commit})=>{
@@ -4272,6 +4719,349 @@ __/_|__
       );
     };
 
+    // ---------- v1.19: clAInk.io UI (ad, console, end cards) ----------
+    // The ad pops up at run start; × turns clAInk off for the run. Buying swaps it for clAInk's console, which minimizes
+    // to a pill and drags anywhere. Position and minimized state are a UI preference, not run state.
+    const CLAINK_UI_KEY="tst-claink-ui";
+    const readClainkUi=()=>{
+      try{
+        const v=JSON.parse(localStorage.getItem(CLAINK_UI_KEY)||"null");
+        if(v && typeof v==="object") return {x:Number.isFinite(v.x)?v.x:null, y:Number.isFinite(v.y)?v.y:null, mini:!!v.mini, chosen:true};
+      }catch{}
+      return {x:null,y:null,mini:false,chosen:false};
+    };
+    // until you choose, a short screen (landscape phone) gets the pill so the console doesn't sit on End Week
+    const isShortScreen=()=>typeof window!=="undefined" && window.innerHeight>0 && window.innerHeight<=600;
+    const clainkUiFor=(u,short)=>u.chosen ? u : {...u,mini:short};
+    // safe-area insets (the page uses viewport-fit=cover), read once from a probe element
+    let clainkInsets=null;
+    const safeInsets=()=>{
+      if(clainkInsets)return clainkInsets;
+      const z={t:0,r:0,b:0,l:0};
+      try{
+        const p=document.createElement("div");
+        p.style.cssText="position:fixed;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)";
+        document.body.appendChild(p);
+        const cs=window.getComputedStyle(p);
+        clainkInsets={t:parseFloat(cs.paddingTop)||0,r:parseFloat(cs.paddingRight)||0,b:parseFloat(cs.paddingBottom)||0,l:parseFloat(cs.paddingLeft)||0};
+        p.remove();
+      }catch(_){ return z; }
+      return clainkInsets;
+    };
+    if(typeof window!=="undefined" && window.addEventListener) window.addEventListener("resize",()=>{ clainkInsets=null; }); // rotation changes them
+    const clampToView=(x,y,el)=>{
+      const i=safeInsets(), w=el?el.offsetWidth:320, h=el?el.offsetHeight:200;
+      const l=8+i.l, t=8+i.t, r=8+i.r, b=8+i.b;
+      return {x:Math.round(Math.max(l,Math.min(x,window.innerWidth-w-r))), y:Math.round(Math.max(t,Math.min(y,window.innerHeight-h-b)))};
+    };
+    // A held Enter/Space auto-repeats. Once a clAInk control has used the key, swallow its repeats page-wide until the key
+    // comes back up, wherever focus lands next (End Week, the Writing Lesson dialog, an ending).
+    let clainkHeldKey=null;
+    const guardHeldKey=(e)=>{
+      if(e.repeat || (e.key!=="Enter" && e.key!==" ") || clainkHeldKey)return;
+      const key=e.key;
+      const block=ev=>{ if(ev.repeat && (ev.key==="Enter" || ev.key===" ")){ ev.preventDefault(); ev.stopPropagation(); } };
+      const release=ev=>{ if(ev.key!==key)return; document.removeEventListener("keydown",block,true); document.removeEventListener("keyup",release,true); clainkHeldKey=null; };
+      document.addEventListener("keydown",block,true);
+      document.addEventListener("keyup",release,true);
+      clainkHeldKey=block;
+    };
+    const swallowRepeat=(e)=>{ if(e.repeat && (e.key==="Enter" || e.key===" ")){ e.preventDefault(); return true; } guardHeldKey(e); return false; };
+    // A pointer close/minimize makes its control vanish (or move); the rest of that double/triple click or tap must not land on
+    // the game button underneath. Only clicks of the same burst, near the same spot, are swallowed (each extends the burst);
+    // keyboard clicks and deliberate clicks elsewhere pass. UI-only timer: it never touches game state.
+    const shieldNextClick=(e)=>{
+      if(!e || e.detail===0)return;
+      const x0=e.clientX, y0=e.clientY;
+      let t=0;
+      const off=()=>{ document.removeEventListener("click",swallow,true); clearTimeout(t); };
+      const arm=()=>{ clearTimeout(t); t=setTimeout(off,600); };
+      const swallow=ev=>{
+        if(ev.detail===0 || Math.abs(ev.clientX-x0)>40 || Math.abs(ev.clientY-y0)>40)return;
+        ev.preventDefault(); ev.stopPropagation(); arm();
+      };
+      document.addEventListener("click",swallow,true);
+      arm();
+    };
+    // keyboard-activated close: send focus somewhere useful instead of <body> (held-key repeats are already swallowed)
+    const focusEndWeek=(e)=>{ if(e && e.detail===0){ const b=document.querySelector(".footer .btn.primary"); if(b) try{ b.focus(); }catch(_){} } else shieldNextClick(e); };
+
+    let clainkMarkSeq=0;
+    const ClainkMark=({size=24})=>{
+      const id=useRef(null);
+      if(id.current===null) id.current="clkg"+(++clainkMarkSeq);
+      return(
+        <svg className="claink-mark" width={size} height={size} viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+          <defs>
+            <linearGradient id={id.current} x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stopColor="#a78bfa"/><stop offset=".55" stopColor="#22d3ee"/><stop offset="1" stopColor="#f472b6"/>
+            </linearGradient>
+          </defs>
+          <rect x="1.5" y="1.5" width="29" height="29" rx="9.5" fill={`url(#${id.current})`}/>
+          <path d="M16 5.5 18.4 13.6 26.5 16 18.4 18.4 16 26.5 13.6 18.4 5.5 16 13.6 13.6Z" fill="#0c0a22"/>
+          <circle cx="23.6" cy="8.4" r="1.7" fill="#0c0a22"/>
+        </svg>
+      );
+    };
+    const ClainkLogo=({small})=>(
+      <span className={"claink-logo"+(small?" sm":"")} role="img" aria-label="clAInk.io">
+        <ClainkMark size={small?18:30}/>
+        <span className="claink-word" aria-hidden="true">cl<b>AI</b>nk<small>.io</small></span>
+        <span className="claink-beta" aria-hidden="true">BETA</span>
+      </span>
+    );
+
+    const ClainkAd=({s,onInstall,onDismiss})=>{
+      const ref=useRef(null), ctaRef=useRef(null), notNowRef=useRef(null);
+      const[step,setStep]=useState(0); // 0: CTA, 1: confirm
+      const focusNext=useRef(null);
+      const can=clainkCanInstall(s);
+      const declined=!isRunOver(s) && s.cash-CLAINK.INSTALL<=CLAINK.REPO_AT;
+      useEffect(()=>{
+        const el=focusNext.current==="notnow" ? notNowRef.current : focusNext.current==="cta" ? ctaRef.current : null;
+        focusNext.current=null;
+        if(el) try{ el.focus({preventScroll:true}); }catch(_){}
+      },[step]);
+      // the ad is bottom-anchored: reserve that much page under it so End Week, deals and the log always scroll clear
+      useEffect(()=>{
+        const el=ref.current, root=document.documentElement;
+        if(!el)return;
+        const set=()=>{ const b=parseFloat(window.getComputedStyle(el).bottom)||16; root.style.setProperty("--claink-h",Math.ceil(el.offsetHeight+b+8)+"px"); };
+        set();
+        let ro=null;
+        if(typeof ResizeObserver!=="undefined"){ ro=new ResizeObserver(set); ro.observe(el); }
+        window.addEventListener("resize",set);
+        return()=>{ if(ro)ro.disconnect(); window.removeEventListener("resize",set); root.style.removeProperty("--claink-h"); };
+      },[]);
+      return(
+        <aside ref={ref} className="claink-ad" aria-label="Sponsored: clAInk.io" onKeyDown={swallowRepeat}>
+          <div className="claink-ad-top">
+            <span className="claink-sponsored">Sponsored</span>
+            <button type="button" className="claink-ad-close" aria-label="Close ad. clAInk will be off for this run"
+              title="Close (turns clAInk off for this run)" onClick={onDismiss}><span aria-hidden="true">×</span></button>
+          </div>
+          <div className="claink-announce"><span aria-hidden="true">✦</span><span>Introducing <b>clAInk 4o</b>: agents for your agents</span><span aria-hidden="true">→</span></div>
+          <ClainkLogo/>
+          <h3 className="claink-headline">The autonomous AE. Closes while you sleep.*</h3>
+          <p className="claink-sub">“Top agentic organizations use clAInk.”</p>
+          <div className="claink-chips"><span>10x pipeline*</span><span>0 humans</span><span>∞ outcomes</span></div>
+          <p className="claink-proof">Trusted by 3 of the Fortune 5,000,000</p>
+          <div className="claink-raise"><span aria-hidden="true">🚀</span> Raising our Series A. SAFEs welcome, DMs open <span aria-hidden="true">🙏</span></div>
+          <div className="claink-badges"><span>SOC 2 (vibes)</span><span>GDPR-adjacent</span><span className="urgent"><span aria-hidden="true">⏳ </span>Offer ends Week {CLAINK.OFFER_LAST_WEEK}</span></div>
+          <div className="claink-actions">
+            {step===0
+              ? <button type="button" ref={ctaRef} className="claink-cta" disabled={!can}
+                  onClick={()=>{ focusNext.current="notnow"; setStep(1); }}>{declined ? "Card declined" : `Install agent · ${money(CLAINK.INSTALL)}`}</button>
+              : <div className="claink-confirm-row">
+                  <button type="button" className="claink-confirm" disabled={!can} onClick={onInstall}>Confirm · {money(CLAINK.INSTALL)}</button>
+                  <button type="button" ref={notNowRef} className="claink-notnow" onClick={()=>{ focusNext.current="cta"; setStep(0); }}>Not now</button>
+                </div>}
+          </div>
+          <p className="claink-fine">Backed by Moonshot Ventures, Hype Capital &amp; a guy from Burning Man. {money(CLAINK.INSTALL)} onboarding,
+            outcome-based billing. *Outcomes may be hallucinated. Works 20% of the time, every time.</p>
+        </aside>
+      );
+    };
+
+    const ClainkResult=({last})=>{
+      const k=last.kind;
+      const glyph=k==="miracle" ? "✨ " : k==="scam" ? "✓ " : "";
+      const hd=k==="miracle" ? "It actually worked · verified" : k==="scam" ? "Autonomous output" : k==="onboarded" ? "Welcome aboard" : "";
+      return(
+        <div className={"claink-result "+k}>
+          {hd && <div className="hd"><span aria-hidden="true">{glyph}</span>{hd}</div>}
+          {last.lines.length>0 && <ul>{last.lines.map((l,i)=><li key={i}>{l}</li>)}</ul>}
+          {last.incident && <div className="claink-incident"><span aria-hidden="true">💥 </span>{last.incident}</div>}
+        </div>
+      );
+    };
+
+    const ClainkConsole=({s,ui,setUi,focusOnMount,onDeploy,onCancel,onHide})=>{
+      const c=s.claink;
+      const end=c.status!=="active";
+      const mini=!!ui.mini && !end;
+      const ref=useRef(null), statusRef=useRef(null), toggleRef=useRef(null), cancelRef=useRef(null), keepRef=useRef(null);
+      // pos = where you put it (saved); shown = where it fits on this screen right now (never saved, so a rotation or a
+      // short-lived resize doesn't lose your spot)
+      const[pos,setPos]=useState(()=>Number.isFinite(ui.x) && Number.isFinite(ui.y) ? {x:ui.x,y:ui.y} : null);
+      const[shown,setShown]=useState(null);
+      const[confirmCancel,setConfirmCancel]=useState(false);
+      const[dragging,setDragging]=useState(false);
+      const drag=useRef(null);
+      const focusNext=useRef(focusOnMount ? "status" : null);
+      const bodyIdRef=useRef(null);
+      if(bodyIdRef.current===null) bodyIdRef.current="claink-body-"+(++clainkMarkSeq);
+      const bodyId=bodyIdRef.current;
+      const place=p=>{ setPos(p); setShown(p); setUi(u=>({...u,x:p.x,y:p.y,mini})); }; // user moves only; keeps what you see (pill or console)
+      const fit=()=>{
+        const el=ref.current;
+        if(!el || !pos || drag.current)return;
+        const p=clampToView(pos.x,pos.y,el);
+        if(!shown || p.x!==shown.x || p.y!==shown.y) setShown(p);
+      };
+      // focus follows the control that replaced the one you used (never back to <body>)
+      useEffect(()=>{
+        const k=focusNext.current; focusNext.current=null;
+        const el=k==="status" ? (mini ? toggleRef.current : statusRef.current) : k==="toggle" ? toggleRef.current : k==="cancel" ? cancelRef.current : k==="keep" ? keepRef.current : null;
+        if(el) try{ el.focus({preventScroll:true}); }catch(_){}
+      });
+      // fit before paint after every render, so content that just grew (cancel confirm, results) never flashes off-screen
+      (React.useLayoutEffect||useEffect)(fit);
+      // ...and on size changes React didn't cause (fonts loading) and window resizes / rotations
+      useEffect(()=>{
+        const el=ref.current;
+        let ro=null;
+        if(el && typeof ResizeObserver!=="undefined"){ ro=new ResizeObserver(fit); ro.observe(el); }
+        window.addEventListener("resize",fit);
+        return()=>{ if(ro)ro.disconnect(); window.removeEventListener("resize",fit); };
+      },[pos,shown,mini,end]);
+      // a deploy result also reaches screen readers while the Writing Lesson dialog has made the page inert
+      // (only for results that happen while you're here: a reload must not replay an old one into an ending dialog)
+      const heard=useRef(`${c.deploys}|${c.status}`);
+      useEffect(()=>{
+        const key=`${c.deploys}|${c.status}`;
+        if(heard.current===key || !c.last || !c.last.announce)return;
+        heard.current=key;
+        const t=setTimeout(()=>{ const sr=document.querySelector("dialog[open] .tst-sr"); if(sr){ sr.textContent=""; sr.textContent=c.last.announce; } },120);
+        return()=>clearTimeout(t);
+      },[c.deploys,c.status]);
+      const onPointerDown=e=>{
+        if(e.pointerType==="mouse" && e.button!==0)return;
+        if(e.target.closest && e.target.closest("button:not(.claink-grip)"))return; // the grip drags too; minimize/close don't
+        const el=ref.current; if(!el)return;
+        const r=el.getBoundingClientRect();
+        drag.current={id:e.pointerId,dx:e.clientX-r.left,dy:e.clientY-r.top,moved:false};
+        try{ e.currentTarget.setPointerCapture(e.pointerId); }catch(_){}
+        setDragging(true);
+      };
+      const onPointerMove=e=>{
+        const d=drag.current; if(!d || d.id!==e.pointerId)return;
+        d.moved=true;
+        const p=clampToView(e.clientX-d.dx,e.clientY-d.dy,ref.current);
+        setPos(p); setShown(p);
+      };
+      const endDrag=e=>{
+        const d=drag.current; if(!d || d.id!==e.pointerId)return;
+        drag.current=null; setDragging(false);
+        const el=ref.current;
+        if(d.moved && el){ const r=el.getBoundingClientRect(); place(clampToView(r.left,r.top,el)); }
+      };
+      const onGripKey=e=>{
+        const dir={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[e.key];
+        if(!dir)return;
+        e.preventDefault();
+        const el=ref.current; if(!el)return;
+        const r=el.getBoundingClientRect(), step=e.shiftKey?64:16;
+        place(clampToView(r.left+dir[0]*step,r.top+dir[1]*step,el));
+      };
+      // minimize/expand keeps your parked spot (the console may sit higher only while it needs the room); with no spot yet,
+      // the top-left corner you see becomes it, so the pill stays put
+      const toggle=(e)=>{
+        const el=ref.current;
+        let p=pos;
+        if(!p && el){ const r=el.getBoundingClientRect(); p={x:Math.round(r.left),y:Math.round(r.top)}; }
+        if(p){ setPos(p); setShown(null); }
+        setUi(u=>({...u,x:p?p.x:u.x,y:p?p.y:u.y,mini:!mini}));
+        focusNext.current="toggle";
+        shieldNextClick(e); // the toggle moves out from under the pointer
+      };
+      const onKeyDown=e=>{
+        if(swallowRepeat(e))return;
+        if(e.key==="Escape" && !end && !ui.mini){ e.preventDefault(); toggle(); }
+      };
+      const flags=c.flags||0;
+      const cost=clainkCancelCost(s), canCancel=clainkCanCancel(s);
+      const frozen=clainkFrozen(s);
+      const pill=end ? (c.status==="rugged" ? "404" : "Offboarded") : frozen ? "Frozen" : c.deployed ? "Deployed" : "Ready";
+      const at=shown||pos;
+      const style=at ? {left:at.x+"px",top:at.y+"px"} : undefined;
+      return(
+        <aside ref={ref} style={style} onKeyDown={onKeyDown} aria-label="clAInk agent console"
+          className={"claink-console"+(mini?" is-mini":"")+(end?" is-end":"")+(pos?" is-placed":"")+(dragging?" dragging":"")}>
+          <div className="claink-titlebar" onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={endDrag} onPointerCancel={endDrag}>
+            <ClainkMark size={16}/>
+            <span className="claink-title">clAInk{!mini && <span> Agent Console</span>}</span>
+            {mini && <span className="claink-pilltext">{pill}{flags>0 && !end ? " "+"🚩".repeat(flags) : ""}</span>}
+            <span className={"claink-dot"+(end?" dead":c.deployed?" busy":"")} aria-hidden="true"/>
+            <span className="claink-tb-btns">
+              <button type="button" className="claink-grip" aria-label="Move clAInk window" title="Drag to move, or use the arrow keys"
+                onKeyDown={onGripKey}><span aria-hidden="true">⠿</span></button>
+              {!end && <button type="button" ref={toggleRef} className="claink-min" aria-expanded={!mini} aria-controls={bodyId}
+                aria-label={mini ? "Expand clAInk console" : "Minimize clAInk console"} title={mini ? "Expand" : "Minimize"}
+                onClick={toggle}><span aria-hidden="true">{mini ? "▢" : "–"}</span></button>}
+              {end && <button type="button" className="claink-end-close" aria-label="Close clAInk window" title="Close"
+                onClick={onHide}><span aria-hidden="true">×</span></button>}
+            </span>
+          </div>
+          <div className="claink-body" id={bodyId} hidden={mini}>
+            {c.status==="active" && <>
+              <div className="claink-statusline" tabIndex={-1} ref={statusRef}><span aria-hidden="true">● </span>{frozen ? "Quarter-end freeze · closing our own books" : c.deployed ? "Agent deployed this week" : "Agent idle · awaiting delegation"}</div>
+              <button type="button" className="claink-deploy" disabled={!clainkCanDeploy(s)}
+                onClick={()=>{ focusNext.current="status"; onDeploy(); }}>
+                <span><span aria-hidden="true">{frozen ? "🔒 " : c.deployed ? "✓ " : "▶ "}</span>{frozen ? "Quarter-end freeze" : c.deployed ? "Deployed this week" : "Deploy agent"}</span>
+                <small>{frozen ? "no deploys in week 13" : "free · 0 energy · 0 slots"}</small>
+              </button>
+              {c.last && <ClainkResult last={c.last}/>}
+              {c.last && c.last.ping && <div className="claink-ping"><span className="who"><span aria-hidden="true">👔 </span>Your manager</span><span>{c.last.ping}</span></div>}
+              <div className="claink-flags">Trust &amp; Safety: <span className={"ts "+(flags>=2?"r":flags===1?"y":"g")}>
+                <span aria-hidden="true">{flags>=2 ? "🔴 " : flags===1 ? "🟡 " : "🟢 "}</span>{flags>=2 ? "Founders 'at an offsite'" : flags===1 ? "Status page says 'vibes'" : "All systems autonomous"}</span></div>
+              {flags>=CLAINK.RUG_FLAGS-1 && <div className="claink-warn"><span aria-hidden="true">🚩🚩 </span>One more fake and we pivot. The “annual prepay” maxes out your card:
+                you land around {money(-CLAINK.RUG_OVER[0])} to {money(-CLAINK.RUG_OVER[1])}, worse if you're already in the red
+                (Collections takes the jacket at {money(CLAINK.REPO_AT)}). And we sell a deal.</div>}
+              <div className="claink-usage">{frozen ? <>Quarter-end freeze: nothing more gets billed · Paid so far {money(c.billed)}</>
+                : <>Usage this week: <b>{money(c.due)}</b>, due Friday · Paid so far {money(c.billed)}</>}</div>
+              <div className="claink-upsell">Upgrade to Pro ($4,999/wk) for 21% success.</div>
+              {frozen ? null : !confirmCancel
+                ? <button type="button" ref={cancelRef} className="claink-cancel-link"
+                    onClick={()=>{ focusNext.current="keep"; setConfirmCancel(true); }}>Cancel subscription</button>
+                : <div className="claink-cancel-box" role="group" aria-label="Cancel clAInk">
+                    <span>Offboarding is a premium outcome: {money(cost)} ({money(CLAINK.CANCEL)} exit fee + this week's usage).</span>
+                    <span className="row2">
+                      <button type="button" ref={keepRef} className="claink-cancel-keep" onClick={()=>{ focusNext.current="cancel"; setConfirmCancel(false); }}>Keep agent</button>
+                      <button type="button" className="claink-cancel-confirm" disabled={!canCancel}
+                        onClick={()=>{ focusNext.current="status"; onCancel(); }}>{canCancel ? `Pay ${money(cost)} & cancel` : "Can't afford the exit fee"}</button>
+                    </span>
+                  </div>}
+            </>}
+            {c.status==="rugged" && <div className="claink-404">
+              <div className="code" aria-hidden="true">404</div>
+              <div className="claink-statusline" tabIndex={-1} ref={statusRef}>clAInk.io not found</div>
+              <p>This domain is for sale. The founders are building “agents for agents” in stealth.</p>
+              <p className="claink-stats">Claimed {money(c.claimed)} · Delivered {money(c.delivered)} · Billed {money(c.billed)}</p>
+            </div>}
+            {c.status==="cancelled" && <div className="claink-offboarded">
+              <div className="claink-statusline" tabIndex={-1} ref={statusRef}>Offboarded</div>
+              <p>We kept your data. And your vibes. <span aria-hidden="true">💜</span></p>
+              <p className="claink-stats">Delivered {money(c.delivered)} · Billed {money(c.billed)}</p>
+            </div>}
+          </div>
+          <div className="claink-live sr-only" aria-live="polite">{c.last && c.last.announce
+            ? (["miracle","scam","rug"].includes(c.last.kind) ? `Deploy ${c.deploys}: ${c.last.announce}` : c.last.announce) : ""}</div>
+        </aside>
+      );
+    };
+
+    // picks what clAInk shows: the ad, the console, an end card, or nothing (closed ad, expired offer, closed end card)
+    const ClainkDock=({s,setS,ui,setUi,onEvent})=>{
+      const c=s.claink;
+      const prev=useRef(c ? c.status : null);
+      const justInstalled=prev.current==="ad" && !!c && c.status==="active";
+      useEffect(()=>{ prev.current=c ? c.status : null; });
+      if(!c)return null;
+      const commit=fn=>setS(p=>checkBurnout(fn(p)));
+      if(c.status==="ad"){
+        if(isRunOver(s) || getQuarterInfo(s.week).weekInQuarter>CLAINK.OFFER_LAST_WEEK)return null;
+        return <ClainkAd s={s} onInstall={()=>commit(buyClaink)} onDismiss={e=>{ commit(dismissClaink); focusEndWeek(e); }}/>;
+      }
+      if(c.status==="active" || ((c.status==="cancelled" || c.status==="rugged") && !c.hidden)){
+        return <ClainkConsole s={s} ui={ui} setUi={setUi} focusOnMount={justInstalled}
+          onDeploy={()=>{ const r=deployClaink(s); setS(checkBurnout(r.state)); if(r.event) onEvent(r.event); }}
+          onCancel={()=>commit(cancelClaink)}
+          onHide={e=>{ commit(hideClainkCard); focusEndWeek(e); }}/>;
+      }
+      return null;
+    };
+
     function Game(){
       const createInitial=()=>{
         const base=newGame();
@@ -4288,6 +5078,12 @@ __/_|__
       const[asciiSpeed,setAsciiSpeed]=useState(120);
       const[showHelp,setShowHelp]=useState(false);
       const[helpOpens,setHelpOpens]=useState(0); // keys the onboarding memo so its gag replays on each open
+      const[claUi,setClaUi]=useState(readClainkUi); // v1.19: clAInk console position + minimized (a UI preference, not run state)
+      const[epoch,setEpoch]=useState(0);            // v1.19: New Game, Load and New Run remount clAInk's local UI state
+      const setClaUiByYou=fn=>setClaUi(u=>({...(typeof fn==="function"?fn(u):fn),chosen:true})); // only your own moves/toggles are saved
+      const[shortScreen,setShortScreen]=useState(isShortScreen); // re-checked on rotation, for the pill default
+      useEffect(()=>{ const on=()=>setShortScreen(isShortScreen()); window.addEventListener("resize",on); return()=>window.removeEventListener("resize",on); },[]);
+      useEffect(()=>{ if(!claUi.chosen)return; try{ localStorage.setItem(CLAINK_UI_KEY,JSON.stringify({x:claUi.x,y:claUi.y,mini:claUi.mini})); }catch{} },[claUi]);
       const sceneRef=useRef(null);
 
       // FIX: header buttons were re-bound on every state change. Bind once; read live state through a ref.
@@ -4301,6 +5097,7 @@ __/_|__
         const onNew=()=>{
           const a=AUDIO(); if(a){ a.hush(); a.play("newgame"); a.say("newrun",{cooldown:3000}); }
           setS(newGame());
+          setEpoch(e=>e+1); // v1.19: fresh clAInk UI state
           setPending(null);
           setOver(null);
         };
@@ -4324,11 +5121,13 @@ __/_|__
           try{
             const a=AUDIO(); if(a){ a.hush(); a.play("load"); }
             setS(mergeSaved(JSON.parse(v)));
+            setEpoch(e=>e+1); // v1.19: fresh clAInk UI state
             setPending(null);
             setOver(null);
           }catch{
             notify("Save was corrupted. Starting a new run.");
             setS(newGame());
+            setEpoch(e=>e+1); // v1.19: fresh clAInk UI state
             setPending(null);
             setOver(null);
           }
@@ -4383,6 +5182,7 @@ __/_|__
         ns=tickModifiers(ns);
 
         ns=salaryAndBills(ns);
+        if(isRunOver(ns)){ setPending(null); setS(ns); return; } // v1.19: a rent repo ends the week here, so the ending stays the last line
         ns=randomEvents(ns,setPending,2);
         ns=ageAndGhost(ns);
         ns=checkBurnout(ns);
@@ -4493,6 +5293,11 @@ __/_|__
           return;
         }
 
+        // v1.19: clAInk invoices last, so a fired or finished run is never billed (and a week-13 Club can't turn into a repo)
+        ns=billClaink(ns);
+        ns=expireClaink(ns);
+        if(isRunOver(ns)){ setPending(null); setS(ns); return; }
+
         const nextWeek=ns.week+1;
         ns=log(ns,`📆 Week ${nextWeek}.`);
         ns.week=nextWeek;
@@ -4547,7 +5352,7 @@ __/_|__
                 : type==="missed"
                   ? `Closed ${money(s.closedWon)}. Badge kept. Back to the phones.`
                   : type==="repo"
-                    ? `Cash hit ${money(s.cash)}. The loan came due.`
+                    ? (cause==="claink" ? `Cash hit ${money(s.cash)}. clAInk billed you into Collections.` : `Cash hit ${money(s.cash)}. The loan came due.`)
                     : `Closed ${money(s.closedWon)}. Your Slack is already gone.`;
           const meta={pct:s.quota>0 ? s.closedWon/s.quota : 0, cause, shots:s.coffeesThisWeek||0};
           setPending(null);
@@ -4663,6 +5468,7 @@ __/_|__
                   {s.modifiers.conversion!==0 && <span className="badge">🎲 Conv Mod {s.modifiers.conversion>0?"+":""}{pct(s.modifiers.conversion)}%</span>}
                   {s.restedThisWeek && <span className="badge">🧘 Rested</span>}
                   {s.trip && <span className="badge">🏝️ {s.trip} trip approved</span>}
+                  {s.claink && s.claink.status==="active" && <span className="badge claink-badge">🤖 clAInk{s.claink.flags>0 ? " "+"🚩".repeat(s.claink.flags) : " • live"}</span>}
                   {s.coffeesThisWeek>0 && <span className="badge">☕×{s.coffeesThisWeek}</span>}
                   {s.repo && <span className="badge">🧥 Jacket Repo’d</span>}
                 </div>
@@ -4712,6 +5518,9 @@ __/_|__
             </div>
           </div>
 
+          <ClainkDock key={s.runId+":"+epoch} s={s} setS={setS} ui={clainkUiFor(claUi,shortScreen)} setUi={setClaUiByYou}
+            onEvent={ev=>setPending({title:ev.title,body:ev.body,options:[{label:ev.label,className:"primary",action:x=>x}]})} />
+
           <Modal
             open={showHelp}
             title="How It Works"
@@ -4730,6 +5539,7 @@ __/_|__
             <p className="tiny"><strong>Stress</strong> hurts close rates. 80+ can melt you down at week end; 100 is instant.</p>
             <p className="tiny"><strong>Quad Shot</strong> hits harder each shot that week. Shot 3+ can put you in orbit; a shot to 100 stress will. Each one: +{CRASH_PER_SHOT} stress at week end, weaker Recharge.</p>
             <p className="tiny"><strong>CRM Cleanup</strong> weekly: prunes dead leads, +manager, freezes warnings, trims fire odds. Boss may nuke a good deal.</p>
+            <p className="tiny"><strong>clAInk.io</strong> pops up each run. Close it and it's gone. Install {money(CLAINK.INSTALL)}: free weekly deploys, 20% real deals, 80% fake wins billed as outcomes. Third fake, it maxes out your card and vanishes. Your manager may notice.</p>
             <p className="tiny"><strong>Cash</strong> is salary and commission in, rent out. At -$1,500 the jacket goes.</p>
             <p className="tiny"><strong>Pipeline</strong> is the value of live deals. Actions move them down the funnel.</p>
             <p className="tiny"><strong>Closed (Q)</strong> is revenue this quarter. Behind pace from week 5? Warnings, or a surprise exit.</p>
@@ -4766,6 +5576,7 @@ __/_|__
                 onClick:()=>{
                   const a=AUDIO(); if(a){ a.hush(); a.play("newgame"); a.say("newrun",{cooldown:3000}); }
                   setS(newGame());
+                  setEpoch(e=>e+1); // v1.19: fresh clAInk UI state
                   setPending(null); // FIX: an event that fired on the final week no longer leaks into the next run
                   setOver(null);
                 }
