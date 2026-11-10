@@ -3,6 +3,8 @@
 //   node scripts/build.mjs --release   -> also writes ./index.html (the file GitHub Pages serves)
 //   node scripts/build.mjs --check     -> fails if ./index.html is not what the source builds to
 //   --dev                              -> unminified, for reading the output
+// For a preview page (never a release), three variables swap the inputs:
+//   TST_ENTRY=<script entry>  TST_CSS=<style entry>  TST_TEMPLATE=<html template>
 // The fonts are inlined from src/assets/fonts, which is committed (regenerate it with: npm run fonts).
 import * as esbuild from "esbuild";
 import crypto from "node:crypto";
@@ -16,6 +18,10 @@ const args = new Set(process.argv.slice(2));
 const dev = args.has("--dev");
 const outDir = path.resolve(ROOT, process.env.TST_OUT || "dist");
 const MAX_RAW = 800 * 1024;
+const ENTRY = process.env.TST_ENTRY || "src/main.jsx";
+const CSS_ENTRY = process.env.TST_CSS || "src/styles/index.css";
+const TEMPLATE = process.env.TST_TEMPLATE || "src/index.template.html";
+const PREVIEW = !!(process.env.TST_ENTRY || process.env.TST_CSS || process.env.TST_TEMPLATE);
 
 const fail = msg => { console.error("build: " + msg); process.exit(1); };
 const readJSON = p => JSON.parse(fs.readFileSync(path.join(ROOT, p), "utf8"));
@@ -25,7 +31,7 @@ async function bundle(){
   const common = { bundle: true, write: false, minify: !dev, charset: "utf8", legalComments: "none", logLevel: "warning", absWorkingDir: ROOT };
   const js = await esbuild.build({
     ...common,
-    entryPoints: ["src/main.jsx"],
+    entryPoints: [ENTRY],
     format: "iife",
     target: ["es2020"],
     jsx: "transform",
@@ -34,7 +40,7 @@ async function bundle(){
   });
   const css = await esbuild.build({
     ...common,
-    entryPoints: ["src/styles/index.css"],
+    entryPoints: [CSS_ENTRY],
     loader: { ".woff2": "dataurl" }
   });
   // every npm package whose code ended up in the script
@@ -43,13 +49,37 @@ async function bundle(){
     const m = /(?:^|\/)node_modules\/((?:@[^/]+\/)?[^/]+)\//.exec(file);
     if(m && info.bytes > 0) packages.add(m[1]);
   }
-  return { js: js.outputFiles[0].text, css: css.outputFiles[0].text, packages: [...packages].sort() };
+  // every source file that went into the script (the icon scan reads these)
+  const sources = Object.keys(js.metafile.inputs).filter(f => !/(^|\/)node_modules\//.test(f));
+  return { js: js.outputFiles[0].text, css: css.outputFiles[0].text, packages: [...packages].sort(), sources };
+}
+
+/* ---------- icons ---------- */
+// The interface names its icons as <Icon name="phone"/> or as icon:"phone" in a table. Every name found in the
+// bundled source is taken from lucide-static and inlined once as an SVG symbol; <Icon> then points at it with
+// <use href="#i-phone">. A name Lucide does not have stops the build.
+function iconSprite(sources){
+  const names = new Set();
+  for(const file of sources){
+    const text = fs.readFileSync(path.join(ROOT, file), "utf8");
+    for(const m of text.matchAll(/<Icon\b[^>]*?\bname="([a-z0-9-]+)"/g)) names.add(m[1]);
+    for(const m of text.matchAll(/\bicon:\s*"([a-z0-9-]+)"/g)) names.add(m[1]);
+  }
+  if(!names.size) return { svg: "", names: [] };
+  const symbols = [...names].sort().map(name => {
+    const file = path.join(ROOT, "node_modules/lucide-static/icons", name + ".svg");
+    if(!fs.existsSync(file)) fail('the source uses an icon Lucide does not have: "' + name + '"');
+    const raw = fs.readFileSync(file, "utf8");
+    const inner = raw.slice(raw.indexOf(">", raw.indexOf("<svg")) + 1, raw.lastIndexOf("</svg>")).replace(/\s+/g, " ").replace(/> </g, "><").replace(/ \/>/g, "/>").trim();
+    return '<symbol id="i-' + name + '" viewBox="0 0 24 24">' + inner + "</symbol>";
+  });
+  return { svg: '<svg width="0" height="0" style="position:absolute" aria-hidden="true">' + symbols.join("") + "</svg>", names: [...names].sort() };
 }
 
 /* ---------- third-party notices ---------- */
 // Licences this build knows how to credit. Anything else stops the build until someone adds its notice here.
 const FONT_LICENCES = [{ match: /open font license|openfontlicense\.org|scripts\.sil\.org\/OFL/i, name: "SIL Open Font License 1.1" }];
-function notices(packages){
+function notices(packages, iconNames){
   const lines = [];
   const byNotice = new Map();
   for(const name of packages){
@@ -72,13 +102,21 @@ function notices(packages){
   }
   lines.push(...seen.values());
 
+  if(iconNames.length){
+    const dir = path.join(ROOT, "node_modules/lucide-static"), pkg = JSON.parse(fs.readFileSync(path.join(dir, "package.json"), "utf8"));
+    if(pkg.license !== "ISC") fail("lucide-static is now " + pkg.license + "; update its notice in scripts/build.mjs");
+    const copyright = (/^Copyright .+$/m.exec(fs.readFileSync(path.join(dir, "LICENSE"), "utf8")) || [""])[0].trim();
+    if(!copyright) fail("no copyright line found in node_modules/lucide-static/LICENSE");
+    lines.push("Lucide " + pkg.version + " (" + iconNames.length + " icons). " + copyright.replace(/\.$/, "") + ". ISC License.");
+  }
+
   const pkg = readJSON("package.json");
   const text = [
     "Tech Sales Trail " + pkg.version + ". One self-contained file: it makes no network requests.",
     "",
     "Third-party notices",
     ...lines.map(l => "  " + l),
-    "Licence texts: https://opensource.org/license/mit and https://openfontlicense.org"
+    "Licence texts: https://opensource.org/license/mit" + (iconNames.length ? ", https://opensource.org/license/isc-license-txt" : "") + " and https://openfontlicense.org"
   ].join("\n");
   if(/--|>/.test(text)) fail("the notices text would break out of its HTML comment");
   return "<!--\n" + text + "\n-->\n";
@@ -128,7 +166,7 @@ function checkFonts(css){
   return faces;
 }
 
-function assemble({ js, css, packages }){
+function assemble({ js, css, packages, sources }){
   // An inline payload must never be able to close its own element.
   if(/<\/script/i.test(js)) fail("the script payload contains </script");
   if(/<!--/.test(js)) fail("the script payload contains <!--");
@@ -138,12 +176,16 @@ function assemble({ js, css, packages }){
   checkFonts(css);
   js = escapeInertUrls(js);
 
-  const template = fs.readFileSync(path.join(ROOT, "src/index.template.html"), "utf8");
+  const template = fs.readFileSync(path.join(ROOT, TEMPLATE), "utf8");
+  const icons = iconSprite(sources);
+  const ICON_SLOT = "<!--__TST_ICONS__-->";
+  if(icons.names.length && template.split(ICON_SLOT).length !== 2) fail("the source uses icons, so the template needs exactly one " + ICON_SLOT);
   for(const slot of ["/*__TST_CSS__*/", "/*__TST_JS__*/"]){
     if(template.split(slot).length !== 2) fail("the template needs exactly one " + slot);
   }
-  const header = notices(packages);
+  const header = notices(packages, icons.names);
   const page = template
+    .replace(ICON_SLOT, () => icons.svg)
     .replace("/*__TST_CSS__*/", () => "\n" + css.trimEnd() + "\n  ")
     .replace("/*__TST_JS__*/", () => "\n" + js.trimEnd() + "\n  ");
   const html = header + page;
@@ -170,6 +212,7 @@ const sizes = kb(raw) + " raw, " + kb(gzip) + " gzip";
 if(raw > MAX_RAW) fail("the output is " + sizes + "; the limit is " + kb(MAX_RAW) + " raw");
 
 if(args.has("--check")){
+  if(PREVIEW) fail("--check compares the game, not a preview: unset TST_ENTRY, TST_CSS and TST_TEMPLATE");
   const committed = fs.existsSync(path.join(ROOT, "index.html")) ? fs.readFileSync(path.join(ROOT, "index.html"), "utf8") : "";
   if(committed !== html) fail("./index.html is stale. Run: npm run release");
   console.log("index.html is up to date (" + sizes + ")");
@@ -179,6 +222,7 @@ if(args.has("--check")){
   console.log(path.relative(ROOT, path.join(outDir, "index.html")) + "  " + sizes);
   if(args.has("--release")){
     if(dev) fail("--release and --dev do not go together");
+    if(PREVIEW) fail("--release builds the game, not a preview: unset TST_ENTRY, TST_CSS and TST_TEMPLATE");
     fs.writeFileSync(path.join(ROOT, "index.html"), html);
     console.log("index.html  (released)");
   }

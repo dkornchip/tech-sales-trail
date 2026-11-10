@@ -1,0 +1,35 @@
+/* Design tokens. This is the only file that names a colour, a type size, a space or a radius; every other
+   stylesheet uses these. Two exceptions keep their own palettes on purpose: the CRT (the legacy terminal) and
+   clAInk (the vendor's brand). */
+:root{
+  color-scheme:dark;
+  --bg:#0a0b0d;
+  --surface-1:#101215;
+  --surface-2:#15181c;
+  --surface-3:#1b1f24;
+  --overlay:rgba(5,6,8,.72);
+  --border:#22262c;
+  --border-strong:#343a43;
+  --text:#eceef1;
+  --text-2:#a6adb8;
+  --text-3:#7d8591;
+  --accent:#2f6fed;
+  --accent-hover:#4680f0;
+  --accent-text:#82b0ff;
+  --accent-weak:rgba(70,128,240,.16);
+  --focus:#82b0ff;
+  --text-on-accent:#ffffff;
+  --good:#4cc38a;   --good-weak:rgba(76,195,138,.14);
+  --warn:#e2b340;   --warn-weak:rgba(226,179,64,.14);
+  --bad:#f0706c;    --bad-weak:rgba(240,112,108,.14);
+  --fs-1:13px; --fs-2:14px; --fs-3:16px; --fs-4:20px; --fs-5:28px;
+  --sp-1:2px; --sp-2:4px; --sp-3:8px; --sp-4:12px; --sp-5:16px; --sp-6:24px; --sp-7:32px;
+  --r-1:4px; --r-2:8px; --r-3:12px; --r-full:999px;
+  --shadow-overlay:0 24px 64px rgba(0,0,0,.55);
+  --sans:"TST Sans",system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:"TST Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --ease:cubic-bezier(.2,.8,.2,1);
+}
+@media (min-width:1500px) and (min-height:900px){
+  :root{ --fs-1:14px; --fs-2:15px; --fs-3:17px; --fs-4:22px; --fs-5:32px; }
+}
