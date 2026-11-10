@@ -34,7 +34,7 @@
     html,body{height:100%}
     body{
       margin:0;
-      font-family:"Inter",ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      font-family:"TST Sans",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
       font-size:14px;
       background:var(--bg);
       color:var(--text);
@@ -98,7 +98,7 @@
       margin:0;
       font-size:21px;
       letter-spacing:.15px;
-      font-family:"Sora","Inter",ui-sans-serif,system-ui,sans-serif;
+      font-family:"TST Sans",ui-sans-serif,system-ui,sans-serif;
       font-weight:800;
       display:inline-flex;align-items:center;gap:6px;
     }
@@ -169,7 +169,7 @@
       margin:0 0 8px 0;
       font-size:14px;
       color:#dbe8ff;
-      font-family:"Sora","Inter",ui-sans-serif,system-ui,sans-serif;
+      font-family:"TST Sans",ui-sans-serif,system-ui,sans-serif;
       font-weight:700;
       letter-spacing:.2px;
     }
@@ -245,7 +245,7 @@
       border:1px solid var(--border);
       background:#071530;
       color:var(--muted);
-      font-family:ui-monospace,Menlo,Consolas,monospace;
+      font-family:"TST Mono",ui-monospace,Menlo,Consolas,monospace;
       white-space:nowrap;
       transition:box-shadow .3s,border-color .3s,color .3s,transform .3s var(--ease);
     }
@@ -475,7 +475,7 @@
       padding:8px;
       height:170px;
       overflow:auto;
-      font-family:ui-monospace,Menlo,Consolas,"Courier New",monospace;
+      font-family:"TST Mono",ui-monospace,Menlo,Consolas,"Courier New",monospace;
       font-size:11px;
       line-height:1.25;
       color:var(--ink);
@@ -513,7 +513,7 @@
       border-bottom:1px solid var(--border);
       font-weight:600;
       font-size:14px;
-      font-family:"Sora","Inter",ui-sans-serif,system-ui,sans-serif;
+      font-family:"TST Sans",ui-sans-serif,system-ui,sans-serif;
       background:linear-gradient(90deg,rgba(31,122,255,.12),transparent 60%);
     }
     dialog .d-body{
@@ -576,7 +576,7 @@
     .cutbox.crt::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:2;border-radius:inherit;
       background:radial-gradient(ellipse at 50% 50%,transparent 58%,rgba(0,0,0,.5) 100%),linear-gradient(115deg,rgba(255,255,255,.06) 0%,transparent 28%)}
     .cutbox.crt::after{z-index:3;border-radius:inherit}
-    .cutbox.crt pre{position:relative;z-index:1;margin:0;font-family:ui-monospace,Menlo,Consolas,"DejaVu Sans Mono","Courier New",monospace;
+    .cutbox.crt pre{position:relative;z-index:1;margin:0;font-family:"TST Mono",ui-monospace,Menlo,Consolas,"DejaVu Sans Mono","Courier New",monospace;
       font-size:11px;line-height:1.14;white-space:pre;color:var(--ink);text-shadow:0 0 5px currentColor;transform-origin:50% 50%}
     /* v1.20: the CRT flickers only while a scene is live (in practice the boot screen: an ending's pre keeps its finished
        power-on animation, which outranks this rule) */
@@ -645,7 +645,7 @@
     .boot-bezel{display:flex;align-items:center;gap:10px;margin-top:12px;padding:0 4px}
     .boot-led{width:8px;height:8px;border-radius:50%;background:#4b1d1d;flex:none;transition:background .3s,box-shadow .3s}
     #boot.on .boot-led{background:var(--good);box-shadow:0 0 10px var(--good)}
-    .boot-brand{font-family:"Sora","Inter",ui-sans-serif,system-ui,sans-serif;font-weight:800;font-size:11px;letter-spacing:.32em;color:var(--muted)}
+    .boot-brand{font-family:"TST Sans",ui-sans-serif,system-ui,sans-serif;font-weight:800;font-size:11px;letter-spacing:.32em;color:var(--muted)}
     .boot-hint{font-size:12px;color:var(--muted);margin-left:auto;text-align:right}
     .boot-btn.btn{width:auto;flex:none;text-align:center;padding:7px 16px}
     @keyframes bootOut{to{opacity:0;visibility:hidden}}
@@ -658,8 +658,8 @@
       animation:memoDrop .5s var(--ease) both,memoShake .32s 1.62s linear} /* no fill on the shake: it would override the drop */
     .memo.live{cursor:pointer}
     .memo-head{display:flex;justify-content:space-between;gap:8px;padding-bottom:6px;margin-bottom:8px;border-bottom:1px dashed var(--border);
-      font-family:"Sora","Inter",ui-sans-serif,system-ui,sans-serif;font-size:9.5px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
-    .memo h3{margin:0 0 6px;font-family:"Sora","Inter",ui-sans-serif,system-ui,sans-serif;font-size:15px;color:var(--text)}
+      font-family:"TST Sans",ui-sans-serif,system-ui,sans-serif;font-size:9.5px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+    .memo h3{margin:0 0 6px;font-family:"TST Sans",ui-sans-serif,system-ui,sans-serif;font-size:15px;color:var(--text)}
     .memo p{margin:0 0 6px;font-size:12px;line-height:1.45;color:#c7dbff}
     .memo-cannon{position:relative;display:inline-block;transform-origin:30% 80%;transform:rotate(6deg) translateY(1px);animation:memoCannon .45s .3s ease-out both}
     .memo-bit{position:absolute;left:35%;top:30%;width:5px;height:7px;border-radius:1px;opacity:0;animation:memoFizzle 1.1s ease-in both}
@@ -668,7 +668,7 @@
     .memo-bit:nth-child(3){background:var(--accent-4);--dx:8px;animation-delay:.58s}
     .memo-title{position:relative;display:inline-block;font-weight:700;color:#fde68a;animation:memoShine .7s .9s ease-in-out both}
     .memo-stamp{position:absolute;left:50%;top:50%;padding:0 7px;border:3px double #f43f5e;border-radius:6px;pointer-events:none;white-space:nowrap;
-      font-family:"Sora","Inter",ui-sans-serif,system-ui,sans-serif;font-size:20px;font-weight:800;line-height:1.15;letter-spacing:.14em;color:#f43f5e;
+      font-family:"TST Sans",ui-sans-serif,system-ui,sans-serif;font-size:20px;font-weight:800;line-height:1.15;letter-spacing:.14em;color:#f43f5e;
       background:rgba(244,63,94,.10);text-shadow:0 0 10px rgba(244,63,94,.45);transform:translate(-50%,-50%) rotate(-12deg);
       animation:memoStamp .42s 1.4s cubic-bezier(.2,.9,.3,1.3) both}
     .memo .memo-foot{margin:4px 0 0;font-size:11px;font-style:italic;color:var(--muted);animation:fadeIn .4s 1.9s ease both}
@@ -692,11 +692,11 @@
        Nothing here loops: a run's report plays in once, beat by beat, then everything holds still. */
     .container{padding-bottom:calc(12px + var(--claink-h,0px))}
     .claink-ad,.claink-console{--ck-v:#a78bfa;--ck-c:#22d3ee;--ck-p:#f472b6;--ck-ink:#eeeaff;--ck-mut:#aaa5da;--ck-line:#3a3270;
-      position:fixed;z-index:12;color:var(--ck-ink);font-family:"Inter",ui-sans-serif,system-ui,sans-serif;text-align:left;line-height:1.4}
+      position:fixed;z-index:12;color:var(--ck-ink);font-family:"TST Sans",ui-sans-serif,system-ui,sans-serif;text-align:left;line-height:1.4}
     .claink-ad *,.claink-console *{box-sizing:border-box}
     .claink-logo{display:inline-flex;align-items:center;gap:9px;line-height:1}
     .claink-mark{flex:none;filter:drop-shadow(0 0 10px rgba(167,139,250,.55))}
-    .claink-word{font-family:"Sora","Inter",sans-serif;font-weight:800;font-size:26px;letter-spacing:-1.2px;color:#fff}
+    .claink-word{font-family:"TST Sans",ui-sans-serif,system-ui,sans-serif;font-weight:800;font-size:26px;letter-spacing:-1.2px;color:#fff}
     .claink-word b{font-weight:800;background:linear-gradient(100deg,var(--ck-v),var(--ck-c) 55%,var(--ck-p));-webkit-background-clip:text;background-clip:text;color:transparent}
     .claink-tier{font-size:9px;font-weight:800;letter-spacing:.16em;padding:3px 7px;border-radius:999px;color:#0b0a1f;
       background:linear-gradient(90deg,var(--ck-c),var(--ck-v));box-shadow:0 0 12px rgba(34,211,238,.35)}
@@ -736,7 +736,7 @@
     .claink-announce{display:inline-flex;align-items:center;gap:6px;max-width:100%;font-size:11px;font-weight:600;color:#ece6ff;
       padding:4px 11px;border-radius:999px;border:1px solid #5d4cb5;background:linear-gradient(90deg,#2b2066,#10324c);margin:0 0 12px}
     .claink-announce b{color:var(--ck-c)}
-    .claink-headline{font-family:"Sora","Inter",sans-serif;font-size:19px;line-height:1.18;font-weight:800;letter-spacing:-.5px;margin:12px 0 6px;color:#fff}
+    .claink-headline{font-family:"TST Sans",ui-sans-serif,system-ui,sans-serif;font-size:19px;line-height:1.18;font-weight:800;letter-spacing:-.5px;margin:12px 0 6px;color:#fff}
     .claink-sub{font-size:12.5px;color:#d3cdf7;margin:0 0 10px}
     .claink-chips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
     .claink-chips span{font-size:11px;font-weight:700;padding:4px 9px;border-radius:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12)}
@@ -749,7 +749,7 @@
     .claink-badges{display:flex;flex-wrap:wrap;gap:5px;margin:0 0 12px}
     .claink-badges>span{font-size:10px;font-weight:700;letter-spacing:.04em;padding:3px 7px;border-radius:6px;color:#c2bbf1;border:1px solid var(--ck-line)}
     .claink-badges>.urgent{color:#ffd59e;border-color:#a8641d;background:#2c1a07}
-    .claink-cta,.claink-confirm,.claink-deploy{font:700 13px "Inter",sans-serif;border:0;cursor:pointer;color:#0b0a1f;transition:filter .2s,transform .2s}
+    .claink-cta,.claink-confirm,.claink-deploy{font:700 13px "TST Sans",ui-sans-serif,system-ui,sans-serif;border:0;cursor:pointer;color:#0b0a1f;transition:filter .2s,transform .2s}
     .claink-cta{width:100%;padding:12px;border-radius:13px;background:linear-gradient(100deg,var(--ck-v),var(--ck-c) 60%,var(--ck-p));
       box-shadow:0 0 22px rgba(34,211,238,.32),0 8px 20px rgba(0,0,0,.5)}
     .claink-cta:not(:disabled):hover,.claink-confirm:not(:disabled):hover,.claink-deploy:not(:disabled):hover{filter:brightness(1.12);transform:translateY(-1px)}
@@ -765,7 +765,7 @@
     .claink-policy li{margin:2px 0}
     .claink-confirm-row{display:grid;grid-template-columns:2fr 3fr;gap:8px}
     .claink-confirm{padding:11px 8px;border-radius:12px;background:linear-gradient(100deg,var(--ck-v),var(--ck-c))}
-    .claink-notnow{font:600 12.5px "Inter",sans-serif;padding:11px 8px;border-radius:12px;cursor:pointer;color:#ddd8ff;background:rgba(255,255,255,.04);border:1px solid var(--ck-line)}
+    .claink-notnow{font:600 12.5px "TST Sans",ui-sans-serif,system-ui,sans-serif;padding:11px 8px;border-radius:12px;cursor:pointer;color:#ddd8ff;background:rgba(255,255,255,.04);border:1px solid var(--ck-line)}
     .claink-fine{font-size:10px;line-height:1.4;color:#918cc2;margin:0;padding-top:4px}
 
     .claink-console{right:calc(16px + env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));width:min(340px,calc(100vw - 24px));
@@ -781,7 +781,7 @@
       background:linear-gradient(90deg,#1e1948,#0e1c3a);border-bottom:1px solid var(--ck-line)}
     .claink-console.is-mini .claink-titlebar{border-bottom:0;padding:5px 6px 5px 11px}
     .claink-console.dragging,.claink-console.dragging .claink-titlebar{cursor:grabbing}
-    .claink-title{font-family:"Sora","Inter",sans-serif;font-weight:800;font-size:12.5px;letter-spacing:-.2px;white-space:nowrap}
+    .claink-title{font-family:"TST Sans",ui-sans-serif,system-ui,sans-serif;font-weight:800;font-size:12.5px;letter-spacing:-.2px;white-space:nowrap}
     .claink-title span{font-weight:600;color:var(--ck-mut)}
     .claink-pilltext{font-size:11px;color:#ddd8ff;white-space:nowrap}
     .claink-dot{width:8px;height:8px;border-radius:50%;flex:none;background:#34d399;box-shadow:0 0 8px #34d399}
@@ -839,18 +839,18 @@
     .claink-ping .who{font-weight:800;font-size:11px;color:#fde68a}
     .claink-usage{font-size:11px;color:var(--ck-mut)}
     .claink-usage b{color:#fff}
-    .claink-cancel-link{justify-self:start;background:none;border:0;padding:0;font:10px "Inter",sans-serif;color:#716c9f;text-decoration:underline;cursor:pointer}
+    .claink-cancel-link{justify-self:start;background:none;border:0;padding:0;font:10px "TST Sans",ui-sans-serif,system-ui,sans-serif;color:#716c9f;text-decoration:underline;cursor:pointer}
     .claink-cancel-box{font-size:11.5px;color:#fecdd3;background:#1c0a14;border:1px solid #7f1d3a;border-radius:11px;padding:8px 9px;display:grid;gap:7px}
     .claink-cancel-box .offer{font-size:10.5px;color:#c4b5fd}
     .claink-cancel-box .row2{display:flex;gap:6px;flex-wrap:wrap}
-    .claink-cancel-box button{font:600 11.5px "Inter",sans-serif;padding:7px 9px;border-radius:8px;cursor:pointer;border:1px solid #7f1d3a;background:#2a0b14;color:#ffe4e6}
+    .claink-cancel-box button{font:600 11.5px "TST Sans",ui-sans-serif,system-ui,sans-serif;padding:7px 9px;border-radius:8px;cursor:pointer;border:1px solid #7f1d3a;background:#2a0b14;color:#ffe4e6}
     .claink-cancel-box button:disabled{opacity:.55;cursor:not-allowed}
 
     /* end cards */
     .claink-revoked,.claink-offboarded{display:grid;gap:7px;font-size:12px;color:#cbd5e1}
     .claink-revoked p,.claink-offboarded p{margin:0}
     .claink-revoked .stamp{justify-self:start;padding:1px 9px;border:3px double #f43f5e;border-radius:6px;transform:rotate(-4deg);background:rgba(244,63,94,.08);
-      font-family:"Sora","Inter",sans-serif;font-weight:800;font-size:17px;letter-spacing:.16em;color:#f43f5e;text-shadow:0 0 10px rgba(244,63,94,.4)}
+      font-family:"TST Sans",ui-sans-serif,system-ui,sans-serif;font-weight:800;font-size:17px;letter-spacing:.16em;color:#f43f5e;text-shadow:0 0 10px rgba(244,63,94,.4)}
     .claink-revoked .farewell{color:#fecdd3}
     .claink-recap{margin:0;padding:0;list-style:none;display:grid;gap:5px}
     .claink-recap li{position:relative;padding-left:24px;font-size:11.5px;color:#fecdd3}

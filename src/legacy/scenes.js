@@ -1203,18 +1203,30 @@ __/_|__
       return w > 0.3 && w < 1 ? w : 0;
     }catch(e){ return 0; }
   }
-  // size the font so all 64 columns fit the screen's width; returns false while the box isn't laid out yet
+  // v2.0: the mono face is bundled in the page but still takes a moment to decode, and until it has, layout uses
+  // the fallback's glyph width. True while a face the <pre> asks for is on its way (and asks for it, if nothing has).
+  function faceLoading(pre){
+    try{
+      var f = document.fonts, font = "12px "+root.getComputedStyle(pre).fontFamily;
+      if(!f || !f.check || f.check(font)) return false;
+      f.load(font).then(null,function(){});
+      return f.status === "loading";
+    }catch(e){ return false; }
+  }
+  // size the font so all 64 columns fit the screen's width; returns false while the box isn't laid out yet,
+  // or while the face is still loading (v2.0: that fit uses the fallback's ratio for now and does not keep it)
   function fit(pre){
     var box = pre.parentNode; if(!box || !box.clientWidth) return false;
     var cs = root.getComputedStyle ? root.getComputedStyle(box) : null;
     var inner = box.clientWidth - (cs ? parseFloat(cs.paddingLeft)+parseFloat(cs.paddingRight) : 16);
     if(!(inner > 0)) return false;
+    var loading = !pre._ratio && faceLoading(pre);
     var ratio = pre._ratio || measure(pre);
     if(!ratio) return false;
-    pre._ratio = ratio;
+    if(!loading) pre._ratio = ratio;
     var fs = Math.max(5.5, Math.min(pre._maxFont || 13.5, Math.floor((inner/(COLS*ratio))*10)/10));
     pre.style.fontSize = fs+"px";
-    return true;
+    return !loading;
   }
 
   function play(pre,type,opts){
