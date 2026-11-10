@@ -1,12 +1,14 @@
 import { COLS, blink, easeOut, lerp, prog, rep } from "../core.js";
+import { SCENE_COPY } from "../../../copy/scenes.js";
 import { SCENES } from "../registry.js";
 import { SPR } from "../sprites.js";
 
 /* ---------------- FIRED: access denied, walk of shame, elevator goes down ---------------- */
 export var FACES = ["(-_-)","(o_o)","(-_-)","(o.o)","(-_-)"], FACES_AFTER = ["(-_-)","(._.)","(;_;)","(-_-)","(._.)"];
+var WORDS = SCENE_COPY.fired, TEXT = WORDS.text; // the words: captions, title card, summary; TEXT = the words in the picture
 SCENES.fired = {
   dur: 8800,
-  cap: { title:"YOU'RE DONE", a:["Badge: deactivated.","HR took the dongles."], b:["\u201cDifferent direction.\u201d","(Not you.)"], tTitle:200, tA:1100, tB:6300, k:"k-r", rule:"k-r-d" },
+  cap: { title:WORDS.title, a:WORDS.a, b:WORDS.b, tTitle:200, tA:1100, tB:6300, k:"k-r", rule:"k-r-d" },
   cues: [
     {t:960, sfx:"thud"}, {t:960, impact:110}, {t:960, lines:"radial", ms:720, fx:24, fy:5}, {t:960, zoom:1.15, ms:620, fx:24, fy:5},
     {t:960, glitch:320}, {t:960, shake:220},
@@ -14,7 +16,7 @@ SCENES.fired = {
     {t:2410, whip:"r", ms:380}, {t:2410, sfx:"fwip"},
     {t:5500, slash:340}, {t:5500, sfx:"shing"}, {t:5500, letterbox:true},
     {t:6050, sfx:"doors"}, {t:6600, sfx:"elevator"},
-    {t:7300, sfx:"stingerFired", key:true}, {t:7300, card:"FIRED", ms:1400}, {t:7300, impact:100}, {t:7300, lines:"radial", ms:900},
+    {t:7300, sfx:"stingerFired", key:true}, {t:7300, card:WORDS.card, ms:1400}, {t:7300, impact:100}, {t:7300, lines:"radial", ms:900},
     {t:7450, say:"fired", key:true}, {t:8500, letterbox:false}
   ],
   cam: [
@@ -32,7 +34,7 @@ SCENES.fired = {
   ],
   drift: {x:.8, z:.02, p:7000},
   idleGlitch: 4600,
-  summary: "Badge denied, box carried past staring coworkers, elevator down.",
+  summary: WORDS.summary,
   draw: function(g,c){
     var t = c.t, st = c.st;
     if(t < 2600){
@@ -40,19 +42,19 @@ SCENES.fired = {
       var RX = 14;
       g.spr(RX,2,SPR.reader,"k-d");
       var state = t < 800 ? "ready" : t < 960 ? "check" : "denied";
-      var scr = state === "ready" ? "    READY    " : state === "check" ? "   . . .     " : "ACCESS DENIED";
+      var scr = state === "ready" ? TEXT.ready : state === "check" ? TEXT.checking : TEXT.denied;
       var sk = state === "ready" ? "k-g" : state === "check" ? "k-y" : "k-r k-bold";
       if(state !== "denied" || t > 2000 || blink(t,150)) g.text(RX+4,5,scr,sk);
-      g.text(RX+3,3,"SHITCORP SECURE","k-w");
+      g.text(RX+3,3,TEXT.reader,"k-w");
       var led = state === "ready" ? "k-g" : state === "check" ? "k-y" : (blink(t,200) ? "k-r" : "k-d");
       g.text(RX+4,7,"(o)",led);
       // badge slides in, taps, dies, drops
       var bx = t < 700 ? lerp(66,RX+25,easeOut(t/700)) : (t < 820 ? RX+23 : RX+25);
       var by = 3 + (t > 2000 ? Math.pow((t-2000)/1000,2)*24 : 0);
       g.sprO(bx,by,SPR.badge,"k-w");
-      g.text(bx+2,by+1,"SHITCORP","k-b");
+      g.text(bx+2,by+1,TEXT.badge,"k-b");
       if(t > 1300){ g.text(bx+3,by+2,"(x_x)","k-r"); }
-      if(t > 1500){ g.text(bx+3,by+3,blink(t,180) ? "VOID" : "    ","k-r k-bold"); }
+      if(t > 1500){ g.text(bx+3,by+3,blink(t,180) ? TEXT.badgeVoid : rep(" ",TEXT.badgeVoid.length),"k-r k-bold"); }
       if(state === "denied" && t < 1900){
         for(var i=0;i<3;i++) g.set(RX+22, 3+i*2, blink(t,100) ? "!" : " ", "k-r");
       }
@@ -66,7 +68,7 @@ SCENES.fired = {
       var sx = lerp(-9,25,easeOut(prog(t,2600,3300))) + 3*prog(t,3300,5500);
       var mx = ox + sx, wo = ox*.55;
       g.spr(Math.round(3-wo),0,SPR.poster,"k-m");
-      g.text(Math.round(39-wo),1,"[ 4:59 PM FRI ]",blink(t,500) ? "k-r" : "k-r-d");
+      g.text(Math.round(39-wo),1,TEXT.clock,blink(t,500) ? "k-r" : "k-r-d");
       g.spr(Math.round(64-wo),0,SPR.poster2,"k-m");
       for(var h=0;h<5;h++){
         var hw = 8 + h*21, hx = Math.round(hw-ox);
@@ -76,14 +78,14 @@ SCENES.fired = {
         g.text(hx,5,face,"k-w");
         g.text(hx-2,6,"|=========|","k-b");
         if(h%2 === 0) g.text(hx+9,5,"[_]","k-d");
-        if(h === 2 && dx > 3 && dx < 18) g.text(hx+1,4,"rip","k-d");
+        if(h === 2 && dx > 3 && dx < 18) g.text(hx+1,4,TEXT.rip,"k-d");
       }
       var legA = Math.floor((t-2600)/230)%2 === 0;
       if(legA !== st.lastLeg){ st.lastLeg = legA; if(!c.idle) c.sfx("step"); }
       var wx = Math.round(sx);
       g.spr(wx,8,legA ? SPR.walkA : SPR.walkB,"k-w");
       g.text(wx+6,8,"\\|/","k-g");
-      g.text(wx+5,9,"[BOX]","k-y");
+      g.text(wx+5,9,TEXT.box,"k-y");
       g.text(0,11,rep("_",COLS),"k-d");
       g.tile(12,". ' . , ",ox,"k-d");
       return;
@@ -105,10 +107,10 @@ SCENES.fired = {
       var legA2 = Math.floor((t-5500)/180)%2 === 0;
       if(legA2 !== st.lastLeg){ st.lastLeg = legA2; if(!c.idle) c.sfx("step"); }
       g.spr(wx2,6,legA2 ? SPR.walkA : SPR.walkB,"k-w");
-      g.text(wx2+6,6,"\\|/","k-g"); g.text(wx2+5,7,"[BOX]","k-y");
+      g.text(wx2+6,6,"\\|/","k-g"); g.text(wx2+5,7,TEXT.box,"k-y");
     } else {
       g.spr(ex+10,6,SPR.front,"k-w");
-      g.text(ex+10,7,"[BOX]","k-y");
+      g.text(ex+10,7,TEXT.box,"k-y");
       g.text(ex+14,6,"\\|/","k-g");
     }
     // doors slide shut from both sides

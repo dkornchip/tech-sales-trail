@@ -1,9 +1,10 @@
 import React from "react";
-import { CLAINK, buyClaink, cancelClaink, clainkCanCancel, clainkCanDeploy, clainkCanInstall, clainkCancelCost, clainkFrozen, deployClaink, dismissClaink, fmtTok, hideClainkCard } from "../game/claink.js";
+import { isMoreLine } from "../copy/claink.js";
+import { CLAINK, buyClaink, cancelClaink, clainkCanCancel, clainkCanDeploy, clainkCanInstall, clainkCancelCost, clainkFrozen, deployClaink, dismissClaink, hideClainkCard } from "../game/claink.js";
 import { QUARTER_WEEKS } from "../game/constants.js";
 import { isRunOver } from "../game/log.js";
 import { checkBurnout } from "../game/stress.js";
-import { getQuarterInfo, money } from "../game/util.js";
+import { fmtTok, getQuarterInfo, money } from "../game/util.js";
 import { AUDIO, reducedNow } from "./env.js";
 
 const { useState, useEffect, useRef } = React;
@@ -255,7 +256,7 @@ export const ClainkReport=({last,beat,workTok,onSkip})=>{
     {nL>0 && <div className={"claink-report "+(miracle?"miracle":"strike")+(onSkip?" revealing":"")} onClick={onSkip||undefined} title={onSkip?"Click or press Esc to skip":undefined}>
       <div className="hd"><span>{miracle ? <><span aria-hidden="true">✨ </span>It actually worked</> : last.run ? `Run ${last.run} · outcomes delivered` : "Outcomes delivered"}</span>
         {last.tokens>0 && <span className="tok">{fmtTok(last.tokens)} tokens</span>}</div>
-      <ul>{last.lines.slice(0,shown).map((l,i)=><li key={i} className={"ck-beat"+(/^\d+ more outcome/.test(l)?" more":"")}>{l}</li>)}</ul>
+      <ul>{last.lines.slice(0,shown).map((l,i)=><li key={i} className={"ck-beat"+(isMoreLine(l)?" more":"")}>{l}</li>)}</ul>
       {net && <div className={"net ck-beat"+(miracle?"":" zero")}>{miracle ? `Closed +${money(last.revenue)} · verified by Finance` : "Closed: $0"}</div>}
     </div>}
     {card && (last.strike ? <ClainkStrikeCard st={last.strike}/> : miracle && last.clear ? <div className="claink-clear ck-beat">{last.clear}</div> : null)}

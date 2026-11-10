@@ -1,12 +1,14 @@
 import { COLS, blink, easeInOut, easeOut, lerp, pick, prog, rep, rnd, stepParts } from "../core.js";
 import { SCENES } from "../registry.js";
+import { SCENE_COPY } from "../../../copy/scenes.js";
 import { SPR } from "../sprites.js";
 import { fxRandom } from "../../../fxrng.js";
 
 /* ---------------- REPO: the tow truck takes the jacket ---------------- */
+var WORDS = SCENE_COPY.repo, TEXT = WORDS.text; // the words: captions, title card, summaries; TEXT = the words in the picture
 SCENES.repo = {
   dur: 7400,
-  cap: { title:"REPOSSESSED", a:["Financed the drip.","Not the payments."], b:["Collections took the flex.","HR keeps the photo."], tTitle:200, tA:1300, tB:5600, k:"k-y", rule:"k-y-d" },
+  cap: { title:WORDS.title, a:WORDS.a, b:WORDS.b, tTitle:200, tA:1300, tB:5600, k:"k-y", rule:"k-y-d" },
   cues: [
     {t:600, sfx:"beeper"},
     {t:860, whip:"l", ms:340}, {t:860, sfx:"fwip"}, {t:900, lines:"h", ms:750, dir:1, n:11},
@@ -14,7 +16,7 @@ SCENES.repo = {
     {t:1700, sfx:"beeper"},
     {t:2400, sfx:"clank"}, {t:2400, impact:100}, {t:2400, shake:260}, {t:2400, lines:"radial", ms:650, fx:34, fy:7}, {t:2400, zoom:1.15, ms:600, fx:34, fy:7},
     {t:3000, sfx:"engine"}, {t:3300, sfx:"honk"},
-    {t:4700, sfx:"stingerRepo", key:true}, {t:4700, card:"REPO", ms:1400},
+    {t:4700, sfx:"stingerRepo", key:true}, {t:4700, card:WORDS.card, ms:1400},
     {t:4850, say:"repo", key:true}
   ],
   cam: [
@@ -28,8 +30,8 @@ SCENES.repo = {
     {t:7200, x:6,  y:0,   z:1.16, r:0, e:"l"}
   ],
   drift: {x:1, z:.015, p:8000},
-  summary: "A tow truck hauls off the President's Club jacket.",
-  summaryBy: { claink: "A tow truck hauls off the jacket. clAInk billed it as an outcome." },
+  summary: WORDS.summary,
+  summaryBy: WORDS.summaryBy,
   draw: function(g,c){
     var t = c.t, st = c.st;
     var hookX = 34, TIP = 26, ty = 3; // boom tip column inside the truck sprite; truck top row
@@ -47,12 +49,12 @@ SCENES.repo = {
     if(moving && fxRandom() < .55) st.puffs.push({x:tw+12,y:ty,vx:rnd(1,4),vy:rnd(-3,-1.2),life:rnd(600,1000),ch:pick(["o","O","."]),k:"k-d",fade:320,ch2:"o"});
     stepParts(st.puffs,c.dt,g,undefined,ox);
     // left of the building: a lamp post and a billboard (solid, so the exhaust passes behind its text)
-    g.sprO(-36-O,0,SPR.billboard,"k-d"); g.text(-34-O,1,"PRESIDENT'S CLUB","k-au");
+    g.sprO(-36-O,0,SPR.billboard,"k-d"); g.text(-34-O,1,TEXT.billboard,"k-au");
     var lx = -8-O;
     g.text(lx-1,4,"(_)","k-y"); for(var ly=5;ly<=9;ly++) g.set(lx,ly,"|","k-d"); g.text(lx-1,10,"_|_","k-d");
     // building + street
     g.spr(39-O,3,SPR.building,"k-d");
-    g.text(42-O,4,"COLLECTIONS  DEPT.","k-y");
+    g.text(42-O,4,TEXT.building,"k-y");
     if(t > c.dur){ g.text(42,8,"[:)]",blink(t,700) ? "k-au" : "k-au-d"); if(blink(t,350)) g.set(46,7,"*","k-y"); }
     g.text(0,11,rep("_",COLS),"k-d");
     g.tile(12,"  == ",ox,"k-d");
@@ -70,7 +72,7 @@ SCENES.repo = {
     var swing = t > 3100 ? (blink(t,260) ? 1 : 0) : 0;
     if(!attached) g.spr(rk-3,7,SPR.jacketS,"k-au");
     g.sprO(tx,ty,SPR.truck,"k-w");
-    g.text(tx+9,ty+5,"REPO","k-r k-bold");
+    g.text(tx+9,ty+5,TEXT.truck,"k-r k-bold");
     if(t >= 1800){
       for(var r=0;r<cableLen;r++) g.set(tipX+(r === cableLen-1 ? swing : 0),ty+1+r,"|","k-d");
       g.set(tipX+swing,ty+1+cableLen,"J","k-w");

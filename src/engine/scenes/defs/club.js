@@ -1,18 +1,20 @@
 import { COLS, blink, easeInOut, easeOut, lerp, mod, pick, prog, rnd, stepParts } from "../core.js";
+import { SCENE_COPY } from "../../../copy/scenes.js";
 import { SCENES } from "../registry.js";
 import { SPR } from "../sprites.js";
 import { fxRandom } from "../../../fxrng.js";
 
 /* ---------------- PRESIDENT'S CLUB: jet lands on the beach, jacket descends, fireworks ---------------- */
+var WORDS = SCENE_COPY.club; // the words: captions, title card, summary
 SCENES.club = {
   dur: 8400,
-  cap: { title:"PRESIDENT'S CLUB", a:["Jacket secured.","You did the thing."], b:["Pipeline: obliterated.","Commission rains."], tTitle:300, tA:3400, tB:5900, k:"k-au", rule:"k-au-d" },
+  cap: { title:WORDS.title, a:WORDS.a, b:WORDS.b, tTitle:300, tA:3400, tB:5900, k:"k-au", rule:"k-au-d" },
   cues: [
     {t:0, sfx:"plane"}, {t:200, lines:"h", ms:1700, dir:-1, n:10},
     {t:2000, sfx:"screech"}, {t:2000, shake:200}, {t:2000, pulse:.05, ms:320},
     {t:2900, sfx:"seatbelt"}, {t:3400, sfx:"sparkle"},
     {t:4900, sfx:"thwack"}, {t:4900, impact:110}, {t:4900, lines:"radial", ms:800, fx:31, fy:3}, {t:4900, zoom:1.14, ms:650, fx:31, fy:3},
-    {t:5300, sfx:"stingerClub", key:true}, {t:5300, card:"CLUB", ms:1400}, {t:5300, shake:260},
+    {t:5300, sfx:"stingerClub", key:true}, {t:5300, card:WORDS.card, ms:1400}, {t:5300, shake:260},
     {t:5500, say:"club", key:true}
   ],
   cam: [
@@ -26,7 +28,7 @@ SCENES.club = {
     {t:6700, x:0,  y:-0.4, z:1.08, r:0}
   ],
   drift: {x:1.5, y:.3, z:.02, p:9000},
-  summary: "A jet lands on the beach, the jacket descends, fireworks rain commission.",
+  summary: WORDS.summary,
   draw: function(g,c){
     var t = c.t, st = c.st;
     // tracking shot: the camera rides with the jet, the beach scrolls past, then it all settles

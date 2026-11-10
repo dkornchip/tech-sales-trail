@@ -1,8 +1,76 @@
 import { killDeals, makeDeal } from "./deals.js";
 import { log } from "./log.js";
-import { clamp, money, randi } from "./util.js";
+import { clamp, randi } from "./util.js";
 
-export const randomEvents=(state,setPending,maxFires=2)=>{
+// The events that stop the game and wait for an answer, as data. An open dialog is just {id, params}: the id names an
+// entry here (what each button does) and one in src/copy/events.js (what the dialog says). Each option's apply()
+// takes the state when the button is pressed and returns the next one; it never changes the state it was given.
+// The ids are the dialog ids the test harness and the sound director know: "evt:" for the two End Week choices,
+// "ck:" for clAInk's manager (see clainkManager in claink.js), which only asks to be acknowledged.
+export const EVENTS={
+  "evt:competitor":{options:[
+    {
+      id:"match",
+      className:"primary",
+      apply:(state)=>{
+        const x={...state};
+        const baseConv = x.modifiers?.conversion ?? 0;
+        x.modifiers={
+          conversion:clamp(baseConv+0.12,-0.30,0.30),
+          discount:0.20,
+          expiresIn:1
+        };
+        return log(x,"evt.competitor.match");
+      }
+    },
+    {
+      id:"hold",
+      className:"ghost",
+      apply:(state)=>{
+        const x={...state};
+        const baseConv = x.modifiers?.conversion ?? 0;
+        x.reputation=clamp(x.reputation+4,0,100);
+        x.modifiers={
+          conversion:clamp(baseConv-0.08,-0.30,0.30),
+          discount:0,
+          expiresIn:1
+        };
+        return log(x,"evt.competitor.hold",null,"warn");
+      }
+    }
+  ]},
+  "evt:security":{options:[
+    {
+      id:"own",
+      className:"primary",
+      apply:(state)=>{
+        let x={...state};
+        x.reputation=clamp(x.reputation+6,0,100);
+        x.product=clamp(x.product-18,0,100);
+        x.modifiers={conversion:-0.15,discount:0,expiresIn:2};
+        x=killDeals(x,d=>d.stage>=2,0.30);
+        return log(x,"evt.security.own",null,"warn");
+      }
+    },
+    {
+      id:"spin",
+      className:"ghost",
+      apply:(state)=>{
+        let x={...state};
+        x.reputation=clamp(x.reputation-8,0,100);
+        x.product=clamp(x.product-12,0,100);
+        x.modifiers={conversion:-0.08,discount:0,expiresIn:1};
+        x=killDeals(x,d=>d.stage>=2,0.15);
+        return log(x,"evt.security.spin",null,"warn");
+      }
+    }
+  ]},
+  "ck:warning":{options:[{id:"ack",className:"primary",apply:(state)=>({...state})}]},
+  "ck:lesson":{options:[{id:"ack",className:"primary",apply:(state)=>({...state})}]}
+};
+
+// queueEvent({id, params}) is called for an event that needs a choice, at the moment it fires.
+export const randomEvents=(state,queueEvent,maxFires=2)=>{
   let s={...state};
   let firedCount=0;
   let modalQueued=false;
@@ -21,43 +89,11 @@ export const randomEvents=(state,setPending,maxFires=2)=>{
     const adds=Array.from({length:n},()=>makeDeal(st,{warm:true}));
     st.deals=[...adds,...st.deals];
     st.pipeline=st.deals.reduce((sum,d)=>sum+d.value,0);
-    return log(st,`📣 Marketing delivered ${n} “warm” leads.`);
+    return log(st,"evt.marketing",{n});
   });
 
   fire(0.18,st=>{
-    setPending({
-      title:"🧨 Competitor Panic",
-      body:"They cut 25%. Match 20% or hold?",
-      options:[
-        {
-          label:"Match 20% (more wins, less $)",
-          className:"primary",
-          action:(x)=>{
-            const baseConv = x.modifiers?.conversion ?? 0;
-            x.modifiers={
-              conversion:clamp(baseConv+0.12,-0.30,0.30),
-              discount:0.20,
-              expiresIn:1
-            };
-            return log(x,"💸 Matched 20%. Wins up, ACV down this week.");
-          }
-        },
-        {
-          label:"Hold price (fewer wins, +rep)",
-          className:"ghost",
-          action:(x)=>{
-            const baseConv = x.modifiers?.conversion ?? 0;
-            x.reputation=clamp(x.reputation+4,0,100);
-            x.modifiers={
-              conversion:clamp(baseConv-0.08,-0.30,0.30),
-              discount:0,
-              expiresIn:1
-            };
-            return log(x,"🧱 Held price. Fewer closes this week, +rep.","warn");
-          }
-        }
-      ]
-    });
+    queueEvent({id:"evt:competitor"});
     return st;
   },{modal:true});
 
@@ -66,7 +102,7 @@ export const randomEvents=(state,setPending,maxFires=2)=>{
     if(!candidate)return st;
     st.product=clamp(st.product-6,0,100);
     st.stress=clamp(st.stress+4,0,100);
-    return log(st,`🛠️ SE fumbled ${candidate.account}. -6 product, +4 stress.`,"warn");
+    return log(st,"evt.seFumble",{account:candidate.account},"warn");
   });
 
   fire(0.12,st=>{
@@ -74,45 +110,18 @@ export const randomEvents=(state,setPending,maxFires=2)=>{
     if(!candidate)return st;
     st.product=clamp(st.product+8,0,100);
     st.reputation=clamp(st.reputation+3,0,100);
-    return log(st,`🧙 SE saved ${candidate.account}. +8 product, +3 rep.`);
+    return log(st,"evt.seSave",{account:candidate.account});
   });
 
   fire(0.10,st=>{
-    setPending({
-      title:"🔐 Security Incident",
-      body:"A customer got breached. Own it or spin it?",
-      options:[
-        {
-          label:"Own it (+rep, fewer wins)",
-          className:"primary",
-          action:(x)=>{
-            x.reputation=clamp(x.reputation+6,0,100);
-            x.product=clamp(x.product-18,0,100);
-            x.modifiers={conversion:-0.15,discount:0,expiresIn:2};
-            x=killDeals(x,d=>d.stage>=2,0.30);
-            return log(x,"🔦 Came clean. +rep, closes tank for a bit.","warn");
-          }
-        },
-        {
-          label:"Spin it (safer pipe, -\u2060rep)", // word joiner: keeps "-rep" on one line
-          className:"ghost",
-          action:(x)=>{
-            x.reputation=clamp(x.reputation-8,0,100);
-            x.product=clamp(x.product-12,0,100);
-            x.modifiers={conversion:-0.08,discount:0,expiresIn:1};
-            x=killDeals(x,d=>d.stage>=2,0.15);
-            return log(x,"🌀 Spun it. Pipe mostly safe, rep takes a hit.","warn");
-          }
-        }
-      ]
-    });
+    queueEvent({id:"evt:security"});
     return st;
   },{modal:true});
 
   fire(0.12,st=>{
     st.product=clamp(st.product-12,0,100);
     st=killDeals(st,d=>d.stage>=2,0.18);
-    return log(st,"🌩️ Cloud outage ate the demos. -12 product.","bad");
+    return log(st,"evt.outage",null,"bad");
   });
 
   fire(0.11,st=>{
@@ -123,7 +132,7 @@ export const randomEvents=(state,setPending,maxFires=2)=>{
     st.pipeline=st.deals.reduce((sum,d)=>sum+d.value,0);
     st.reputation=clamp(st.reputation+3,0,100);
     st.manager=clamp(st.manager+3,0,100);
-    return log(st,`🪜 Champion promoted at ${candidate.account}. Deal moves up.`);
+    return log(st,"evt.champion",{account:candidate.account});
   });
 
   fire(0.10,st=>{
@@ -133,7 +142,7 @@ export const randomEvents=(state,setPending,maxFires=2)=>{
       discount:st.modifiers.discount||0,
       expiresIn:Math.max(1,st.modifiers.expiresIn||0)
     };
-    return log(st,"📘 Case study live. +rep, +8% close for now.");
+    return log(st,"evt.caseStudy");
   });
 
   fire(0.10,st=>{
@@ -142,7 +151,7 @@ export const randomEvents=(state,setPending,maxFires=2)=>{
     st.deals=[...adds,...st.deals];
     st.pipeline=st.deals.reduce((sum,d)=>sum+d.value,0);
     st.reputation=clamp(st.reputation+4,0,100);
-    return log(st,`🐦 Product became a meme. +${n} inbound lead(s).`);
+    return log(st,"evt.meme",{n});
   });
 
   fire(0.10,st=>{
@@ -151,14 +160,14 @@ export const randomEvents=(state,setPending,maxFires=2)=>{
       discount:st.modifiers.discount||0,
       expiresIn:Math.max(1,st.modifiers.expiresIn||0)
     };
-    return log(st,"🥶 Budget freeze rumor. Closes nerfed this week.","warn");
+    return log(st,"evt.freeze",null,"warn");
   });
 
   fire(0.10,st=>{
     if(st.energy<55){
       st.stress=clamp(st.stress+6,0,100);
       st.energy=clamp(st.energy-10,0,100);
-      return log(st,"🤒 Conference crud. -10 energy, +6 stress.","warn");
+      return log(st,"evt.crud",null,"warn");
     }
     return st;
   });
@@ -174,7 +183,7 @@ export const randomEvents=(state,setPending,maxFires=2)=>{
       return true;
     });
     st.pipeline=st.deals.reduce((sum,d)=>sum+d.value,0);
-    st=log(st,`📉 Territory “rebalance.” Lost ${toSteal.length} top deal(s), ${money(total)}.`,"bad");
+    st=log(st,"evt.rebalance",{n:toSteal.length,value:total},"bad");
     return st;
   });
 
@@ -183,13 +192,13 @@ export const randomEvents=(state,setPending,maxFires=2)=>{
     if(st.pip && Math.random()<0.6){
       st.pip=false;
       st.pipLevel=0;
-      return log(st,"🛡️ Manager shredded your PIP. “Fresh start.”");
+      return log(st,"evt.pipShred");
     }
     const n=randi(1,3);
     const adds=Array.from({length:n},()=>makeDeal(st,{warm:true,big:Math.random()<0.5}));
     st.deals=[...adds,...st.deals];
     st.pipeline=st.deals.reduce((sum,d)=>sum+d.value,0);
-    return log(st,`🛡️ Manager called in favors. +${n} warm intro(s).`);
+    return log(st,"evt.favors",{n});
   });
 
   return s;

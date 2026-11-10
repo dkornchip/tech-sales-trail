@@ -1,6 +1,7 @@
-import { ACCOUNT_NAMES, MOODS } from "./constants.js";
+import { ACCOUNT_NAMES, ACHIEVEMENTS, DEAL_NOTES } from "../copy/names.js";
+import { MOODS } from "./constants.js";
 import { log } from "./log.js";
-import { choice, clamp, idGen, money, pct, randi } from "./util.js";
+import { choice, clamp, idGen, pct, randi } from "./util.js";
 
 // Clone nested sub-objects that actions mutate, to avoid accidental state mutation bugs.
 export const cloneForSpend=(state)=>({
@@ -23,10 +24,11 @@ export const tickModifiers=(state)=>{
 
 
 
-export const addAchievement=(state,key,label)=>{
+// key: a key of ACHIEVEMENTS (src/copy/names.js); the save keeps the label next to it
+export const addAchievement=(state,key)=>{
   if(state.achievements.some(a=>a.key===key))return state;
-  const next={...state,achievements:[...state.achievements,{key,label}]};
-  return log(next,`🏅 Unlocked: ${label}`);
+  const next={...state,achievements:[...state.achievements,{key,label:ACHIEVEMENTS[key]}]};
+  return log(next,"ach.unlocked",{key});
 };
 
 export const makeDeal=(state,{warm=false,big=false}={})=>{
@@ -46,32 +48,33 @@ export const makeDeal=(state,{warm=false,big=false}={})=>{
   };
 };
 
-// High-variance referrals: mostly peanuts, rare whales.
-export const makeReferralDeal=(state)=>{
+// High-variance referrals: mostly peanuts, rare whales. Returns {deal, tier}: tier is "peanut", "big", "whale" or ""
+// (the ordinary middle), so nothing has to read the size back out of the note on the deal card.
+export const makeReferral=(state)=>{
   const roll=Math.random();
-  let base=0, note="";
+  let base=0, tier="";
   if(roll<0.70){
     base=randi(2000,11000);
-    note="referral peanut";
+    tier="peanut";
   }else if(roll<0.90){
     base=randi(9000,26000);
   }else if(roll<0.97){
     base=randi(26000,70000);
-    note="referral big";
+    tier="big";
   }else{
     base=randi(85000,220000);
-    note="referral whale";
+    tier="whale";
   }
   const repMult=0.75+0.70*(state.reputation/100);
-  return{
+  return{tier,deal:{
     id:idGen(),
     account:choice(ACCOUNT_NAMES),
     value:Math.round(base*repMult),
     stage:0,
     mood:"happy",
-    probNote:note,
+    probNote:tier ? DEAL_NOTES[tier] : "",
     age:0
-  };
+  }};
 };
 
 export const checkRepo=(state)=>{
@@ -79,10 +82,10 @@ export const checkRepo=(state)=>{
   if(s.cash<=-1500 && !s.repo && !s.fired && !s.burnedOut && !s.win && !s.missed){
     s.repo=true;
     s.endCause="repo";
-    s=log(s,"🧥 Collections took the jacket. Last flex, gone.","bad");
+    s=log(s,"end.repo",null,"bad");
   }else if(s.cash<=-1000 && !s.repo && !s.repoWarned){
     s.repoWarned=true;
-    s=log(s,"⚠️ Cash under -$1,000. Finance eyes the jacket.","warn");
+    s=log(s,"pay.repoWarn",null,"warn");
   }
   return s;
 };
@@ -103,7 +106,7 @@ export const ageAndGhost=(state)=>{
   s.deals=kept;
   s.pipeline=kept.reduce((sum,d)=>sum+d.value,0);
   for(const g of ghosts){
-    s=log(s,`👻 ${g.account} went dark.`,"warn");
+    s=log(s,"deal.ghost",{account:g.account},"warn");
   }
   return s;
 };
@@ -121,16 +124,18 @@ export const killDeals=(state,predicate,dropProb)=>{
   s.deals=kept;
   s.pipeline=kept.reduce((sum,d)=>sum+d.value,0);
   if(lost>0){
-    s=log(s,`💀 Lost ${lost} deal(s), ${money(lostVal)}.`,"bad");
+    s=log(s,"deal.lost",{n:lost,value:lostVal},"bad");
   }
   return s;
 };
 
-export const tryCloseSome=(state,label="🧾 Negotiations")=>{
+// src says where the closes came from: "negotiations", "close" (the Close Deals action), "friday" (End Week) or "hail"
+// (the Hail Mary). The log lines name it (CLOSE_SOURCE in src/copy/log.js).
+export const tryCloseSome=(state,src="negotiations")=>{
   let s={...state};
   const candidates=s.deals.filter(d=>d.stage>=3);
   if(candidates.length===0){
-    return log(s,`${label}: no late-stage deals.`,"muted");
+    return log(s,"close.none",{src},"muted");
   }
   let closedCount=0,totalWon=0,totalDiscount=0,lost=0,lostVal=0;
   const pipPenalty=s.pip ? 0.05*(s.pipLevel||1) : 0;
@@ -171,7 +176,7 @@ export const tryCloseSome=(state,label="🧾 Negotiations")=>{
         nextDeals.push({
           ...d,
           mood:MOODS[moodIdx],
-          probNote:`roll ${pct(roll)}% vs ${pct(chance)}%`
+          probNote:DEAL_NOTES.roll(pct(roll),pct(chance))
         });
       }
     }
@@ -184,13 +189,13 @@ export const tryCloseSome=(state,label="🧾 Negotiations")=>{
   s.discounts+=totalDiscount;
 
   if(closedCount>0){
-    s=log(s,`${label}: ${closedCount} signed, ${money(totalWon)}. You keep ${money(totalWon*0.12)}.`);
-    if(totalWon>=65000)s=addAchievement(s,"whale","🐋 Whale Hunter");
+    s=log(s,"close.signed",{src,n:closedCount,won:totalWon,keep:Math.round(totalWon*0.12)});
+    if(totalWon>=65000)s=addAchievement(s,"whale");
   }else{
-    s=log(s,`${label}: nobody signed. Verbal commits only.`,"warn");
+    s=log(s,"close.nobody",{src},"warn");
   }
   if(lost>0){
-    s=log(s,`💀 Lost ${lost} late-stage deal(s), ${money(lostVal)}.`,"bad");
+    s=log(s,"close.lost",{n:lost,value:lostVal},"bad");
   }
   s=checkRepo(s);
   return s;

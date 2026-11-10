@@ -1,7 +1,7 @@
 import { QUARTER_WEEKS } from "./constants.js";
 import { checkRepo } from "./deals.js";
 import { log } from "./log.js";
-import { clamp, getQuarterInfo, money, pct } from "./util.js";
+import { clamp, getQuarterInfo, pct } from "./util.js";
 
 export const evaluateQuarter=(state)=>{
   let s={...state};
@@ -10,30 +10,30 @@ export const evaluateQuarter=(state)=>{
   const coverage=s.quota>0 ? s.pipeline/s.quota : 0;
   const mgr=s.manager;
 
-  let lines=[];
-  lines.push(`📊 Q${quarter} final: ${pct(perfQ)}% of quota.`);
+  let lines=[]; // [tag, params] of each line, in the order they are logged
+  lines.push(["qbr.final",{quarter,pct:pct(perfQ)}]);
 
   if(perfQ>=1){
     s.manager=clamp(s.manager+10,0,100);
     s.reputation=clamp(s.reputation+5,0,100);
     s.pip=false;
     s.pipLevel=0;
-    lines.push("🗣️ QBR: nods all around. No PIP.");
+    lines.push(["qbr.hit"]);
   }else if(perfQ>=0.8){
     s.manager=clamp(s.manager+(mgr>60?2:-3),0,100);
     if(mgr<40){
       if(!s.pip){
         s.pip=true;
         s.pipLevel=1;
-        lines.push("🗣️ QBR: soft PIP. More dashboards.");
+        lines.push(["qbr.pip"]);
       }else{
         s.pipLevel=Math.min(2,s.pipLevel+1);
-        lines.push("🗣️ QBR: PIP tightens. Milestones now fiction.");
+        lines.push(["qbr.pipUp"]);
       }
     }else if(mgr>70){
-      lines.push("🗣️ QBR: manager blames “macro.” You live.");
+      lines.push(["qbr.macro"]);
     }else{
-      lines.push("🗣️ QBR: passive-aggressive. You survive.");
+      lines.push(["qbr.survive"]);
     }
   }else{
     let fireChance=0.25;
@@ -46,15 +46,15 @@ export const evaluateQuarter=(state)=>{
     if(roll<fireChance){
       s.fired=true;
       s.endCause="qbr";
-      lines.push("🗣️ QBR became an exit interview.");
+      lines.push(["end.fired.qbr"]);
     }else{
       if(!s.pip){
         s.pip=true;
         s.pipLevel=1;
-        lines.push("📄 Dodged the axe. Landed on a PIP.");
+        lines.push(["qbr.dodged"]);
       }else{
         s.pipLevel=Math.min(2,s.pipLevel+1);
-        lines.push("📄 Barely kept the badge. PIP escalates.");
+        lines.push(["qbr.dodgedUp"]);
       }
       s.manager=clamp(s.manager-8,0,100);
     }
@@ -63,7 +63,7 @@ export const evaluateQuarter=(state)=>{
   if(!s.fired && perfQ>=1 && mgr<25 && Math.random()<0.06){
     s.fired=true;
     s.endCause="politics";
-    lines.push("🗡️ Hit quota, fired anyway. Politics.");
+    lines.push(["end.fired.politics"]);
   }
 
   if(!s.fired && s.manager<30 && s.pipeline>0 && Math.random()<0.35){
@@ -76,14 +76,14 @@ export const evaluateQuarter=(state)=>{
       return true;
     });
     s.pipeline=s.deals.reduce((sum,d)=>sum+d.value,0);
-    lines.push(`📉 Manager “reassigned” ${cut.length} big deal(s), ${money(total)}.`);
+    lines.push(["qbr.reassigned",{n:cut.length,value:total}]);
   }
 
   if(!s.fired && s.manager>75 && perfQ<1 && Math.random()<0.5){
     if(s.pip){
       s.pip=false;
       s.pipLevel=0;
-      lines.push("🪄 Manager likes you. PIP vanishes.");
+      lines.push(["qbr.pipGone"]);
     }
   }
 
@@ -94,22 +94,22 @@ export const evaluateQuarter=(state)=>{
     if(perfQ>=1){
       s.win=true;
       s.endCause="club";
-      lines.push("🏆 Number hit. President’s Club.");
+      lines.push(["end.club"]);
     }else if(perfQ>=0.7){
       s.missed=true;
       s.endCause="missed";
-      lines.push("😮‍💨 Under quota. Still employed.");
+      lines.push(["end.missed"]);
     }else{
       s.fired=true;
       s.endCause="qbr";
-      lines.push("🗣️ QBR: under 70%. Voted off the island.");
+      lines.push(["end.fired.under70"]);
     }
   }
 
   let acc=s;
   lines.forEach((line,idx)=>{
     const kind=idx===0?"info":(idx===lines.length-1 && (s.fired||s.burnedOut||s.repo)?"bad":"warn");
-    acc=log(acc,line,kind);
+    acc=log(acc,line[0],line[1],kind);
   });
   return acc;
 };
@@ -122,9 +122,9 @@ export const salaryAndBills=(state)=>{
   const {weekInQuarter}=getQuarterInfo(ns.week);
   if(weekInQuarter===1||weekInQuarter===5||weekInQuarter===9){
     ns.cash-=1600;
-    ns=log(ns,"🏠 Rent: -$1,600.","warn");
+    ns=log(ns,"pay.rent",null,"warn");
   }
-  ns=log(ns,"💸 Salary: +$1,000.");
+  ns=log(ns,"pay.salary");
   ns=checkRepo(ns);
   return ns;
 };
@@ -152,17 +152,17 @@ export const midQuarterRisk=(state, weekInQuarter)=>{
   if(shielded){
     // clean CRM: nothing for the manager to escalate this week
   }else if(ns.perfWarnings===0 && Math.random()<0.7){
-    ns=log(ns,"👀 Manager wants a meeting audit. “For forecasting.”","warn");
+    ns=log(ns,"risk.audit",null,"warn");
     ns.stress=clamp(ns.stress+4,0,100);
     ns.perfWarnings=1;
     warnedThisWeek=true;
   }else if(ns.perfWarnings===1 && Math.random()<0.6){
-    ns=log(ns,"📋 Surprise “pipeline hygiene” review.","warn");
+    ns=log(ns,"risk.hygiene",null,"warn");
     ns.stress=clamp(ns.stress+5,0,100);
     ns.perfWarnings=2;
     warnedThisWeek=true;
   }else if(ns.perfWarnings===2 && Math.random()<0.5){
-    ns=log(ns,"🧊 HR is on your next 1:1. Nobody mentions it.","warn");
+    ns=log(ns,"risk.hr",null,"warn");
     ns.stress=clamp(ns.stress+6,0,100);
     ns.perfWarnings=3;
     warnedThisWeek=true;
@@ -186,12 +186,12 @@ export const midQuarterRisk=(state, weekInQuarter)=>{
     if(roll<fireChance){
       ns.fired=true;
       ns.endCause=ns.perfWarnings>0 ? "review" : "org";
-      const msg = ns.perfWarnings>0
-        ? "📉 Forecast review became an exit meeting."
-        : "🪓 Surprise “org update.” You’re off the chart.";
-      ns=log(ns,msg,"bad");
+      const tag = ns.perfWarnings>0
+        ? "end.fired.review"
+        : "end.fired.org";
+      ns=log(ns,tag,null,"bad");
     }else if(!warnedThisWeek && ns.perfWarnings>0 && Math.random()<0.4){
-      ns=log(ns,"📆 Recurring meeting about you. Not invited.","warn");
+      ns=log(ns,"risk.recurring",null,"warn");
     }
   }
   return ns;

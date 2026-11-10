@@ -1,16 +1,18 @@
 import { ART, COLS, blink, clamp, easeOut, pick, prog, rep, rnd, stepParts } from "../core.js";
 import { SCENES } from "../registry.js";
+import { SCENE_COPY } from "../../../copy/scenes.js";
 import { SPR } from "../sprites.js";
 import { fxRandom } from "../../../fxrng.js";
 
 /* ---------------- BARELY MISSED: the bar stalls, then a long walk under a personal rain cloud ---------------- */
+var WORDS = SCENE_COPY.missed, TEXT = WORDS.text; // the words: captions, title card, summary; TEXT = the words in the picture
 SCENES.missed = {
   dur: 7400,
-  cap: { title:"BARELY MISSED", a:["70\u201399% to quota.","Badge kept. Ego not."], b:["Manager shrugs.","HR forgets your name."], tTitle:200, tA:900, tB:4800, k:"k-c", rule:"k-c-d" },
+  cap: { title:WORDS.title, a:WORDS.a, b:WORDS.b, tTitle:200, tA:900, tB:4800, k:"k-c", rule:"k-c-d" },
   cues: [
     {t:0, amb:"rain"},
     {t:2100, zoom:1.12, ms:520},
-    {t:2150, sfx:"stingerMissed", key:true}, {t:2150, card:"MISSED", ms:1300},
+    {t:2150, sfx:"stingerMissed", key:true}, {t:2150, card:WORDS.card, ms:1300},
     {t:2300, say:"missed", key:true},
     {t:3260, whip:"r", ms:380}, {t:3260, sfx:"fwip"},
     {t:6000, sfx:"umbrella"}, {t:6000, zoom:1.1, ms:650, fx:25, fy:6}
@@ -23,7 +25,7 @@ SCENES.missed = {
     {t:6900, x:-1, y:0,   z:1.16, r:0}
   ],
   drift: {x:1, z:.015, p:8000},
-  summary: "The quota bar stalls short, then a rain cloud follows you home.",
+  summary: WORDS.summary,
   draw: function(g,c){
     var t = c.t, st = c.st, pct = clamp(c.meta.pct || 0.85,0,1);
     if(t < 3450){
@@ -34,18 +36,18 @@ SCENES.missed = {
       if(fxRandom() < .9) st.dz.push({x:rnd(0,COLS+6),y:-0.5,vx:-3,vy:rnd(10,13),life:2500,ch:pick(["'","'",","]),k:"k-b-d"});
       stepParts(st.dz,c.dt,g,ART);
       var stalled = t > 2100;
-      g.text(7,3,"QUOTA","k-d");
+      g.text(7,3,TEXT.quota,"k-d");
       g.text(13,3,Math.round(shown*100)+"%",stalled ? "k-c k-bold" : "k-w");
       g.text(7,5,"["+rep("\u2588",f)+rep("\u2591",w-f)+"]",stalled ? "k-c" : "k-b");
       g.text(50,3,"|>","k-g"); g.set(50,4,"|","k-d"); g.set(50,5,"|","k-d"); g.text(50,6,"| 100%","k-d");
-      if(stalled && blink(t,260)) g.text(7,7,"STALLED","k-c-d");
+      if(stalled && blink(t,260)) g.text(7,7,TEXT.stalled,"k-c-d");
       return;
     }
     // shot 2: tracking shot down the street; rep and cloud stay framed, the street slides by
     var tau = (t-3450)/1000, v = 14, T = 2.45, q = clamp((tau-T)/.6,0,1);
     var ox = tau < T ? v*tau : v*T + v*.6*(q - q*q/2), O = Math.round(ox);
     // shop signs on the far side of the street (slower layer)
-    var so = ox*.6, signs = [[2,"CLOSED"],[27,Math.round(pct*100)+"% OFF"],[52,"LOANS"],[76,"CLOSED"]];
+    var so = ox*.6, signs = [[2,TEXT.closed],[27,TEXT.off(Math.round(pct*100))],[52,TEXT.loans],[76,TEXT.closed]];
     for(var s2=0;s2<signs.length;s2++){
       var gx = Math.round(signs[s2][0]-so), lab = signs[s2][1], bw = lab.length+4;
       if(gx >= COLS || gx+bw < 0) continue;

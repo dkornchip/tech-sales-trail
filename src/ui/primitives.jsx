@@ -1,5 +1,5 @@
 import React from "react";
-import { STAGE_NAMES } from "../game/constants.js";
+import { MOOD_NAMES, STAGE_NAMES, STAGE_UNKNOWN } from "../copy/names.js";
 import { clamp, money } from "../game/util.js";
 import { REDUCED_MOTION } from "./env.js";
 
@@ -52,15 +52,17 @@ export const Stat=({label,value,num,fmt,sub,barValue,barKind})=>{
 };
 
 export const DealCard=({deal})=>{
-  const stageName=STAGE_NAMES[deal.stage]||"Unknown";
+  const stageName=STAGE_NAMES[deal.stage]||STAGE_UNKNOWN;
   const moodClass="pill mood-"+deal.mood;
+  // a mood this build has no name for (a hand-edited save) shows as stored
+  const moodName=Object.prototype.hasOwnProperty.call(MOOD_NAMES,deal.mood) ? MOOD_NAMES[deal.mood] : deal.mood;
   return(
     <div className="deal">
       <div className="deal-header">
         <div className="deal-title">{deal.account}</div>
         <div className="pill-row">
           <span className="pill stage">{stageName}</span>
-          <span className={moodClass}>{deal.mood}</span>
+          <span className={moodClass}>{moodName}</span>
         </div>
       </div>
       <div className="deal-footer">
@@ -72,7 +74,9 @@ export const DealCard=({deal})=>{
 };
 
 // onDismiss: Esc may close it (info-only dialogs). Without it, Esc does nothing.
-export const Modal=({open,title,children,actions,onDismiss})=>{
+// dialogId: what this dialog is (data-dialog), so tests and code can find it without reading its title:
+// "evt:competitor", "evt:security", "ck:warning", "ck:lesson", "end:club" ... "end:repo", "help".
+export const Modal=({open,title,children,actions,onDismiss,dialogId})=>{
   const ref=useRef(null);
   const titleId=React.useId()+"t";
   useEffect(()=>{
@@ -84,7 +88,7 @@ export const Modal=({open,title,children,actions,onDismiss})=>{
     }
   },[open]);
   return(
-    <dialog ref={ref} aria-labelledby={titleId}
+    <dialog ref={ref} aria-labelledby={titleId} data-dialog={dialogId||undefined}
       onCancel={e=>{ if(!onDismiss)e.preventDefault(); }}
       onClose={()=>{
         if(onDismiss){ if(open)onDismiss(); return; }
