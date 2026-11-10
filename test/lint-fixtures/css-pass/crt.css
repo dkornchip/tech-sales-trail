@@ -1,0 +1,8 @@
+/* Fixture for scripts/lint-css.mjs: the CRT may glow. Literal colours, gradients, text-shadow and glow shadows are
+   allowed in this file (and in tokens.css, boot.css, claink.css). */
+.crt{
+  background:linear-gradient(180deg,#04110a,#020805);
+  text-shadow:0 0 5px currentColor;
+  box-shadow:0 0 18px rgba(56,255,140,.25);
+  color:#7dffb0;
+}
