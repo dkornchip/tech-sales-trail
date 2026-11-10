@@ -25,6 +25,8 @@
  *   --scenario <text>   only the scripted scenarios whose name contains <text> (and no policy sessions)
  *   --no-scenarios      skip the scripted scenarios
  *   --no-floors         do not enforce census floors
+ *   --strict-network    fail if build B requests anything but its own document (Google Fonts are otherwise
+ *                       answered with an empty body and only counted)
  *   --census            print the full census table
  *   --json <file>       also write a machine-readable summary
  *
@@ -55,6 +57,7 @@ function parseArgs(argv) {
     else if (a === '--scenario') o.scenarios = need(++i, a);
     else if (a === '--no-scenarios') o.scenarios = false;
     else if (a === '--no-floors') o.floors = false;
+    else if (a === '--strict-network') o.strictNetwork = true;
     else if (a === '--census') o.showCensus = true;
     else if (a === '--json') o.json = need(++i, a);
     else if (a === '--help' || a === '-h') { console.log(fs.readFileSync(__filename, 'utf8').split('*/')[0].replace(/^#!.*\n'use strict';\n\/\*\n?/, '').replace(/^ \* ?/gm, '')); process.exit(0); }

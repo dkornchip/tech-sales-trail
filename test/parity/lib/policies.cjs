@@ -122,7 +122,7 @@ const POLICIES = {
 };
 
 // Moves every policy makes now and then, whatever it is doing.
-const META = { save: 0.25, load: 0.2, reload: 0.12, newgame: 0.05, 'ui:rules': 0.06, 'ck:minimize': 0.15, 'ck:expand': 0.5, 'ck:ad-min': 0.15, 'ck:ad-expand': 0.4 };
+const META = { save: 0.25, load: 0.15, reload: 0.035, newgame: 0.04, 'ui:rules': 0.06, 'ck:minimize': 0.15, 'ck:expand': 0.5, 'ck:ad-min': 0.15, 'ck:ad-expand': 0.4 };
 
 function pickWeighted(weights, rng) {
   const keys = Object.keys(weights).filter(k => weights[k] > 0).sort();
@@ -153,7 +153,7 @@ function choose(policyName, ctx) {
   if (ctx.dialog) {
     // Only the dialog's buttons are legal. Take any option; at an ending, usually start a new run, sometimes
     // reload first (an ending must survive a reload).
-    for (const m of legal) w[m] = m === 'reload' ? 0.06 : 1;
+    for (const m of legal) w[m] = m === 'reload' ? 0.03 : 1;
     return pickWeighted(w, ctx.rng);
   }
 
@@ -163,7 +163,7 @@ function choose(policyName, ctx) {
     if (META[m] !== undefined && policyName !== 'chaos') w[m] = Math.max(w[m], META[m]);
     if (!(w[m] >= 0)) w[m] = 0;
   }
-  if (policyName === 'chaos') { w.newgame = 0.05; w.load = 0.2; w.reload = 0.08; w.save = 0.2; w['ui:rules'] = 0.1; }
+  if (policyName === 'chaos') { w.newgame = 0.05; w.load = 0.2; w.reload = 0.03; w.save = 0.2; w['ui:rules'] = 0.1; }
   // Nothing but meta moves left to press: end the week instead of saving and loading for ever.
   const real = legal.filter(m => /^(act:|hail$|ck:run$)/.test(m) && w[m] > 0.2);
   if (!real.length && legal.includes('end')) w.end = Math.max(w.end || 0, 60);

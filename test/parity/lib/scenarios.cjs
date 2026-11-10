@@ -182,7 +182,8 @@ add({ name: 'repo-threshold~lo', save: save({ week: 5, cash: -900 }), steps: [{ 
 add({ name: 'repo-threshold~hi', save: save({ week: 5, cash: -899, closedQuarter: 80000 }), steps: [{ m: 'end', q: q() }], probe: ['repo-threshold', 'hi'] });   // -1499: stays
 
 /* ---------------------------------------------------------------- clAInk (game.jsx:1041-1449) */
-const ckDeals = () => [D(3, 18000, 'happy'), D(2, 9000), D(1, 7000), D(0, 6000)];
+// deliberately NOT in rank order (stage, then value), so anything that sorts s.deals in place shows up
+const ckDeals = () => [D(1, 7000), D(3, 18000, 'happy'), D(0, 6000), D(2, 9000)];
 const C = (ck, over) => save(Object.assign({ cash: 5000, closedQuarter: 30000, deals: ckDeals(), claink: Object.assign({ status: 'active' }, ck || {}) }, over || {}));
 // run draws: miracle?, manager?, incident?, which incident, then sizes (game.jsx:1418)
 const RUN = (miracle, mgr, inc, kind, rest) => q(miracle, mgr, inc, kind, rest === undefined ? [0, 0.5, 0.5] : rest);
@@ -302,6 +303,9 @@ probe('conference-big-lead', () => save({ cash: 3000 }), v => [{ m: 'act:confere
 // every action once, from a rested start, in an order that leaves energy for each
 add({ name: 'actions-energy-limits', save: save({ energy: 29 }), steps: [{ m: 'save', x: { illegal: ['act:prospect', 'act:conference'], legal: ['act:demo', 'act:close', 'act:propose', 'act:cadence'] } }] });
 add({ name: 'actions-slot-limits', save: save({ slots: 1 }), steps: [{ m: 'save', x: { illegal: ['act:conference'], legal: ['act:prospect'] } }, { m: 'act:politics', x: { illegal: ['act:prospect', 'act:coffee', 'act:recharge', 'hail'], legal: ['end'] } }] });
+// no scripted queue at all: these three moves are answered by the seeded stream (the selftest uses this one to show
+// that a different seed changes the outcome of a scenario, too)
+add({ name: 'unscripted-moves', save: save({ deals: leads(6, 0) }), steps: ['act:prospect', 'act:discovery', 'act:network'] });
 add({ name: 'rules-dialog', save: save(), steps: [{ m: 'ui:rules', x: { dialog: 'help' } }, { m: 'dlg:0', x: { dialog: null } }] });
 add({ name: 'new-game-from-header', save: save({ week: 7, cash: 9000 }), steps: [{ m: 'newgame', x: { state: s => s.week === 1 && s.cash === 1200 && s.claink.status === 'ad' } }, 'save', 'act:prospect', { m: 'load', x: { state: s => s.week === 1 && s.deals.length === 0 } }] });
 
@@ -317,8 +321,26 @@ legacy('wrong-quota', Object.assign(save({ week: 2 }), { quota: 999 }), [{ m: 's
 legacy('ended-run', save({ week: 9, fired: true, endCause: 'org' }), [{ m: 'newrun', x: { state: s => s.week === 1 } }]);
 legacy('ended-run-no-cause', (() => { const s = save({ week: 13, burnedOut: true }); delete s.endCause; return s; })(), [{ m: 'reload', x: { dialog: 'end:meltdown' } }]);
 
+/* ---------------------------------------------------------------- late-game starts for the policy sessions */
+// Weighted random play rarely survives the mid-quarter reviews, so on its own it almost never sees weeks 9-13 or
+// a QBR. Policy sessions therefore drop into one of these now and then (and every other session STARTS from one,
+// written to localStorage before the game's first script runs). From there the play is random again, so the
+// late weeks and the QBR are reached with many different states rather than the scripted few.
+const LATE_STARTS = [
+  () => save({ week: 9, closedQuarter: 98000, cash: 6200, manager: 56, deals: [D(3, 21000), D(2, 14000), D(4, 26000, 'happy'), D(1, 9000), D(0, 7000)] }),
+  () => save({ week: 11, closedQuarter: 126000, cash: 9000, manager: 47, reputation: 52, deals: [D(3, 19000), D(4, 24000), D(2, 12000, 'curious')], skills: { negotiate: 34, discovery: 45 } }),
+  () => save({ week: 12, closedQuarter: 152000, cash: 12000, manager: 22, deals: [D(3, 16000), D(4, 22000, 'happy'), D(2, 8000)] }),
+  () => save({ week: 12, closedQuarter: 104000, cash: 4000, manager: 79, pip: true, pipLevel: 1, deals: [D(3, 30000), D(3, 18000), D(1, 9000)] }),
+  () => save({ week: 10, closedQuarter: 61000, cash: 2500, manager: 31, perfWarnings: 2, deals: [D(2, 22000), D(3, 31000), D(1, 12000), D(0, 6000, 'skeptical')] }),
+  () => save({ week: 8, closedQuarter: 72000, cash: 2600, manager: 52, deals: [D(3, 17000), D(2, 11000), D(1, 8000)], claink: { status: 'active', strikes: 1, deploys: 2, fakes: 1, miracles: 1, billed: 1500 } }),
+  () => save({ week: 13, closedQuarter: 141000, cash: 8000, manager: 58, deals: [D(4, 21000, 'happy'), D(3, 15000), D(3, 12000)] }),
+  () => save({ week: 12, closedQuarter: 118000, cash: 3200, manager: 44, deals: [D(4, 28000), D(3, 20000), D(2, 9000)], claink: { status: 'active', strikes: 2, deploys: 4, fakes: 2, billed: 2600, mgr: { noticed: true } } }),
+  () => save({ week: 13, closedQuarter: 166000, cash: 15000, manager: 27, deals: [D(2, 14000), D(1, 6000)] }),
+  () => save({ week: 7, closedQuarter: 30000, cash: -600, manager: 38, repoWarned: false, deals: [D(3, 26000), D(2, 15000), D(0, 5000)] })
+];
+
 for (const sc of list) if (!sc.save) throw new Error('scenario ' + sc.name + ' has no save');
 const names = new Set();
 for (const sc of list) { if (names.has(sc.name)) throw new Error('duplicate scenario ' + sc.name); names.add(sc.name); }
 
-module.exports = { SCENARIOS: list, save, D, CK, HI, LO };
+module.exports = { SCENARIOS: list, LATE_STARTS, save, D, CK, HI, LO };

@@ -10,7 +10,7 @@ const { loadDriver } = require('../drivers/interface.cjs');
 const { runSession, formatFailure, fnv } = require('./runner.cjs');
 const { Census, FLOORS, ORGANIC_FLOORS, SOUND_FLOORS } = require('./census.cjs');
 const { POLICY_NAMES } = require('./policies.cjs');
-const { SCENARIOS } = require('./scenarios.cjs');
+const { SCENARIOS, LATE_STARTS } = require('./scenarios.cjs');
 
 const SCENARIO_CHUNK = 40;
 
@@ -33,6 +33,7 @@ const parseFx = v => (v === undefined || v === 'seeded' ? { mode: 'seeded', seed
  *   fx              { mode, ... } the cosmetic stream (default seeded)
  *   sound           compare sound traces as well
  *   workers         A/B pairs in flight (default 1, which is two browser pages)
+ *   strictNetwork   fail if B requests anything but its own document (today it still asks for Google Fonts)
  *   maxFailures     stop starting sessions after this many failures (default 3)
  *   floors          'auto' (default: enforce when the run set is the standard one) | true | false
  *   seedOffsetB, flavorB, fxB           selftest: deliberately different dice / flavor / cosmetic stream for B
@@ -86,13 +87,16 @@ async function runAll(opts) {
         const id = `${p}#${s}`;
         sessions.push({
           id, kind: 'policy', seed: fnv('dice:' + id), policy: p, scenarios: null, maxMoves, motion, fx,
+          lateStarts: LATE_STARTS,
+          // every other session starts from a crafted late-game save instead of a fresh run
+          startSave: s % 2 ? LATE_STARTS[fnv('start:' + id) % LATE_STARTS.length]() : null,
           repro: step => `node test/parity/run.cjs --no-scenarios --policy ${p} --from ${s} --seeds 1 --max-moves ${step} --motion ${motion}${flags}`
         });
       }
     }
   }
 
-  const env = { buildA, buildB, driverA, driverB, sound: !!opts.sound, roundMs: opts.roundMs, maxRounds: opts.maxRounds,
+  const env = { buildA, buildB, driverA, driverB, sound: !!opts.sound, roundMs: opts.roundMs, maxRounds: opts.maxRounds, strictNetwork: !!opts.strictNetwork,
     seedOffsetB: opts.seedOffsetB, flavorB: opts.flavorB, fxB: opts.fxB };
 
   /* ---- the pool ---- */
@@ -149,7 +153,12 @@ async function runAll(opts) {
     if (driverB.benign.includes('recharge-when-rested')) delete floors['act.recharge.again'];
     unmet = census.unmet(floors).map(u => Object.assign(u, { set: 'all sessions' }));
     if (opts.full) unmet = unmet.concat(organic.unmet(ORGANIC_FLOORS).map(u => Object.assign(u, { set: 'policy sessions only' })));
-    if (opts.sound) unmet = unmet.concat(census.unmet(SOUND_FLOORS).map(u => Object.assign(u, { set: 'sound' })));
+    if (opts.sound) {
+      const sf = Object.assign({}, SOUND_FLOORS);
+      // the filler line is a 30% cosmetic roll: with the cosmetic stream pinned at or above 0.3 it is never asked for
+      if (fx.mode === 'const' && fx.value >= 0.3) delete sf['snd.say.filler'];
+      unmet = unmet.concat(census.unmet(sf).map(u => Object.assign(u, { set: 'sound' })));
+    }
     if (opts.flavorB === undefined && (notes.flavorA === 0 || notes.flavorB === 0)) problems.push(`the pinned clAInk flavor stream was never read (A ${notes.flavorA} calls, B ${notes.flavorB}): token fields were compared vacuously`);
   }
   if (steps === 0 && !failures.length) problems.push('no step was compared');

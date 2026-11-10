@@ -19,9 +19,14 @@
 const { Side } = require('./side.cjs');
 const { normalise, stripAllowed, diff } = require('./normalise.cjs');
 const { ADDITIVE_KEYS, BENIGN_RULES } = require('./allowlist.cjs');
-const { Census, isOver } = require('./census.cjs');
+const { Census, isOver, plain } = require('./census.cjs');
 const { choose, mulberry } = require('./policies.cjs');
 const { withReload } = require('../drivers/interface.cjs');
+
+// How often a policy session drops into a late-game save instead of making a move.
+const LATE_RATE = 0.012;
+// Extra settle rounds after an ending opens, in --sound runs.
+const ENDING_ROUNDS = 5;
 
 // Moves that only rearrange the interface. Asserted per build: no draw, no change to the normalised state.
 const UI_ONLY = new Set(['ck:cta', 'ck:notnow', 'ck:cancel', 'ck:keep', 'ck:minimize', 'ck:expand', 'ck:ad-min', 'ck:ad-expand', 'ui:rules', 'save']);
@@ -54,7 +59,7 @@ class Script {
 
 /*
  * spec  { id, seed, policy, scenarios, maxMoves, motion, fx, startSave, repro(step) }
- * env   { buildA, buildB, driverA, driverB, sound, roundMs, maxRounds,
+ * env   { buildA, buildB, driverA, driverB, sound, roundMs, maxRounds, strictNetwork,
  *         seedOffsetB, flavorB, fxB        (selftest only: deliberately different dice / flavor / cosmetic stream in B)
  *         onStep(info)                     (optional progress hook) }
  * Resolves to { ok, id, steps, draws, failure, census, scenarioEnds, notes, ms }.
@@ -138,6 +143,8 @@ async function runSession(browser, spec, env) {
       if (!s.audio || !s.audio.on || !s.audio.voice) return failWith('trouble', [`${side}: sound or announcer is off (${JSON.stringify(s.audio)}); the sound engine would decide nothing`]);
     }
     if (compare()) return result;
+    census.sound(a.sound, a.speech);      // what the boot screen played
+    if (env.strictNetwork && B.net.fonts) return failWith('trouble', [`B made ${B.net.fonts} network request(s) besides its own document (Google Fonts)`]);
 
     const script = spec.scenarios && spec.scenarios.length ? new Script(spec.scenarios) : null;
     const rng = mulberry(fnv('pick:' + spec.id));
@@ -152,6 +159,11 @@ async function runSession(browser, spec, env) {
       if (scripted) {
         pick = script.next(a.dialog);
         if (!pick) { scripted = false; if (!spec.policy) break; }
+      }
+      if (!pick && spec.lateStarts && legal.includes('load') && rng() < LATE_RATE) {
+        // drop into a late-game save (see LATE_STARTS in lib/scenarios.cjs); the dice carry on where they are
+        const k = Math.floor(rng() * spec.lateStarts.length);
+        pick = { move: 'inject:late-' + k, save: spec.lateStarts[k](), keepDice: true };
       }
       if (!pick) pick = { move: choose(spec.policy, { legal, state: stateA, dialog: a.dialog, rng, mem, step }) };
       move = pick.move;
@@ -169,8 +181,8 @@ async function runSession(browser, spec, env) {
         if (isInject) {
           // A scenario starts from its own dice as well as its own save, so it plays out the same whether it runs
           // alone (--scenario) or in the middle of the suite.
-          const dice = fnv('scenario:' + pick.scenario);
-          await Promise.all([A.inject(pick.save, dice), B.inject(pick.save, (dice + (env.seedOffsetB || 0)) >>> 0)]);
+          const dice = pick.keepDice ? null : fnv('scenario:' + pick.scenario);
+          await Promise.all([A.inject(pick.save, dice), B.inject(pick.save, dice === null ? null : (dice + (env.seedOffsetB || 0)) >>> 0)]);
         }
         [a, b] = await Promise.all([A.step(domMove, pick.queue), B.step(domMove, pick.queue)]);
         // Both builds must have lived through the same amount of fake time, or cooldowns and timestamps drift.
@@ -183,10 +195,20 @@ async function runSession(browser, spec, env) {
           if (lag === 'a') a = more; else b = more;
         }
       }
+      // With --sound, an ending gets to play out: its cutscene cues run for about nine seconds, and the next move
+      // (New Run) would otherwise cut them off half way.
+      if (env.sound && a.dialog && /^end:/.test(a.dialog.id) && !(prevDialog && prevDialog.id === a.dialog.id) && a.settled && b.settled) {
+        const [ma, mb] = await Promise.all([A.extra(ENDING_ROUNDS), B.extra(ENDING_ROUNDS)]);
+        for (const [old, more] of [[a, ma], [b, mb]]) {
+          more.sound = old.sound.concat(more.sound); more.speech = old.speech.concat(more.speech); more.logs = old.logs.concat(more.logs);
+          more.logsSwapped = old.logsSwapped; more.rounds = old.rounds + ENDING_ROUNDS;
+        }
+        a = ma; b = mb;
+      }
       result.steps++;
       if (compare()) return result;
       // draws compared: the dice restart at every reload and every scenario
-      result.draws += move === 'reload' || isInject ? a.draws : Math.max(0, a.draws - prevDrawsA);
+      result.draws += move === 'reload' || (isInject && !pick.keepDice) ? a.draws : Math.max(0, a.draws - prevDrawsA);
 
       // 7. per-build invariants
       const uiOnly = UI_ONLY.has(move) || (move === 'dlg:0' && prevDialog && prevDialog.id === 'help');
@@ -205,9 +227,10 @@ async function runSession(browser, spec, env) {
 
       // 9. did the baseline go where the scenario says it should?
       if (pick.expect) {
-        const x = pick.expect, msgs = a.logsSwapped ? [] : a.logs.map(l => l.msg), bad = [];
-        for (const t of x.log || []) if (!msgs.some(m => m.indexOf(t) >= 0)) bad.push(`expected a log line containing ${JSON.stringify(t)}; got ${JSON.stringify(msgs)}`);
-        for (const t of x.nolog || []) if (msgs.some(m => m.indexOf(t) >= 0)) bad.push(`expected NO log line containing ${JSON.stringify(t)}`);
+        // (plain(): an emoji with and without its variation selector is the same emoji)
+        const x = pick.expect, msgs = a.logsSwapped ? [] : a.logs.map(l => plain(l.msg)), bad = [];
+        for (const t of x.log || []) if (!msgs.some(m => m.indexOf(plain(t)) >= 0)) bad.push(`expected a log line containing ${JSON.stringify(t)}; got ${JSON.stringify(msgs)}`);
+        for (const t of x.nolog || []) if (msgs.some(m => m.indexOf(plain(t)) >= 0)) bad.push(`expected NO log line containing ${JSON.stringify(t)}`);
         if ('dialog' in x && (a.dialog ? a.dialog.id : null) !== x.dialog) bad.push(`expected dialog ${x.dialog}, got ${a.dialog ? a.dialog.id : null}`);
         if ('cause' in x && stateA.endCause !== x.cause) bad.push(`expected endCause ${x.cause}, got ${stateA.endCause}`);
         for (const k of x.hits || []) if (!hits.includes(k)) bad.push(`expected census key ${k}; this step hit ${hits.join(' ')}`);

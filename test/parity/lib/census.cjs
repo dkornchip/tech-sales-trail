@@ -38,9 +38,14 @@ const LOG_RULES = [
   ['qbr.reassigned', '📉 Manager “reassigned”'], ['qbr.pip-vanishes', '🪄'],
   // clAInk
   ['ck.install', '🤖 clAInk seat live'], ['ck.dismissed', '🙅'], ['ck.expired', '⏳'], ['ck.miracle', '✨'],
-  ['ck.strike.clean', '⚖️ Strike'], ['ck.strike.hurt', '💥 Strike'], ['ck.revoked', '🔒 Strike 3/3'], ['ck.farewell', '💔'],
+  // (the baseline builds these two from a template, `${hurt?"💥":"⚖️"} Strike`; the third entry is what to look
+  // for in its source when checking that this table is still in step with it)
+  ['ck.strike.clean', '⚖️ Strike', '"⚖️"} Strike'], ['ck.strike.hurt', '💥 Strike', '?"💥":'], ['ck.revoked', '🔒 Strike 3/3'], ['ck.farewell', '💔'],
   ['ck.cancelled', '🔌'], ['ck.invoice', '🧾 clAInk invoice'], ['ck.mgr.yoink', '👔 Boss took'], ['ck.mgr.circleback', "👔 'ChatGDP again?'"], ['ck.mgr.warning', '👔']
 ];
+
+// Emoji with and without the variation selector are the same emoji.
+const plain = t => String(t).replace(/\uFE0F/g, '');
 
 const INCIDENT_BY_WHO = { 'Marketing Ops': 'slop', Legal: 'discount', 'IT Security': 'leak', 'Customer Success': 'churn' };
 const isOver = s => !!(s && (s.fired || s.burnedOut || s.win || s.missed || s.repo));
@@ -110,9 +115,9 @@ class Census {
       if (cur && cur.claink && cur.claink.status === 'active') hit('reload.with-seat');
     }
     // A swapped log (load, new run, new game, reload) is history, not something this step did.
-    const lines = snap.logsSwapped ? [] : snap.logs.map(l => l.msg);
+    const lines = snap.logsSwapped ? [] : snap.logs.map(l => plain(l.msg));
     for (const msg of lines) {
-      for (const [key, prefix] of LOG_RULES) { if (msg.indexOf(prefix) === 0) { hit(key); break; } }
+      for (const [key, prefix] of LOG_RULES) { if (msg.indexOf(plain(prefix)) === 0) { hit(key); break; } }
       if (msg.indexOf('🧾 clAInk invoice') === 0) {
         if (/Idle agents/.test(msg)) hit('ck.invoice.idle');
         if (/looped all weekend/.test(msg)) hit('ck.invoice.overage');
@@ -126,7 +131,7 @@ class Census {
     // An ending that this step caused.
     if (cur && isOver(cur) && prev && !isOver(prev) && !/^(inject:|load$|reload$|newgame$|newrun$)/.test(move)) {
       const cause = cur.endCause || 'unknown';
-      const has = t => lines.some(m => m.indexOf(t) >= 0);
+      const has = t => lines.some(m => m.indexOf(plain(t)) >= 0);
       if (cause === 'stress') hit(has('☢️ Stress 100') ? 'end.stress.instant' : has('Weekend didn’t help') ? 'end.stress.weekend' : 'end.stress.other');
       else if (cause === 'repo') hit(move === 'end' && has('🏠 Rent') ? 'end.repo.rent' : 'end.repo.spend');
       else if (cause === 'qbr') { hit('end.qbr'); hit(has('exit interview') ? 'end.qbr.roll' : has('under 70%') ? 'end.qbr.under70' : 'end.qbr.other'); }
@@ -137,10 +142,12 @@ class Census {
 
   // The baseline's sound intents for one step ("play:<name>", "play:<name>!drop", "say:<key>", "say:<key>!drop")
   // and the lines it actually spoke. Kept under snd.* so the mechanical table stays readable.
+  // snd.play.<name> / snd.say.<key> count every intent, dropped or not; snd.dropped.* count the dropped ones.
   sound(intents, speech) {
     for (const e of intents || []) {
       const dropped = /!drop$/.test(e), id = e.replace(/!drop$/, '').replace(':', '.');
-      this.hit(dropped ? 'snd.dropped.' + id.split('.')[0] : 'snd.' + id);
+      this.hit('snd.' + id);
+      if (dropped) this.hit('snd.dropped.' + id.split('.')[0]);
     }
     if (speech && speech.length) this.hit('snd.spoken', speech.length);
   }
@@ -175,6 +182,32 @@ const ORGANIC_FLOORS = {};
 /*
  * Floors for --sound: the sound engine's decisions that must have been exercised for the trace to mean anything.
  */
-const SOUND_FLOORS = {};
+const SOUND_PRESETS = [
+  'achievement airport alarm bad beep beeper bowl bsod busy cash ceiling chime chirp clank',
+  'click coffee coin crack crm demo dial discount doors drop elevator engine fanfareS fire',
+  'fumble fwip geiger ghost glitch hailmary heartbeat honk hr hrSoft ice ignition key leads',
+  'liftoff load lost magic meltdown modal newgame nope pa ping plane pop powerdown poweroff',
+  'printer puzzle rent rise rumble sadHorn save screech seatbelt shield shing sick slag sneaky',
+  'sonar sparkle stamp step stingerAscend stingerClub stingerFired stingerMelt stingerMissed stingerRepo suspicion thud thunder thwack',
+  'tick ticktock typewriter umbrella warn week whoosh',
+  // the boot screen's own cues
+  'bootHum loadStart errBeep'
+].join(' ').split(' ');
+const SOUND_LINES = [
+  'bigClose burnout burnoutCaffeine cash chatgdp claink clainkRevoked closeOut club competitor fired firedOrg',
+  'firedReview freeze hr hydrate hygiene incident meetings missed newrun outage phones rebalance',
+  'repo repoClaink sev1 sqlStorm strike viral week12 week13 week5 week7 welcome yoink',
+  'boot filler'
+].join(' ').split(' ');
+const SOUND_FLOORS = { 'snd.dropped.play': 1, 'snd.dropped.say': 1, 'snd.spoken': 100 };
+for (const n of SOUND_PRESETS) SOUND_FLOORS['snd.play.' + n] = 1;
+for (const k of SOUND_LINES) SOUND_FLOORS['snd.say.' + k] = 1;
+/*
+ * Not on the list, because the baseline never produces them in play (checked against audio.js / scenes.js):
+ *   presets  qbr            its log line is only ever written by the QBR, which ends the run, and the log director
+ *                           is silent on a batch that ends the run (audio.js:527)
+ *            denied, stingerBurnout, flatline    defined, never cued
+ *   lines    whale          a whale always closes $65k+, so "bigClose" (same priority, earlier line) takes the PA
+ */
 
-module.exports = { Census, FLOORS, ORGANIC_FLOORS, SOUND_FLOORS, LOG_RULES, isOver };
+module.exports = { Census, FLOORS, ORGANIC_FLOORS, SOUND_FLOORS, LOG_RULES, isOver, plain };

@@ -65,7 +65,7 @@ class Side {
     if (!boot.settled) this.trouble.push('the page did not settle after loading');
     this.boots.push(boot);
     // seed ^ reloadIndex: the same dice in both builds after every reload, and not the dice of the previous load
-    const arm = await this.page.evaluate(([s, f]) => window.__parity.arm(s, f, true), [(this.seed ^ this.reloads) >>> 0, this.flavor]);
+    const arm = await this.page.evaluate(([s, f]) => window.__parity.arm(s, f), [(this.seed ^ this.reloads) >>> 0, this.flavor]);
     this.audio = arm.audio;
     return this.page.evaluate(() => window.__parity.snapshot());
   }
@@ -83,9 +83,9 @@ class Side {
     return snap;
   }
 
-  // Put a crafted save where the Load button will find it, and restart the dice from `dice`.
+  // Put a crafted save where the Load button will find it; with `dice`, also restart the dice from that seed.
   inject(save, dice) {
-    return this.page.evaluate(([j, d]) => { window.__parity.writeSave('manual', j); window.__rngReset(d); return true; }, [JSON.stringify(save), dice >>> 0]);
+    return this.page.evaluate(([j, d]) => { window.__parity.writeSave('manual', j); if (d !== null) window.__rngReset(d); return true; }, [JSON.stringify(save), dice === undefined || dice === null ? null : dice >>> 0]);
   }
 
   // Everything that went wrong on this side since the last call.

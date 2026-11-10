@@ -58,6 +58,11 @@ module.exports = function parityInPage(cfg) {
   W.__TST_FX = () => { fxDraws++; return fxStream(); };
 
   /* ------------------------------------------------------------------ 2. the clock */
+  // Why not Playwright's page.clock: its runFor() waits on a real setTimeout after every fake timer it fires, and
+  // Chromium clamps nested timeouts to 4 ms. With motion on, one move starts a few hundred animation-frame
+  // callbacks (the stat tweens, an ending's cutscene), so a step cost about 290 ms of real time there; here it
+  // costs a few. This clock also lives in the page, so a whole step (press, settle, read) is one round trip.
+  // The contract is the same: time stands still at a fixed instant and only moves when runFor() is called.
   // Wall time survives a reload through sessionStorage (the game only ever reads its own "tst-booted" key there),
   // so log timestamps and run ids keep moving forward the way they would for a player.
   let wall = cfg.epoch;
@@ -65,14 +70,16 @@ module.exports = function parityInPage(cfg) {
   let ticks = 0;              // performance.now(): milliseconds since this document started
   let timerSeq = 1;
   const timers = new Map();   // id -> {id, at, fn, args, every, raf}
+  // Delays are whole milliseconds, as in a browser (the sound engine asks for fractional ones). That keeps every
+  // timer on an integer tick, so the two builds' clocks can be compared exactly, with no floating-point drift.
   const addTimer = (fn, delay, args, every, raf) => {
     const id = timerSeq++;
-    timers.set(id, { id, at: ticks + Math.max(0, Number(delay) || 0), fn, args, every, raf });
+    timers.set(id, { id, at: ticks + Math.max(0, Math.trunc(Number(delay) || 0)), fn, args, every, raf });
     return id;
   };
   const dropTimer = id => { timers.delete(id); };
   W.setTimeout = (fn, delay, ...args) => addTimer(fn, delay, args, 0, false);
-  W.setInterval = (fn, delay, ...args) => addTimer(fn, delay, args, Math.max(1, Number(delay) || 0), false);
+  W.setInterval = (fn, delay, ...args) => addTimer(fn, delay, args, Math.max(1, Math.trunc(Number(delay) || 0)), false);
   W.clearTimeout = dropTimer;
   W.clearInterval = dropTimer;
   W.requestAnimationFrame = fn => addTimer(fn, 16 - (ticks % 16), [], 0, true);   // frames land on 16 ms boundaries
@@ -230,6 +237,7 @@ module.exports = function parityInPage(cfg) {
   /* ------------------------------------------------------------------ 4. the step */
   const drv = () => { if (!W.__drv) throw new Error('parity: no driver installed in this page'); return W.__drv; };
   let flavorCalls = 0, soundHooked = false;
+  const hookSound = () => { if (!soundHooked) { drv().soundInstall(sink); soundHooked = true; } };
   let lastTop = null;         // id of the newest log line already reported
 
   const rawState = () => { const s = drv().readState(); return s && typeof s === 'object' ? s : null; };
@@ -294,16 +302,24 @@ module.exports = function parityInPage(cfg) {
       if (!mounted) return { mounted: false };
       let bootSeen = false;
       await realTicks(3);
-      for (let i = 0; i < 4 && drv().bootOpen(); i++) { bootSeen = true; drv().bootDismiss(); await realTicks(3); await runFor(700); await realTicks(3); }
+      if (drv().bootOpen()) {
+        bootSeen = true;
+        hookSound();          // the boot screen has sound cues of its own; they belong in the trace
+        // First press ("Clock in") starts the boot animation. It runs 1.7 s and closes itself 0.4 s later (2 s
+        // later under reduced motion), so three seconds see it through. If the overlay is still up after that,
+        // press again ("Skip").
+        drv().bootDismiss();
+        await realTicks(3); await runFor(3000); await realTicks(3);
+        for (let i = 0; i < 3 && drv().bootOpen(); i++) { drv().bootDismiss(); await realTicks(3); await runFor(700); await realTicks(3); }
+      }
       const st = await settle(roundMs, maxRounds);
       return { mounted: true, bootSeen, bootStillOpen: !!drv().bootOpen(), settled: st.settled, earlyDraws: draws, early: early.slice(), wall };
     },
     // Called after boot and after every reload, in both builds, with the same arguments.
-    arm(seed, flavorValue, traceSound) {
+    arm(seed, flavorValue) {
       W.__rngReset(seed);
       drv().pinFlavor(() => { flavorCalls++; return flavorValue; });
-      if (traceSound && !soundHooked) { drv().soundInstall(sink); soundHooked = true; }
-      trace.length = 0; spoken.length = 0; lastPlay = lastSay = null;
+      hookSound();
       const s = rawState();
       lastTop = s && Array.isArray(s.logs) && s.logs.length ? s.logs[0].id : null;
       return { audio: drv().audioState() };
