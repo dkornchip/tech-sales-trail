@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Tech Sales Trail</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>/*__TST_CSS__*/</style>
+</head>
+<body>
+  <div class="aurora" aria-hidden="true"></div>
+  <div class="gridfloor" aria-hidden="true"></div>
+
+  <div class="container">
+    <header>
+      <div class="title">
+        <h1><span class="logo-emoji">🧭</span><span class="grad-text">Tech Sales Trail</span></h1>
+        <span class="chip">Matt, 25 • SDR @ <strong>Shitcorp</strong></span>
+      </div>
+      <div class="row">
+        <div class="snd" role="group" aria-label="Sound">
+          <button id="snd-toggle" class="pill-btn snd-btn" type="button" aria-pressed="true" title="Sound on or off (M)" data-nosfx><span class="ico" aria-hidden="true">&#x1F50A;</span><span class="lbl">Sound</span></button>
+          <button id="voice-toggle" class="pill-btn snd-btn" type="button" aria-pressed="true" title="Office PA announcer on or off"><span class="ico" aria-hidden="true">&#x1F4E2;</span><span class="lbl">Announcer</span></button>
+          <input id="snd-vol" class="snd-vol" type="range" min="0" max="100" step="5" value="60" aria-label="Volume" title="Volume">
+        </div>
+        <button id="new-game" class="btn ghost">New Game</button>
+        <button id="save" class="btn ghost">Save</button>
+        <button id="load" class="btn ghost">Load</button>
+      </div>
+    </header>
+    <div id="root"></div>
+  </div>
+
+  <script>/*__TST_JS__*/</script>
+</body>
+</html>
