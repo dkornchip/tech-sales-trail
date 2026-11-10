@@ -223,7 +223,12 @@ module.exports = function parityInPage(cfg) {
   // html{opacity:0}: nothing here ever looks at pixels, and painting them was most of the cost of a step (software
   // raster of a 1440x900 page after every move: about 15 ms a step with it, about 6 ms without). Layout, style
   // and visibility are untouched: opacity is not part of "can a player press this" (see usable() in the driver).
+  //
+  // cfg.calm === false leaves the page's CSS alone. Only test/e2e/layout.cjs asks for that: it measures the page a
+  // player sees (and looks for animations that never stop), so it cannot have the animations switched off. The
+  // parity runs never set it.
   const calm = () => {
+    if (cfg.calm === false) return;
     if (!document.documentElement || document.getElementById('__parity_calm')) return;
     const st = document.createElement('style');
     st.id = '__parity_calm';
@@ -264,6 +269,9 @@ module.exports = function parityInPage(cfg) {
       dialog: obs.dialog, legal: obs.legal.slice().sort(),
       sound: drainTrace(), speech: spoken.splice(0),
       wall, rngIntact: Math.random === random, thrown: thrown.splice(0),
+      // clAInk's window, as a canonical id (drivers/interface.cjs, "the e2e surface"). Optional in a driver, and
+      // not part of any parity comparison: test/saves asks for it to check what a loaded save shows.
+      dock: typeof drv().dock === 'function' ? drv().dock() : null,
       // what a player can read right now (for --strict-text): dialogs and overlays included, hidden content not
       text: W.document.body ? String(W.document.body.innerText || '') : ''
     };
@@ -298,7 +306,8 @@ module.exports = function parityInPage(cfg) {
   W.__parity = {
     // Wait for the app, dismiss the boot overlay, settle. Fake time is advanced in small slices while waiting in
     // case a build mounts from a timer.
-    async boot(roundMs, maxRounds) {
+    // dismiss === false leaves the boot overlay up: test/e2e/keyboard.cjs gets past it with real key presses.
+    async boot(roundMs, maxRounds, dismiss) {
       let mounted = false;
       for (let i = 0; i < 400 && !(mounted = !!drv().mounted()); i++) { await realTicks(2); if (i % 5 === 4) await runFor(20); }
       if (!mounted) return { mounted: false };
@@ -307,6 +316,7 @@ module.exports = function parityInPage(cfg) {
       if (drv().bootOpen()) {
         bootSeen = true;
         hookSound();          // the boot screen has sound cues of its own; they belong in the trace
+        if (dismiss === false) return { mounted: true, bootSeen, bootStillOpen: true, settled: true, earlyDraws: draws, early: early.slice(), wall };
         // First press ("Clock in") starts the boot animation. It runs 1.7 s and closes itself 0.4 s later (2 s
         // later under reduced motion), so three seconds see it through. If the overlay is still up after that,
         // press again ("Skip").

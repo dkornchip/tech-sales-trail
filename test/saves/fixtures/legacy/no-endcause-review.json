@@ -1,0 +1,102 @@
+{
+ "week": 9,
+ "maxQuarters": 1,
+ "quartersSurvived": 0,
+ "slots": 5,
+ "maxSlots": 5,
+ "restedThisWeek": false,
+ "energy": 72,
+ "stress": 34,
+ "skills": {
+  "prospect": 47,
+  "discovery": 37,
+  "demo": 31,
+  "negotiate": 26
+ },
+ "reputation": 42,
+ "manager": 51.5,
+ "product": 60,
+ "cash": 2300,
+ "quota": 160000,
+ "closedWon": 18000,
+ "closedQuarter": 18000,
+ "discounts": 0,
+ "pipeline": 0,
+ "meetings": 6,
+ "deals": [],
+ "logs": [
+  {
+   "id": "l3-k2m0",
+   "t": "09:40 AM",
+   "msg": "📉 Mid-quarter review: behind pace. Badge deactivated.",
+   "kind": "bad"
+  },
+  {
+   "id": "l2-k2m0",
+   "t": "09:41 AM",
+   "msg": "📋 Second warning on file.",
+   "kind": "warn"
+  },
+  {
+   "id": "l1-k2m0",
+   "t": "09:42 AM",
+   "msg": "📆 Week 9 begins.",
+   "kind": "info"
+  }
+ ],
+ "pip": false,
+ "pipLevel": 0,
+ "fired": true,
+ "burnedOut": false,
+ "win": false,
+ "missed": false,
+ "repo": false,
+ "repoWarned": false,
+ "modifiers": {
+  "conversion": 0,
+  "discount": 0,
+  "expiresIn": 0
+ },
+ "achievements": [],
+ "perfWarnings": 0,
+ "coffeesThisWeek": 0,
+ "stressWarned": false,
+ "hygieneShield": false,
+ "trip": null,
+ "claink": {
+  "status": "dismissed",
+  "hidden": false,
+  "deployed": false,
+  "strikes": 0,
+  "claims": 0,
+  "due": 0,
+  "weekTokens": 0,
+  "mgr": {
+   "noticed": false,
+   "yoinks": 0
+  },
+  "last": null,
+  "strikeLog": [],
+  "deploys": 0,
+  "miracles": 0,
+  "fakes": 0,
+  "incidents": 0,
+  "claimed": 0,
+  "delivered": 0,
+  "billed": 0,
+  "lastInvoice": 0,
+  "tokens": 0
+ },
+ "runId": "hw1-k2m0",
+ "used": {
+  "prospect": false,
+  "cadence": false,
+  "discovery": false,
+  "demo": false,
+  "propose": false,
+  "close": false,
+  "network": false,
+  "recharge": false,
+  "crm": false
+ }
+}

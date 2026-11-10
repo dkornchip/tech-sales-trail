@@ -1,0 +1,1 @@
+{"week":7,"maxQuarters":1,"slots":3,"energy":41,"stress":62,"skills":{"prospect":51,"disc
