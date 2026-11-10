@@ -1,8 +1,8 @@
 import { money } from "../game/util.js";
 
 // The Rules dialog ("How It Works"): its title, its button, and one paragraph per row. A paragraph is a term (shown
-// bold) followed by its body. A body is a function of the game's own numbers (v), so the rules can never disagree
-// with the game:
+// bold) followed by its body; the body starts with the space that separates the two. A body is a function of the
+// game's own numbers (v), so the rules can never disagree with the game:
 //   rechargeEnergy  energy a Recharge gives          luckPct    the top of its lucky bonus, in percent
 //   tripPct         the roll that earns a trip, %    crash      stress per Quad Shot at week end
 //   seat            what a clAInk seat costs         strikes    strikes that revoke it

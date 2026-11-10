@@ -4,6 +4,11 @@
 // no sound, and neither does a tag that is not listed here (the QBR verdicts and the endings, whose sound is the
 // cutscene's).
 //
+// How a batch of new lines becomes sound (director.js, onLogs): the week flip always plays; of the rest, the most
+// important play (highest priority first, earlier line first on a tie, one per distinct sound): two beside a week
+// flip, three without one, 170 ms apart in the order they happened. One announcer line per batch: the line of the
+// highest-priority entry that has one (the earlier entry on a tie).
+//
 // tag: [sound preset, priority, announcer line (a key of LINES in src/copy/pa.js; optional)]
 export var TAG_SOUND = {
   /* the actions */
