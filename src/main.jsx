@@ -2,4 +2,4 @@
 import "./legacy/scenes.js";
 import "./legacy/audio.js";
 import "./legacy/shell.js";
-import "./legacy/game.jsx";
+import "./ui/main.jsx";
