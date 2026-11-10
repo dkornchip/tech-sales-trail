@@ -93,7 +93,7 @@ function literals(file) {
 }
 
 // Drawing material: box drawing and block elements (U+2500-259F), and the sprite engine's "opaque blank" mark.
-const ART = /[─-▟§]/g;
+const ART = /[\u2500-\u259f\u00a7]/g;
 // A token that is plainly an identifier: kebab-case (CSS classes, storage keys), dotted or colon ids (tags, dialog ids).
 const IDENT = /^[a-z0-9]+([-.:][a-zA-Z0-9]+)+$/;
 
