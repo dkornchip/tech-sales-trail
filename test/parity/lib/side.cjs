@@ -29,6 +29,7 @@ class Side {
    *   contextOptions   extra Playwright context options, e.g. { isMobile: true, hasTouch: true }
    *   calm         false: do not switch the page's CSS animations off (see lib/inpage.cjs)
    *   boot         'manual': leave the boot overlay up after loading; the test dismisses it itself
+   *   initScripts  [source text], installed after the driver in every document (test/e2e's own in-page helpers)
    */
   constructor(opts) {
     Object.assign(this, opts);
@@ -55,6 +56,7 @@ class Side {
     const cfg = { seed: this.seed >>> 0, fx: this.fx, epoch: EPOCH, autosaveKey: AUTOSAVE_KEY, calm: this.calm !== false };
     await this.context.addInitScript(`(${inPage.toString()})(${JSON.stringify(cfg)});`);
     await this.context.addInitScript(`window.__drv = (${this.driver.inPage.toString()})();`);
+    for (const src of this.initScripts || []) await this.context.addInitScript(src);
     this.page = await this.context.newPage();
     this.page.on('pageerror', e => this.trouble.push('pageerror: ' + String(e && e.message || e).slice(0, 300)));
     this.page.on('console', m => { if (m.type() === 'error') this.trouble.push('console.error: ' + m.text().slice(0, 300)); });
