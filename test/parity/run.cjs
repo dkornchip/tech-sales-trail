@@ -27,6 +27,9 @@
  *   --no-floors         do not enforce census floors
  *   --strict-network    fail if build B requests anything but its own document (Google Fonts are otherwise
  *                       answered with an empty body and only counted)
+ *   --strict-logs       also require identical log lines (text and kind) at every step: for refactors that must not
+ *                       change a word. Off by default, since the rewrite changes the log on purpose
+ *   --strict-text       also require identical visible page text at every step (same use)
  *   --census            print the full census table
  *   --json <file>       also write a machine-readable summary
  *
@@ -58,6 +61,8 @@ function parseArgs(argv) {
     else if (a === '--no-scenarios') o.scenarios = false;
     else if (a === '--no-floors') o.floors = false;
     else if (a === '--strict-network') o.strictNetwork = true;
+    else if (a === '--strict-logs') o.strictLogs = true;
+    else if (a === '--strict-text') o.strictText = true;
     else if (a === '--census') o.showCensus = true;
     else if (a === '--json') o.json = need(++i, a);
     else if (a === '--help' || a === '-h') { console.log(fs.readFileSync(__filename, 'utf8').split('*/')[0].replace(/^#!.*\n'use strict';\n\/\*\n?/, '').replace(/^ \* ?/gm, '')); process.exit(0); }

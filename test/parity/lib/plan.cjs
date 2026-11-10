@@ -96,7 +96,7 @@ async function runAll(opts) {
     }
   }
 
-  const env = { buildA, buildB, driverA, driverB, sound: !!opts.sound, roundMs: opts.roundMs, maxRounds: opts.maxRounds, strictNetwork: !!opts.strictNetwork,
+  const env = { buildA, buildB, driverA, driverB, sound: !!opts.sound, roundMs: opts.roundMs, maxRounds: opts.maxRounds, strictNetwork: !!opts.strictNetwork, strictLogs: !!opts.strictLogs, strictText: !!opts.strictText,
     seedOffsetB: opts.seedOffsetB, flavorB: opts.flavorB, fxB: opts.fxB };
 
   /* ---- the pool ---- */

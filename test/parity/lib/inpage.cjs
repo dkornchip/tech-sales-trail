@@ -263,7 +263,9 @@ module.exports = function parityInPage(cfg) {
       draws, fromQueue, queueLeft: W.__rngQueue.length, fxDraws, flavorCalls,
       dialog: obs.dialog, legal: obs.legal.slice().sort(),
       sound: drainTrace(), speech: spoken.splice(0),
-      wall, rngIntact: Math.random === random, thrown: thrown.splice(0)
+      wall, rngIntact: Math.random === random, thrown: thrown.splice(0),
+      // what a player can read right now (for --strict-text): dialogs and overlays included, hidden content not
+      text: W.document.body ? String(W.document.body.innerText || '') : ''
     };
   }
 

@@ -127,6 +127,22 @@ async function runSession(browser, spec, env) {
       if (sa !== sb) return failWith('sound', ['sound intents differ', `A: ${sa || '(none)'}`, `B: ${sb || '(none)'}`]);
       if (a.speech.length !== b.speech.length) return failWith('sound', [`lines spoken: A ${a.speech.length} ${short(a.speech)}, B ${b.speech.length} ${short(b.speech)}`]);
     }
+    // For refactors that must not change a single word: the log lines written this step (text and kind), and
+    // everything a player can read on the page. Off by default, because the rewrite changes both on purpose.
+    if (env.strictLogs) {
+      const la2 = JSON.stringify(a.logs), lb2 = JSON.stringify(b.logs);
+      if (la2 !== lb2 || a.logCount !== b.logCount || a.logsSwapped !== b.logsSwapped) {
+        const i = a.logs.findIndex((l, k) => JSON.stringify(l) !== JSON.stringify(b.logs[k]));
+        return failWith('logs', [`log lines differ (A wrote ${a.logs.length}, B wrote ${b.logs.length}; totals ${a.logCount} / ${b.logCount})`,
+          `A: ${JSON.stringify(a.logs[i < 0 ? a.logs.length - 1 : i] || null)}`, `B: ${JSON.stringify(b.logs[i < 0 ? b.logs.length - 1 : i] || null)}`]);
+      }
+    }
+    if (env.strictText && a.text !== b.text) {
+      const ta = a.text.split('\n'), tb = b.text.split('\n');
+      let i = 0; while (i < ta.length && i < tb.length && ta[i] === tb[i]) i++;
+      return failWith('text', [`the visible page text differs at line ${i + 1} (A has ${ta.length} lines, B has ${tb.length})`,
+        `A: ${JSON.stringify((ta[i] || '(end)').slice(0, 300))}`, `B: ${JSON.stringify((tb[i] || '(end)').slice(0, 300))}`]);
+    }
     return null;
   };
 
