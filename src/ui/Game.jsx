@@ -1,13 +1,12 @@
 import React from "react";
-import { CLAINK, billClaink, expireClaink } from "../game/claink.js";
+import { hailMary } from "../game/actions.js";
+import { endWeek as runEndWeek } from "../game/week.js";
+import { CLAINK } from "../game/claink.js";
 import { AUTOSAVE_KEY, QUARTER_WEEKS, SAVE_KEY } from "../game/constants.js";
-import { ageAndGhost, checkRepo, cost, killDeals, tickModifiers, tryCloseSome } from "../game/deals.js";
-import { randomEvents } from "../game/events.js";
-import { isRunOver, log } from "../game/log.js";
-import { behindPace, countStage, evaluateQuarter, midQuarterRisk, salaryAndBills } from "../game/quarter.js";
+import { isRunOver } from "../game/log.js";
 import { mergeSaved, newGame, readStoredRun } from "../game/state.js";
-import { CRASH_PER_SHOT, DANGER_RATE, RECHARGE_ENERGY, RECHARGE_LUCK, STRESS_DANGER, TRIP_AT, checkBurnout } from "../game/stress.js";
-import { clamp, getQuarterInfo, money, pct } from "../game/util.js";
+import { CRASH_PER_SHOT, RECHARGE_ENERGY, RECHARGE_LUCK, STRESS_DANGER, TRIP_AT, checkBurnout } from "../game/stress.js";
+import { getQuarterInfo, money, pct } from "../game/util.js";
 import { Actions } from "./Actions.jsx";
 import { CLAINK_UI_KEY, ClainkDock, clainkUiFor, isShortScreen, readClainkUi } from "./ClainkUi.jsx";
 import { Cutscene } from "./Cutscene.jsx";
@@ -127,155 +126,10 @@ export function Game(){
   },[pending]);
 
   const endWeek=()=>{
-    if(s.fired || s.burnedOut || s.win || s.missed || s.repo)return;
-    let ns={...s};
-
-    // End-of-week closes still happen with current modifiers.
-    if(Math.random()<0.15){
-      ns=tryCloseSome(ns,"🕘 Friday closes");
-    }
-
-    // Tick down existing modifiers BEFORE we potentially apply new ones during this endWeek().
-    ns=tickModifiers(ns);
-
-    ns=salaryAndBills(ns);
-    if(isRunOver(ns)){ setPending(null); setS(ns); return; } // v1.19: a rent repo ends the week here, so the ending stays the last line
-    ns=randomEvents(ns,setPending,2);
-    ns=ageAndGhost(ns);
-    ns=checkBurnout(ns);
-    // a run that just ended (burnout here, repo from the bills) stops simulating, so its ending stays the last line
-    if(isRunOver(ns)){ setPending(null); setS(ns); return; }
-
-    const u=ns.used;
-    const didProspectish=u.prospect||u.cadence||u.network;
-    const didLate=u.propose||u.close;
-    const motionsHit=[
-      didProspectish,
-      u.discovery,
-      u.demo,
-      didLate
-    ].filter(Boolean).length;
-    const motionsSkipped=4-motionsHit;
-
-    if(motionsHit>=3){
-      ns.modifiers={
-        conversion:(ns.modifiers.conversion||0)+0.06,
-        discount:ns.modifiers.discount||0,
-        expiresIn:Math.max(1,ns.modifiers.expiresIn||0)
-      };
-      ns=log(ns,"🧩 Full-funnel week. +6% close next week.");
-    }else if(motionsSkipped>=3 && ns.pipeline>0){
-      ns.modifiers={
-        conversion:(ns.modifiers.conversion||0)-0.06,
-        discount:ns.modifiers.discount||0,
-        expiresIn:Math.max(1,ns.modifiers.expiresIn||0)
-      };
-      ns=log(ns,"🪫 Funnel neglected. -6% close next week.","warn");
-    }
-
-    if(!u.discovery && countStage(ns.deals,0)>=6){
-      let lost=0;
-      ns.deals=ns.deals.filter(d=>{
-        if(d.stage===0 && Math.random()<0.20){lost++;return false;}
-        return true;
-      });
-      if(lost>0){
-        ns=log(ns,`🍂 ${lost} raw lead(s) went stale.`,"warn");
-        ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
-      }
-    }
-
-    if(!u.demo && countStage(ns.deals,1)>=5){
-      let reg=0;
-      ns.deals=ns.deals.map(d=>{
-        if(d.stage===1 && Math.random()<0.18){
-          reg++;
-          return {...d,stage:0,mood:"skeptical"};
-        }
-        return d;
-      });
-      if(reg>0){
-        ns=log(ns,`🕑 Demo backlog: ${reg} lead(s) went cold.`,"warn");
-        ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
-      }
-    }
-
-    ns.energy=clamp(ns.energy+15,0,100);
-    // v1.15: caffeinated weeks crash instead of recovering
-    const shots=ns.coffeesThisWeek||0;
-    if(shots>0){
-      const crash=CRASH_PER_SHOT*shots;
-      ns.stress=clamp(ns.stress+crash,0,100);
-      ns=log(ns,`🥴 Caffeine crash. +${crash} stress.`,"warn");
-    }else{
-      ns.stress=clamp(ns.stress-4,0,100);
-    }
-
-    // v1.15: burnout lands before reviews. Danger zone rolls every weekend.
-    ns=checkBurnout(ns);
-    if(!isRunOver(ns) && ns.stress>=STRESS_DANGER && Math.random()<(ns.stress-75)*DANGER_RATE){
-      ns.burnedOut=true;
-      ns.endCause="stress";
-      ns=log(ns,"☢️ Weekend didn’t help. Meltdown.","bad");
-    }
-    if(isRunOver(ns)){ setPending(null); setS(ns); return; }
-
-    ns=checkRepo(ns);
-
-    const perfToDate=ns.quota>0 ? ns.closedQuarter/ns.quota : 0;
-    const drift=(perfToDate-0.5)*4;
-    ns.manager=clamp(ns.manager+drift,0,100);
-
-    // Email cadence without calling annoys the manager.
-    if(ns.used.cadence && !ns.used.prospect){
-      ns.manager=clamp(ns.manager-3,0,100);
-      ns=log(ns,"📵 “Nice emails. Now call someone.” -3 manager.","warn");
-    }
-
-    const {weekInQuarter}=getQuarterInfo(ns.week);
-
-    // Early termination checks never fire on the final week (week 13); QBR handles that.
-    if(weekInQuarter>=5 && weekInQuarter<QUARTER_WEEKS && behindPace(ns, weekInQuarter) && !ns.fired && !ns.burnedOut && !ns.repo && !ns.win && !ns.missed){
-      ns=midQuarterRisk(ns, weekInQuarter);
-      ns=checkBurnout(ns);
-    }
-
-    if(weekInQuarter===QUARTER_WEEKS && !ns.fired && !ns.burnedOut && !ns.repo){
-      ns=evaluateQuarter(ns);
-    }
-
-    if(ns.fired || ns.burnedOut || ns.win || ns.missed || ns.repo){
-      setPending(null); // an event queued this week must not stack on the game-over dialog
-      setS(ns);
-      return;
-    }
-
-    // v1.19: clAInk invoices last, so a fired or finished run is never billed (and a week-13 Club can't turn into a repo)
-    ns=billClaink(ns);
-    ns=expireClaink(ns);
-    if(isRunOver(ns)){ setPending(null); setS(ns); return; }
-
-    const nextWeek=ns.week+1;
-    ns=log(ns,`📆 Week ${nextWeek}.`);
-    ns.week=nextWeek;
-    ns.slots=ns.maxSlots;
-    ns.restedThisWeek=false;
-    ns.coffeesThisWeek=0;
-    ns.stressWarned=false;
-    ns.hygieneShield=false;
-    ns.used={
-      prospect:false,
-      cadence:false,
-      discovery:false,
-      demo:false,
-      propose:false,
-      close:false,
-      network:false,
-      recharge:false,
-      crm:false
-    };
-
-    setS(ns);
+    const r=runEndWeek(s,setPending);
+    if(!r)return;
+    if(r.over)setPending(null);
+    setS(r.state);
   };
 
   useEffect(()=>{
@@ -333,53 +187,7 @@ export function Game(){
     ? <span style={{color:projStress>=STRESS_DANGER?"var(--bad)":"var(--warn)"}}>{[stressZone,crashDue?(stressZone?`+${crashDue} Fri`:`Crash +${crashDue} Fri`):""].filter(Boolean).join(" • ")}</span>
     : null;
 
-  const tryOpportunisticClose=()=>{
-    if(!hasLateDeal){
-      setS(log(s,"🧪 No late-stage deals to Hail-Mary.","warn"));
-      return;
-    }
-    let[ns,ok]=cost(s,{energy:10,slots:1});
-    if(!ok)return;
-    const miracle=Math.random()<0.2;
-    const beforeClosed=ns.closedWon;
-
-    ns=log(
-      ns,
-      miracle
-        ? "🧪 Hail-Mary: “last chance” blast to every exec."
-        : "🧪 Hail-Mary: leaning on every late deal. Hard.",
-      "warn"
-    );
-    let st=tryCloseSome(ns,"🧪 Hail-Mary");
-    const closedDelta=st.closedWon-beforeClosed;
-
-    if(miracle){
-      if(closedDelta>0){
-        st.manager=clamp(st.manager+8,0,100);
-        st.stress=clamp(st.stress+4,0,100);
-        st=log(st,"🌪️ Chaos worked. +8 manager, +4 stress.");
-      }else{
-        st.manager=clamp(st.manager-4,0,100);
-        st.stress=clamp(st.stress+6,0,100);
-        st=log(st,"🤕 All noise, no ink. -4 manager, +6 stress.","bad");
-      }
-    }else{
-      st=killDeals(st,d=>d.stage>=3,0.55);
-      st.manager=clamp(st.manager-8,0,100);
-      st.stress=clamp(st.stress+8,0,100);
-      st.reputation=clamp(st.reputation-4,0,100);
-      if(closedDelta<=0){
-        st=log(st,"📛 Pipe torched. -8 manager, -4 rep, +8 stress.","bad");
-      }else{
-        st.manager=clamp(st.manager+2,0,100);
-        st.reputation=clamp(st.reputation+1,0,100);
-        st=log(st,"😬 Got ink, cooked the pipe. Net -6 manager, -3 rep.","warn");
-      }
-    }
-    st=checkRepo(st);
-    st=checkBurnout(st);
-    setS(st);
-  };
+  const tryOpportunisticClose=()=>{ const ns=hailMary(s); if(ns) setS(ns); };
 
   // v1.20: the Writing Lesson arrives after the run's report has played. It only opens on the run, week and clAInk run
   // that produced it (New Game or Load mid-report drop it), waits for the Rules to close, and gives way to any other
