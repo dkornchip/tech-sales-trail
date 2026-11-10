@@ -4,3 +4,6 @@ dist-*/
 test-results/
 *.log
 .DS_Store
+
+# agent worktrees
+.claude/worktrees/
