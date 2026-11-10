@@ -110,5 +110,7 @@ export const CHIP = {
   pip: level => `Performance plan, level ${level}`,
 };
 
+export const MENU = { title: "Settings", sound: "Sound", voice: "Office announcer", captions: "Captions for the announcer", volume: "Volume", save: "Save run", load: "Load saved run", newRun: "New run" };
+
 export const STAGE = ["Lead", "Qualified", "Demoed", "Proposal", "Closing"];
 export const MOOD = { skeptical: "skeptical", neutral: "neutral", curious: "curious", happy: "happy" };

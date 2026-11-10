@@ -9,7 +9,7 @@ export const Quarter = ({ s }) => {
   return (
     <div className="quarter">
       <div className="quarter-head">
-        <h2>{UI.week(week)}</h2><span className="of">{UI.ofWeeks(QUARTER_WEEKS)}</span>
+        <h2 key={week} className="week-in">{UI.week(week)}</h2><span className="of">{UI.ofWeeks(QUARTER_WEEKS)}</span>
         <span className="slots" data-slots={s.slots}>{UI.slots}
           <span className="pips" aria-hidden="true">{Array.from({ length: s.maxSlots }, (_, i) => <i key={i} className={i < spent ? "spent" : ""} />)}</span>
           <span className="num">{UI.slotsLeft(s.slots)}</span>

@@ -3,6 +3,7 @@ import { PROPOSE_CHANCE, blocked, crmPreview, demoChance, lateDeals, nextShot, q
 import { ACTION, HINT } from "../../copy/ui.js";
 import { ACTIONS } from "./actionList.js";
 import { Icon } from "./Icon.jsx";
+import { ACTION_KEYS } from "./shortcuts.js";
 
 // What an action needs, what it would touch, and what the hint bar says about it right now.
 export const describe = (a, s) => {
@@ -26,7 +27,7 @@ export const ActionGrid = ({ s, onAct, onHint }) => (
   <div className="actions">
     {ACTIONS.map((a, i) => {
       const d = describe(a, s);
-      const show = () => onHint({ title: d.title, text: d.hint, key: String((i + 1) % 10) });
+      const show = () => onHint({ title: d.title, text: d.hint, key: ACTION_KEYS[i] });
       return (
         <button key={a.id} type="button" className={"action" + (d.block ? " off" : "")} data-act={a.id} aria-disabled={d.block ? "true" : undefined}
           onClick={() => { if (!d.block) onAct(a); }} onMouseEnter={show} onFocus={show} onMouseLeave={() => onHint(null)} onBlur={() => onHint(null)}>

@@ -37,6 +37,10 @@
 .weeks .review .tick{box-shadow:0 2px 0 -0px transparent}
 .weeks .now .tag,.weeks .soon .tag{color:var(--text-2)}
 
+.week-in{animation:weekIn .32s var(--ease) both}
+@keyframes weekIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.weeks .tick{transition:background .24s var(--ease)}
+
 /* ---------- KPI strip ---------- */
 .kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--sp-3)}
 .kpi{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-2);padding:var(--sp-4);display:grid;gap:6px;align-content:start;position:relative}
@@ -145,6 +149,18 @@
 .ck-btn{height:28px;padding:0 12px;border-radius:var(--r-2);border:0;background:linear-gradient(90deg,var(--ck-v),var(--ck-p));color:#14102b;font-weight:600;font-size:var(--fs-1);cursor:pointer}
 .ck-btn[disabled]{background:none;border:1px solid var(--ck-line);color:var(--ck-mut);font-weight:500;cursor:default}
 .ck .iconbtn .icon{color:var(--ck-mut)}
+
+/* ---------- settings menu ---------- */
+.topbar{position:relative}
+.menu{position:absolute;right:var(--sp-4);top:calc(100% + 4px);z-index:20;width:280px;padding:var(--sp-3);background:var(--surface-2);border:1px solid var(--border-strong);border-radius:var(--r-3);box-shadow:var(--shadow-overlay)}
+.menu-row{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-4);width:100%;min-height:36px;padding:0 var(--sp-3);background:none;border:0;border-radius:var(--r-2);font-size:var(--fs-1);color:var(--text);text-align:left;cursor:pointer}
+.menu-row:hover{background:var(--surface-3)}
+.menu hr{border:0;border-top:1px solid var(--border);margin:var(--sp-3) 0}
+.menu input[type=range]{width:120px;accent-color:var(--accent)}
+.switch{width:30px;height:18px;border-radius:var(--r-full);background:var(--surface-3);box-shadow:inset 0 0 0 1px var(--border-strong);position:relative;flex:none;transition:background .12s var(--ease)}
+.switch i{position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--text-2);transition:transform .12s var(--ease),background .12s var(--ease)}
+.switch.on{background:var(--accent);box-shadow:none}
+.switch.on i{transform:translateX(12px);background:var(--text-on-accent)}
 
 /* ---------- layout tiers ---------- */
 /* desktop: one screen, nothing scrolls but the deal list and the activity log */
