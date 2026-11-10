@@ -1,0 +1,10 @@
+/* The v2.0 stylesheet. It replaces legacy.css when the new interface is switched on. */
+@import "./fonts.css";
+@import "./tokens.css";
+@import "./base.css";
+@import "./app.css";
+@import "./dialogs.css";
+@import "./crt.css";
+@import "./boot.css";
+@import "./memo.css";
+@import "./claink.css";
