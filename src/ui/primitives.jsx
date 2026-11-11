@@ -87,7 +87,9 @@ export const Modal=({open,title,children,actions,onDismiss,dialogId,className,as
   // what the announcer says while this dialog is open is captioned under its title, and stays until it closes
   const said=useCaption();
   const[since,setSince]=useState(0);
-  const cap=open && said && since && said.id>=since ? said : null;
+  // (not when the line only repeats what the dialog itself says: the manager's warning is his line already)
+  const own=ref.current && ref.current.querySelector(".d-body") ? ref.current.querySelector(".d-body").textContent : "";
+  const cap=open && said && since && said.id>=since && own.indexOf(said.text)<0 ? said : null;
   useEffect(()=>{ setSince(open ? captionSeq()+1 : 0); },[open]);
   useEffect(()=>{
     if(!ref.current)return;

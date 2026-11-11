@@ -87,12 +87,10 @@
   box-shadow:0 24px 64px rgba(0,0,0,.85),0 0 34px rgba(34,211,238,.14);animation:clainkIn .45s var(--ease) both}
 @keyframes clainkIn{0%{opacity:0;transform:translateY(16px) scale(.97)}100%{opacity:1;transform:none}} /* stays focusable while it animates */
 @supports (height:100dvh){ .claink-console{max-height:calc(100dvh - 24px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))} }
-.claink-console.is-placed{right:auto;bottom:auto}
 .claink-console.is-mini{width:auto;max-width:calc(100vw - 24px);border-radius:999px;overflow:hidden}
 .claink-titlebar{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:8px;padding:7px 8px 7px 10px;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;
   background:linear-gradient(90deg,#1e1948,#0e1c3a);border-bottom:1px solid var(--ck-line)}
 .claink-console.is-mini .claink-titlebar{border-bottom:0;padding:5px 6px 5px 11px}
-.claink-console.dragging,.claink-console.dragging .claink-titlebar{cursor:grabbing}
 .claink-title{font-family:"TST Sans",ui-sans-serif,system-ui,sans-serif;font-weight:800;font-size:13px;letter-spacing:-.2px;white-space:nowrap}
 .claink-title span{font-weight:600;color:var(--ck-mut)}
 .claink-pilltext{font-size:13px;color:#ddd8ff;white-space:nowrap}
@@ -103,7 +101,6 @@
 .claink-tb-btns button{width:28px;height:26px;border-radius:8px;border:1px solid var(--ck-line);background:#161238;color:#ddd8ff;
   cursor:pointer;font-size:13px;line-height:1;padding:0}
 .claink-tb-btns button:hover{border-color:var(--ck-c);color:#fff}
-.claink-grip{cursor:move!important}
 .claink-body{padding:10px 12px 12px;display:grid;gap:9px}
 .claink-statusline{font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--ck-mut);outline:none;border-radius:4px}
 .claink-statusline:focus-visible{outline:2px solid var(--ck-c);outline-offset:2px}
@@ -195,11 +192,20 @@
    flow of the page; minimised, each is a single bar there. The rules above still draw them. These place them. */
 .claink-ad,.claink-console{position:relative;inset:auto;width:auto;max-width:none;flex:0 1 auto;min-height:0;max-height:46%;
   border-radius:0 0 11px 11px;box-shadow:none;animation:none}
-.claink-console.is-placed{left:auto !important;top:auto !important}   /* a window position saved by v1.21 means nothing here */
 .claink-ad{border-top:1px solid var(--ck-line);max-height:58%}
 .claink-ad::before{display:none}                                      /* the gradient frame belonged to the floating card */
+/* the policy step stands alone: the pitch steps back instead of scrolling behind the pinned policy */
+.claink-ad.confirming .claink-sub,.claink-ad.confirming .claink-chips,.claink-ad.confirming .claink-proof,
+.claink-ad.confirming .claink-price,.claink-ad.confirming .claink-badges,.claink-ad.confirming .claink-fine{display:none}
 .claink-console{border:0;border-top:1px solid var(--ck-line)}
 .claink-ad.is-mini,.claink-console.is-mini{width:auto;max-width:none;max-height:none;border-radius:0 0 11px 11px}
 .claink-titlebar{cursor:default;touch-action:auto}
-.claink-grip{display:none}
 @media (max-width:1024px), (max-height:619px){ .claink-ad,.claink-console{max-height:none} }
+/* Icons inside the vendor's panel take the colour of the words around them; the status dot is drawn, not typed. */
+.claink-ad .icon,.claink-console .icon{width:14px;height:14px;color:currentColor;stroke-width:2}
+.claink-announce .icon,.claink-badges .icon{width:13px;height:13px}
+.claink-badges>.urgent{display:inline-flex;align-items:center;gap:4px}
+.ck-box .icon{width:12px;height:12px;stroke-width:3}
+.claink-report .hd span,.claink-report.working,.claink-deploy>span,.claink-ping .who,.claink-statusline{display:inline-flex;align-items:center;gap:6px}
+.claink-statusline{display:flex}
+.ck-dot{width:7px;height:7px;border-radius:50%;flex:none;background:currentColor}

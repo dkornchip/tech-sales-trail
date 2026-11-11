@@ -1,50 +1,33 @@
 import React from "react";
 import { isMoreLine } from "../copy/claink.js";
+import { CK_AD, CK_END, CK_REPORT, CK_STRIKES, CK_WORKSPACE } from "../copy/clainkUi.js";
 import { CLAINK, buyClaink, cancelClaink, clainkCanCancel, clainkCanDeploy, clainkCanInstall, clainkCancelCost, clainkFrozen, deployClaink, dismissClaink, hideClainkCard } from "../game/claink.js";
 import { QUARTER_WEEKS } from "../game/constants.js";
 import { isRunOver } from "../game/log.js";
 import { checkBurnout } from "../game/stress.js";
-import { fmtTok, getQuarterInfo, money } from "../game/util.js";
+import { getQuarterInfo } from "../game/util.js";
+import { Icon } from "./app/Icon.jsx";
 import { AUDIO, reducedNow } from "./env.js";
 
 const { useState, useEffect, useRef } = React;
 
 // ---------- v1.20: clAInk UI (ad, agent workspace, end cards) ----------
-// The ad pops up at run start; × turns clAInk off for the run. Activating swaps it for the agent workspace, which
-// minimizes to a pill and drags anywhere. Position and minimized state are a UI preference, not run state.
+// The ad pops up at run start; its close button turns clAInk off for the run. Activating swaps it for the agent
+// workspace. Both sit docked at the bottom of the right column (v2.0: nothing floats or drags any more) and both
+// minimize to a pill. Minimized is a UI preference, not run state.
 export const CLAINK_UI_KEY="tst-claink-ui";
 export const readClainkUi=()=>{
   try{
     const v=JSON.parse(localStorage.getItem(CLAINK_UI_KEY)||"null");
-    // adMini is null until you minimize or expand the ad yourself (moving the console doesn't decide it for you)
-    if(v && typeof v==="object") return {x:Number.isFinite(v.x)?v.x:null, y:Number.isFinite(v.y)?v.y:null, mini:!!v.mini, adMini:typeof v.adMini==="boolean"?v.adMini:null, chosen:true};
+    // adMini is null until you minimize or expand the ad yourself
+    // (a window position saved by v1.21 is ignored)
+    if(v && typeof v==="object") return {mini:!!v.mini, adMini:typeof v.adMini==="boolean"?v.adMini:null, chosen:true};
   }catch{}
-  return {x:null,y:null,mini:false,adMini:null,chosen:false};
+  return {mini:false,adMini:null,chosen:false};
 };
 // until you choose, a short screen (landscape phone) gets the pills so neither the console nor the ad sits on End Week
 export const isShortScreen=()=>typeof window!=="undefined" && window.innerHeight>0 && window.innerHeight<=600;
 export const clainkUiFor=(u,short)=>({...(u.chosen ? u : {...u,mini:short}), adMini:u.adMini===null ? short : u.adMini});
-// safe-area insets (the page uses viewport-fit=cover), read once from a probe element
-let clainkInsets=null;
-export const safeInsets=()=>{
-  if(clainkInsets)return clainkInsets;
-  const z={t:0,r:0,b:0,l:0};
-  try{
-    const p=document.createElement("div");
-    p.style.cssText="position:fixed;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)";
-    document.body.appendChild(p);
-    const cs=window.getComputedStyle(p);
-    clainkInsets={t:parseFloat(cs.paddingTop)||0,r:parseFloat(cs.paddingRight)||0,b:parseFloat(cs.paddingBottom)||0,l:parseFloat(cs.paddingLeft)||0};
-    p.remove();
-  }catch(_){ return z; }
-  return clainkInsets;
-};
-if(typeof window!=="undefined" && window.addEventListener) window.addEventListener("resize",()=>{ clainkInsets=null; }); // rotation changes them
-export const clampToView=(x,y,el)=>{
-  const i=safeInsets(), w=el?el.offsetWidth:320, h=el?el.offsetHeight:200;
-  const l=8+i.l, t=8+i.t, r=8+i.r, b=8+i.b;
-  return {x:Math.round(Math.max(l,Math.min(x,window.innerWidth-w-r))), y:Math.round(Math.max(t,Math.min(y,window.innerHeight-h-b)))};
-};
 // A held Enter/Space auto-repeats. Once a clAInk control has used the key, swallow its repeats page-wide until the key
 // comes back up, wherever focus lands next (End Week, the Writing Lesson dialog, an ending).
 let clainkHeldKey=null;
@@ -114,25 +97,13 @@ export const ClainkAd=({s,mini,onToggle,onInstall,onDismiss})=>{
   const can=clainkCanInstall(s);
   const declined=!isRunOver(s) && s.cash-CLAINK.INSTALL<=CLAINK.REPO_AT;
   const lastWeek=getQuarterInfo(s.week).weekInQuarter>=CLAINK.OFFER_LAST_WEEK;
-  const ends=lastWeek ? "Pilot pricing ends this week" : `Pilot pricing ends Week ${CLAINK.OFFER_LAST_WEEK}`;
+  const ends=CK_AD.ends(lastWeek,CLAINK.OFFER_LAST_WEEK);
   // focus follows the control that replaced the one you used (never back to <body>)
   useEffect(()=>{
     const k=focusNext.current; focusNext.current=null;
     const el=k==="notnow" ? notNowRef.current : k==="cta" ? ctaRef.current : k==="toggle" ? toggleRef.current : null;
     if(el) try{ el.focus({preventScroll:true}); }catch(_){}
   });
-  // the ad is bottom-anchored: reserve that much page under it so End Week, deals and the log always scroll clear
-  // (on a desktop display the page doesn't scroll; the activity log scrolls clear of it instead, see the CSS)
-  useEffect(()=>{
-    const el=ref.current, root=document.documentElement;
-    if(!el)return;
-    const set=()=>{ const b=parseFloat(window.getComputedStyle(el).bottom)||16; root.style.setProperty("--claink-h",Math.ceil(el.offsetHeight+b+8)+"px"); };
-    set();
-    let ro=null;
-    if(typeof ResizeObserver!=="undefined"){ ro=new ResizeObserver(set); ro.observe(el); }
-    window.addEventListener("resize",set);
-    return()=>{ if(ro)ro.disconnect(); window.removeEventListener("resize",set); root.style.removeProperty("--claink-h"); };
-  },[]);
   const toggle=(e)=>{ focusNext.current="toggle"; onToggle(); shieldNextClick(e); }; // the toggle moves out from under the pointer
   const onKeyDown=e=>{
     if(swallowRepeat(e))return;
@@ -142,49 +113,44 @@ export const ClainkAd=({s,mini,onToggle,onInstall,onDismiss})=>{
     else if(!mini){ e.preventDefault(); toggle(e); }
   };
   return(
-    <aside ref={ref} className={"claink-ad"+(mini?" is-mini":"")+(step===1 && !mini?" confirming":"")} aria-label={"Sponsored: clAInk Enterprise"+(mini?" (minimized)":"")} onKeyDown={onKeyDown}>
+    <aside ref={ref} className={"claink-ad"+(mini?" is-mini":"")+(step===1 && !mini?" confirming":"")} aria-label={CK_AD.label(mini)} onKeyDown={onKeyDown}>
       <div className="claink-ad-top">
         {mini
           ? <span className="claink-ad-pill"><ClainkMark size={16}/><span className="claink-word" aria-hidden="true">cl<b>AI</b>nk</span><span className="sr-only">clAInk. </span><span className="ends">{ends}</span></span>
-          : <span className="claink-sponsored">Sponsored · Enterprise pilot</span>}
+          : <span className="claink-sponsored">{CK_AD.sponsored}</span>}
         <span className="claink-ad-btns">
           <button type="button" ref={toggleRef} className="claink-ad-min" aria-expanded={!mini} aria-controls={bodyId}
-            aria-label={mini ? "Expand clAInk ad" : "Minimize clAInk ad"} title={mini ? "Expand" : "Minimize"}
-            onClick={toggle}><span aria-hidden="true">{mini ? "▢" : "–"}</span></button>
-          <button type="button" className="claink-ad-close" aria-label="Close ad. clAInk will be off for this run"
-            title="Close (turns clAInk off for this run)" onClick={onDismiss}><span aria-hidden="true">×</span></button>
+            aria-label={mini ? CK_AD.expandLabel : CK_AD.minimizeLabel} title={mini ? CK_AD.expand : CK_AD.minimize}
+            onClick={toggle}>{mini ? <Icon name="maximize-2" /> : <Icon name="minus" />}</button>
+          <button type="button" className="claink-ad-close" aria-label={CK_AD.closeLabel}
+            title={CK_AD.closeTitle} onClick={onDismiss}><Icon name="x" /></button>
         </span>
       </div>
       <div className="claink-ad-body" id={bodyId} hidden={mini}>
-        <div className="claink-announce"><span aria-hidden="true">✦</span><span>New: <b>Autonomous Pipeline</b> is GA</span><span aria-hidden="true">→</span></div>
+        <div className="claink-announce"><Icon name="sparkles" /><span>{CK_AD.announce[0]}<b>{CK_AD.announce[1]}</b>{CK_AD.announce[2]}</span><Icon name="arrow-right" /></div>
         <ClainkLogo/>
-        <h3 className="claink-headline">Your reps sell. Our agents do everything else.</h3>
-        <p className="claink-sub">Up to 70% of a rep's week is busywork. clAInk runs a team of autonomous agents that research accounts, write the outreach and advance your deals, around the clock.</p>
-        <div className="claink-chips"><span>Account research</span><span>Outreach at scale</span><span>Deal advancement</span></div>
-        <p className="claink-proof">“Our agents completed 1.2 million tasks last quarter.”<span>VP of RevOps, Fortune 500 logistics company</span></p>
-        <div className="claink-price"><b>Outcome-based pricing.</b> Pay for every outcome, plus the tokens it took to get there.</div>
-        <div className="claink-badges"><span>SOC 2 Type II</span><span>SSO</span><span>Human-in-the-loop (optional)</span><span className="urgent"><span aria-hidden="true">⏳ </span>{ends}</span></div>
+        <h3 className="claink-headline">{CK_AD.headline}</h3>
+        <p className="claink-sub">{CK_AD.sub}</p>
+        <div className="claink-chips">{CK_AD.chips.map(t=><span key={t}>{t}</span>)}</div>
+        <p className="claink-proof">{CK_AD.proof}<span>{CK_AD.proofBy}</span></p>
+        <div className="claink-price"><b>{CK_AD.price[0]}</b>{CK_AD.price[1]}</div>
+        <div className="claink-badges">{CK_AD.badges.map(t=><span key={t}>{t}</span>)}<span className="urgent"><Icon name="hourglass" />{ends}</span></div>
         <div className="claink-actions">
           {step===0
             ? <button type="button" ref={ctaRef} className="claink-cta" disabled={!can}
-                onClick={()=>{ focusNext.current="notnow"; setStep(1); }}>{declined ? "Declined · cash too low" : `Activate seat · ${money(CLAINK.INSTALL)}`}</button>
+                onClick={()=>{ focusNext.current="notnow"; setStep(1); }}>{declined ? CK_AD.declined : CK_AD.activate(CLAINK.INSTALL)}</button>
             : <>
                 <div className="claink-policy" id={policyId} role="group" aria-labelledby={policyId+"-hd"}>
-                  <div className="hd" id={policyId+"-hd"}>Shitcorp AI Use Policy <span>v3 (final) (2)</span></div>
-                  <ul>
-                    <li>The seat, the tokens and every “outcome” come out of your commission.</li>
-                    <li>A run that closes $0 earns a strike from the AI Governance Council.</li>
-                    <li>Strike {CLAINK.STRIKES}: seat revoked, plus the token true-up.</li>
-                  </ul>
+                  <div className="hd" id={policyId+"-hd"}>{CK_AD.policyTitle} <span>{CK_AD.policyVersion}</span></div>
+                  <ul>{CK_AD.policy(CLAINK.STRIKES).map((t,i)=><li key={i}>{t}</li>)}</ul>
                 </div>
                 <div className="claink-confirm-row">
-                  <button type="button" className="claink-confirm" disabled={!can} onClick={onInstall} aria-describedby={policyId}>Accept · {money(CLAINK.INSTALL)}</button>
-                  <button type="button" ref={notNowRef} className="claink-notnow" onClick={()=>{ focusNext.current="cta"; setStep(0); }} aria-describedby={policyId}>Not now</button>
+                  <button type="button" className="claink-confirm" disabled={!can} onClick={onInstall} aria-describedby={policyId}>{CK_AD.accept(CLAINK.INSTALL)}</button>
+                  <button type="button" ref={notNowRef} className="claink-notnow" onClick={()=>{ focusNext.current="cta"; setStep(0); }} aria-describedby={policyId}>{CK_AD.notNow}</button>
                 </div>
               </>}
         </div>
-        <p className="claink-fine">Charged back to you under the Shitcorp AI Use Policy. Usage is invoiced Fridays.
-          Pilot results: 1 in 5 agent runs closed real revenue. The other 4 delivered outcomes. Offer ends after Week {CLAINK.OFFER_LAST_WEEK}.</p>
+        <p className="claink-fine">{CK_AD.fine(CLAINK.OFFER_LAST_WEEK)}</p>
       </div>
     </aside>
   );
@@ -200,27 +166,25 @@ export const ckTrueUpRange=(cash,due)=>{
 export const ClainkStrikes=({n,log,cash,due,ran})=>{
   const S=CLAINK.STRIKES, hot=n>=S-1;
   let note;
-  if(!hot) note=n===0 ? `Every run that closes $0 is a strike. ${S} and the seat is revoked.`
-    : `${n} down. Strike ${S} revokes the seat and runs the token true-up.`;
+  if(!hot) note=n===0 ? CK_STRIKES.none(S) : CK_STRIKES.some(n,S);
   else{
     // after this week's run the next one waits for Friday's bill and payday, so only the usual range holds
     const [best,worst]=ran ? [-CLAINK.TRUEUP_OVER[0],-CLAINK.TRUEUP_OVER[1]] : ckTrueUpRange(cash,due);
-    const head=`Next $0 run is strike ${S}: seat revoked, a deal walks, and the token true-up `;
-    note=!ran && best<=CLAINK.REPO_AT ? head+"sends you to Collections."
-      : head+`leaves you around ${money(best)} to ${money(worst)}${ran?", worse if you're in the red":""}. Collections comes at ${money(CLAINK.REPO_AT)}.`;
+    const head=CK_STRIKES.hotHead(S);
+    note=!ran && best<=CLAINK.REPO_AT ? head+CK_STRIKES.hotCollections : head+CK_STRIKES.hotRange(best,worst,ran,CLAINK.REPO_AT);
   }
   return(
     <div className={"claink-strikes"+(hot?" hot":"")}>
       <div className="row1">
-        <span className="lbl">Strikes</span>
-        <span className="boxes" role="img" aria-label={`${n} of ${S} strikes`}>
+        <span className="lbl">{CK_STRIKES.label}</span>
+        <span className="boxes" role="img" aria-label={CK_STRIKES.count(n,S)}>
           {Array.from({length:S},(_,i)=>{
             const on=i<n, e=log.find(x=>x.n===i+1);
-            const tip=on ? (e ? `Strike ${i+1} · ${e.who}: ${e.line}` : `Strike ${i+1}`) : i+1===S ? `Strike ${S}: seat revoked` : undefined;
-            return <span key={i} className={"ck-box"+(on?" on":"")} title={tip}>{on?"✕":i+1}</span>;
+            const tip=on ? CK_STRIKES.tip(i+1,e && e.who,e && e.line) : i+1===S ? CK_STRIKES.lastTip(S) : undefined;
+            return <span key={i} className={"ck-box"+(on?" on":"")} title={tip}>{on ? <Icon name="x" /> : i+1}</span>;
           })}
         </span>
-        <span className="who">AI Governance Council</span>
+        <span className="who">{CK_STRIKES.who}</span>
       </div>
       <div className={"note"+(hot?" warn":"")}>{note}</div>
     </div>
@@ -229,7 +193,7 @@ export const ClainkStrikes=({n,log,cash,due,ran})=>{
 
 export const ClainkStrikeCard=({st})=>(
   <div className={"claink-strike ck-beat"+(st.n>=CLAINK.STRIKES?" out":"")}>
-    <div className="hd">Strike {st.n} of {CLAINK.STRIKES}{st.who && <span> · filed by {st.who}</span>}</div>
+    <div className="hd">{CK_STRIKES.cardHead(st.n,CLAINK.STRIKES)}{st.who && <span>{CK_STRIKES.cardBy(st.who)}</span>}</div>
     <p>{st.why}</p>
     {st.fx && <div className="fx">{st.fx}</div>}
   </div>
@@ -241,23 +205,23 @@ export const ClainkReport=({last,beat,workTok,onSkip})=>{
   const k=last.kind, all=beat>=99, nL=last.lines.length;
   if(k==="onboarded") return(
     <div className="claink-report onboarded">
-      <div className="hd"><span>Welcome aboard</span></div>
+      <div className="hd"><span>{CK_REPORT.welcome}</span></div>
       <ul>{last.lines.map((l,i)=><li key={i}>{l}</li>)}</ul>
     </div>
   );
   if(!all && beat<=0) return(
-    <div className="claink-report working" onClick={onSkip||undefined} title="Click or press Esc to skip">
-      <span aria-hidden="true">◌ </span>Agents working… <b>{fmtTok(workTok)}</b> tokens
+    <div className="claink-report working" onClick={onSkip||undefined} title={CK_REPORT.skip}>
+      <Icon name="loader" />{CK_REPORT.working}<b>{CK_REPORT.tokens(workTok)}</b>
     </div>
   );
   const miracle=k==="miracle", shown=all ? nL : Math.min(nL,beat);
   const net=all || beat>nL, card=all || beat>nL+1;
   return(<>
-    {nL>0 && <div className={"claink-report "+(miracle?"miracle":"strike")+(onSkip?" revealing":"")} onClick={onSkip||undefined} title={onSkip?"Click or press Esc to skip":undefined}>
-      <div className="hd"><span>{miracle ? <><span aria-hidden="true">✨ </span>It actually worked</> : last.run ? `Run ${last.run} · outcomes delivered` : "Outcomes delivered"}</span>
-        {last.tokens>0 && <span className="tok">{fmtTok(last.tokens)} tokens</span>}</div>
+    {nL>0 && <div className={"claink-report "+(miracle?"miracle":"strike")+(onSkip?" revealing":"")} onClick={onSkip||undefined} title={onSkip ? CK_REPORT.skip : undefined}>
+      <div className="hd"><span>{miracle ? <><Icon name="sparkles" />{CK_REPORT.worked}</> : CK_REPORT.delivered(last.run)}</span>
+        {last.tokens>0 && <span className="tok">{CK_REPORT.tokens(last.tokens)}</span>}</div>
       <ul>{last.lines.slice(0,shown).map((l,i)=><li key={i} className={"ck-beat"+(isMoreLine(l)?" more":"")}>{l}</li>)}</ul>
-      {net && <div className={"net ck-beat"+(miracle?"":" zero")}>{miracle ? `Closed +${money(last.revenue)} · verified by Finance` : "Closed: $0"}</div>}
+      {net && <div className={"net ck-beat"+(miracle?"":" zero")}>{miracle ? CK_REPORT.closed(last.revenue) : CK_REPORT.closedNone}</div>}
     </div>}
     {card && (last.strike ? <ClainkStrikeCard st={last.strike}/> : miracle && last.clear ? <div className="claink-clear ck-beat">{last.clear}</div> : null)}
   </>);
@@ -266,13 +230,13 @@ export const ClainkReport=({last,beat,workTok,onSkip})=>{
 // the seat's obituary: the three strikes as filed, and what the pilot cost
 export const ClainkRevoked=({c})=>(
   <div className="claink-revoked ck-beat">
-    <div className="stamp" aria-hidden="true">REVOKED</div>
-    <p>The AI Governance Council has sunset your agents. They will be missed by no one.</p>
-    {c.last && c.last.farewell && <p className="farewell">Its farewell email to {c.last.farewell}: “It's not you, it's me.” They agreed.</p>}
+    <div className="stamp" aria-hidden="true">{CK_END.stamp}</div>
+    <p>{CK_END.sunset}</p>
+    {c.last && c.last.farewell && <p className="farewell">{CK_END.farewell(c.last.farewell)}</p>}
     {c.strikeLog.length>0 && <ol className="claink-recap">{c.strikeLog.map((e,i)=>(
-      <li key={`${e.n}-${i}`}><span className="num" aria-hidden="true">{e.n}</span><span className="sr-only">Strike {e.n}: </span><b>{e.who}</b> · {e.line}</li>
+      <li key={`${e.n}-${i}`}><span className="num" aria-hidden="true">{e.n}</span><span className="sr-only">{CK_END.strikeSr(e.n)}</span><b>{e.who}</b> · {e.line}</li>
     ))}</ol>}
-    <p className="claink-stats">{fmtTok(c.tokens)} tokens · Influenced {money(c.claimed)} · Closed {money(c.delivered)} · Charged back {money(c.billed)}</p>
+    <p className="claink-stats">{CK_END.statsRevoked(c.tokens,c.claimed,c.delivered,c.billed)}</p>
   </div>
 );
 
@@ -283,13 +247,7 @@ export const ClainkConsole=({s,ui,setUi,focusOnMount,onDeploy,onCancel,onHide,on
   const end=c.status!=="active";
   const mini=!!ui.mini && !end;
   const ref=useRef(null), statusRef=useRef(null), toggleRef=useRef(null), cancelRef=useRef(null), keepRef=useRef(null);
-  // pos = where you put it (saved); shown = where it fits on this screen right now (never saved, so a rotation or a
-  // short-lived resize doesn't lose your spot)
-  const[pos,setPos]=useState(()=>Number.isFinite(ui.x) && Number.isFinite(ui.y) ? {x:ui.x,y:ui.y} : null);
-  const[shown,setShown]=useState(null);
   const[confirmCancel,setConfirmCancel]=useState(false);
-  const[dragging,setDragging]=useState(false);
-  const drag=useRef(null);
   const focusNext=useRef(focusOnMount ? "status" : null);
   const bodyIdRef=useRef(null);
   if(bodyIdRef.current===null) bodyIdRef.current="claink-body-"+(++clainkMarkSeq);
@@ -352,29 +310,12 @@ export const ClainkConsole=({s,ui,setUi,focusOnMount,onDeploy,onCancel,onHide,on
   },[c.deploys]);
   // closed mid-report (the end card's × finishes it first; an unmount here means New Game or Load, and the page drops it)
   useEffect(()=>()=>{ const r=reveal.current; r.timers.forEach(clearTimeout); r.timers=[]; handOver(); },[]);
-  const place=p=>{ setPos(p); setShown(p); setUi(u=>({...u,x:p.x,y:p.y,mini})); }; // user moves only; keeps what you see (pill or console)
-  const fit=()=>{
-    const el=ref.current;
-    if(!el || !pos || drag.current)return;
-    const p=clampToView(pos.x,pos.y,el);
-    if(!shown || p.x!==shown.x || p.y!==shown.y) setShown(p);
-  };
   // focus follows the control that replaced the one you used (never back to <body>)
   useEffect(()=>{
     const k=focusNext.current; focusNext.current=null;
     const el=k==="status" ? (mini ? toggleRef.current : statusRef.current) : k==="toggle" ? toggleRef.current : k==="cancel" ? cancelRef.current : k==="keep" ? keepRef.current : null;
     if(el) try{ el.focus({preventScroll:true}); }catch(_){}
   });
-  // fit before paint after every render, so content that just grew (cancel confirm, a report line) never flashes off-screen
-  (React.useLayoutEffect||useEffect)(fit);
-  // ...and on size changes React didn't cause (fonts loading) and window resizes / rotations
-  useEffect(()=>{
-    const el=ref.current;
-    let ro=null;
-    if(el && typeof ResizeObserver!=="undefined"){ ro=new ResizeObserver(fit); ro.observe(el); }
-    window.addEventListener("resize",fit);
-    return()=>{ if(ro)ro.disconnect(); window.removeEventListener("resize",fit); };
-  },[pos,shown,mini,end]);
   // a run result also reaches screen readers when a dialog has already made the page inert (an ending that the run
   // caused; the delayed Writing Lesson carries its own copy). Only for results that happen while you're here: a reload
   // must not replay an old one into an ending dialog.
@@ -386,43 +327,8 @@ export const ClainkConsole=({s,ui,setUi,focusOnMount,onDeploy,onCancel,onHide,on
     const t=setTimeout(()=>{ const sr=document.querySelector("dialog[open] .tst-sr"); if(sr){ sr.textContent=""; sr.textContent=c.last.announce; } },120);
     return()=>clearTimeout(t);
   },[c.deploys,c.status]);
-  const onPointerDown=e=>{
-    if(e.pointerType==="mouse" && e.button!==0)return;
-    if(e.target.closest && e.target.closest("button:not(.claink-grip)"))return; // the grip drags too; minimize/close don't
-    const el=ref.current; if(!el)return;
-    const r=el.getBoundingClientRect();
-    drag.current={id:e.pointerId,dx:e.clientX-r.left,dy:e.clientY-r.top,moved:false};
-    try{ e.currentTarget.setPointerCapture(e.pointerId); }catch(_){}
-    setDragging(true);
-  };
-  const onPointerMove=e=>{
-    const d=drag.current; if(!d || d.id!==e.pointerId)return;
-    d.moved=true;
-    const p=clampToView(e.clientX-d.dx,e.clientY-d.dy,ref.current);
-    setPos(p); setShown(p);
-  };
-  const endDrag=e=>{
-    const d=drag.current; if(!d || d.id!==e.pointerId)return;
-    drag.current=null; setDragging(false);
-    const el=ref.current;
-    if(d.moved && el){ const r=el.getBoundingClientRect(); place(clampToView(r.left,r.top,el)); }
-  };
-  const onGripKey=e=>{
-    const dir={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[e.key];
-    if(!dir)return;
-    e.preventDefault();
-    const el=ref.current; if(!el)return;
-    const r=el.getBoundingClientRect(), step=e.shiftKey?64:16;
-    place(clampToView(r.left+dir[0]*step,r.top+dir[1]*step,el));
-  };
-  // minimize/expand keeps your parked spot (the console may sit higher only while it needs the room); with no spot yet,
-  // the top-left corner you see becomes it, so the pill stays put
   const toggle=(e)=>{
-    const el=ref.current;
-    let p=pos;
-    if(!p && el){ const r=el.getBoundingClientRect(); p={x:Math.round(r.left),y:Math.round(r.top)}; }
-    if(p){ setPos(p); setShown(null); }
-    setUi(u=>({...u,x:p?p.x:u.x,y:p?p.y:u.y,mini:!mini}));
+    setUi(u=>({...u,mini:!mini}));
     focusNext.current="toggle";
     shieldNextClick(e); // the toggle moves out from under the pointer
   };
@@ -443,68 +349,66 @@ export const ClainkConsole=({s,ui,setUi,focusOnMount,onDeploy,onCancel,onHide,on
   const endIn=all || beat>nL+2+(L && L.ping?1:0);
   const cost=clainkCancelCost(s), canCancel=clainkCanCancel(s);
   const frozen=clainkFrozen(s);
-  const pill=end ? (c.status==="revoked" ? "Revoked" : "Cancelled") : frozen ? "Frozen" : c.deployed ? "Ran" : "Ready";
-  const at=shown||pos;
+  const P=CK_WORKSPACE.pill;
+  const pill=end ? (c.status==="revoked" ? P.revoked : P.cancelled) : frozen ? P.frozen : c.deployed ? P.ran : P.ready;
   const hold=beat<99 && holdH.current && !mini && c.status!=="cancelled" ? Math.min(holdH.current,window.innerHeight-24) : 0;
-  const style=at || hold ? {...(at?{left:at.x+"px",top:at.y+"px"}:{}),...(hold?{minHeight:hold+"px"}:{})} : undefined;
+  const style=hold ? {minHeight:hold+"px"} : undefined;
   const skip=beat<99 ? finishReveal : null;
   return(
-    <aside ref={ref} style={style} onKeyDown={onKeyDown} aria-label="clAInk agent workspace"
-      className={"claink-console"+(mini?" is-mini":"")+(end?" is-end":"")+(pos?" is-placed":"")+(dragging?" dragging":"")}>
-      <div className="claink-titlebar" onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={endDrag} onPointerCancel={endDrag}>
+    <aside ref={ref} style={style} onKeyDown={onKeyDown} aria-label={CK_WORKSPACE.label}
+      className={"claink-console"+(mini?" is-mini":"")+(end?" is-end":"")}>
+      <div className="claink-titlebar">
         <ClainkMark size={16}/>
-        <span className="claink-title">clAInk{!mini && <span> Agent Workspace</span>}</span>
-        {mini && <span className="claink-pilltext">{pill}{shownStrikes>0 && !end ? ` · ${shownStrikes}/${CLAINK.STRIKES} strikes` : ""}</span>}
+        <span className="claink-title">clAInk{!mini && <span>{CK_WORKSPACE.title}</span>}</span>
+        {mini && <span className="claink-pilltext">{pill}{shownStrikes>0 && !end ? CK_WORKSPACE.pillStrikes(shownStrikes,CLAINK.STRIKES) : ""}</span>}
         <span className={"claink-dot"+(end ? (endIn?" dead":" busy") : c.deployed?" busy":"")} aria-hidden="true"/>
         <span className="claink-tb-btns">
-          <button type="button" className="claink-grip" aria-label="Move clAInk window" title="Drag to move, or use the arrow keys"
-            onKeyDown={onGripKey}><span aria-hidden="true">⠿</span></button>
           {!end && <button type="button" ref={toggleRef} className="claink-min" aria-expanded={!mini} aria-controls={bodyId}
-            aria-label={mini ? "Expand clAInk workspace" : "Minimize clAInk workspace"} title={mini ? "Expand" : "Minimize"}
-            onClick={toggle}><span aria-hidden="true">{mini ? "▢" : "–"}</span></button>}
-          {end && <button type="button" className="claink-end-close" aria-label="Close clAInk window" title="Close"
-            onClick={e=>{ if(beat<99) finishReveal(); onHide(e); }}><span aria-hidden="true">×</span></button>}
+            aria-label={mini ? CK_WORKSPACE.expandLabel : CK_WORKSPACE.minimizeLabel} title={mini ? CK_WORKSPACE.expand : CK_WORKSPACE.minimize}
+            onClick={toggle}>{mini ? <Icon name="maximize-2" /> : <Icon name="minus" />}</button>}
+          {end && <button type="button" className="claink-end-close" aria-label={CK_WORKSPACE.closeLabel} title={CK_WORKSPACE.close}
+            onClick={e=>{ if(beat<99) finishReveal(); onHide(e); }}><Icon name="x" /></button>}
         </span>
       </div>
       <div className="claink-body" id={bodyId} hidden={mini}>
         {c.status==="active" && <>
-          <div className="claink-statusline" tabIndex={-1} ref={statusRef}><span aria-hidden="true">● </span>{frozen ? "Quarter-end freeze · no runs" : c.deployed ? "Agents ran this week" : "Agents idle · awaiting delegation"}</div>
+          <div className="claink-statusline" tabIndex={-1} ref={statusRef}><i className="ck-dot" aria-hidden="true" />{frozen ? CK_WORKSPACE.status.frozen : c.deployed ? CK_WORKSPACE.status.ran : CK_WORKSPACE.status.idle}</div>
           <button type="button" className="claink-deploy" disabled={!clainkCanDeploy(s)}
             onClick={e=>{ focusNext.current="status"; holdH.current=ref.current ? ref.current.offsetHeight : 0; shieldNextClick(e); onDeploy(); }}>
-            <span><span aria-hidden="true">{frozen ? "🔒 " : c.deployed ? "✓ " : "▶ "}</span>{frozen ? "Quarter-end freeze" : c.deployed ? "Ran this week" : "Run agents"}</span>
-            <small>{frozen ? "no runs in week 13" : c.deployed ? (getQuarterInfo(s.week).weekInQuarter>=QUARTER_WEEKS-1 ? "last run this quarter" : "next run: next week") : "0 energy · 0 slots · billed Fri"}</small>
+            <span>{frozen ? <Icon name="lock" /> : c.deployed ? <Icon name="check" /> : <Icon name="play" />}{frozen ? CK_WORKSPACE.run.frozen : c.deployed ? CK_WORKSPACE.run.ran : CK_WORKSPACE.run.go}</span>
+            <small>{frozen ? CK_WORKSPACE.runNote.frozen : c.deployed ? (getQuarterInfo(s.week).weekInQuarter>=QUARTER_WEEKS-1 ? CK_WORKSPACE.runNote.last : CK_WORKSPACE.runNote.next) : CK_WORKSPACE.runNote.go}</small>
           </button>
           <ClainkStrikes n={shownStrikes} log={c.strikeLog} cash={s.cash} due={c.due} ran={c.deployed}/>
         </>}
-        {c.status==="revoked" && <div className="claink-statusline" tabIndex={-1} ref={statusRef}><span aria-hidden="true">● </span>{endIn ? "Seat revoked" : "Agents running…"}</div>}
+        {c.status==="revoked" && <div className="claink-statusline" tabIndex={-1} ref={statusRef}><i className="ck-dot" aria-hidden="true" />{endIn ? CK_WORKSPACE.status.revoked : CK_WORKSPACE.status.running}</div>}
         {L && c.status!=="cancelled" && (isRun || L.kind==="onboarded") && <ClainkReport last={L} beat={beat} workTok={workTok} onSkip={skip}/>}
-        {L && L.ping && pingIn && <div className="claink-ping ck-beat"><span className="who"><span aria-hidden="true">👔 </span>Your manager</span><span>{L.ping}</span></div>}
+        {L && L.ping && pingIn && <div className="claink-ping ck-beat"><span className="who"><Icon name="user-round" />{CK_WORKSPACE.manager}</span><span>{L.ping}</span></div>}
         {c.status==="active" && <>
-          {(all || !isRun) && <div className="claink-usage">{frozen ? <>Quarter-end freeze: nothing more gets billed · Charged back so far {money(c.billed)}</>
-            : c.deployed ? <>This week: <b>{money(c.due)}</b> ({fmtTok(c.weekTokens)} tokens), billed Friday · Charged back so far {money(c.billed)}</>
-            : <>Idle weeks still bill {money(CLAINK.IDLE[0])}–{money(CLAINK.IDLE[1])}: background agents keep “thinking” · Charged back so far {money(c.billed)}</>}</div>}
+          {(all || !isRun) && <div className="claink-usage">{frozen ? CK_WORKSPACE.usageFrozen(c.billed)
+            : c.deployed ? (u=><>{u[0]}<b>{u[1]}</b>{u[2]}</>)(CK_WORKSPACE.usageRan(c.due,c.weekTokens,c.billed))
+            : CK_WORKSPACE.usageIdle(CLAINK.IDLE[0],CLAINK.IDLE[1],c.billed)}</div>}
           {frozen ? null : !confirmCancel
             ? <button type="button" ref={cancelRef} className="claink-cancel-link"
-                onClick={()=>{ focusNext.current="keep"; setConfirmCancel(true); }}>Cancel seat</button>
-            : <div className="claink-cancel-box" role="group" aria-label="Cancel clAInk seat">
-                <span>Early termination: {money(cost)} ({money(CLAINK.CANCEL)} fee + this week's usage).</span>
-                <span className="offer">Before you go: Enterprise Plus hits 21% success. Just $4,999/wk.</span>
+                onClick={()=>{ focusNext.current="keep"; setConfirmCancel(true); }}>{CK_WORKSPACE.cancel}</button>
+            : <div className="claink-cancel-box" role="group" aria-label={CK_WORKSPACE.cancelLabel}>
+                <span>{CK_WORKSPACE.cancelCost(cost,CLAINK.CANCEL)}</span>
+                <span className="offer">{CK_WORKSPACE.cancelOffer}</span>
                 <span className="row2">
-                  <button type="button" ref={keepRef} className="claink-cancel-keep" onClick={()=>{ focusNext.current="cancel"; setConfirmCancel(false); }}>Keep agents</button>
+                  <button type="button" ref={keepRef} className="claink-cancel-keep" onClick={()=>{ focusNext.current="cancel"; setConfirmCancel(false); }}>{CK_WORKSPACE.keep}</button>
                   <button type="button" className="claink-cancel-confirm" disabled={!canCancel}
-                    onClick={()=>{ focusNext.current="status"; onCancel(); }}>{canCancel ? `Pay ${money(cost)} & cancel` : "Can't afford the fee"}</button>
+                    onClick={()=>{ focusNext.current="status"; onCancel(); }}>{canCancel ? CK_WORKSPACE.cancelPay(cost) : CK_WORKSPACE.cancelBroke}</button>
                 </span>
               </div>}
         </>}
         {c.status==="revoked" && endIn && <ClainkRevoked c={c}/>}
         {c.status==="cancelled" && <div className="claink-offboarded">
-          <div className="claink-statusline" tabIndex={-1} ref={statusRef}>Seat cancelled</div>
-          <p>Your data stays with clAInk “to improve the models.” <span aria-hidden="true">💜</span></p>
-          <p className="claink-stats">{fmtTok(c.tokens)} tokens · Closed {money(c.delivered)} · Charged back {money(c.billed)}</p>
+          <div className="claink-statusline" tabIndex={-1} ref={statusRef}>{CK_END.cancelled}</div>
+          <p>{CK_END.data}</p>
+          <p className="claink-stats">{CK_END.statsCancelled(c.tokens,c.delivered,c.billed)}</p>
         </div>}
       </div>
       <div className="claink-live sr-only" aria-live="polite">{c.last && c.last.announce
-        ? (isRun ? `Run ${c.deploys}: ${c.last.announce}` : c.last.announce) : ""}</div>
+        ? (isRun ? CK_WORKSPACE.live(c.deploys,c.last.announce) : c.last.announce) : ""}</div>
     </aside>
   );
 };
