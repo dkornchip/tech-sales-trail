@@ -202,7 +202,7 @@ async function journey(browser, env, opts) {
     });
 
     // Hold a key: the first keydown, then auto-repeats of it, then the key comes up. How often did the control act?
-    ok = ok && await run('held', async () => {
+    if (ok) await run('held', async () => {
       const hold = async (move, key, count, id, label, queue) => {
         await tabTo(move);
         const before = count(state());
@@ -238,10 +238,17 @@ function report(r, known, label) {
   const skipped = STAGES.filter(id => !r.stages.some(s => s.id === id));
   for (const id of skipped) console.log(`  --   ${id.padEnd(8)} not reached`);
   const judged = r.findings.map(f => Object.assign({ status: known.judge(f.id, true) }, f));
+  // one line per id; the same finding on many controls is shown with the first few and a count
   const show = (title, list) => {
     if (!list.length) return;
-    console.log(`\n${title} (${list.length})`);
-    for (const f of list) console.log(`  ${f.id.padEnd(28)} ${f.text}`);
+    const groups = new Map();
+    for (const f of list) { if (!groups.has(f.id)) groups.set(f.id, []); groups.get(f.id).push(f.text); }
+    console.log(`\n${title} (${groups.size} id${groups.size === 1 ? '' : 's'}, ${list.length} finding${list.length === 1 ? '' : 's'})`);
+    for (const [id, texts] of groups) {
+      console.log(`  ${id.padEnd(28)} ${texts[0]}`);
+      for (const t of texts.slice(1, 4)) console.log(`  ${''.padEnd(28)} ${t}`);
+      if (texts.length > 4) console.log(`  ${''.padEnd(28)} ... and ${texts.length - 4} more (--json has them all)`);
+    }
   };
   show('KNOWN FINDINGS, listed in --expect-fail', judged.filter(f => f.status === 'xfail'));
   show('UNEXPECTED FINDINGS', judged.filter(f => f.status === 'FAIL'));

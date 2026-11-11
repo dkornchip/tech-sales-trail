@@ -77,7 +77,8 @@ function sessionsFor(f, moves, n) {
   const afterEnding = [{ m: 'reload', x: { dialog: f.expect.dialog } }, { m: 'newrun', x: { dialog: null, state: s => s.week === 1 && s.cash === 1200 && s.closedWon === 0 } }];
   const base = (way, k) => ({
     fixture: f.id, way, id: `${f.id} / ${way}`, seed: fnv('saves:' + f.id + ':' + way), motion: (n + k) % 2 ? 'reduce' : 'full', fx: parseFx('seeded'),
-    playEndings: true,
+    // an ending's cutscene is only played to the end where the announcer's line is what is being checked
+    playEndings: !!(x.said && way === 'Load button'),
     repro: () => `node test/saves/run.cjs --only ${f.id}`
   });
   const out = [];

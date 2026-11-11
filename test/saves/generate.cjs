@@ -61,7 +61,7 @@ const RECIPES = [
   { id: 'fresh', what: 'A fresh run: week 1, nothing done, the clAInk ad showing.',
     make: { fresh: true }, how: 'Opened the baseline with empty storage and clocked in.',
     expect: { dialog: null, dock: 'ad', state: { week: 1, cash: 1200, 'claink.status': 'ad' } }, policies: ['funnel', 'rider'] },
-  { id: 'midrun-seeded', what: 'Mid-run, played for real: a board of deals at every stage, the offer long gone.',
+  { id: 'midrun-seeded', what: 'Mid-run, played for real: week 7, eight live deals from leads to proposals, 52 log lines, the clAInk offer long gone.',
     make: { play: { policy: 'funnel', seed: 1, until: s => s.week >= 7 && s.deals.length >= 7 } },
     how: 'A seeded "funnel" policy session from a fresh run (no New Game, Load or reload), stopped at the first move after which the week is 7 or later and at least 7 deals are live.',
     expect: { dialog: null, dock: 'none' }, policies: ['funnel', 'coffee'] },
