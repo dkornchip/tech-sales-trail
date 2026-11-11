@@ -156,8 +156,8 @@ module.exports = {
         return null;
       },
       region(name) {
-        if (name === 'log') return qa('#root .activity .scroll');
-        if (name === 'deals') return qa('#root .deals .scroll');
+        if (name === 'log') return qa('#root .activity');
+        if (name === 'deals') return qa('#root .deals');
         if (name === 'dialog') return qa('dialog[open]');
         if (name === 'boot') return qa('#boot');
         if (name === 'ascii') return qa('pre');                              // the cutscene and the boot screen

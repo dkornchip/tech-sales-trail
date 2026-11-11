@@ -7,7 +7,7 @@
  *
  *   --b <path>          the build under test (default ./index.html). "--b baseline": the baseline against itself,
  *                       which must always pass
- *   --b-driver <name>   driver for build B (default v121; test/parity/drivers/interface.cjs)
+ *   --b-driver <name>   driver for build B (default next; test/parity/drivers/interface.cjs)
  *   --only <text>       only the fixtures whose id contains <text>
  *   --moves <n>         moves played after loading a save that is not a finished run (default 30)
  *   --workers <w>       A/B pairs played at the same time (default 1)
@@ -112,7 +112,7 @@ async function runSaves(opts) {
   const buildB = loadBuild(opts.b || { kind: 'file', file: path.resolve(__dirname, '..', '..', 'index.html') });
   // the baseline's driver must know the dock; B's too, or "the right dock state is showing" would be vacuous
   const driverA = requireE2E(loadDriver('v121'));
-  const driverB = requireE2E(loadDriver(opts.bDriver || 'v121'));
+  const driverB = requireE2E(loadDriver(opts.bDriver || (opts.b && opts.b.kind === 'baseline' ? 'v121' : 'next')));
   const env = { buildA, buildB, driverA, driverB, sound: false };
   const sessions = [];
   fixtures.forEach((f, n) => { for (const s of sessionsFor(f, opts.moves === undefined ? 30 : opts.moves, n)) sessions.push(s); });

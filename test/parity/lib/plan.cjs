@@ -25,7 +25,7 @@ const parseFx = v => (v === undefined || v === 'seeded' ? { mode: 'seeded', seed
 /*
  * opts (all optional):
  *   a, b            build specs for serve.loadBuild; default A = the baseline, B = ./index.html
- *   aDriver, bDriver   driver names (default 'v121')
+ *   aDriver, bDriver   driver names (A defaults to 'v121'; B to 'next' for a built file, 'v121' for the baseline)
  *   full            long run set
  *   seeds, from, maxMoves, policies[]   the policy sessions
  *   scenarios       true (default) | false | 'substring'   the scripted sessions
@@ -48,7 +48,7 @@ async function runAll(opts) {
   const buildA = loadBuild(opts.a || { kind: 'baseline' });
   const buildB = loadBuild(opts.b || { kind: 'file', file: path.join(REPO, 'index.html') });
   const driverA = loadDriver(opts.aDriver || 'v121');
-  const driverB = loadDriver(opts.bDriver || 'v121');
+  const driverB = loadDriver(opts.bDriver || (opts.b && (opts.b.kind === 'baseline' || opts.b.kind === 'mutant') ? 'v121' : 'next'));
   const fx = opts.fx || parseFx('seeded');
   const motionOpt = opts.motion || 'mix';
   const seeds = opts.seeds === undefined ? mode.seeds : opts.seeds;

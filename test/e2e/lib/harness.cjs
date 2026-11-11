@@ -19,7 +19,8 @@ const e2eInPage = require('./inpage.cjs');
 const ROUND_MS = 2000, MAX_ROUNDS = 8;
 
 const buildOf = arg => loadBuild(arg === 'baseline' ? { kind: 'baseline' } : { kind: 'file', file: path.resolve(arg) });
-const driverOf = name => requireE2E(loadDriver(name || 'v121'));
+// the build under test carries the v2.0 markup; pass 'v121' to look at the frozen baseline
+const driverOf = (name, target) => requireE2E(loadDriver(name || (target === 'baseline' ? 'v121' : 'next')));
 
 /*
  * Opens one page. o:

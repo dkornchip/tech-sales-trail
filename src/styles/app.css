@@ -47,7 +47,7 @@
 .kpi .label{font-size:var(--fs-1);color:var(--text-2);display:flex;align-items:center;justify-content:space-between}
 .kpi .value{font-size:var(--fs-4);font-weight:600;letter-spacing:-.02em;line-height:1.15}
 .kpi .value small{font-size:var(--fs-1);font-weight:400;color:var(--text-3);letter-spacing:0;margin-left:2px}
-.kpi .sub{font-size:var(--fs-1);color:var(--text-3);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kpi .sub{font-size:var(--fs-1);color:var(--text-3);line-height:1.3}
 .kpi .sub.warn{color:var(--warn)} .kpi .sub.bad{color:var(--bad)} .kpi .sub.good{color:var(--good)}
 .meter{height:4px;border-radius:2px;background:var(--surface-3);position:relative;overflow:visible}
 .meter > i{display:block;height:100%;border-radius:2px;background:var(--text-2);transition:width .18s var(--ease)}
@@ -86,7 +86,8 @@
 .hint strong{color:var(--text);font-weight:500}
 .hint kbd{margin-left:auto;font-family:var(--mono);font-size:var(--fs-1);color:var(--text-3);border:1px solid var(--border);border-radius:var(--r-1);padding:0 5px;line-height:18px}
 .foot{display:flex;align-items:center;gap:var(--sp-3)}
-.chips{display:flex;gap:6px;min-width:0;flex:1;overflow:hidden;-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 24px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 24px),transparent)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;min-width:0;flex:1;height:26px;overflow:hidden}
+.chip.more{cursor:default;flex:none}
 .chip{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 10px;border-radius:var(--r-full);background:var(--surface-2);border:1px solid var(--border);font-size:var(--fs-1);color:var(--text-2);white-space:nowrap}
 .chip .icon{width:13px;height:13px}
 .chip.good{color:var(--good);border-color:transparent;background:var(--good-weak)} .chip.good .icon{color:var(--good)}
@@ -100,7 +101,7 @@
 .btn .cost .icon{width:12px;height:12px;color:var(--text-3)}
 
 /* ---------- right column ---------- */
-.right{overflow:hidden}
+.right{overflow:hidden;container-type:inline-size}
 .section{display:flex;flex-direction:column;min-height:0}
 .section + .section{border-top:1px solid var(--border)}
 .section-head{display:flex;align-items:baseline;gap:var(--sp-3);padding:var(--sp-4) var(--sp-5) var(--sp-3)}
@@ -109,7 +110,7 @@
 .empty{padding:0 var(--sp-5) var(--sp-5);font-size:var(--fs-1);color:var(--text-3)}
 .scroll{overflow:auto;min-height:0;scrollbar-width:thin;scrollbar-color:var(--border-strong) transparent}
 .scroll.more{-webkit-mask-image:linear-gradient(#000 calc(100% - 28px),transparent);mask-image:linear-gradient(#000 calc(100% - 28px),transparent)}
-.deals{flex:0 1 auto;max-height:52%}
+.deals{flex:0 1 auto;max-height:40%}
 .deal{display:grid;grid-template-columns:minmax(0,1fr) 108px 78px 68px 36px;align-items:center;column-gap:var(--sp-4);padding:0 var(--sp-5);height:32px;font-size:var(--fs-1);border-top:1px solid transparent}
 .deal + .deal{border-top-color:var(--border)}
 .deal .acct{font-size:var(--fs-2);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -124,9 +125,14 @@
 .deal .val{text-align:right;color:var(--text)}
 .deal .odds{text-align:right;color:var(--text-2)}
 .deal-cols{color:var(--text-3);height:24px;border-bottom:1px solid var(--border)}
+/* a narrow column keeps the names whole and lets the pips speak for the stage */
+@container (max-width:470px){
+  .deal{grid-template-columns:minmax(0,1fr) 40px 78px 68px 36px}
+  .deal .stage .stage-name{display:none}
+}
 .deal-cols span:nth-child(4),.deal-cols span:nth-child(5){text-align:right}
 
-.activity{flex:1 1 0}
+.activity{flex:1 1 0;min-height:104px}
 .week-div{display:flex;align-items:center;gap:var(--sp-3);padding:var(--sp-3) var(--sp-5) var(--sp-2);font-size:var(--fs-1);color:var(--text-3);position:sticky;top:0;background:var(--surface-1)}
 .week-div::after{content:"";flex:1;height:1px;background:var(--border)}
 .line{display:grid;grid-template-columns:16px minmax(0,1fr);column-gap:var(--sp-3);align-items:start;padding:5px var(--sp-5);font-size:var(--fs-1);line-height:1.45}
@@ -136,20 +142,6 @@
 .line .deltas{font-family:var(--mono);color:var(--text-3);margin-left:auto}
 .line.warn .icon{color:var(--warn)} .line.bad .icon{color:var(--bad)} .line.good .icon{color:var(--good)}
 .line .deltas .up{color:var(--good)} .line .deltas .down{color:var(--bad)}
-
-/* ---------- clAInk dock: the one thing here with a gradient ---------- */
-.ck{--ck-v:#a78bfa;--ck-c:#22d3ee;--ck-p:#f472b6;--ck-ink:#eeeaff;--ck-mut:#b3aee0;--ck-line:#3a3270;--ck-bg:#0f0d1f}
-.ck-dock{display:flex;align-items:center;gap:var(--sp-4);padding:0 var(--sp-5);height:48px;background:var(--ck-bg);border-top:1px solid var(--ck-line);color:var(--ck-ink);font-size:var(--fs-1)}
-.ck-mark{width:20px;height:20px;border-radius:6px;background:linear-gradient(135deg,var(--ck-v),var(--ck-c));display:grid;place-items:center}
-.ck-mark svg{width:12px;height:12px;color:#0b0a18;stroke-width:2.2}
-.ck-name{font-weight:600;font-size:var(--fs-2)}
-.ck-status{color:var(--ck-mut)}
-.ck-strikes{display:flex;gap:4px;margin-left:auto}
-.ck-strikes i{width:18px;height:18px;border-radius:5px;border:1px dashed var(--ck-line);display:grid;place-items:center;font-style:normal;font-family:var(--mono);color:var(--ck-mut)}
-.ck-strikes i.hit{border:0;background:#e11d48;color:#fff}
-.ck-btn{height:28px;padding:0 12px;border-radius:var(--r-2);border:0;background:linear-gradient(90deg,var(--ck-v),var(--ck-p));color:#14102b;font-weight:600;font-size:var(--fs-1);cursor:pointer}
-.ck-btn[disabled]{background:none;border:1px solid var(--ck-line);color:var(--ck-mut);font-weight:500;cursor:default}
-.ck .iconbtn .icon{color:var(--ck-mut)}
 
 /* ---------- settings menu ---------- */
 .topbar{position:relative}

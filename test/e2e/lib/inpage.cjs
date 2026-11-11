@@ -121,6 +121,9 @@ module.exports = function e2eInPage() {
         points++;
         const top = D.elementFromPoint(x, y);
         if (top && (top === box || box.contains(top))) continue;
+        // a corner point that lands on the region's own container is the container's rounded corner clipping the
+        // region, not something sitting on top of it
+        if (top && (i === 0 || i === 5) && (j === 0 || j === 5) && top.contains(box)) continue;
         // name the thing on top by its outermost box that is not also an ancestor of the region
         let who = top;
         while (who && who.parentElement && !who.parentElement.contains(box)) who = who.parentElement;

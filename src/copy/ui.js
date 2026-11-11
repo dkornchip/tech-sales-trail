@@ -105,6 +105,7 @@ export const CHIP = {
   closeOdds: (delta, weeks) => `Close odds ${delta > 0 ? "+" : "−"}${Math.abs(Math.round(delta * 100))}% ${weeks > 1 ? `for ${weeks} weeks` : "this week"}`,
   discount: rate => `Discounting ${pc(rate)} this week`,
   rested: "Rested",
+  more: k => `${k} more`,
   trip: place => `${place} trip approved`,
   shots: k => n(k, "quad shot"),
   pip: level => `Performance plan, level ${level}`,

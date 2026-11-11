@@ -10,7 +10,8 @@
  *   --mutant <name>     play the baseline against the baseline with one deliberate change to its game logic
  *                       (names: test/parity/lib/mutants.cjs); this must always FAIL
  *   --a-driver <name>   driver for the baseline (default v121)
- *   --b-driver <name>   driver for build B (default v121; see test/parity/drivers/interface.cjs)
+ *   --b-driver <name>   driver for build B (default next, the v2.0 markup; v121 when B is the baseline itself;
+ *                       see test/parity/drivers/interface.cjs)
  *   --full              the long run set: more seeds, longer sessions, the scripted suite under both motion
  *                       settings, and floors on what the policy sessions reach on their own
  *   --seeds <n>         seeds per policy (default 2, or 14 with --full)

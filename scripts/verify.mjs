@@ -17,8 +17,8 @@
 // lint-copy. "npm run test:layout", "test:saves" and "test:keyboard" are this script with --only, so that the
 // lists below are the one place where today's known failures are written down.
 //
-// --driver names the harness driver for the build (default v121: the original markup). A build with new markup
-// brings its own driver, test/parity/drivers/<name>.cjs, and is verified with --driver <name>.
+// --driver names the harness driver for the build (default next: the v2.0 markup, test/parity/drivers/next.cjs).
+// The frozen baseline has its own, v121.
 import fs from "node:fs";
 import path from "node:path";
 import { spawn } from "node:child_process";
@@ -27,30 +27,14 @@ import { fileURLToPath } from "node:url";
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 /* ============================================================================================================
- * KNOWN FAILURES, TODAY. The build is the v1.21 interface, unchanged: these are what the redesign is for.
- * A listed id that fails is reported as known and does not fail the run. Anything else that fails does, and so
- * does a listed id that no longer fails: when something here gets fixed, delete its line.
+ * KNOWN FAILURES. None: the redesign fixed every layout problem that used to be listed here (small type, clAInk's
+ * window floating over the log and the deals, the badge row wrapping). If one ever has to be tolerated for a
+ * while, list its id here with the reason; a listed id that no longer fails is itself an error, so the list
+ * cannot go stale.
  * Ids are  check@fixture@viewport  (a pattern may stop early: "min-font" is that check everywhere).
  * ============================================================================================================ */
 const LAYOUT_MIN_FONT = 13;
-const LAYOUT_KNOWN = [
-  // type as small as 9px (clAInk's tier label), 10-11px for most labels: the scale starts at 13
-  "min-font",
-  // clAInk's window (the ad, the workspace) floats over the activity log
-  "log-not-covered@fresh-ad",
-  "log-not-covered@board-24",
-  "log-not-covered@ck-report",
-  // ...and with a full run report in it, over the deal list as well
-  "deals-not-covered@ck-report",
-  // every status badge at once wraps the badge row: the page then scrolls inside its container on a short screen...
-  "page-no-scroll@board-24@1366x768",
-  "page-no-scroll@board-24@1280x720",
-  "page-no-scroll@board-24@1200x800",
-  "page-no-scroll@ck-report@1280x720",
-  // ...and End Week ends up below the fold
-  "controls-in-viewport@board-24@1280x720",
-  "controls-in-viewport@board-24@1200x800"
-];
+const LAYOUT_KNOWN = [];
 const KEYBOARD_KNOWN = [
   // the boot screen's button is removed while it has focus
   "focus-lost@boot",
@@ -68,7 +52,7 @@ const verbose = has("--verbose");
 if(argv.length){ console.error("usage: node scripts/verify.mjs [--target <build.html>] [--only step,...] [--driver <name>] [--workers <n>] [--verbose]"); process.exit(2); }
 const target = targetArg ? path.resolve(targetArg) : path.join(ROOT, "dist", "index.html");
 const rel = p => path.relative(ROOT, p) || ".";
-const drv = flag => (driver ? [flag, driver] : []);
+const drv = flag => [flag, driver || "next"];
 
 const STEPS = {
   build: { what: "build to dist/", cmd: ["scripts/build.mjs"], skip: targetArg ? `--target ${rel(target)}` : null },

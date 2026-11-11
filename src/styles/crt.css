@@ -9,7 +9,7 @@
   height:170px;
   overflow:auto;
   font-family:"TST Mono",ui-monospace,Menlo,Consolas,"Courier New",monospace;
-  font-size:11px;
+  font-size:13px;
   line-height:1.25;
   color:var(--ink);
   white-space:pre;
@@ -32,7 +32,7 @@
   background:radial-gradient(ellipse at 50% 50%,transparent 58%,rgba(0,0,0,.5) 100%),linear-gradient(115deg,rgba(255,255,255,.06) 0%,transparent 28%)}
 .cutbox.crt::after{z-index:3;border-radius:inherit}
 .cutbox.crt pre{position:relative;z-index:1;margin:0;font-family:"TST Mono",ui-monospace,Menlo,Consolas,"DejaVu Sans Mono","Courier New",monospace;
-  font-size:11px;line-height:1.14;white-space:pre;color:var(--ink);text-shadow:0 0 5px currentColor;transform-origin:50% 50%}
+  font-size:13px;line-height:1.14;white-space:pre;color:var(--ink);text-shadow:0 0 5px currentColor;transform-origin:50% 50%}
 /* v1.20: the CRT flickers only while a scene is live (in practice the boot screen: an ending's pre keeps its finished
    power-on animation, which outranks this rule) */
 .cutbox.crt.tst-live pre{animation:flicker 6s steps(1,end) infinite}

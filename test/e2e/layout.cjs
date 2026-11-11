@@ -116,7 +116,7 @@ async function measure(browser, env, fx, viewport, opts) {
 }
 
 async function run(o) {
-  const env = { build: buildOf(o.target), driver: driverOf(o.driver) };
+  const env = { build: buildOf(o.target), driver: driverOf(o.driver, o.target) };
   const fixtures = FIXTURES.filter(f => !o.only || o.only.includes(f.id));
   const viewports = o.viewports || VIEWPORTS;
   const known = new Known(o.expect);
@@ -236,7 +236,7 @@ const SABOTAGE = [
 ];
 
 async function selftest(o) {
-  const env = { build: buildOf(o.target), driver: driverOf(o.driver) };
+  const env = { build: buildOf(o.target), driver: driverOf(o.driver, o.target) };
   const browser = await chromium.launch();
   let ok = true;
   const t0 = Date.now();

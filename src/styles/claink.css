@@ -3,7 +3,6 @@
 /* The ad pops up at run start (it waits behind the boot screen) and reserves page space under itself.
    The activated workspace is its own app window: drag it by the title bar, minimize it to a pill.
    Nothing here loops: a run's report plays in once, beat by beat, then everything holds still. */
-.container{padding-bottom:calc(12px + var(--claink-h,0px))}
 .claink-ad,.claink-console{--ck-v:#a78bfa;--ck-c:#22d3ee;--ck-p:#f472b6;--ck-ink:#eeeaff;--ck-mut:#aaa5da;--ck-line:#3a3270;
   position:fixed;z-index:12;color:var(--ck-ink);font-family:"TST Sans",ui-sans-serif,system-ui,sans-serif;text-align:left;line-height:1.4}
 .claink-ad *,.claink-console *{box-sizing:border-box}
@@ -11,7 +10,7 @@
 .claink-mark{flex:none;filter:drop-shadow(0 0 10px rgba(167,139,250,.55))}
 .claink-word{font-family:"TST Sans",ui-sans-serif,system-ui,sans-serif;font-weight:800;font-size:26px;letter-spacing:-1.2px;color:#fff}
 .claink-word b{font-weight:800;background:linear-gradient(100deg,var(--ck-v),var(--ck-c) 55%,var(--ck-p));-webkit-background-clip:text;background-clip:text;color:transparent}
-.claink-tier{font-size:9px;font-weight:800;letter-spacing:.16em;padding:3px 7px;border-radius:999px;color:#0b0a1f;
+.claink-tier{font-size:13px;font-weight:800;letter-spacing:.16em;padding:3px 7px;border-radius:999px;color:#0b0a1f;
   background:linear-gradient(90deg,var(--ck-c),var(--ck-v));box-shadow:0 0 12px rgba(34,211,238,.35)}
 .claink-logo.sm .claink-word{font-size:15px;letter-spacing:-.5px}
 .claink-logo.sm .claink-tier{display:none}
@@ -30,7 +29,7 @@
 .tst-booting .claink-ad{animation-play-state:paused}
 @keyframes clainkPop{0%{opacity:0;visibility:hidden;transform:translateY(28px) scale(.95)}100%{opacity:1;visibility:visible;transform:none}}
 .claink-ad-top{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px} /* the x stays above the pinned buttons */
-.claink-sponsored{font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--ck-mut)}
+.claink-sponsored{font-size:13px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--ck-mut)}
 .claink-ad-btns{flex:none;display:flex;gap:5px}
 .claink-ad-close,.claink-ad-min{flex:none;width:30px;height:30px;border-radius:10px;border:1px solid var(--ck-line);background:#16123a;color:#ddd8ff;
   font-size:18px;line-height:1;cursor:pointer;padding:0;transition:border-color .2s,color .2s}
@@ -40,27 +39,27 @@
 /* v1.21: minimized, the ad is a pill in the same corner: the mark, the name, the deadline, expand and close */
 .claink-ad.is-mini{left:auto;width:auto;max-width:calc(100vw - 32px);max-height:none;overflow:hidden;border-radius:999px;padding:5px 6px 5px 12px}
 .claink-ad.is-mini .claink-ad-top{margin:0;gap:10px}
-.claink-ad-pill{display:inline-flex;align-items:center;gap:7px;min-width:0;font-size:11px;color:#ddd8ff;white-space:nowrap}
+.claink-ad-pill{display:inline-flex;align-items:center;gap:7px;min-width:0;font-size:13px;color:#ddd8ff;white-space:nowrap}
 .claink-ad-pill .claink-mark{filter:none}
 .claink-ad-pill .claink-word{font-size:14px;letter-spacing:-.4px}
 .claink-ad-pill .ends{overflow:hidden;text-overflow:ellipsis;color:#ffd59e}
 .claink-ad-pill .ends::before{content:"· ";color:var(--ck-mut)}
 .claink-ad.is-mini .claink-ad-btns button{width:28px;height:26px;border-radius:8px}
-.claink-announce{display:inline-flex;align-items:center;gap:6px;max-width:100%;font-size:11px;font-weight:600;color:#ece6ff;
+.claink-announce{display:inline-flex;align-items:center;gap:6px;max-width:100%;font-size:13px;font-weight:600;color:#ece6ff;
   padding:4px 11px;border-radius:999px;border:1px solid #5d4cb5;background:linear-gradient(90deg,#2b2066,#10324c);margin:0 0 12px}
 .claink-announce b{color:var(--ck-c)}
 .claink-headline{font-family:"TST Sans",ui-sans-serif,system-ui,sans-serif;font-size:19px;line-height:1.18;font-weight:800;letter-spacing:-.5px;margin:12px 0 6px;color:#fff}
-.claink-sub{font-size:12.5px;color:#d3cdf7;margin:0 0 10px}
+.claink-sub{font-size:13px;color:#d3cdf7;margin:0 0 10px}
 .claink-chips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
-.claink-chips span{font-size:11px;font-weight:700;padding:4px 9px;border-radius:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12)}
-.claink-proof{font-size:11.5px;color:#e2ddff;margin:0 0 10px;font-style:italic}
-.claink-proof span{display:block;margin-top:2px;font-size:10.5px;font-style:normal;color:var(--ck-mut)}
+.claink-chips span{font-size:13px;font-weight:700;padding:4px 9px;border-radius:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12)}
+.claink-proof{font-size:13px;color:#e2ddff;margin:0 0 10px;font-style:italic}
+.claink-proof span{display:block;margin-top:2px;font-size:13px;font-style:normal;color:var(--ck-mut)}
 .claink-proof span::before{content:"— ";content:"— " / ""}
-.claink-price{font-size:11.5px;padding:8px 10px;border-radius:11px;margin:0 0 10px;color:#dff6ff;
+.claink-price{font-size:13px;padding:8px 10px;border-radius:11px;margin:0 0 10px;color:#dff6ff;
   background:linear-gradient(90deg,#0f2d46,#1c1a4f);border:1px solid rgba(34,211,238,.32)}
 .claink-price b{color:#fff}
 .claink-badges{display:flex;flex-wrap:wrap;gap:5px;margin:0 0 12px}
-.claink-badges>span{font-size:10px;font-weight:700;letter-spacing:.04em;padding:3px 7px;border-radius:6px;color:#c2bbf1;border:1px solid var(--ck-line)}
+.claink-badges>span{font-size:13px;font-weight:700;letter-spacing:.04em;padding:3px 7px;border-radius:6px;color:#c2bbf1;border:1px solid var(--ck-line)}
 .claink-badges>.urgent{color:#ffd59e;border-color:#a8641d;background:#2c1a07}
 .claink-cta,.claink-confirm,.claink-deploy{font:700 13px "TST Sans",ui-sans-serif,system-ui,sans-serif;border:0;cursor:pointer;color:#0b0a1f;transition:filter .2s,transform .2s}
 .claink-cta{width:100%;padding:12px;border-radius:13px;background:linear-gradient(100deg,var(--ck-v),var(--ck-c) 60%,var(--ck-p));
@@ -71,15 +70,15 @@
 .claink-actions{position:sticky;bottom:calc(-1 * var(--ck-pb));z-index:1;margin:0 calc(-1 * var(--ck-px));padding:10px var(--ck-px) 12px;
   background:linear-gradient(180deg,rgba(12,13,34,0),#0c0d22 30%)}
 /* step 2: the policy you're agreeing to, then Accept / Not now ("Not now" sits under the CTA's centre, so a double click can't accept) */
-.claink-policy{margin:0 0 9px;padding:8px 10px 8px;border-radius:11px;background:#100e2a;border:1px solid var(--ck-line);font-size:11.5px;color:#dcd7fb}
-.claink-policy .hd{display:flex;justify-content:space-between;gap:6px;margin-bottom:3px;font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#c4b5fd}
+.claink-policy{margin:0 0 9px;padding:8px 10px 8px;border-radius:11px;background:#100e2a;border:1px solid var(--ck-line);font-size:13px;color:#dcd7fb}
+.claink-policy .hd{display:flex;justify-content:space-between;gap:6px;margin-bottom:3px;font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#c4b5fd}
 .claink-policy .hd span{font-weight:600;letter-spacing:0;text-transform:none;color:var(--ck-mut)}
 .claink-policy ul{margin:0;padding-left:16px}
 .claink-policy li{margin:2px 0}
 .claink-confirm-row{display:grid;grid-template-columns:2fr 3fr;gap:8px}
 .claink-confirm{padding:11px 8px;border-radius:12px;background:linear-gradient(100deg,var(--ck-v),var(--ck-c))}
-.claink-notnow{font:600 12.5px "TST Sans",ui-sans-serif,system-ui,sans-serif;padding:11px 8px;border-radius:12px;cursor:pointer;color:#ddd8ff;background:rgba(255,255,255,.04);border:1px solid var(--ck-line)}
-.claink-fine{font-size:10px;line-height:1.4;color:#918cc2;margin:0;padding-top:4px}
+.claink-notnow{font:600 13px "TST Sans",ui-sans-serif,system-ui,sans-serif;padding:11px 8px;border-radius:12px;cursor:pointer;color:#ddd8ff;background:rgba(255,255,255,.04);border:1px solid var(--ck-line)}
+.claink-fine{font-size:13px;line-height:1.4;color:#918cc2;margin:0;padding-top:4px}
 
 .claink-console{right:calc(16px + env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));width:min(340px,calc(100vw - 24px));
   max-height:calc(100vh - 24px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));overflow:auto;overscroll-behavior:contain;border-radius:15px;
@@ -94,9 +93,9 @@
   background:linear-gradient(90deg,#1e1948,#0e1c3a);border-bottom:1px solid var(--ck-line)}
 .claink-console.is-mini .claink-titlebar{border-bottom:0;padding:5px 6px 5px 11px}
 .claink-console.dragging,.claink-console.dragging .claink-titlebar{cursor:grabbing}
-.claink-title{font-family:"TST Sans",ui-sans-serif,system-ui,sans-serif;font-weight:800;font-size:12.5px;letter-spacing:-.2px;white-space:nowrap}
+.claink-title{font-family:"TST Sans",ui-sans-serif,system-ui,sans-serif;font-weight:800;font-size:13px;letter-spacing:-.2px;white-space:nowrap}
 .claink-title span{font-weight:600;color:var(--ck-mut)}
-.claink-pilltext{font-size:11px;color:#ddd8ff;white-space:nowrap}
+.claink-pilltext{font-size:13px;color:#ddd8ff;white-space:nowrap}
 .claink-dot{width:8px;height:8px;border-radius:50%;flex:none;background:#34d399;box-shadow:0 0 8px #34d399}
 .claink-dot.busy{background:#fbbf24;box-shadow:0 0 8px #fbbf24}
 .claink-dot.dead{background:#f43f5e;box-shadow:0 0 8px #f43f5e}
@@ -106,29 +105,29 @@
 .claink-tb-btns button:hover{border-color:var(--ck-c);color:#fff}
 .claink-grip{cursor:move!important}
 .claink-body{padding:10px 12px 12px;display:grid;gap:9px}
-.claink-statusline{font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--ck-mut);outline:none;border-radius:4px}
+.claink-statusline{font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--ck-mut);outline:none;border-radius:4px}
 .claink-statusline:focus-visible{outline:2px solid var(--ck-c);outline-offset:2px}
 .claink-deploy{width:100%;padding:11px 12px;border-radius:12px;display:flex;align-items:center;justify-content:space-between;gap:8px;
   background:linear-gradient(100deg,var(--ck-c),var(--ck-v));box-shadow:0 0 18px rgba(34,211,238,.26)}
-.claink-deploy small{font-weight:600;opacity:.75;font-size:10.5px}
+.claink-deploy small{font-weight:600;opacity:.75;font-size:13px}
 .claink-deploy:disabled{cursor:default;color:#cfc9f5;background:#1c1842;box-shadow:none}
 
 /* the strike tracker: three boxes, filled by Shitcorp's AI Governance Council */
 .claink-strikes{display:grid;gap:5px;padding:8px 10px;border-radius:11px;background:#0e0c26;border:1px solid var(--ck-line)}
 .claink-strikes .row1{display:flex;align-items:center;gap:8px}
-.claink-strikes .lbl{font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--ck-mut)}
+.claink-strikes .lbl{font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--ck-mut)}
 .claink-strikes .boxes{display:flex;gap:5px}
-.ck-box{width:22px;height:22px;border-radius:6px;display:grid;place-items:center;font-size:11px;font-weight:800;line-height:1;color:#8a84c4;border:1px dashed #4a4385}
+.ck-box{width:22px;height:22px;border-radius:6px;display:grid;place-items:center;font-size:13px;font-weight:800;line-height:1;color:#8a84c4;border:1px dashed #4a4385}
 .ck-box.on{color:#fff;border:1px solid #e11d48;background:linear-gradient(180deg,#be123c,#881337);box-shadow:0 0 10px rgba(225,29,72,.32)}
-.claink-strikes .who{margin-left:auto;font-size:10.5px;color:var(--ck-mut);text-align:right}
-.claink-strikes .note{font-size:11px;line-height:1.38;color:#c9c4ef}
+.claink-strikes .who{margin-left:auto;font-size:13px;color:var(--ck-mut);text-align:right}
+.claink-strikes .note{font-size:13px;line-height:1.38;color:#c9c4ef}
 .claink-strikes.hot{border-color:#9f1239;background:linear-gradient(180deg,#2a0b14,#130a1e)}
 .claink-strikes .note.warn{color:#fecdd3}
 
 /* the run report, then the strike as filed */
-.claink-report{border-radius:11px;padding:8px 10px;font-size:12px;background:#0a0d24;border:1px solid #2b2b5c}
+.claink-report{border-radius:11px;padding:8px 10px;font-size:13px;background:#0a0d24;border:1px solid #2b2b5c}
 .claink-report.revealing,.claink-report.working{cursor:pointer}
-.claink-report .hd{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#c4b5fd}
+.claink-report .hd{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#c4b5fd}
 .claink-report .hd .tok{flex:none;font-weight:700;letter-spacing:0;text-transform:none;color:#fcd34d}
 .claink-report ul{margin:5px 0 0;padding:0;list-style:none}
 .claink-report li{margin:3px 0;padding-left:15px;position:relative}
@@ -141,36 +140,36 @@
 .claink-report.miracle .hd,.claink-report.miracle .net{color:#6ee7b7}
 .claink-report.working{color:#d3cdf7}
 .claink-report.working b{color:#fcd34d;font-variant-numeric:tabular-nums}
-.claink-strike{border-radius:11px;padding:8px 10px;font-size:12px;color:#ffe4e6;background:linear-gradient(180deg,#2a0b14,#160a1c);border:1px solid #9f1239}
-.claink-strike .hd{font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#fda4af;margin-bottom:3px}
+.claink-strike{border-radius:11px;padding:8px 10px;font-size:13px;color:#ffe4e6;background:linear-gradient(180deg,#2a0b14,#160a1c);border:1px solid #9f1239}
+.claink-strike .hd{font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#fda4af;margin-bottom:3px}
 .claink-strike .hd span{font-weight:600;letter-spacing:0;text-transform:none;color:#fecdd3}
 .claink-strike p{margin:0}
-.claink-strike .fx{margin-top:5px;font-size:11px;font-weight:600;color:#fda4af}
+.claink-strike .fx{margin-top:5px;font-size:13px;font-weight:600;color:#fda4af}
 .claink-strike.out{border-color:#f43f5e;box-shadow:0 0 18px rgba(244,63,94,.22)}
-.claink-clear{font-size:11.5px;color:#a7f3d0;padding:6px 10px;border-radius:10px;background:#062a20;border:1px solid rgba(52,211,153,.35)}
-.claink-ping{display:flex;flex-direction:column;gap:2px;font-size:12px;padding:7px 10px;border-radius:11px;background:#1d1a12;border:1px solid #6b5f3a}
-.claink-ping .who{font-weight:800;font-size:11px;color:#fde68a}
-.claink-usage{font-size:11px;color:var(--ck-mut)}
+.claink-clear{font-size:13px;color:#a7f3d0;padding:6px 10px;border-radius:10px;background:#062a20;border:1px solid rgba(52,211,153,.35)}
+.claink-ping{display:flex;flex-direction:column;gap:2px;font-size:13px;padding:7px 10px;border-radius:11px;background:#1d1a12;border:1px solid #6b5f3a}
+.claink-ping .who{font-weight:800;font-size:13px;color:#fde68a}
+.claink-usage{font-size:13px;color:var(--ck-mut)}
 .claink-usage b{color:#fff}
-.claink-cancel-link{justify-self:start;background:none;border:0;padding:0;font:10px "TST Sans",ui-sans-serif,system-ui,sans-serif;color:#716c9f;text-decoration:underline;cursor:pointer}
-.claink-cancel-box{font-size:11.5px;color:#fecdd3;background:#1c0a14;border:1px solid #7f1d3a;border-radius:11px;padding:8px 9px;display:grid;gap:7px}
-.claink-cancel-box .offer{font-size:10.5px;color:#c4b5fd}
+.claink-cancel-link{justify-self:start;background:none;border:0;padding:0;font:13px "TST Sans",ui-sans-serif,system-ui,sans-serif;color:#716c9f;text-decoration:underline;cursor:pointer}
+.claink-cancel-box{font-size:13px;color:#fecdd3;background:#1c0a14;border:1px solid #7f1d3a;border-radius:11px;padding:8px 9px;display:grid;gap:7px}
+.claink-cancel-box .offer{font-size:13px;color:#c4b5fd}
 .claink-cancel-box .row2{display:flex;gap:6px;flex-wrap:wrap}
-.claink-cancel-box button{font:600 11.5px "TST Sans",ui-sans-serif,system-ui,sans-serif;padding:7px 9px;border-radius:8px;cursor:pointer;border:1px solid #7f1d3a;background:#2a0b14;color:#ffe4e6}
+.claink-cancel-box button{font:600 13px "TST Sans",ui-sans-serif,system-ui,sans-serif;padding:7px 9px;border-radius:8px;cursor:pointer;border:1px solid #7f1d3a;background:#2a0b14;color:#ffe4e6}
 .claink-cancel-box button:disabled{opacity:.55;cursor:not-allowed}
 
 /* end cards */
-.claink-revoked,.claink-offboarded{display:grid;gap:7px;font-size:12px;color:#cbd5e1}
+.claink-revoked,.claink-offboarded{display:grid;gap:7px;font-size:13px;color:#cbd5e1}
 .claink-revoked p,.claink-offboarded p{margin:0}
 .claink-revoked .stamp{justify-self:start;padding:1px 9px;border:3px double #f43f5e;border-radius:6px;transform:rotate(-4deg);background:rgba(244,63,94,.08);
   font-family:"TST Sans",ui-sans-serif,system-ui,sans-serif;font-weight:800;font-size:17px;letter-spacing:.16em;color:#f43f5e;text-shadow:0 0 10px rgba(244,63,94,.4)}
 .claink-revoked .farewell{color:#fecdd3}
 .claink-recap{margin:0;padding:0;list-style:none;display:grid;gap:5px}
-.claink-recap li{position:relative;padding-left:24px;font-size:11.5px;color:#fecdd3}
+.claink-recap li{position:relative;padding-left:24px;font-size:13px;color:#fecdd3}
 .claink-recap li b{color:#fff;font-weight:700}
 .claink-recap .num{position:absolute;left:0;top:0;width:17px;height:17px;border-radius:5px;display:grid;place-items:center;
-  font-size:10px;font-weight:800;color:#fff;background:linear-gradient(180deg,#be123c,#881337)}
-.claink-stats{color:#94a3b8;font-size:11px}
+  font-size:13px;font-weight:800;color:#fff;background:linear-gradient(180deg,#be123c,#881337)}
+.claink-stats{color:#94a3b8;font-size:13px}
 
 /* each beat of a run lands once, then holds */
 .ck-beat{animation:ckBeat .26s var(--ease) both}
@@ -190,3 +189,17 @@
   .claink-ad.confirming{max-height:calc(100vh - 32px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))}
   @supports (height:100dvh){ .claink-ad.confirming{max-height:calc(100dvh - 32px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))} } }
 @media (prefers-reduced-motion: reduce){ .claink-ad,.claink-console,.ck-beat{animation:none!important} }
+
+/* ---------- v2.0: docked ----------
+   clAInk no longer floats over the game. The ad and the workspace sit at the bottom of the right column, in the
+   flow of the page; minimised, each is a single bar there. The rules above still draw them. These place them. */
+.claink-ad,.claink-console{position:relative;inset:auto;width:auto;max-width:none;flex:0 1 auto;min-height:0;max-height:46%;
+  border-radius:0 0 11px 11px;box-shadow:none;animation:none}
+.claink-console.is-placed{left:auto !important;top:auto !important}   /* a window position saved by v1.21 means nothing here */
+.claink-ad{border-top:1px solid var(--ck-line);max-height:58%}
+.claink-ad::before{display:none}                                      /* the gradient frame belonged to the floating card */
+.claink-console{border:0;border-top:1px solid var(--ck-line)}
+.claink-ad.is-mini,.claink-console.is-mini{width:auto;max-width:none;max-height:none;border-radius:0 0 11px 11px}
+.claink-titlebar{cursor:default;touch-action:auto}
+.claink-grip{display:none}
+@media (max-width:1024px), (max-height:619px){ .claink-ad,.claink-console{max-height:none} }

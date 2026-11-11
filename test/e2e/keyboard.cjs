@@ -315,7 +315,7 @@ async function selftest(browser, env) {
 (async () => {
   const o = parseArgs(process.argv.slice(2));
   if (!o.target) { console.error('usage: node test/e2e/keyboard.cjs <build.html> [options]   (try --help)'); process.exit(2); }
-  const env = { build: buildOf(o.target), driver: driverOf(o.driver) };
+  const env = { build: buildOf(o.target), driver: driverOf(o.driver, o.target) };
   const browser = await chromium.launch();
   try {
     if (o.selftest) { const ok = await selftest(browser, env); await browser.close(); process.exit(ok ? 0 : 1); }

@@ -4,7 +4,7 @@
 //   node scripts/lint-css.mjs [styles-dir] [--strict] [--only rule,...] [--all] [--json <file>]
 //                                                                       (default styles-dir: src/styles)
 //
-//   hex          a hex colour outside the files that may hold literals (tokens.css, crt.css, boot.css, claink.css).
+//   hex          a hex colour outside the files that may hold literals (tokens.css, and the in-world surfaces that keep their own palettes: crt.css, boot.css, claink.css, memo.css).
 //                Everywhere else a colour is a var(--token)
 //   gradient     linear-, radial- or conic-gradient( outside those files
 //   text-shadow  text-shadow outside those files
@@ -13,7 +13,7 @@
 //   font-size    a font size under 13px, anywhere (px, or rem at 16px; em and % cannot be judged here)
 //   media        a media query with a condition outside the allowed set, anywhere:
 //                  width   (max-width:640px) (min-width:641px) (max-width:1024px) (min-width:1025px) (min-width:1500px)
-//                  height  (max-height:600px) (min-height:620px) (min-height:900px)
+//                  height  (max-height:600px) (max-height:619px) (min-height:620px) (min-height:900px)
 //                  motion  (prefers-reduced-motion:reduce) (prefers-reduced-motion:no-preference)
 //
 // Default: prints the report and exits 0 (today's single stylesheet breaks all of these; the report is the list of
@@ -23,18 +23,18 @@ import fs from "node:fs";
 import path from "node:path";
 
 const RULES = {
-  hex: "hex colours outside tokens.css, crt.css, boot.css, claink.css",
+  hex: "hex colours outside tokens.css, crt.css, boot.css, claink.css, memo.css",
   gradient: "gradients outside those files",
   "text-shadow": "text-shadow outside those files",
   glow: "glow shadows (no offset, blurred) outside those files",
   "font-size": "font sizes under 13px",
   media: "media queries outside the allowed set"
 };
-const LITERALS_OK = new Set(["tokens.css", "crt.css", "boot.css", "claink.css"]);
+const LITERALS_OK = new Set(["tokens.css", "crt.css", "boot.css", "claink.css", "memo.css"]);
 const MIN_FONT = 13;
 const MEDIA_OK = new Set([
   "(max-width:640px)", "(min-width:641px)", "(max-width:1024px)", "(min-width:1025px)", "(min-width:1500px)",
-  "(max-height:600px)", "(min-height:620px)", "(min-height:900px)",
+  "(max-height:600px)", "(max-height:619px)", "(min-height:620px)", "(min-height:900px)",
   "(prefers-reduced-motion:reduce)", "(prefers-reduced-motion:no-preference)"
 ]);
 
@@ -89,7 +89,9 @@ function scan(file){
     if(!m) return;
     const prop = m[1].toLowerCase(), value = m[2].replace(/\s+/g, " "), pos = at + text.indexOf(m[1]);
     const show = `${prop}:${value}`.slice(0, 90);
-    if(!literalsOk){
+    // a mask is not paint: its gradient and its #000 decide what shows, not what colour it is
+    const mask = /^(-webkit-)?mask(-image)?$/.test(prop);
+    if(!literalsOk && !mask){
       if(!/url\(\s*["']?#/.test(value)) for(const h of value.match(/#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3,4})(?![0-9a-zA-Z_-])/g) || []) add("hex", pos, show, h.toLowerCase());
       for(const g of value.match(/(?:repeating-)?(?:linear|radial|conic)-gradient(?=\()/g) || []) add("gradient", pos, show, g);
       if(prop === "text-shadow" && !/^(none|0|initial|inherit|unset)$/i.test(value)) add("text-shadow", pos, show, "text-shadow");

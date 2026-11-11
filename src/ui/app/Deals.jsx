@@ -17,7 +17,7 @@ export const Deals = ({ s }) => {
           {rows.map(({ d }) => (
             <li key={d.id} className={"deal" + (d.stage >= 3 ? " late" : "")} data-deal-stage={d.stage}>
               <span className="acct">{d.account}</span>
-              <span className="stage"><span className="pips" aria-hidden="true">{[0, 1, 2, 3, 4].map(k => <i key={k} className={k <= d.stage ? "on" : ""} />)}</span>{STAGE[d.stage] || ""}</span>
+              <span className="stage" title={STAGE[d.stage] || ""}><span className="pips" aria-hidden="true">{[0, 1, 2, 3, 4].map(k => <i key={k} className={k <= d.stage ? "on" : ""} />)}</span><span className="stage-name">{STAGE[d.stage] || ""}</span></span>
               <span className={"mood " + d.mood}>{MOOD[d.mood] || d.mood}</span>
               <span className="val num">{money(d.value)}</span>
               <span className="odds num">{d.stage >= 3 ? Math.round(closeChance(s, d, { trained: true }) * 100) + "%" : ""}</span>

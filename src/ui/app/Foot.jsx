@@ -36,6 +36,38 @@ const chips = s => {
   return out;
 };
 
+// The status chips share one line with the buttons. Whatever does not fit is folded into a "+N" chip, which
+// names the rest when pointed at or focused; nothing is ever cut off mid-word.
+const Chips = ({ list, onHint }) => {
+  const box = React.useRef(null);
+  const sig = list.map(c => c.id + ":" + c.text).join("|");
+  const [fit, setFit] = React.useState({ sig: "", n: list.length });
+  const n = fit.sig === sig ? fit.n : list.length;              // a new set of chips is measured afresh
+  React.useLayoutEffect(() => {
+    const el = box.current; if (!el) return;
+    const measure = () => {
+      const kids = Array.from(el.children).filter(k => k.hasAttribute("data-chip"));
+      if (!kids.length) return;
+      const top = kids[0].offsetTop;
+      let ok = kids.findIndex(k => k.offsetTop > top);
+      if (ok < 0) ok = kids.length;
+      setFit(f => (f.sig === sig && f.n <= ok ? f : { sig, n: Math.min(ok, f.sig === sig ? f.n : ok) }));
+    };
+    measure();
+    const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(() => setFit({ sig: "", n: 0 })) : null;
+    if (ro) ro.observe(el);
+    return () => { if (ro) ro.disconnect(); };
+  }, [sig, n]);
+  const rest = list.slice(n), names = rest.map(c => c.text).join(" · ");
+  const tell = () => onHint({ title: CHIP.more(rest.length), text: names });
+  return (
+    <>
+      <div className="chips" ref={box}>{list.slice(0, n).map(c => <span key={c.id} className={"chip" + (c.kind ? " " + c.kind : "")} data-chip={c.id}><Icon name={c.icon} />{c.text}</span>)}</div>
+      {rest.length ? <span className="chip more" tabIndex={0} title={names} aria-label={CHIP.more(rest.length) + ": " + names} onMouseEnter={tell} onFocus={tell} onMouseLeave={() => onHint(null)} onBlur={() => onHint(null)}>+{rest.length}</span> : null}
+    </>
+  );
+};
+
 // Why the Hail Mary can't be thrown right now, or null.
 export const hailBlock = s => blocked(s, { energy: HAIL.energy, slots: 1 }) || (lateDeals(s).length ? null : { why: "none" });
 
@@ -47,7 +79,7 @@ export const Foot = ({ s, onHail, onEndWeek, onHint }) => {
   const over = isRunOver(s);
   return (
     <div className="foot">
-      <div className="chips">{chips(s).map(c => <span key={c.id} className={"chip" + (c.kind ? " " + c.kind : "")} data-chip={c.id}><Icon name={c.icon} />{c.text}</span>)}</div>
+      <Chips list={chips(s)} onHint={onHint} />
       <button type="button" className="btn" data-ui="hail" aria-disabled={hailBlocked ? "true" : undefined} onClick={() => { if (!hailBlocked) onHail(); }}
         onMouseEnter={hailHint} onFocus={hailHint} onMouseLeave={() => onHint(null)} onBlur={() => onHint(null)}><Icon name="dices" />{UI.hail}</button>
       <button type="button" className="btn primary" data-ui="end" aria-disabled={over ? "true" : undefined} onClick={() => { if (!over) onEndWeek(); }}
