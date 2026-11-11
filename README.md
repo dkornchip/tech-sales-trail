@@ -202,6 +202,7 @@ npm install          # esbuild, React, the fonts, the icons
 npm run build        # src/ -> dist/index.html
 npm run release      # src/ -> ./index.html (the file GitHub Pages serves)
 npm run verify       # build, then every check below
+npm run verify:release   # the same, and that ./index.html is exactly what the source builds
 ```
 
 The checks drive a real browser with [Playwright](https://playwright.dev), which is not in `package.json`. Install it once beside the project: `npm install --no-save playwright && npx playwright install chromium`.
@@ -215,12 +216,16 @@ The checks drive a real browser with [Playwright](https://playwright.dev), which
 | `scripts/` | The build, the lints, `verify.mjs`, and `screenshots.cjs` (plays the game and takes this page's pictures). |
 | `test/` | See below. |
 
-`npm run verify` runs:
+`npm run verify` runs, and stops at the first that fails:
 
-- **parity** (`test/parity/`): plays the frozen v1.21 file (`test/baseline/`) and the build through the same seeded dice, move by move, and compares state, dice rolls, dialogs and legal moves. `npm run parity:full` is the long run; `npm run parity:selftest` proves the harness catches planted bugs.
-- **saves** (`test/saves/`): saves from every state and ending of v1.21, and older, load and play on identically.
-- **offline**, **first day**, **resilience**, **keyboard**, **layout** (`test/e2e/`): no network and the bundled fonts in use; the onboarding flow; reloads, damaged saves and duplicate names; a whole run on the keyboard; one screen at seven desktop sizes and a phone, with nothing covered or cut off.
-- **lints**: dice only where the rules roll (`lint:rng`), house style on every string (`lint:copy`), colours and sizes only from the tokens (`lint:css`).
+- **lints**: dice only where the rules roll (`lint:rng`), house style on every string (`lint:copy`), colours and sizes only from the tokens (`lint:css`); every log line, dialog and announcement is wired and renders in every wording.
+- **fonts and notices**: the bundled fonts are what the pinned packages generate and cover every character the scenes draw; `THIRD-PARTY-NOTICES.md` is current.
+- **parity** (`test/parity/`): plays the frozen v1.21 file (`test/baseline/`) and the build through the same seeded dice, move by move, and compares state, dice rolls, dialogs and legal moves. `npm run parity:full` is the long run; `npm run parity:sound` also compares which sounds fire; `npm run parity:selftest` proves the harness catches planted bugs.
+- **scenes**: every frame of every ASCII scene is drawn exactly as v1.21 drew it (the pictures; the captions under them were rewritten).
+- **saves** (`test/saves/`): saves from every state and ending of v1.21, and older, load and play on identically. The fixtures are regenerated from the baseline and must match what is committed.
+- **offline**, **first day**, **resilience**, **keyboard**, **layout** (`test/e2e/`): no network and the bundled fonts in use; the onboarding flow; reloads, damaged saves, duplicate names and an ending whose cutscene cannot play; a whole run on the keyboard; one screen at seven desktop sizes and a phone, with nothing covered or cut off.
+
+`npm run test:selftest` turns the tests on themselves: each one is given a planted fault and must report it.
 
 The rule for changes: jokes never touch dice. Anything cosmetic draws from its own stream (`src/fxrng.js`), and a change that moves a single game roll fails parity.
 

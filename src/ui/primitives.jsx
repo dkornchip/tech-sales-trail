@@ -1,7 +1,5 @@
 import React from "react";
-import { MOOD_NAMES, STAGE_NAMES, STAGE_UNKNOWN } from "../copy/names.js";
 import { WHO } from "../copy/pa.js";
-import { clamp, money } from "../game/util.js";
 import { captionSeq, useCaption } from "./captions.js";
 import { REDUCED_MOTION } from "./env.js";
 
@@ -31,48 +29,6 @@ export const useTween=(target,ms=650)=>{
     return()=>cancelAnimationFrame(rafRef.current);
   },[target]);
   return v;
-};
-
-export const Stat=({label,value,num,fmt,sub,barValue,barKind})=>{
-  const hasNum=typeof num==="number";
-  const tv=useTween(hasNum?num:0);
-  const display=hasNum ? (fmt?fmt(tv):String(Math.round(tv))) : value;
-  let cls="bar";
-  if(barKind)cls+=" "+barKind;
-  return(
-    <div className="stat">
-      <div className="label">{label}</div>
-      <div className="value pop" key={hasNum?num:value}>{display}</div>
-      {sub && <div className="sub">{sub}</div>}
-      {typeof barValue==="number" && (
-        <div className={cls}>
-          <div style={{width:clamp(barValue,0,100)+"%"}}/>
-        </div>
-      )}
-    </div>
-  );
-};
-
-export const DealCard=({deal})=>{
-  const stageName=STAGE_NAMES[deal.stage]||STAGE_UNKNOWN;
-  const moodClass="pill mood-"+deal.mood;
-  // a mood this build has no name for (a hand-edited save) shows as stored
-  const moodName=Object.prototype.hasOwnProperty.call(MOOD_NAMES,deal.mood) ? MOOD_NAMES[deal.mood] : deal.mood;
-  return(
-    <div className="deal">
-      <div className="deal-header">
-        <div className="deal-title">{deal.account}</div>
-        <div className="pill-row">
-          <span className="pill stage">{stageName}</span>
-          <span className={moodClass}>{moodName}</span>
-        </div>
-      </div>
-      <div className="deal-footer">
-        <span className="pill value">{money(deal.value)}</span>
-        <span>Age: {deal.age}w {deal.probNote && <span className="tiny">({deal.probNote})</span>}</span>
-      </div>
-    </div>
-  );
 };
 
 // onDismiss: Esc may close it (info-only dialogs). Without it, Esc does nothing.

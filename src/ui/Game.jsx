@@ -11,7 +11,7 @@ import { AUTOSAVE_KEY, SAVE_KEY } from "../game/constants.js";
 import { isRunOver } from "../game/log.js";
 import { mergeSaved, newGame, readStoredRun } from "../game/state.js";
 import { CRASH_PER_SHOT, RECHARGE_ENERGY, RECHARGE_LUCK, TRIP_AT, checkBurnout } from "../game/stress.js";
-import { money, pct } from "../game/util.js";
+import { pct } from "../game/util.js";
 import { MENU, NAMES, TOAST } from "../copy/ui.js";
 import { describe } from "./app/ActionGrid.jsx";
 import { Board } from "./app/Board.jsx";
@@ -22,7 +22,7 @@ import { TopBar } from "./app/TopBar.jsx";
 import { CLAINK_UI_KEY, ClainkDock, clainkUiFor, isShortScreen, readClainkUi } from "./ClainkUi.jsx";
 import { clearCaption, pushCaption } from "./captions.js";
 import { Ending } from "./Ending.jsx";
-import { AUDIO, REDUCED_MOTION, notify, sfx } from "./env.js";
+import { AUDIO, notify, sfx } from "./env.js";
 import { Modal } from "./primitives.jsx";
 import { Tour, Welcome, endFirstDay, isFirstDay, useBooting } from "./FirstRun.jsx";
 

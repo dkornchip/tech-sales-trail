@@ -26,18 +26,6 @@ export const ACHIEVEMENTS={
   whale:"Whale hunter"
 };
 
-// Deal stages, by the index a save stores (0-4), and the name shown for an index that is not a stage.
-export const STAGE_NAMES=["Lead","Qualified","Demoed","Proposal","Closing"];
-export const STAGE_UNKNOWN="Unknown";
-
-// Buyer moods, by the value a save stores (MOODS in src/game/constants.js).
-export const MOOD_NAMES={
-  skeptical:"skeptical",
-  neutral:"neutral",
-  curious:"curious",
-  happy:"happy"
-};
-
 // The note in brackets on a deal card. A save stores the note's text (deal.probNote).
 export const DEAL_NOTES={
   peanut:"referral peanut",

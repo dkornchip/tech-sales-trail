@@ -46,6 +46,9 @@
 .scene-ctl{margin-top:6px}
 
 .scene-note{margin:6px 0 0}
+/* a scene that could not be played: the screen says what happened, in one sentence */
+.cutbox.crt.scene-still{white-space:normal}
+.cutbox.crt.scene-still p{position:relative;z-index:1;margin:0;padding:var(--sp-6) var(--sp-5);font-size:var(--fs-2);line-height:1.5;text-align:center;color:var(--ink)}
 .k-w{color:#e9f2ff}.k-d{color:#5d77a3}.k-b{color:#60a5fa}.k-b-d{color:#2c4f86}.k-c{color:#22d3ee}.k-c-d{color:#155e75}
 .k-g{color:#4ade80}.k-y{color:#facc15}.k-y-d{color:#854d0e}.k-o{color:#fb923c}.k-o-d{color:#9a3412}.k-r{color:#fb7185}.k-r-d{color:#9f1239}
 .k-m{color:#c084fc}.k-p{color:#f472b6}.k-s{color:#d6b98c}.k-br{color:#b07a4a}.k-au{color:#fbbf24}.k-au-d{color:#92400e}

@@ -63,6 +63,7 @@ Everything a player sees, reads or hears was redone. Nothing about how the game 
 - A save that parses but is not a save gets a plain page with a way out, instead of a blank screen. New run sets the damaged save aside and starts in place.
 - When the boot screen closes, the keyboard focus goes to the first action instead of nowhere.
 - Debug text is out of the interface (“Turn”, “Run id”, “roll 42% vs 31%”).
+- If an ending's cutscene cannot start, the screen says what happened in one sentence and the paperwork comes out at once. v1.21 fell back to a two-frame animation that looped for ever.
 - “Oracle Dumpling”, an account named after a real vendor, is now “Opal Dumpling”.
 
 ### Left alone, on purpose
@@ -73,7 +74,8 @@ These are odds, so they were not touched:
 
 ### For developers
 - `src/game/` holds the rules as pure functions; `src/game/rules.js` holds every cost and chance once, and the interface reads the same numbers. `src/copy/` holds every word. `src/styles/tokens.css` is the only file that names a colour or a size.
-- `npm run verify` builds and then runs: mechanics parity against the frozen v1.21 file (`test/parity/`, with a self-test that proves it catches planted bugs), save compatibility (`test/saves/`), and end-to-end checks for offline use, the first day, reloads and damaged saves, a whole run on the keyboard, and one-screen layout at seven desktop sizes and a phone (`test/e2e/`). Three lints keep dice out of cosmetic code, the house style on every string, and colours in the tokens.
+- `npm run verify` builds and then runs: three lints (dice only where the rules roll, the house style on every string, colours only from the tokens) and the copy's wiring; the bundled fonts and the licence notices; mechanics parity against the frozen v1.21 file (`test/parity/`, with a self-test that proves it catches planted bugs); a frame-by-frame comparison of every ASCII scene's picture with v1.21's; save compatibility (`test/saves/`), with fixtures regenerated from the baseline; and end-to-end checks for offline use, the first day, reloads and damaged saves, a whole run on the keyboard, and one-screen layout at seven desktop sizes and a phone (`test/e2e/`). `npm run verify:release` adds that the committed `index.html` is exactly what the source builds.
+- The eight scenes' pictures are v1.21's, frame for frame (1,718 frames compared). One line inside one picture was rewritten with the rest of the copy: the meltdown screen's stop code.
 - A save gains one field, `story` (what the ending quotes back). No rule reads it. v1.21 ignores it.
 
 ## v1.21 — one screen, a smaller ad, a shorter offer, a clearer warning

@@ -38,16 +38,13 @@ const ARROWS = range(0x2190, 0x2193);
 const SANS = [...ASCII, ...LATIN_1.filter(c => c !== 0xad), ...TYPOGRAPHY, 0x2009, 0x2032, 0x2033, 0x20ac, 0x2122, 0x2191, 0x2193];
 const MONO = [...ASCII, ...LATIN_1, ...TYPOGRAPHY, ...ARROWS, ...BOX_AND_BLOCKS];
 
-// Code that draws into the character grid. Every non-ASCII character in these files' strings must be in the mono face.
-const SCENE_SOURCES = ["src/legacy/scenes.js", "src/engine/scenes", "src/copy/scenes.js"];
-// The two-frame flipbook the game falls back to when the scene engine is missing (never the case in the built
-// file). It is the one other place that puts text in a fixed-pitch box.
-const FLIPBOOK = { file: "src/legacy/game.jsx", start: "const CUTSCENES={", end: "\n    };" };
+// Code that draws into the character grid: the scene engine and the words the scenes type. Every non-ASCII character
+// in these files' strings must be in the mono face.
+const SCENE_SOURCES = ["src/engine/scenes", "src/copy/scenes.js"];
 // Characters those sources use that the mono face does not have, each with the reason it is tolerated.
-// An entry that stops being needed fails the run, so this list cannot go stale.
-const MONO_EXCEPTIONS = new Map([
-  [0x2614, "umbrella in the fallback flipbook's 'missed' frame (game.jsx); unreachable while the scene engine is bundled"]
-]);
+// An entry that stops being needed fails the run, so this list cannot go stale. (It is empty: the one entry it had
+// was for v1.21's fallback flipbook, which v2.0 removed.)
+const MONO_EXCEPTIONS = new Map([]);
 
 const hex = c => "U+" + c.toString(16).toUpperCase().padStart(4, "0");
 const show = c => hex(c) + " " + JSON.stringify(String.fromCodePoint(c));
@@ -70,16 +67,7 @@ function sceneCodePoints(){
   const files = SCENE_SOURCES.flatMap(p => walk(path.join(ROOT, p)));
   if(!files.length) fail("none of the scene sources exist (" + SCENE_SOURCES.join(", ") + "); the coverage gate would pass on nothing");
   for(const f of files) for(const c of stringChars(f)) if(!used.has(c)) used.set(c, path.relative(ROOT, f));
-  const fb = path.join(ROOT, FLIPBOOK.file);
-  let flipbook = false;
-  if(fs.existsSync(fb)){
-    const src = fs.readFileSync(fb, "utf8"), a = src.indexOf(FLIPBOOK.start), b = a < 0 ? -1 : src.indexOf(FLIPBOOK.end, a);
-    if(a >= 0 && b > a){
-      flipbook = true;
-      for(const c of nonAscii(src.slice(a, b))) if(!used.has(c)) used.set(c, FLIPBOOK.file + " (fallback flipbook)");
-    }
-  }
-  return { used, files: files.map(f => path.relative(ROOT, f)), flipbook };
+  return { used, files: files.map(f => path.relative(ROOT, f)) };
 }
 
 /* ---------- the faces ---------- */
@@ -94,7 +82,7 @@ const FACES = [
 // name-table records kept in the subset: the defaults (0-6) plus the licence description and licence URL, so each
 // embedded font still carries its own copyright and licence notice
 const NAME_IDS = [0, 1, 2, 3, 4, 5, 6, 13, 14];
-// the scene grid's line-height (src/styles/legacy.css ".cutbox.crt pre", and aspect() in the scene engine)
+// the scene grid's line-height (src/styles/crt.css ".cutbox.crt pre", and aspect() in the scene engine)
 const GRID_LINE_HEIGHT = 1.14;
 // How far a full block must reach into the row below, in em. Rows sit on whole pixels, so a block that is barely
 // taller than the line leaves a dark line between rows at many sizes (measured: 0.05 em gapped at half the sizes
@@ -206,7 +194,7 @@ async function generate(){
 
 const { files, manifest, scenes } = await generate();
 const kb = n => (n / 1024).toFixed(1) + " KB";
-console.log("scene sources scanned: " + scenes.files.join(", ") + (scenes.flipbook ? ", " + FLIPBOOK.file + " (fallback flipbook)" : ""));
+console.log("scene sources scanned: " + scenes.files.join(", "));
 console.log("non-ASCII characters they draw: " + ([...scenes.used.keys()].sort((a, b) => a - b).map(show).join(", ") || "none"));
 for(const [c, why] of MONO_EXCEPTIONS) console.log("  not in the mono face, tolerated: " + show(c) + " - " + why);
 for(const f of manifest.faces){

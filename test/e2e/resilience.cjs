@@ -4,6 +4,7 @@
 //   2. two open deals never share an account name, even when the dice pick the same name every time
 //   3. ids handed out after a reload never repeat one in the save
 //   4. a save that parses but is not a save gets a plain page with a way out, not a blank one
+//   5. an ending whose cutscene cannot play still opens, says what happened and shows the paperwork
 // Exits 1 if any check fails. (CommonJS on purpose: Playwright only resolves through require() here.)
 "use strict";
 const { chromium } = require("playwright");
@@ -16,8 +17,9 @@ const AUTOSAVE = "tst-autosave-v4-3", PENDING = "tst-pending-v2", FLAG = "tst-on
 const rows = [];
 const check = (name, ok, detail) => { rows.push(!!ok); console.log("  " + (ok ? "ok  " : "FAIL") + "  " + name + (detail ? "  (" + detail + ")" : "")); return !!ok; };
 
-async function open(browser, storage, fixedTime) {
+async function open(browser, storage, fixedTime, init) {
   const context = await browser.newContext({ viewport: { width: 1280, height: 720 } });
+  if (init) await context.addInitScript(init);
   // a returning player in a tab that has already booted: straight to the desk
   await context.addInitScript(([kv, flag]) => {
     try {
@@ -126,6 +128,22 @@ const dice = (page, v) => page.evaluate(x => { Math.random = () => x; }, v);
       await page.click('[data-ui="crash-new"]'); await page.waitForSelector('[data-act="prospect"]', { timeout: 5000 }).catch(() => {});
       check("and New run gets out of it again", await page.evaluate(() => !!document.querySelector('[data-act="prospect"]') && !document.querySelector(".crash")));
     }
+    await context.close();
+
+    /* ---------- 5. an ending without its cutscene ---------- */
+    // The scene engine is kept from registering itself. The ending must not depend on it: the screen says what
+    // happened in a sentence, the paperwork is out at once, and New run works.
+    const won = fs.readFileSync(path.join(__dirname, "../saves/fixtures/generated/end-club.json"), "utf8").trim();
+    ({ context, page, errors } = await open(browser, { [AUTOSAVE]: won }, null, () => { Object.defineProperty(window, "TST_SCENES", { get() { return undefined; }, set() {}, configurable: true }); }));
+    await page.waitForSelector('dialog[open][data-dialog="end:club"]', { timeout: 5000 }).catch(() => {});
+    await page.waitForTimeout(400);
+    const still = await page.evaluate(() => { const d = document.querySelector('dialog[open]'); const p = d && d.querySelector(".scene-still p"); return { dialog: d ? d.getAttribute("data-dialog") : null, said: p ? p.textContent : "", card: !!(d && d.querySelector(".end-card.is-in")), run: !!(d && d.querySelector('[data-ui="newrun"]')), pre: !!(d && d.querySelector("pre")) }; });
+    check("without the scene engine the ending still opens", still.dialog === "end:club", "dialog " + still.dialog);
+    check("the screen says what happened, in a sentence", /jet/.test(still.said) && still.said.length > 30 && !still.pre, still.said);
+    check("and the paperwork is out at once", still.card && still.run, JSON.stringify(still));
+    await page.click('dialog[open] [data-ui="newrun"]'); await page.waitForTimeout(400);
+    check("New run starts a new quarter from it", await dialog(page) === null && (await save(page)).week === 1);
+    check("no errors", errors.length === 0, errors.join(" | "));
     await context.close();
   } finally { await browser.close(); }
   const bad = rows.filter(ok => !ok).length;

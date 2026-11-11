@@ -1,23 +1,32 @@
 #!/usr/bin/env node
 // One command that says whether the build is still the game: npm run verify
 //
-//   node scripts/verify.mjs [--target <build.html>] [--only step,...] [--driver <name>] [--workers <n>] [--verbose]
+//   node scripts/verify.mjs [--target <build.html>] [--only step,...] [--driver <name>] [--workers <n>] [--release] [--verbose]
 //
 // Runs these in order and stops at the first that fails:
-//   build      scripts/build.mjs into dist/              (skipped with --target: that file is verified instead)
-//   lint-rng   Math.random only where the rules roll     (scripts/lint-rng.mjs)
-//   parity     the quick mechanics-parity run set        (test/parity/run.cjs)
-//   saves      every save fixture, both ways in          (test/saves/run.cjs)
-//   offline    no network, bundled fonts                 (test/e2e/offline.cjs)
-//   firstday   the onboarding memo and the tour          (test/e2e/firstday.cjs)
-//   resilience a held choice, names, ids, damaged saves  (test/e2e/resilience.cjs)
-//   keyboard   a whole run with the keyboard only        (test/e2e/keyboard.cjs)
-//   layout     one screen, nothing covered or cut off    (test/e2e/layout.cjs)
+//   build        scripts/build.mjs into dist/              (skipped with --target: that file is verified instead)
+//   lint-rng     Math.random only where the rules roll     (scripts/lint-rng.mjs)
+//   lint-copy    the house style on every string           (scripts/lint-copy.mjs --strict)
+//   lint-css     colours and sizes only from the tokens    (scripts/lint-css.mjs --strict)
+//   copy-check   every log tag, dialog and line is wired   (test/copy/check.cjs)
+//   copy-render  every log line renders, every wording     (test/copy/render.mjs)
+//   fonts        the bundled fonts are what the packages give, and cover what the scenes draw (scripts/fonts.mjs --check)
+//   notices      THIRD-PARTY-NOTICES.md is current         (scripts/notices.mjs --check)
+//   parity       the quick mechanics-parity run set        (test/parity/run.cjs)
+//   scenes       every scene's picture, frame by frame, is v1.21's (test/parity/scenes.cjs --art)
+//   fixtures     the save fixtures are what v1.21 writes   (test/saves/generate.cjs --check)
+//   saves        every save fixture, both ways in          (test/saves/run.cjs)
+//   offline      no network, bundled fonts                 (test/e2e/offline.cjs)
+//   firstday     the onboarding memo and the tour          (test/e2e/firstday.cjs)
+//   resilience   a held choice, names, ids, damaged saves  (test/e2e/resilience.cjs)
+//   keyboard     a whole run with the keyboard only        (test/e2e/keyboard.cjs)
+//   layout       one screen, nothing covered or cut off    (test/e2e/layout.cjs)
+//   released     with --release only: the committed ./index.html is exactly what the source builds (scripts/build.mjs --check)
 // and prints a one-screen summary with timings. Each step's full output is kept in test-results/verify/<step>.log;
 // --verbose also streams it.
 //
-// --only also takes the steps that are not part of the default run: lint-css, lint-copy. "npm run test:layout", "test:saves" and "test:keyboard" are this script with --only, so that the
-// lists below are the one place where today's known failures are written down.
+// --only runs just the named steps. "npm run test:layout", "test:saves" and "test:keyboard" are this script with
+// --only, so that the lists below are the one place where a known failure would be written down.
 //
 // --driver names the harness driver for the build (default next: the v2.0 markup, test/parity/drivers/next.cjs).
 // The frozen baseline has its own, v121.
@@ -44,8 +53,8 @@ const argv = process.argv.slice(2);
 const take = flag => { const i = argv.indexOf(flag); if(i < 0) return null; if(i + 1 >= argv.length){ console.error(`${flag} needs a value`); process.exit(2); } return argv.splice(i, 2)[1]; };
 const has = flag => { const i = argv.indexOf(flag); if(i < 0) return false; argv.splice(i, 1); return true; };
 const targetArg = take("--target"), onlyArg = take("--only"), driver = take("--driver"), workers = take("--workers") || "2";
-const verbose = has("--verbose");
-if(argv.length){ console.error("usage: node scripts/verify.mjs [--target <build.html>] [--only step,...] [--driver <name>] [--workers <n>] [--verbose]"); process.exit(2); }
+const verbose = has("--verbose"), release = has("--release");
+if(argv.length){ console.error("usage: node scripts/verify.mjs [--target <build.html>] [--only step,...] [--driver <name>] [--workers <n>] [--release] [--verbose]"); process.exit(2); }
 const target = targetArg ? path.resolve(targetArg) : path.join(ROOT, "dist", "index.html");
 const rel = p => path.relative(ROOT, p) || ".";
 const drv = flag => [flag, driver || "next"];
@@ -59,13 +68,21 @@ const STEPS = {
   firstday: { what: "a new player's first day", cmd: ["test/e2e/firstday.cjs", target] },
   resilience: { what: "reloads, damaged saves, names, ids", cmd: ["test/e2e/resilience.cjs", target] },
   layout: { what: "layout on one screen", cmd: ["test/e2e/layout.cjs", target, "--workers", workers, "--min-font", String(LAYOUT_MIN_FONT), "--expect-fail", LAYOUT_KNOWN.join(","), ...drv("--driver")] },
-  // not in the default run
   keyboard: { what: "keyboard only", cmd: ["test/e2e/keyboard.cjs", target, "--expect-fail", KEYBOARD_KNOWN.join(","), ...drv("--driver")] },
-  "lint-css": { what: "stylesheet rules (report)", cmd: ["scripts/lint-css.mjs"] },
-  "lint-copy": { what: "house style (report)", cmd: ["scripts/lint-copy.mjs"] }
+  // about the source, not the built file
+  "lint-copy": { what: "house style", cmd: ["scripts/lint-copy.mjs", "--strict"] },
+  "lint-css": { what: "stylesheet rules", cmd: ["scripts/lint-css.mjs", "--strict"] },
+  "copy-check": { what: "copy is wired", cmd: ["test/copy/check.cjs"] },
+  "copy-render": { what: "every line renders", cmd: ["test/copy/render.mjs"] },
+  scenes: { what: "the scenes' pictures", cmd: ["test/parity/scenes.cjs", "--b", target, "--art"] },
+  fonts: { what: "bundled fonts", cmd: ["scripts/fonts.mjs", "--check"] },
+  notices: { what: "licence notices", cmd: ["scripts/notices.mjs", "--check"] },
+  fixtures: { what: "save fixtures are the baseline's", cmd: ["test/saves/generate.cjs", "--check"] },
+  // with --release: the committed ./index.html is exactly what the source builds
+  released: { what: "./index.html is current", cmd: ["scripts/build.mjs", "--check"] }
 };
-const DEFAULT = ["build", "lint-rng", "parity", "saves", "offline", "firstday", "resilience", "keyboard", "layout"];
-const order = onlyArg ? onlyArg.split(",").map(s => s.trim()).filter(Boolean) : DEFAULT;
+const DEFAULT = ["build", "lint-rng", "lint-copy", "lint-css", "copy-check", "copy-render", "fonts", "notices", "parity", "scenes", "fixtures", "saves", "offline", "firstday", "resilience", "keyboard", "layout"];
+const order = onlyArg ? onlyArg.split(",").map(s => s.trim()).filter(Boolean) : release ? DEFAULT.concat("released") : DEFAULT;
 for(const s of order) if(!STEPS[s]){ console.error(`verify: unknown step ${s}. steps: ${Object.keys(STEPS).join(", ")}`); process.exit(2); }
 
 /* ---------------------------------------------------------------- run */
@@ -98,14 +115,14 @@ console.log(`verify: ${rel(target)}${driver ? "   driver " + driver : ""}   (${o
 let failed = null;
 for(const name of order){
   const step = STEPS[name];
-  if(step.skip){ results.push({ name, status: "skipped", ms: 0, note: step.skip }); console.log(`  --    ${name.padEnd(9)} skipped (${step.skip})`); continue; }
+  if(step.skip){ results.push({ name, status: "skipped", ms: 0, note: step.skip }); console.log(`  --    ${name.padEnd(11)} skipped (${step.skip})`); continue; }
   if(failed){ results.push({ name, status: "not run", ms: 0, note: `stopped at ${failed.name}` }); continue; }
   if(name !== "build" && !fs.existsSync(target)){ console.error(`verify: ${rel(target)} does not exist`); process.exit(2); }
   if(verbose) console.log(`\n----- ${name}: node ${step.cmd.map(a => (a.includes(" ") || a.length > 60 ? JSON.stringify(a) : a)).join(" ")}`);
   const r = await run(name);
   const ok = r.code === 0;
   results.push({ name, status: ok ? "ok" : "FAILED", ms: r.ms, note: verdict(r.out), log: r.log });
-  console.log(`  ${ok ? "ok    " : "FAILED"} ${name.padEnd(9)} ${secs(r.ms).padStart(8)}`);
+  console.log(`  ${ok ? "ok    " : "FAILED"} ${name.padEnd(11)} ${secs(r.ms).padStart(8)}`);
   if(!ok) failed = r;
 }
 

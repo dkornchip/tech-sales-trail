@@ -18,6 +18,7 @@
     "parity:sound": "node scripts/build.mjs && node test/parity/run.cjs --b dist/index.html --workers 2 --sound",
     "parity:selftest": "node test/parity/selftest.cjs",
     "verify": "node scripts/verify.mjs",
+    "verify:release": "node scripts/verify.mjs --release",
     "test:saves": "node scripts/verify.mjs --only build,saves --verbose",
     "test:layout": "node scripts/verify.mjs --only build,layout --verbose",
     "test:keyboard": "node scripts/verify.mjs --only build,keyboard --verbose",

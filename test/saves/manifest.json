@@ -26,7 +26,7 @@
    "id": "midrun-seeded",
    "kind": "generated",
    "file": "fixtures/generated/midrun-seeded.json",
-   "what": "Mid-run, played for real: a board of deals at every stage, the offer long gone.",
+   "what": "Mid-run, played for real: week 7, eight live deals from leads to proposals, 52 log lines, the clAInk offer long gone.",
    "how": "A seeded \"funnel\" policy session from a fresh run (no New Game, Load or reload), stopped at the first move after which the week is 7 or later and at least 7 deals are live.",
    "terminal": false,
    "expect": {

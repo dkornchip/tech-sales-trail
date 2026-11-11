@@ -3,8 +3,8 @@
  * Driver for the v1.21 markup: the frozen baseline (test/baseline/v1.21/index.html) and any build whose DOM is
  * still the original one (./index.html as of the lift-and-shift split).
  *
- * The contract every driver implements is written down in drivers/interface.cjs. Line numbers below refer to
- * src/legacy/game.jsx (baseline index.html line = game.jsx line + 3169).
+ * The contract every driver implements is written down in drivers/interface.cjs. "game.jsx:N" below is line N of
+ * v1.21's game script, which is line N + 3169 of the frozen baseline (test/baseline/v1.21/index.html).
  */
 const TRIPS = ['Japan', 'Whistler', 'Cancun', 'Thailand', 'Dubai'];   // game.jsx:381, the order is the draw table
 

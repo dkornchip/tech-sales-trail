@@ -4,7 +4,7 @@
  *
  * A scenario is a crafted save (loaded in BOTH builds through the game's own Load button) plus a few moves, some
  * of them with a scripted draw queue: the values Math.random hands out, in order, before it falls back to the
- * seeded stream. Line numbers refer to src/legacy/game.jsx.
+ * seeded stream. "game.jsx:N" is line N of v1.21's game script: line N + 3169 of test/baseline/v1.21/index.html.
  *
  *   { name, save, steps: [ move | { m: move, q: [draws], x: {expectations} } ], probe?: [group, side] }
  *

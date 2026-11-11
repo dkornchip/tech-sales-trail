@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 'use strict';
 /*
- * Scene text parity: prove that build B draws every ASCII scene exactly as the frozen v1.21 baseline does.
+ * Scene parity: prove that build B draws every ASCII scene exactly as the frozen v1.21 baseline does
+ * (with --art: the pictures; without it: the pictures and every word).
  *
  *   node test/parity/scenes.cjs --b <build.html> [options]
  *
@@ -10,6 +11,11 @@
  *   --tail <ms>       how far past the end of each scene's timeline to keep comparing (default 11000: the idle loop
  *                     swaps the two caption sets every 5.2 s, so this sees both, and the idle-only art)
  *   --only <text>     only the cases whose name contains <text>
+ *   --art             compare the pictures only: leave the caption band, the summaries and the caption schedule out,
+ *                     and accept the words inside the pictures that v2.0 rewrote on purpose (REWRITTEN below).
+ *                     This is the mode for v2.0 and later, whose captions were rewritten; without it the words
+ *                     must match the baseline's too (which is how the copy was proved to have moved verbatim
+ *                     before it was rewritten).
  *   --fx <v>          the value the cosmetic stream is pinned to, in [0, 1) (default 0.5)
  *   --verbose         print every case, not only the failures
  *
@@ -60,7 +66,7 @@ const CASES = [
 ];
 
 function parseArgs(argv) {
-  const o = { step: 250, tail: 11000, only: null, verbose: false, b: null, fx: 0.5 };
+  const o = { step: 250, tail: 11000, only: null, verbose: false, b: null, fx: 0.5, art: false };
   const need = (i, flag) => { if (i >= argv.length) { console.error(`${flag} needs a value`); process.exit(2); } return argv[i]; };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
@@ -69,6 +75,7 @@ function parseArgs(argv) {
     else if (a === '--tail') o.tail = Number(need(++i, a));
     else if (a === '--only') o.only = need(++i, a);
     else if (a === '--fx') o.fx = Number(need(++i, a));
+    else if (a === '--art') o.art = true;
     else if (a === '--verbose') o.verbose = true;
     else { console.error(`unknown option ${a}`); process.exit(2); }
   }
@@ -100,7 +107,7 @@ function inPage([cases, step, tail]) {
       if (typeof cap.b === 'function') cap.b = cap.b(meta);
     }
     return {
-      name: c.name, key, dur: sc.dur, frames,
+      name: c.name, key, dur: sc.dur, frames, band: sc.band !== false,
       summary: T.summaryFor(c.type, c.meta),
       cap: JSON.stringify(cap),
       cards: JSON.stringify((sc.cues || []).filter(q => q.card).map(q => ({ t: q.t, card: q.card, ms: q.ms, k: q.k, cause: q.cause, notCause: q.notCause })))
@@ -126,6 +133,15 @@ async function render(browser, build, label, cases, o) {
   if (errors.length) throw new Error(`${label}: page error(s): ${errors.join(' ; ')}`);
   return out;
 }
+
+// Words drawn inside the pictures that v2.0 rewrote on purpose (src/copy/scenes.js `text`). --art accepts exactly
+// these, on the scene named, and nothing else.
+const REWRITTEN = [
+  { scene: 'meltdown', was: 'Stop code: SOUL_NOT_FOUND', now: 'Stop code: QUOTA_EXCEPTION_NOT_HANDLED' }
+];
+
+// Rows 0 to 12 of the grid are the picture; row 13 is the rule and rows 14 to 16 the caption band (ART in the engine's core.js).
+const ART_ROWS = 13;
 
 // The first place two frames differ, for the report.
 function firstDiff(a, b) {
@@ -155,19 +171,30 @@ function firstDiff(a, b) {
     const a = A[i], b = B[i], bad = [];
     if (a.key !== b.key) bad.push(`plays scene "${b.key}", the baseline plays "${a.key}"`);
     if (a.dur !== b.dur) bad.push(`timeline is ${b.dur} ms, the baseline's is ${a.dur} ms`);
-    if (a.summary !== b.summary) bad.push(`summary differs\n      A: ${JSON.stringify(a.summary)}\n      B: ${JSON.stringify(b.summary)}`);
-    if (a.cap !== b.cap) bad.push(`caption schedule differs\n      A: ${a.cap}\n      B: ${b.cap}`);
+    if (!o.art && a.summary !== b.summary) bad.push(`summary differs\n      A: ${JSON.stringify(a.summary)}\n      B: ${JSON.stringify(b.summary)}`);
+    if (!o.art && a.cap !== b.cap) bad.push(`caption schedule differs\n      A: ${a.cap}\n      B: ${b.cap}`);
+    // --art: the caption band (the rule and the three lines under it) is left out of every frame; a scene with no
+    // band (the boot screen) is compared whole
+    const rows = o.art && a.band ? ART_ROWS : Infinity;
+    const cut = text => (rows === Infinity ? text : text.split('\n').slice(0, rows).join('\n'));
+    // --art also knows the words inside the pictures that v2.0 rewrote on purpose (REWRITTEN below): a row that
+    // holds one of them in the baseline and its replacement in the build is not a difference
+    const excused = (ra, rb) => o.art && REWRITTEN.some(w => w.scene === a.key && ra.indexOf(w.was) >= 0 && rb.indexOf(w.now) >= 0 && ra.replace(w.was, '').trim() === rb.replace(w.now, '').trim());
+    const sameRows = (ta, tb, check) => {
+      const la = cut(ta).split('\n'), lb = cut(tb).split('\n');
+      if (la.length !== lb.length) return { row: Math.min(la.length, lb.length), a: '(row count ' + la.length + ')', b: '(row count ' + lb.length + ')' };
+      for (let y = 0; y < la.length; y++) if (la[y] !== lb[y] && !check(y, la[y], lb[y])) return { row: y, a: la[y], b: lb[y] };
+      return null;
+    };
     if (a.cards !== b.cards) bad.push(`title cards differ\n      A: ${a.cards}\n      B: ${b.cards}`);
     if (a.frames.length !== b.frames.length) bad.push(`${b.frames.length} frames, the baseline has ${a.frames.length}`);
     for (let k = 0; k < Math.min(a.frames.length, b.frames.length); k++) {
       const fa = a.frames[k], fb = b.frames[k];
       frames++;
-      if (fa.text !== fb.text) {
-        const d = firstDiff(fa.text, fb.text);
-        bad.push(`frame at ${fa.t} ms: the text differs on row ${d.row}\n      A: ${JSON.stringify(d.a)}\n      B: ${JSON.stringify(d.b)}`);
-        break;
-      }
-      if (fa.html !== fb.html) { bad.push(`frame at ${fa.t} ms: same characters, different colours`); break; }
+      const skip = new Set();   // rows excused in the text are not compared for colour either
+      const d = sameRows(fa.text, fb.text, (y, ra, rb) => { if (excused(ra, rb)) { skip.add(y); return true; } return false; });
+      if (d) { bad.push(`frame at ${fa.t} ms: the text differs on row ${d.row}\n      A: ${JSON.stringify(d.a)}\n      B: ${JSON.stringify(d.b)}`); break; }
+      if (sameRows(fa.html, fb.html, y => skip.has(y))) { bad.push(`frame at ${fa.t} ms: same characters, different colours`); break; }
       if (fa.screen !== fb.screen) { bad.push(`frame at ${fa.t} ms: screen mode ${JSON.stringify(fb.screen)}, the baseline's is ${JSON.stringify(fa.screen)}`); break; }
     }
     if (bad.length) { failed++; problems.push(`FAIL ${cases[i].name}\n    ` + bad.join('\n    ')); }
@@ -176,7 +203,8 @@ function firstDiff(a, b) {
   if (problems.length) console.log('\n' + problems.join('\n\n') + '\n');
   const secs = ((Date.now() - t0) / 1000).toFixed(1);
   console.log(`${failed ? 'FAIL' : 'PASS'}  A = ${buildA.label}   B = ${buildB.label} (sha256 ${buildB.sha256.slice(0, 12)})   cosmetic stream pinned to ${o.fx}`);
-  console.log(`  ${cases.length - failed}/${cases.length} scene cases identical, ${frames} frames compared (every ${o.step} ms, ${o.tail} ms past each timeline), summaries, caption schedules and title cards compared, ${secs} s`);
+  console.log(`  ${cases.length - failed}/${cases.length} scene cases identical, ${frames} frames compared (every ${o.step} ms, ${o.tail} ms past each timeline), ` +
+    (o.art ? `pictures and title cards compared; caption bands, summaries and caption schedules left out; ${REWRITTEN.length} rewritten word(s) inside pictures accepted` : 'summaries, caption schedules and title cards compared') + `, ${secs} s`);
   console.log(failed ? 'SCENES FAILED' : 'SCENES OK');
   process.exit(failed ? 1 : 0);
 })().catch(e => { console.error(e && e.stack || e); process.exit(2); });
