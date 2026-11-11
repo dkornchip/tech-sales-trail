@@ -112,6 +112,21 @@ const dice = (page, v) => page.evaluate(x => { Math.random = () => x; }, v);
       check("and the damaged save is set aside, not destroyed", ok.aside === broken);
     }
     await context.close();
+
+    // the manual save damaged as well: New run must not bring the same page straight back, and Load must not trap you
+    ({ context, page, errors } = await open(browser, { [AUTOSAVE]: broken, "tst-save-v4-3": broken }));
+    await page.waitForTimeout(300);
+    await page.click('[data-ui="crash-new"]').catch(() => {});
+    await page.waitForSelector('[data-act="prospect"]', { timeout: 5000 }).catch(() => {});
+    check("with both saves damaged, New run still reaches the desk", await page.evaluate(() => !!document.querySelector('[data-act="prospect"]') && !document.querySelector(".crash")));
+    await page.click('[data-ui="settings"]'); await page.click('[data-ui="load"]'); await page.waitForTimeout(400);
+    const afterLoad = await page.evaluate(() => ({ crash: !!document.querySelector(".crash"), desk: !!document.querySelector('[data-act="prospect"]') }));
+    check("loading the damaged manual save lands on the same page, not a blank one", afterLoad.crash || afterLoad.desk, JSON.stringify(afterLoad));
+    if (afterLoad.crash) {
+      await page.click('[data-ui="crash-new"]'); await page.waitForSelector('[data-act="prospect"]', { timeout: 5000 }).catch(() => {});
+      check("and New run gets out of it again", await page.evaluate(() => !!document.querySelector('[data-act="prospect"]') && !document.querySelector(".crash")));
+    }
+    await context.close();
   } finally { await browser.close(); }
   const bad = rows.filter(ok => !ok).length;
   console.log(bad ? `\nRESILIENCE FAILED: ${bad} of ${rows.length} checks` : `\nRESILIENCE OK: all ${rows.length} checks passed`);

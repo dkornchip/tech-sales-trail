@@ -186,7 +186,9 @@
   .crumbs{display:none}
   .pa-line:not(:empty){position:fixed;top:0;left:0;right:0;z-index:40;padding:var(--sp-4) var(--sp-5);background:var(--surface-2);border-bottom:1px solid var(--border-strong)}
   .pa-cap{white-space:normal}
-  .topbar .linkbtn{padding:6px}
+  .topbar .linkbtn{padding:10px 8px}
+  .iconbtn{width:40px;height:40px}
+  .btn{height:44px}
   .hint kbd{display:none}
   .action{height:auto;min-height:54px;padding-top:8px;padding-bottom:8px}
   .action .cost{white-space:normal}

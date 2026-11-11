@@ -46,9 +46,11 @@ const holdEvent=(pending,s)=>{
   }catch{}
 };
 
-export function Game(){
+// fresh: start a new run without reading storage (the way out of the damaged-save page, ui/main.jsx)
+export function Game({fresh}){
   const createInitial=()=>{
     const base=newGame();
+    if(fresh) return base;
     try{
       const raw=readStoredRun(true);
       if(!raw)return base;
@@ -64,7 +66,7 @@ export function Game(){
   const[showHelp,setShowHelp]=useState(false);
   // The first day (ui/FirstRun.jsx): "memo" (the opening), then 0, 1, 2 (the tour's stops), then null for good.
   // "memo-again" is the memo reopened from the rules. A browser with a saved run never gets a first day.
-  const[first,setFirst]=useState(()=>{ const hasRun=!!readStoredRun(true); if(hasRun) endFirstDay(); return isFirstDay(hasRun) ? "memo" : null; });
+  const[first,setFirst]=useState(()=>{ const hasRun=fresh || !!readStoredRun(true); if(hasRun) endFirstDay(); return isFirstDay(hasRun) ? "memo" : null; });
   const booting=useBooting();
   const[helpOpens,setHelpOpens]=useState(0); // keys the onboarding memo so its gag replays each time it is reopened
   const[claUi,setClaUi]=useState(readClainkUi); // clAInk's panel: minimized or not (a UI preference, not run state)

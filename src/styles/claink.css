@@ -209,3 +209,9 @@
 .claink-report .hd span,.claink-report.working,.claink-deploy>span,.claink-ping .who,.claink-statusline{display:inline-flex;align-items:center;gap:6px}
 .claink-statusline{display:flex}
 .ck-dot{width:7px;height:7px;border-radius:50%;flex:none;background:currentColor}
+/* phone: controls a thumb can hit */
+@media (max-width:640px){
+  .claink-tb-btns button,.claink-ad-close,.claink-ad-min{width:40px;height:40px}
+  .claink-deploy{min-height:44px}
+  .claink-cancel-link{padding:10px 0}
+}

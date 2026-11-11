@@ -2,7 +2,8 @@
 //   node scripts/build.mjs             -> dist/index.html (or $TST_OUT/index.html)
 //   node scripts/build.mjs --release   -> also writes ./index.html (the file GitHub Pages serves)
 //   node scripts/build.mjs --check     -> fails if ./index.html is not what the source builds to
-//   --dev                              -> unminified, for reading the output
+//   --dev                              -> unminified and with React's development build: for reading the output and
+//                                         for hearing React's warnings. Never for release (the size check is skipped).
 // For a preview page (never a release), three variables swap the inputs:
 //   TST_ENTRY=<script entry>  TST_CSS=<style entry>  TST_TEMPLATE=<html template>
 // The fonts are inlined from src/assets/fonts, which is committed (regenerate it with: npm run fonts).
@@ -36,7 +37,8 @@ async function bundle(){
     target: ["es2020"],
     jsx: "transform",
     metafile: true,
-    define: { "process.env.NODE_ENV": '"production"' }
+    // --dev bundles React's development build, so its warnings (duplicate keys, updates during render) reach the console
+    define: { "process.env.NODE_ENV": dev ? '"development"' : '"production"' }
   });
   const css = await esbuild.build({
     ...common,
@@ -137,6 +139,7 @@ const INERT_URLS = new Set([
   "https://reactjs.org/docs/error-decoder.html?invariant="
 ]);
 function escapeInertUrls(js){
+  if(dev) return js;   // React's development build names documentation pages in its warnings; a --dev build is never released
   return js.replace(/https?:\/\/[^\s"'`\\]*/g, (url, at) => {
     if(!INERT_URLS.has(url)) fail("the script payload contains a URL: " + url + "\n       The game must not reference the network. (If this is an identifier that nothing fetches, add it to INERT_URLS.)");
     if(!/["'`]/.test(js[at - 1])) fail("expected " + url + " to be a whole string literal; cannot rewrite it safely");
@@ -175,7 +178,7 @@ function assemble({ js, css, packages, sources }){
   if(/<\/script/i.test(js)) fail("the script payload contains </script");
   if(/<!--/.test(js)) fail("the script payload contains <!--");
   if(/<\/style/i.test(css)) fail("the style payload contains </style");
-  if(/react-dom\.development|react\.development/.test(js)) fail("React's development build got bundled");
+  if(!dev && /react-dom\.development|react\.development/.test(js)) fail("React's development build got bundled");
   if(/https?:\/\//i.test(css)) fail("the style payload contains a URL: " + /https?:\/\/[^\s"')]*/i.exec(css)[0]);
   checkFonts(css);
   js = escapeInertUrls(js);
@@ -202,7 +205,7 @@ function assemble({ js, css, packages, sources }){
   if(!/<title>[^<]+<\/title>/.test(head)) fail("the template needs a <title>");
   if(/<link\b(?![^>]*\brel="icon")/i.test(page.replace(/<script>[\s\S]*<\/script>/, ""))) fail("the template links to something other than the inline icon");
 
-  if(/https?:\/\//i.test(page)) fail("the output contains a URL outside the notices: " + /https?:\/\/[^\s"'<)]*/i.exec(page)[0]);
+  if(!dev && /https?:\/\//i.test(page)) fail("the output contains a URL outside the notices: " + /https?:\/\/[^\s"'<)]*/i.exec(page)[0]);
   // the encoding declaration has to sit inside the first 1024 bytes, notices included
   const charset = html.indexOf('<meta charset="utf-8"');
   if(charset < 0 || Buffer.byteLength(html.slice(0, charset)) + 24 > 1024) fail('<meta charset="utf-8"> must end within the first 1024 bytes; shorten the notices');
@@ -213,7 +216,7 @@ const html = assemble(await bundle());
 const raw = Buffer.byteLength(html), gzip = zlib.gzipSync(html, { level: 9 }).length;
 const kb = n => (n / 1024).toFixed(0) + " KB";
 const sizes = kb(raw) + " raw, " + kb(gzip) + " gzip";
-if(raw > MAX_RAW) fail("the output is " + sizes + "; the limit is " + kb(MAX_RAW) + " raw");
+if(!dev && raw > MAX_RAW) fail("the output is " + sizes + "; the limit is " + kb(MAX_RAW) + " raw");
 
 if(args.has("--check")){
   if(PREVIEW) fail("--check compares the game, not a preview: unset TST_ENTRY, TST_CSS and TST_TEMPLATE");

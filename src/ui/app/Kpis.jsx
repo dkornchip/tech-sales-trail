@@ -28,16 +28,16 @@ const Kpi = ({ id, label, value, runId, format, small, meter, sub, subKind, good
   const shown = useTween(value), delta = useDelta(value, runId);
   const up = delta && delta.diff > 0;
   return (
-    <div className="kpi" data-kpi={id}>
-      <div className="label">{label}</div>
-      <div className="value num">{format(shown)}{small && <small>{small}</small>}</div>
+    <div className="kpi" data-kpi={id} role="group" aria-label={label}>
+      <div className="label" aria-hidden="true">{label}</div>
+      <div className="value num">{format(shown)}{small && <><span className="sr-only">, </span><small>{small}</small></>}</div>
       {meter}{children}
       <div className={"sub" + (subKind ? " " + subKind : "")}>{sub}</div>
-      {delta && <span key={delta.key} className={"delta " + (up === goodUp ? "up" : "down")}>{(up ? "+" : "−") + format(Math.abs(delta.diff)).replace(/^−/, "")}</span>}
+      {delta && <span key={delta.key} aria-hidden="true" className={"delta " + (up === goodUp ? "up" : "down")}>{(up ? "+" : "−") + format(Math.abs(delta.diff)).replace(/^−/, "")}</span>}
     </div>
   );
 };
-const Meter = ({ value, kind }) => <div className={"meter" + (kind ? " " + kind : "")}><i style={{ width: Math.max(0, Math.min(100, value)) + "%" }} /></div>;
+const Meter = ({ value, kind }) => <div aria-hidden="true" className={"meter" + (kind ? " " + kind : "")}><i style={{ width: Math.max(0, Math.min(100, value)) + "%" }} /></div>;
 
 export const Kpis = ({ s }) => {
   const friday = fridayPreview(s), p = pace(s), points = Math.round(Math.abs(p.gap) * 100);
@@ -58,7 +58,7 @@ export const Kpis = ({ s }) => {
         meter={<Meter value={s.stress} kind={s.stress < 40 ? "good" : s.stress < 70 ? "warn" : "bad"} />} sub={stressSub[0]} subKind={stressSub[1]} />
       <Kpi id="cash" label={KPI.cash} value={s.cash} runId={s.runId} format={usd} sub={cashSub[0]} subKind={cashSub[1]} />
       <Kpi id="closed" label={KPI.closed} value={s.closedQuarter} runId={s.runId} format={usd} small={KPI.ofQuota(p.done)} sub={paceSub[0]} subKind={paceSub[1]}
-        meter={<div className="meter"><i style={{ width: Math.min(100, p.done * 100) + "%" }} /><span className="pace" style={{ left: Math.min(100, p.target * 100) + "%" }} /></div>} />
+        meter={<div className="meter" aria-hidden="true"><i style={{ width: Math.min(100, p.done * 100) + "%" }} /><span className="pace" style={{ left: Math.min(100, p.target * 100) + "%" }} /></div>} />
     </div>
   );
 };

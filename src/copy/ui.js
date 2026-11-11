@@ -23,6 +23,7 @@ export const UI = {
   activity: "Activity",
   dealsMeta: (count, pipeline) => (count ? `${count} open · ${usd(pipeline)} in pipeline` : "None yet"),
   dealCols: ["Account", "Stage", "Mood", "Value", "Odds"],
+  oddsSr: "odds of signing ",          // read out before a deal's odds; the column heading is only visual
   noDeals: "No deals. The phone is on your desk.",
   noActivity: "Nothing yet. Quota is waiting.",
   endWeek: "End week",
@@ -80,11 +81,11 @@ export const HINT = {
   demo: (c, p) => (c ? `${n(c, "qualified deal")} waiting. Each has a ${pc(p)} chance to move on.` : "Nobody is qualified for a demo. It would still cost the energy."),
   propose: (c, p) => (c ? `${n(c, "demoed deal")} waiting. Each has a ${pc(p)} chance to take a proposal.` : "Nobody has seen a demo. It would still cost the energy."),
   close: c => (c ? `${n(c, "deal")} ready for a signature. The odds are on each row. A miss can lose the deal.` : "Nothing is at proposal yet. It would still cost the energy."),
-  conference: c => `3 to 8 warm leads, some of them large. Takes ${n(c.slots, "slot")} and ${usd(c.cash)}.`,
+  conference: c => `3 to 8 warm leads, some of them large. Takes ${n(c.slots, "slot")} and ${usd(c.cash)}, and adds 5 stress.`,
   crm: (pruned, gain, nuke) => `Clears ${n(pruned, "dead lead")}: +${gain} manager.` + (nuke ? ` ${pc(nuke)} chance he closes out a live deal while he is in there.` : ""),
   recharge: r => `+${r.energy[0]} to +${r.energy[1]} energy` + (r.relief[1] > 0 ? `, −${r.relief[0]} to −${r.relief[1]} stress.` : ". The caffeine keeps the stress.") + " A very good nap gets a trip approved.",
   coffee: (shot) => `Shot ${shot.n}: +${shot.energy} energy and +${shot.stress} stress now, +${shot.crash} more on Friday.` + (shot.risk >= 1 ? " This one takes stress to 100." : shot.risk > 0 ? ` ${pc(shot.risk)} chance your heart objects.` : ""),
-  politics: () => "+8 manager, +3 product, −4 reputation. People notice who you have lunch with.",
+  politics: () => "+8 manager, +3 product, −4 reputation, +2 stress. People notice who you have lunch with.",
   hail: c => (c ? `One push on ${n(c, "late-stage deal")}. Four times in five, each survivor then has a 55% chance to walk.` : "Needs a deal at proposal or closing."),
   endWeek: f => `Friday: salary +${usd(f.salary)}` + (f.rent ? `, rent −${usd(f.rent)}` : "") + `, energy +${f.energy}, stress ${f.stress < 0 ? "−" + -f.stress : "+" + f.stress}.`,
   blocked: {
@@ -133,7 +134,7 @@ export const NAMES = { week: "Your week", desk: "Your deals and activity", sound
 // The page that replaces the game when it cannot be drawn (a save that is not a save).
 export const CRASH = {
   title: "This run could not be opened",
-  body: "The saved run on this browser is damaged. A new run will set it aside and start the quarter over.",
+  body: "The run saved in this browser is damaged. A new run sets it aside and starts the quarter over.",
   newRun: "New run"
 };
 

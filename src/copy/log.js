@@ -110,12 +110,12 @@ export const LOG = {
     "Coffee with the right people. Lunch with their people.",
     "You agreed with your manager in a meeting, where people could see.",
     "You forwarded your manager’s idea back to him as his idea."
-  ], "+8 manager · +3 product · −4 reputation"),
+  ], "+8 manager · +3 product · −4 reputation · +2 stress"),
   "act.conference": p => line([
     `Conference: ${n(p.n, "badge scan")}, now leads. The lanyard was the highlight.`,
     `Conference: ${n(p.n, "warm lead")} and a tote bag.`,
     `Conference: ${n(p.n, "warm lead")}. The booth was next to Scheisskorp’s. Theirs had espresso.`
-  ], "−$800"),
+  ], "−$800 · +5 stress"),
   "act.hail.none": () => "No late-stage deals to push.",
   "act.hail.blast": () => "Hail Mary: a “last chance” email to every executive you could find.",
   "act.hail.lean": () => "Hail Mary: you leaned on every late-stage deal at once.",
@@ -179,7 +179,7 @@ export const LOG = {
   "evt.security.spin": () => line("The breach is now an “isolated event.”", "−8 reputation · −12 product · −8% close odds this week"),
   "evt.outage": () => line("Cloud outage in demo week. The status page says “investigating.”", "−12 product"),
   "evt.champion": p => line(`Your champion at ${p.account} got promoted. The deal moved up with them.`, "+3 reputation · +3 manager"),
-  "evt.caseStudy": () => line("A case study went live. The customer approved most of the quotes.", "+5 reputation · +8% close odds"),
+  "evt.caseStudy": () => line("A case study went live. The customer approved most of the quotes.", "+5 reputation · +8% close odds this week"),
   "evt.meme": p => line(`A trade newsletter quoted the product’s error message. ${n(p.n, "inbound lead")} followed.`, "+4 reputation"),
   "evt.freeze": () => line("Their CFO has discovered spreadsheets. Budgets are frozen.", "−12% close odds this week"),
   "evt.crud": () => line("You brought something home from the conference. It was not a lead.", "−10 energy · +6 stress"),

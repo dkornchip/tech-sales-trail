@@ -19,8 +19,8 @@ export const EVENT_COPY = {
     title: () => "A customer was breached",
     body: () => "It came in through the product. Legal has drafted two statements and would like you to pick one before the customer does.",
     options: {
-      own: () => ({ label: "Tell customers first", effect: "+6 reputation, −18 product, −15% close odds for 2 weeks. Each advanced deal has a 30% chance to leave." }),
-      spin: () => ({ label: "Call it an isolated event", effect: "−8 reputation, −12 product, −8% close odds this week. Each advanced deal has a 15% chance to leave." })
+      own: () => ({ label: "Tell customers first", effect: "+6 reputation, −18 product, −15% close odds for 2 weeks. Each deal that has seen a demo has a 30% chance to leave." }),
+      spin: () => ({ label: "Call it an isolated event", effect: "−8 reputation, −12 product, −8% close odds this week. Each deal that has seen a demo has a 15% chance to leave." })
     }
   },
   "ck:warning": {
