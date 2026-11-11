@@ -7,7 +7,9 @@ let bad = 0, seen = 0; const variants = {};
 for (const tag of Object.keys(LOG)) for (let k = 0; k < 40; k++) for (const band of [0, 1, 2, 3]) {
   const r = render(LOG[tag], { ...P, n: k % 3, nap: k % 2 ? 19 : 0, shot: 1 + (k % 5) }, { week: 1 + band * 4, band, n: k }, "run|" + tag + "|" + k, k % 4);
   seen++; (variants[tag] = variants[tag] || new Set()).add(r.text);
-  if (/undefined|\[object|NaN|,Recharged|\.,[A-Z“]/.test(r.text + r.dl) || !r.text) { bad++; console.log("BAD", tag, JSON.stringify(r)); }
+  // one line may say nothing: most weeks open without a sentence (the log draws a divider instead)
+  const silent = tag === "week.next" && r.text === "";
+  if (/undefined|\[object|NaN|,Recharged|\.,[A-Z“]/.test(r.text + r.dl) || (!r.text && !silent)) { bad++; console.log("BAD", tag, JSON.stringify(r)); }
 }
 console.log(seen, "renderings,", bad, "bad;", Object.values(variants).reduce((a, s) => a + s.size, 0), "distinct sentences across", Object.keys(LOG).length, "tags");
 if (bad) process.exit(1);
