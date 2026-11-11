@@ -10,7 +10,7 @@ export const WELCOME = {
   // v: { quota, weeks, slots }
   lines: [
     v => `Your quota is ${usd(v.quota)}. You have ${v.weeks} weeks.`,
-    v => `Each week is ${v.slots} slots and whatever energy you have left.`,
+    v => `Each week is ${v.slots === 5 ? "five" : v.slots} slots and whatever energy you have left.`,
     () => "The rest is under “How it works,” top right."
   ],
   start: "Start week 1",
