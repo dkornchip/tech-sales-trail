@@ -17,7 +17,7 @@ export const endWeek=(s,queueEvent)=>{
 
   // End-of-week closes still happen with current modifiers.
   if(Math.random()<0.15){
-    ns=tryCloseSome(ns,"🕘 Friday closes");
+    ns=tryCloseSome(ns,"friday");
   }
 
   // Tick down existing modifiers BEFORE we potentially apply new ones during this endWeek().
@@ -48,14 +48,14 @@ export const endWeek=(s,queueEvent)=>{
       discount:ns.modifiers.discount||0,
       expiresIn:Math.max(1,ns.modifiers.expiresIn||0)
     };
-    ns=log(ns,"🧩 Full-funnel week. +6% close next week.");
+    ns=log(ns,"week.fullFunnel");
   }else if(motionsSkipped>=3 && ns.pipeline>0){
     ns.modifiers={
       conversion:(ns.modifiers.conversion||0)-0.06,
       discount:ns.modifiers.discount||0,
       expiresIn:Math.max(1,ns.modifiers.expiresIn||0)
     };
-    ns=log(ns,"🪫 Funnel neglected. -6% close next week.","warn");
+    ns=log(ns,"week.neglected",null,"warn");
   }
 
   if(!u.discovery && countStage(ns.deals,0)>=6){
@@ -65,7 +65,7 @@ export const endWeek=(s,queueEvent)=>{
       return true;
     });
     if(lost>0){
-      ns=log(ns,`🍂 ${lost} raw lead(s) went stale.`,"warn");
+      ns=log(ns,"week.stale",{n:lost},"warn");
       ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
     }
   }
@@ -80,7 +80,7 @@ export const endWeek=(s,queueEvent)=>{
       return d;
     });
     if(reg>0){
-      ns=log(ns,`🕑 Demo backlog: ${reg} lead(s) went cold.`,"warn");
+      ns=log(ns,"week.backlog",{n:reg},"warn");
       ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
     }
   }
@@ -91,7 +91,7 @@ export const endWeek=(s,queueEvent)=>{
   if(shots>0){
     const crash=CRASH_PER_SHOT*shots;
     ns.stress=clamp(ns.stress+crash,0,100);
-    ns=log(ns,`🥴 Caffeine crash. +${crash} stress.`,"warn");
+    ns=log(ns,"coffee.crash",{stress:crash},"warn");
   }else{
     ns.stress=clamp(ns.stress-4,0,100);
   }
@@ -101,7 +101,7 @@ export const endWeek=(s,queueEvent)=>{
   if(!isRunOver(ns) && ns.stress>=STRESS_DANGER && Math.random()<(ns.stress-75)*DANGER_RATE){
     ns.burnedOut=true;
     ns.endCause="stress";
-    ns=log(ns,"☢️ Weekend didn’t help. Meltdown.","bad");
+    ns=log(ns,"end.meltdown.weekend",null,"bad");
   }
   if(isRunOver(ns))return {state:ns,over:true};
 
@@ -114,7 +114,7 @@ export const endWeek=(s,queueEvent)=>{
   // Email cadence without calling annoys the manager.
   if(ns.used.cadence && !ns.used.prospect){
     ns.manager=clamp(ns.manager-3,0,100);
-    ns=log(ns,"📵 “Nice emails. Now call someone.” -3 manager.","warn");
+    ns=log(ns,"mgr.emails",null,"warn");
   }
 
   const {weekInQuarter}=getQuarterInfo(ns.week);
@@ -139,7 +139,7 @@ export const endWeek=(s,queueEvent)=>{
   if(isRunOver(ns))return {state:ns,over:true};
 
   const nextWeek=ns.week+1;
-  ns=log(ns,`📆 Week ${nextWeek}.`);
+  ns=log(ns,"week.next",{week:nextWeek});
   ns.week=nextWeek;
   ns.slots=ns.maxSlots;
   ns.restedThisWeek=false;

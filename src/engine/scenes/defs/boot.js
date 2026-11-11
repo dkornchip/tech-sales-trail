@@ -1,5 +1,8 @@
 import { blink, prog, rep } from "../core.js";
+import { SCENE_COPY } from "../../../copy/scenes.js";
 import { SCENES } from "../registry.js";
+
+var TEXT = SCENE_COPY.boot.text, STANDBY = SCENE_COPY.standby.text; // the words on the boot and standby screens
 
 /* ---------------- BOOT: SHITCORP OS ---------------- */
 // 5-row block font (6 columns a letter with the gap): the logo and the title cards
@@ -11,7 +14,7 @@ export function blockWord(word){
   for(var r=0;r<5;r++) out.push(word.split("").map(function(ch){ return (FONT[ch] || FONT.O)[r]; }).join(" "));
   return out;
 }
-export var LOGO = blockWord("SHITCORP");
+export var LOGO = blockWord(TEXT.logo);
 export function drawLogo(g,x,y,k,k2){
   for(var r=0;r<LOGO.length;r++){
     var L = LOGO[r];
@@ -19,9 +22,9 @@ export function drawLogo(g,x,y,k,k2){
   }
 }
 export var BOOT_LINES = [
-  {t:260,  y:9,  s:"SHITCORP OS v4.3", k:"k-w k-bold"},
+  {t:260,  y:9,  s:TEXT.os, k:"k-w k-bold"},
   {t:480,  y:11, bar:true},
-  {t:1120, y:13, s:"ERROR: quota exceeds pipeline.", k:"k-r k-bold"},
+  {t:1120, y:13, s:TEXT.error, k:"k-r k-bold"},
   {t:1400, y:15, week:true, k:"k-c", cursor:true}
 ];
 SCENES.boot = {
@@ -33,7 +36,7 @@ SCENES.boot = {
     {t:1120, sfx:"errBeep"}, {t:1120, glitch:220}, {t:1120, impact:90}, {t:1120, shake:200},
     {t:1400, sfx:"chime"}, {t:1500, say:"boot", key:true}
   ],
-  summary: "SHITCORP OS boots and reports quota exceeds pipeline.",
+  summary: SCENE_COPY.boot.summary,
   draw: function(g,c){
     var t = c.t, st = c.st, typed = 0, X = 10;
     drawLogo(g,9,2,"k-c","k-b");
@@ -42,13 +45,13 @@ SCENES.boot = {
       if(L.bar){
         var p = c.still ? 1 : prog(t,480,1000), w = 24;
         var pct = Math.round(74*p), f = Math.floor(w*pct/100);
-        g.text(X,L.y,"Loading quota","k-d");
+        g.text(X,L.y,TEXT.loading,"k-d");
         g.text(X+14,L.y,"["+rep("\u2588",f)+rep("\u2591",w-f)+"]",pct >= 74 ? "k-r" : "k-b");
         g.text(X+41,L.y,(pct < 10 ? " " : "")+pct+"%",pct >= 74 ? "k-r k-bold" : "k-w");
         if(!c.still && p < 1){ var tk = Math.floor(p*12); if(tk !== st.tk){ st.tk = tk; c.sfx("tick"); } }
         continue;
       }
-      var src = L.week ? "Week "+(c.meta.week||1)+"/13. Clocking in." : L.s;
+      var src = L.week ? TEXT.week(c.meta.week||1) : L.s;
       var n = c.still ? src.length : Math.min(src.length, Math.floor((t-L.t)/1000*110));
       g.text(X,L.y,src.slice(0,n),L.k);
       typed += n;
@@ -61,11 +64,11 @@ SCENES.boot = {
 // standby screen shown before the first click
 SCENES.standby = {
   dur: 1, band:false, cues: [], keepAlive:true, // blinks until you clock in (at the idle tick, not every frame)
-  summary: "SHITCORP OS standby screen.",
+  summary: SCENE_COPY.standby.summary,
   draw: function(g,c){
     var t = c.t;
     drawLogo(g,9,2,"k-c","k-b");
-    g.center(8,"O S   v 4 . 3","k-d");
-    if(blink(t,600) || c.still) g.center(12,"[ PRESS ANY KEY ]","k-w k-bold");
+    g.center(8,STANDBY.version,"k-d");
+    if(blink(t,600) || c.still) g.center(12,STANDBY.prompt,"k-w k-bold");
   }
 };

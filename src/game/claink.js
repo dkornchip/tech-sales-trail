@@ -1,7 +1,10 @@
-import { ACCOUNT_NAMES, QUARTER_WEEKS } from "./constants.js";
+import { CK_CANCEL, CK_CLEAR, CK_COUNCIL, CK_INCIDENT, CK_MGR, CK_MIRACLE, CK_NOTES, CK_OLD_SAVE, CK_ONBOARD, CK_OUTCOMES, CK_REVOKE, CK_RUN, CK_WASTE } from "../copy/claink.js";
+import { ACCOUNT_NAMES } from "../copy/names.js";
+import { QUARTER_WEEKS } from "./constants.js";
 import { checkRepo } from "./deals.js";
+import { LEGACY_INCIDENT_WHO } from "./legacy.js";
 import { isRunOver, log } from "./log.js";
-import { clamp, getQuarterInfo, money, pct } from "./util.js";
+import { clamp, fmtTok, getQuarterInfo, pct } from "./util.js";
 
 // ---------- v1.20: clAInk, an enterprise agentic platform on pilot at Shitcorp ----------
 // One seat per run: ad -> active -> cancelled | revoked, or ad -> dismissed (closed) | expired (offer ran out).
@@ -11,7 +14,8 @@ import { clamp, getQuarterInfo, money, pct } from "./util.js";
 // yoinks deals. v1.20 rewrote the story, not the odds: every number below is v1.19's, tuned with the Monte Carlo sim.
 // Mechanical draws come from CLAINK.rng (the sim swaps in its own stream), so a run that never installs draws exactly
 // the same Math.random calls as v1.18. The jokes (which outcomes, who files the strike, token counts) come from
-// CLAINK.flavor, a separate stream, so a punchline can never move a mechanical draw.
+// CLAINK.flavor, a separate stream, so a punchline can never move a mechanical draw. The words themselves (reports,
+// strike cards, what the manager says) are in src/copy/claink.js; this file hands them numbers and names.
 export const ckMulberry=(seed)=>{ let a=seed>>>0; return()=>{ a=(a+0x6D2B79F5)>>>0; let t=a; t=Math.imul(t^(t>>>15),t|1); t^=t+Math.imul(t^(t>>>7),t|61); return((t^(t>>>14))>>>0)/4294967296; }; };
 export const CLAINK={
   rng:()=>Math.random(),
@@ -55,45 +59,9 @@ export const ckRank=(a,b)=>b.stage-a.stage || b.value-a.value;
 export const ckFreshName=(s,also=[])=>{ const taken=new Set([...s.deals.map(d=>d.account),...also]); const free=ACCOUNT_NAMES.filter(n=>!taken.has(n)); return ckFPick(free.length?free:ACCOUNT_NAMES); };
 export const ckPipe=(s)=>({...s,pipeline:s.deals.reduce((sum,d)=>sum+d.value,0)});
 export const ckTok=(dollars)=>Math.max(0,Math.round(dollars*CLAINK.TOKENS_PER_DOLLAR*(0.88+0.24*ckF())));
-export const fmtTok=(n)=>n>=1e9 ? `${(n/1e9).toFixed(1)}B` : n>=1e6 ? `${(n/1e6).toFixed(1)}M` : n>=1e3 ? `${Math.round(n/1e3)}K` : String(Math.round(n||0));
 export const ckLast=(o)=>({kind:"strike",week:0,run:0,tokens:0,revenue:0,lines:[],strike:null,clear:"",farewell:"",ping:"",yoink:false,warn:false,cashWarn:false,announce:"",...o});
 export const newClaink=()=>({status:"ad",hidden:false,deployed:false,strikes:0,claims:0,due:0,weekTokens:0,mgr:{noticed:false,yoinks:0},
   last:null,strikeLog:[],deploys:0,miracles:0,fakes:0,incidents:0,claimed:0,delivered:0,billed:0,lastInvoice:0,tokens:0});
-
-// What a run that closes nothing reports (and bills). `a()` names one of your real deals.
-export const CK_OUTCOMES=[
-  a=>`Drafted ${ckFi(900,1900).toLocaleString("en-US")} emails. Sent 0.`,
-  a=>`Booked ${ckFi(2,5)} meetings with other agents`,
-  a=>`Summarized ${ckFi(120,260)} calls, then the summaries`,
-  a=>`Enriched ${ckFi(6,12)},000 CRM fields with “Unknown”`,
-  a=>`Built a ${ckFi(38,64)}-slide account plan for ${a()}`,
-  a=>"Held a standup about the standup",
-  a=>`Wrote ${a()} a haiku. Unprompted.`,
-  a=>`Scored ${ckFi(400,900)} leads. All “medium.”`,
-  a=>`Researched ${a()}. Found its Wikipedia page.`,
-  a=>`Generated ${ckFi(24,60)} “insights”`,
-  a=>`Translated your signature into ${ckFi(9,14)} languages`,
-  a=>`Spun up ${ckFi(300,900)} sub-agents to agree on tone`,
-  a=>`Opened ${ckFi(9,19)} tickets about its own tickets`,
-  a=>"Followed up on its own follow-up. Twice.",
-  a=>`Marked ${a()} Closed Won. Finance disagrees.`,
-  a=>`Moved ${a()}'s close date to “soon”`,
-  a=>"Rescheduled your 1:1 with your manager",
-  a=>`Debated “Hi” vs “Hey” for ${ckFi(2,4)}.${ckFi(1,9)}M tokens`,
-  a=>"Flagged 0 risks. Confidence: 99%"
-];
-// Who files a strike for a run that only wasted money (t = that run's tokens), and the one-liner for the log.
-export const CK_WASTE=[
-  t=>({who:"Finance",why:`${t} tokens. $0 closed. Please explain, in fewer tokens.`,line:`${t} tokens, $0 closed. “Explain.”`}),
-  t=>({who:"IT Security",why:`Your agent requested admin access to the CEO's inbox. ${ckFi(900,4000).toLocaleString("en-US")} times.`,line:"It kept asking for the CEO's inbox."}),
-  t=>({who:"RevOps",why:"Your agent built a dashboard that tracks its other dashboards. It's now our most-viewed report.",line:"A dashboard of its own dashboards."}),
-  t=>({who:"Procurement",why:"Your agent tried to buy a second clAInk seat. For itself. On your card.",line:"It tried to buy itself a seat."}),
-  t=>({who:"HR",why:"Your agent nominated itself for Rep of the Month. It's currently winning.",line:"It nominated itself Rep of the Month."}),
-  t=>({who:"Facilities",why:"Your agents booked every conference room on the floor “for alignment.”",line:"Every conference room, “for alignment.”"}),
-  t=>({who:"the CRO's office",why:"Your agent put “Sync on synergies” on the CRO's calendar. Daily. Recurring.",line:"A daily “synergy sync” with the CRO."}),
-  t=>({who:"Legal",why:`Your agent added ${ckFi(9,16)} disclaimers to your email signature. It wrote them itself.`,line:"It wrote itself legal disclaimers."})
-];
-export const CK_CLEAR=["No strike. The Council asked for a re-run.","No strike. Finance checked it twice.","No strike. The Council has no notes. Yet.","No strike. Legal is reading it anyway."];
 
 // saves are user data: coerce every field. v1.19 saves say "rugged", "scam"/"rug" and flags; the v1.16 prototype's
 // shape ({active, usedThisWeek, runs, totalBilled, ...}) still maps too. `week` lets an ad from a save made before
@@ -127,11 +95,13 @@ export const sanitizeClaink=(raw,week)=>{
   // a v1.19 report: its rug-pull lines go (the revoked card tells that story now), its incident becomes its strike card
   const oldKind=L && (L.kind==="scam" || L.kind==="rug") ? L.kind : null;
   const kind=L ? (CLAINK_KINDS.includes(L.kind) ? L.kind : L.kind==="rug" ? "revoked" : "strike") : null;
-  const revokedNote=lastInvoice>0 ? `Seat revoked. True-up: -${money(lastInvoice)}.` : "Seat revoked.";
+  const revokedNote=lastInvoice>0 ? CK_REVOKE.line(lastInvoice) : CK_OLD_SAVE.revoked;
+  // a v1.19 incident becomes a strike card (fromIncident), and its line goes on the strike list below
+  const fromIncident=!S && oldKind!=="rug" && !!(L && typeof L.incident==="string" && L.incident);
   const strike=S ? {n:n(S.n,1,CLAINK.STRIKES),who:str(S.who,40),why:str(S.why,200),fx:str(S.fx,160),hurt:!!S.hurt}
-    : oldKind==="rug" ? {n:CLAINK.STRIKES,who:"AI Governance Council",why:"Three strikes. Your seat is revoked, effective immediately. Finance has the true-up.",
-        fx:lastInvoice>0 ? `Token true-up -${money(lastInvoice)}` : "",hurt:false}
-    : L && typeof L.incident==="string" && L.incident ? {n:n(L.flags,1,CLAINK.STRIKES),who:"Incident review",why:str(L.incident,200),fx:"",hurt:true} : null;
+    : oldKind==="rug" ? {n:CLAINK.STRIKES,who:CK_REVOKE.who,why:CK_REVOKE.why,
+        fx:lastInvoice>0 ? CK_OLD_SAVE.trueUp(lastInvoice) : "",hurt:false}
+    : fromIncident ? {n:n(L.flags,1,CLAINK.STRIKES),who:CK_OLD_SAVE.incidentWho,why:str(L.incident,200),fx:"",hurt:true} : null;
   // the strike log matches the strike count: one entry per strike, in order; strikes filed before v1.20 get a plain one
   const filed=new Map();
   (Array.isArray(raw.strikeLog) ? raw.strikeLog : []).forEach(x=>{
@@ -139,9 +109,10 @@ export const sanitizeClaink=(raw,week)=>{
     const k=Math.round(x.n);
     if(k>=1 && k<=strikes) filed.set(k,{n:k,who:str(x.who,40),line:str(x.line,120)});
   });
-  if(strike && strike.who==="Incident review" && strike.n<=strikes && !filed.has(strike.n)) filed.set(strike.n,{n:strike.n,who:strike.who,line:str(L.incident,120)});
-  for(let k=1;k<=strikes;k++) if(!filed.has(k)) filed.set(k,{n:k,who:"AI Governance Council",
-    line:k===CLAINK.STRIKES && status==="revoked" ? revokedNote : "A run that closed $0."});
+  // ...also for a save that already holds that card (made by an earlier load): only its stored name says what it was
+  if(strike && (fromIncident || strike.who===LEGACY_INCIDENT_WHO) && strike.n<=strikes && !filed.has(strike.n)) filed.set(strike.n,{n:strike.n,who:strike.who,line:str(L.incident,120)});
+  for(let k=1;k<=strikes;k++) if(!filed.has(k)) filed.set(k,{n:k,who:CK_COUNCIL,
+    line:k===CLAINK.STRIKES && status==="revoked" ? revokedNote : CK_OLD_SAVE.plainStrike});
   return{
     status,
     hidden:ended && !!raw.hidden,
@@ -166,9 +137,9 @@ export const sanitizeClaink=(raw,week)=>{
 
 // a clAInk charge that sends you to Collections is clAInk's fault, and the ending says so
 export const ckRepo=(before,s)=>{ const r=checkRepo(s); return (r.repo && !before.repo) ? {...r,endCause:"claink"} : r; };
-export const clainkCharge=(state,amount,msg,kind="warn")=>{
+export const clainkCharge=(state,amount,tag,params,kind="warn")=>{
   const amt=Math.max(0,Math.round(amount));
-  const s=log({...state,cash:state.cash-amt,claink:{...state.claink,billed:state.claink.billed+amt}},msg,kind);
+  const s=log({...state,cash:state.cash-amt,claink:{...state.claink,billed:state.claink.billed+amt}},tag,params,kind);
   return ckRepo(state,s);
 };
 
@@ -183,19 +154,19 @@ export const clainkCanCancel=(s)=>!!s.claink && s.claink.status==="active" && !i
 export const buyClaink=(state)=>{
   if(!clainkCanInstall(state))return state;
   const s={...state,claink:{...state.claink,status:"active",deployed:false,strikes:0,claims:0,due:0,weekTokens:0,strikeLog:[],
-    last:ckLast({kind:"onboarded",week:state.week,lines:["Seat activated. Agents onboarded.","Alignment workshop: complete."],announce:"clAInk seat activated."})}};
-  return clainkCharge(s,CLAINK.INSTALL,`🤖 clAInk seat live. -${money(CLAINK.INSTALL)}, charged back to you.`);
+    last:ckLast({kind:"onboarded",week:state.week,lines:CK_ONBOARD.lines.slice(),announce:CK_ONBOARD.announce})}};
+  return clainkCharge(s,CLAINK.INSTALL,"ck.install",{cost:CLAINK.INSTALL});
 };
 
 export const dismissClaink=(state)=>{
   if(!state.claink || state.claink.status!=="ad")return state;
-  return log({...state,claink:{...state.claink,status:"dismissed"}},"🙅 Ad closed. clAInk is off this run.","muted");
+  return log({...state,claink:{...state.claink,status:"dismissed"}},"ck.dismiss",null,"muted");
 };
 
 // End Week of the deadline week: an ad nobody answered disappears
 export const expireClaink=(state)=>{
   if(!state.claink || state.claink.status!=="ad" || getQuarterInfo(state.week).weekInQuarter<CLAINK.OFFER_LAST_WEEK)return state;
-  return log({...state,claink:{...state.claink,status:"expired"}},"⏳ clAInk's pilot pricing ended. Offer gone.","muted");
+  return log({...state,claink:{...state.claink,status:"expired"}},"ck.expired",null,"muted");
 };
 
 export const hideClainkCard=(state)=>{
@@ -217,7 +188,7 @@ export const clainkMiracle=(state)=>{
   else if(rest>0) signed.push({account:ckFreshName(s,own?[own.account]:[]),value:rest,own:false});
   const order=s.deals.filter(d=>d.stage<4).map(d=>({id:d.id,k:ckR()})).sort((a,b)=>a.k-b.k);
   const nudged=new Set(order.slice(0,CLAINK.MIRACLE_NUDGE).map(x=>x.id));
-  if(nudged.size) s.deals=s.deals.map(d=>nudged.has(d.id)?{...d,stage:d.stage+1,mood:d.mood==="skeptical"?"neutral":d.mood,probNote:"AI-touched"}:d);
+  if(nudged.size) s.deals=s.deals.map(d=>nudged.has(d.id)?{...d,stage:d.stage+1,mood:d.mood==="skeptical"?"neutral":d.mood,probNote:CK_NOTES.touched}:d);
   const total=signed.reduce((t,d)=>t+d.value,0);
   const keep=Math.round(total*0.12);
   s.closedWon+=total; s.closedQuarter+=total; s.cash+=keep;
@@ -228,12 +199,12 @@ export const clainkMiracle=(state)=>{
   s.claink={...c,miracles:c.miracles+1,delivered:c.delivered+total,claims:c.claims+signed.length,due:c.due+fees,
     tokens:c.tokens+tokens,weekTokens:c.weekTokens+tokens,
     last:ckLast({kind:"miracle",week:s.week,run:c.deploys,tokens,revenue:total,
-      lines:[...signed.map(d=>`Signed ${d.account} · ${money(d.value)}${!d.own?" (new logo)":d.upsell?" (upsold)":""}`),
-        ...(nudged.size?[`Moved ${nudged.size} deal${nudged.size>1?"s":""} a stage`]:[])],
+      lines:[...signed.map(d=>CK_MIRACLE.signed(d)),
+        ...(nudged.size?[CK_MIRACLE.moved(nudged.size)]:[])],
       clear:ckFPick(CK_CLEAR),
-      announce:`It actually worked: ${signed.length} signed for ${money(total)}. No strike.`})};
-  s=log(s,"✨ clAInk actually worked.");
-  return log(s,`🤖 clAInk: ${signed.length} signed, ${money(total)}. You keep ${money(keep)}.`);
+      announce:CK_MIRACLE.announce(signed.length,total)})};
+  s=log(s,"ck.miracle");
+  return log(s,"ck.signed",{n:signed.length,won:total,keep});
 };
 
 // a strike with real damage, picked by weight; it falls back to what it can actually hit. Returns the state and the story.
@@ -244,26 +215,19 @@ export const clainkIncident=(state,rKind)=>{
   let kind=rKind<I.slop.w ? "slop" : rKind<I.slop.w+I.discount.w ? "discount" : rKind<I.slop.w+I.discount.w+I.leak.w ? "leak" : "churn";
   if(kind==="churn" && s.closedQuarter<=0) kind="slop";
   if(kind!=="churn" && kind!=="slop" && !ranked.length) kind=s.closedQuarter>0 ? "churn" : "slop";
-  let who="", why="", fx="", line="";
+  let card; // the strike card and its one-liner: {who, why, fx, line}
   if(kind==="slop"){
     const v=ranked[0], k=ckFi(18,40);
     if(v) s.deals=s.deals.filter(d=>d.id!==v.id);
     s.reputation=clamp(s.reputation-I.slop.rep,0,100);
     s.manager=clamp(s.manager-I.slop.mgr,0,100);
-    who="Marketing Ops";
-    why=v ? `Your agent sent ${v.account} ${k} “quick follow-ups” in one hour. They blocked our whole domain.`
-      : `Your agent emailed an empty CRM ${k} times. Our domain got blocklisted anyway.`;
-    line=v ? `${k} follow-ups in an hour. ${v.account} fled.` : `${k} emails to nobody. Domain blocklisted.`;
-    fx=`${v?`${v.account} walked · `:""}-${I.slop.rep} rep · -${I.slop.mgr} mgr`;
+    card=CK_INCIDENT.slop({account:v?v.account:null,k,rep:I.slop.rep,mgr:I.slop.mgr});
   }else if(kind==="discount"){
     const v=ranked.find(d=>d.stage>=2)||ranked[0];
-    s.deals=s.deals.map(d=>d.id===v.id?{...d,value:Math.round(d.value*(1-I.discount.cut)),mood:"skeptical",probNote:"agent-promised discount"}:d);
+    s.deals=s.deals.map(d=>d.id===v.id?{...d,value:Math.round(d.value*(1-I.discount.cut)),mood:"skeptical",probNote:CK_NOTES.discount}:d);
     s.manager=clamp(s.manager-I.discount.mgr,0,100);
     s.reputation=clamp(s.reputation-I.discount.rep,0,100);
-    who="Legal";
-    why=`Your agent's negotiation sub-agent offered ${v.account} ${pct(I.discount.cut)}% off “to accelerate the outcome.” In writing.`;
-    line=`It offered ${v.account} ${pct(I.discount.cut)}% off. In writing. -${I.discount.mgr} mgr.`;
-    fx=`${v.account} -${pct(I.discount.cut)}% · -${I.discount.mgr} mgr · -${I.discount.rep} rep`;
+    card=CK_INCIDENT.discount({account:v.account,cut:pct(I.discount.cut),mgr:I.discount.mgr,rep:I.discount.rep});
   }else if(kind==="leak"){
     const lost=ranked.slice(0,I.leak.n);
     const ids=new Set(lost.map(d=>d.id));
@@ -271,22 +235,15 @@ export const clainkIncident=(state,rKind)=>{
     s.deals=s.deals.filter(d=>!ids.has(d.id));
     s.reputation=clamp(s.reputation-I.leak.rep,0,100);
     s.manager=clamp(s.manager-I.leak.mgr,0,100);
-    const k=`${lost.length} deal${lost.length===1?"":"s"}`;
-    who="IT Security";
-    why="Your agent “shared context” with a partner agent. The partner works for Scheisskorp.";
-    line=`It shared ${k} (${money(val)}) with Scheisskorp.`;
-    fx=`Lost ${k}, ${money(val)} · -${I.leak.rep} rep · -${I.leak.mgr} mgr`;
+    card=CK_INCIDENT.leak({n:lost.length,value:val,rep:I.leak.rep,mgr:I.leak.mgr});
   }else{
     const amt=Math.min(s.closedQuarter,Math.max(I.churn.lo,Math.min(I.churn.hi,Math.round(s.closedQuarter*I.churn.frac))));
     const back=Math.round(amt*0.12);
     s.closedWon-=amt; s.closedQuarter-=amt; s.cash-=back;
     const a=ckFreshName(s);
-    who="Customer Success";
-    why=`Your agent auto-upgraded ${a} to the 3x tier “to drive outcomes.” They churned.`;
-    line=`${a} upgraded to 3x, then churned. -${money(amt)} closed, -${money(back)} clawback.`;
-    fx=`-${money(amt)} closed · -${money(back)} commission clawback`;
+    card=CK_INCIDENT.churn({account:a,amt,back});
   }
-  return {s:ckPipe(s),who,why,fx,line};
+  return {s:ckPipe(s),who:card.who,why:card.why,fx:card.fx,line:card.line};
 };
 
 // strike 3: the AI Governance Council revokes the seat and Finance runs the token true-up. clAInk's billing agent works
@@ -300,15 +257,15 @@ export const clainkRevoke=(state)=>{
   if(lost){ s.deals=s.deals.filter(d=>d.id!==lost.id); s=ckPipe(s); }
   s.manager=clamp(s.manager-CLAINK.REVOKE_MGR,0,100);
   const tt=ckTok(charge);
-  const who="AI Governance Council";
-  const strike={n:CLAINK.STRIKES,who,why:"Three strikes. Your seat is revoked, effective immediately. Finance has the true-up.",
-    fx:`Token true-up -${money(charge)} (${fmtTok(tt)} “background” tokens) · -${CLAINK.REVOKE_MGR} mgr`};
+  const who=CK_REVOKE.who;
+  const strike={n:CLAINK.STRIKES,who,why:CK_REVOKE.why,
+    fx:CK_REVOKE.fx(charge,tt,CLAINK.REVOKE_MGR)};
   s.claink={...c,status:"revoked",due:0,claims:0,weekTokens:0,lastInvoice:charge,tokens:c.tokens+tt,
-    strikeLog:[...c.strikeLog,{n:CLAINK.STRIKES,who,line:`Seat revoked. True-up: -${money(charge)}.`}].slice(-CLAINK.STRIKES),
+    strikeLog:[...c.strikeLog,{n:CLAINK.STRIKES,who,line:CK_REVOKE.line(charge)}].slice(-CLAINK.STRIKES),
     last:{...c.last,kind:"revoked",strike,farewell:lost?lost.account:"",
-      announce:`${c.last.announce} Strike 3 of 3: seat revoked, token true-up ${money(charge)}.${lost?` Its farewell email lost you ${lost.account}.`:""}`}};
-  if(lost) s=log(s,`💔 Its farewell email lost you ${lost.account}. -${CLAINK.REVOKE_MGR} mgr.`,"bad");
-  return clainkCharge(s,charge,`🔒 Strike 3/3. Seat revoked. Token true-up: -${money(charge)}.`,"bad");
+      announce:CK_REVOKE.announce(c.last.announce,charge,lost?lost.account:null)}};
+  if(lost) s=log(s,"ck.farewell",{account:lost.account,mgr:CLAINK.REVOKE_MGR},"bad");
+  return clainkCharge(s,charge,"ck.revoked",{cost:charge},"bad");
 };
 
 // 80%: a run that closes nothing. It bills its "outcomes" anyway and the AI Governance Council files a strike: strikes
@@ -322,33 +279,32 @@ export const clainkStrikeRun=(state,rInc,rKind)=>{
   const accts=[...s.deals].sort(ckRank).slice(0,4).map(d=>d.account);
   const acct=()=>accts.length ? ckFPick(accts) : ckFPick(ACCOUNT_NAMES);
   const pool=CK_OUTCOMES.slice();
-  const lines=[s.pipeline>0 ? `Influenced ${money(s.pipeline)} of pipeline (all of it)` : "Influenced $0 of pipeline, strategically"];
-  for(let i=1;i<Math.min(n,3);i++) lines.push(pool.splice(Math.floor(ckF()*pool.length),1)[0](acct));
-  if(n>3) lines.push(`${n-3} more outcome${n>4?"s":""}, also billed`);
+  const lines=[CK_RUN.influenced(s.pipeline)];
+  for(let i=1;i<Math.min(n,3);i++) lines.push(pool.splice(Math.floor(ckF()*pool.length),1)[0](acct,ckFi));
+  if(n>3) lines.push(CK_RUN.more(n));
   const tokens=ckTok(CLAINK.RETAINER+fees);
   const strikes=c.strikes+1;
   s.claink={...c,fakes:c.fakes+1,strikes,claims:c.claims+n,due:c.due+fees,claimed:c.claimed+Math.max(0,s.pipeline),
     tokens:c.tokens+tokens,weekTokens:c.weekTokens+tokens,
-    last:ckLast({kind:"strike",week:s.week,run:c.deploys,tokens,lines,announce:`${n} outcomes billed, ${fmtTok(tokens)} tokens, nothing closed.`})};
-  s=log(s,`🤖 clAInk run: ${n} outcomes, ${fmtTok(tokens)} tokens, $0 closed.`);
+    last:ckLast({kind:"strike",week:s.week,run:c.deploys,tokens,lines,announce:CK_RUN.announce(n,tokens)})};
+  s=log(s,"ck.run",{n,tokens});
   if(strikes>=CLAINK.STRIKES)return clainkRevoke(s);
   const hurt=rInc<CLAINK.INCIDENT_P;
-  const r=hurt ? clainkIncident(s,rKind) : {s,...ckFPick(CK_WASTE)(fmtTok(tokens))};
+  const r=hurt ? clainkIncident(s,rKind) : {s,...ckFPick(CK_WASTE)(fmtTok(tokens),ckFi)};
   s=r.s;
   const cc=s.claink;
   s.claink={...cc,incidents:cc.incidents+(hurt?1:0),
     strikeLog:[...cc.strikeLog,{n:strikes,who:r.who,line:r.line}].slice(-CLAINK.STRIKES),
     last:{...cc.last,strike:{n:strikes,who:r.who,why:r.why,fx:r.fx||"",hurt},
-      announce:`${cc.last.announce} Strike ${strikes} of ${CLAINK.STRIKES}, filed by ${r.who}: ${r.line}`}};
-  s=log(s,`${hurt?"💥":"⚖️"} Strike ${strikes}/${CLAINK.STRIKES} (${r.who}): ${r.line}`,hurt?"bad":"warn");
+      announce:CK_RUN.strikeAnnounce(cc.last.announce,strikes,CLAINK.STRIKES,r.who,r.line)}};
+  s=log(s,hurt?"ck.strike.hurt":"ck.strike",{n:strikes,of:CLAINK.STRIKES,who:r.who,line:r.line},hurt?"bad":"warn");
   return hurt ? ckRepo(state,s) : s;
 };
 
 // "Always on ChatGDP?" The first time the manager issues a warning (once per run): it opens as an event, like any other
 // event, so you can't miss it: improve your writing, or management steps into your deals. After that, any use can get
-// a deal yoinked. A relationship hit every time. Returns {state, event}; event is the acknowledgement dialog (the
-// warning, or the Writing Lesson for a yoink).
-export const CK_WARNING="Improve your writing skills, or management will start intervening in your deals. Consider this your warning.";
+// a deal yoinked. A relationship hit every time. Returns {state, event}; event is the acknowledgement dialog, as
+// {id, params} (see EVENTS in events.js): "ck:warning" for the warning, "ck:lesson" (the Writing Lesson) for a yoink.
 export const clainkManager=(state,rMgr)=>{
   if(rMgr>=CLAINK.MGR_P || isRunOver(state) || !state.claink)return {state,event:null};
   let s={...state};
@@ -358,23 +314,19 @@ export const clainkManager=(state,rMgr)=>{
   const withLast=(ping,say,yoink=false,warn=false)=>c.last ? {...c.last,ping,yoink,warn,announce:`${c.last.announce} ${say}`} : c.last;
   if(!c.mgr.noticed){
     const miracle=!!(c.last && c.last.kind==="miracle");
-    const quip=miracle?"Nice week. ChatGDP do that?":"Always on ChatGDP, huh?";
-    s.claink={...c,mgr:{...c.mgr,noticed:true},last:withLast(`${quip} Work on your writing, or I step in on your deals.`,
-      `Your manager noticed. ${CK_WARNING}`,false,true)};
-    return {state:log(s,`👔 '${quip}' -${hit} manager. Warning: improve your writing, or he steps into your deals.`,"warn"),
-      event:{title:"👔 Always on ChatGDP?",body:`“${quip} ${miracle?"Enjoy it. ":"That's not writing. "}${CK_WARNING}”`,label:"…Noted, boss"}};
+    s.claink={...c,mgr:{...c.mgr,noticed:true},last:withLast(CK_MGR.warnPing(miracle),CK_MGR.warnSay,false,true)};
+    return {state:log(s,"ck.mgr.warning",{miracle,hit},"warn"),event:{id:"ck:warning",params:{miracle}}};
   }
   const victim=[...s.deals].filter(d=>d.stage>=2).sort(ckRank)[0] || [...s.deals].sort((a,b)=>b.value-a.value)[0] || null;
   if(!victim){
-    s.claink={...c,last:withLast("ChatGDP again? I'll circle back.","Your manager will circle back.")};
-    return {state:log(s,`👔 'ChatGDP again?' -${hit} manager. He'll circle back.`,"warn"),event:null};
+    s.claink={...c,last:withLast(CK_MGR.circlePing,CK_MGR.circleSay)};
+    return {state:log(s,"ck.mgr.circle",{hit},"warn"),event:null};
   }
   s.deals=s.deals.filter(d=>d.id!==victim.id);
   s=ckPipe(s);
-  s.claink={...c,mgr:{...c.mgr,yoinks:c.mgr.yoinks+1},last:withLast(`I'll close ${victim.account} myself. Work on your writing skills.`,`Your manager took ${victim.account}.`,true)};
-  s=log(s,`👔 Boss took ${victim.account}. 'Writing lesson.' -${hit} mgr.`,"bad");
-  return {state:s,event:{title:"👔 Writing Lesson",
-    body:`“Always on ChatGDP, huh? I'll close ${victim.account} myself. Watch and work on your writing skills.”`,label:"…Thanks, boss"}};
+  s.claink={...c,mgr:{...c.mgr,yoinks:c.mgr.yoinks+1},last:withLast(CK_MGR.yoinkPing(victim.account),CK_MGR.yoinkSay(victim.account),true)};
+  s=log(s,"ck.mgr.yoink",{account:victim.account,hit},"bad");
+  return {state:s,event:{id:"ck:lesson",params:{account:victim.account}}};
 };
 
 export const deployClaink=(state)=>{
@@ -395,8 +347,8 @@ export const cancelClaink=(state)=>{
   if(!clainkCanCancel(state))return state;
   const cost=clainkCancelCost(state);
   const s={...state,claink:{...state.claink,status:"cancelled",due:0,claims:0,weekTokens:0,lastInvoice:cost,
-    last:ckLast({kind:"cancelled",week:state.week,lines:["Seat cancelled."],announce:`Seat cancelled. Paid ${money(cost)}.`})}};
-  return clainkCharge(s,cost,`🔌 clAInk seat cancelled. -${money(cost)}. They kept your data.`);
+    last:ckLast({kind:"cancelled",week:state.week,lines:CK_CANCEL.lines.slice(),announce:CK_CANCEL.announce(cost)})}};
+  return clainkCharge(s,cost,"ck.cancel",{cost});
 };
 
 // Friday invoice: the last step of End Week, only for a run that carries on
@@ -408,7 +360,7 @@ export const billClaink=(state)=>{
   const total=base+over;
   const idleTok=c.deployed ? 0 : ckTok(base), overTok=over ? ckTok(over) : 0;
   const weekTok=(c.deployed ? c.weekTokens : idleTok)+overTok;
-  const why=c.deployed ? `${fmtTok(weekTok)} tokens, ${c.claims} outcome${c.claims===1?"":"s"}.` : `Idle agents kept “thinking”: ${fmtTok(weekTok)} tokens.`;
   const s={...state,claink:{...c,deployed:false,claims:0,due:0,weekTokens:0,lastInvoice:total,tokens:c.tokens+idleTok+overTok}};
-  return clainkCharge(s,total,`🧾 clAInk invoice: -${money(total)}. ${why}${over?" One agent looped all weekend.":""}`);
+  return clainkCharge(s,total,c.deployed ? "ck.invoice" : "ck.invoice.idle",
+    c.deployed ? {total,tokens:weekTok,claims:c.claims,looped:!!over} : {total,tokens:weekTok,looped:!!over});
 };

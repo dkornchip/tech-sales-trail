@@ -1,12 +1,14 @@
 import { ART, COLS, Grid, blink, clamp, pick, prog, rnd, stepParts } from "../core.js";
 import { drawDesk } from "../desk.js";
+import { SCENE_COPY } from "../../../copy/scenes.js";
 import { SCENES } from "../registry.js";
 import { fxRandom } from "../../../fxrng.js";
 
 /* ---------------- MELTDOWN (stress): core temp hits quota, containment fails, the desk runs to slag ---------------- */
+var WORDS = SCENE_COPY.meltdown, TEXT = WORDS.text; // the words: captions, title card, summary; TEXT = the words in the picture
 SCENES.meltdown = {
   dur: 8200,
-  cap: { title:"MELTDOWN", a:["Core temp: quota.","Containment failed."], b:["Stop code:","SOUL_NOT_FOUND"], tTitle:200, tA:2600, tB:5400, k:"k-r", rule:"k-r-d" },
+  cap: { title:WORDS.title, a:WORDS.a, b:WORDS.b, tTitle:200, tA:2600, tB:5400, k:"k-r", rule:"k-r-d" },
   cues: [
     {t:0, sfx:"rumble"}, {t:150, sfx:"geiger"}, {t:600, pulse:.03, ms:400}, {t:1100, pulse:.035, ms:380},
     {t:1500, sfx:"geiger"}, {t:1550, pulse:.045, ms:340}, {t:1900, pulse:.05, ms:300}, {t:1900, shake:180},
@@ -16,7 +18,7 @@ SCENES.meltdown = {
     {t:2650, sfx:"slag"}, {t:2700, sfx:"meltdown"}, {t:3150, sfx:"fire"}, {t:3700, sfx:"slag"},
     {t:4300, sfx:"glitch"}, {t:4300, glitch:460}, {t:4300, shake:320},
     {t:4700, sfx:"bsod"},
-    {t:5000, sfx:"stingerMelt", key:true}, {t:5000, card:"MELTDOWN", ms:1400, k:"k-r"}, {t:5000, impact:100}, {t:5000, lines:"radial", ms:900},
+    {t:5000, sfx:"stingerMelt", key:true}, {t:5000, card:WORDS.card, ms:1400, k:"k-r"}, {t:5000, impact:100}, {t:5000, lines:"radial", ms:900},
     {t:5150, say:"burnout", key:true}
   ],
   cam: [
@@ -30,7 +32,7 @@ SCENES.meltdown = {
     {t:8000, x:-1, y:0,    z:1.05, r:0,    e:"l"}
   ],
   idleGlitch: 5200,
-  summary: "Core temp hits quota, containment fails, the desk melts to slag, blue screen.",
+  summary: WORDS.summary,
   draw: function(g,c){
     var t = c.t, st = c.st;
     if(t < 2600){
@@ -44,7 +46,7 @@ SCENES.meltdown = {
         g.text(61,3,blink(t,120) ? "\u2588\u2588" : "\u2588 ","k-r k-bold");
         if(!st.cracks){ st.cracks = []; for(var i=0;i<9;i++) st.cracks.push([Math.floor(rnd(3,16)),Math.floor(rnd(1,6)),pick(["\\","/","|","X"])]); }
         for(var ck=0;ck<st.cracks.length;ck++){ var C = st.cracks[ck]; g.set(C[0],C[1],C[2],"k-w"); }
-        if(blink(t,100)) g.text(2,0,"!! CONTAINMENT FAILED !!","k-r k-bold");
+        if(blink(t,100)) g.text(2,0,TEXT.alarm,"k-r k-bold");
       }
       return;
     }
@@ -81,11 +83,11 @@ SCENES.meltdown = {
     c.screen = "bsod";
     var pctDone = t <= c.dur ? Math.floor(37*prog(t,4900,c.dur)) : Math.min(99, 37 + Math.floor((t-c.dur)/900));
     g.text(3,1,":(","k-bs k-bold");
-    g.text(3,3,"Your rep ran into a problem and needs to cool down.","k-bs");
-    g.text(3,4,"Core temp: QUOTA. Containment: none.","k-bs");
-    g.text(3,6,pctDone+"% complete","k-bs");
-    g.text(3,8,"Stop code: SOUL_NOT_FOUND","k-bs");
-    g.text(3,9,"What failed: containment.sys","k-bs");
-    if(blink(t,500)) g.text(3+(""+pctDone).length+10,6,"_","k-bs");
+    g.text(3,3,TEXT.problem,"k-bs");
+    g.text(3,4,TEXT.cause,"k-bs");
+    g.text(3,6,pctDone+TEXT.complete,"k-bs");
+    g.text(3,8,TEXT.stopCode,"k-bs");
+    g.text(3,9,TEXT.failed,"k-bs");
+    if(blink(t,500)) g.text(3+(""+pctDone).length+TEXT.complete.length,6,"_","k-bs");
   }
 };

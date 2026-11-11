@@ -1,5 +1,10 @@
 import React from "react";
+import { ENDINGS } from "../copy/endings.js";
+import { EVENT_COPY } from "../copy/events.js";
+import { HELP, HELP_OK, HELP_TITLE } from "../copy/help.js";
 import { hailMary } from "../game/actions.js";
+import { EVENTS } from "../game/events.js";
+import { legacyCause } from "../game/legacy.js";
 import { endWeek as runEndWeek } from "../game/week.js";
 import { CLAINK } from "../game/claink.js";
 import { AUTOSAVE_KEY, QUARTER_WEEKS, SAVE_KEY } from "../game/constants.js";
@@ -27,7 +32,7 @@ export function Game(){
   };
 
   const[s,setS]=useState(createInitial);
-  const[pending,setPending]=useState(null);
+  const[pending,setPending]=useState(null); // the event dialog on screen: {id, params} (EVENTS in game/events.js), or null
   const[over,setOver]=useState(null);
   const[asciiSpeed,setAsciiSpeed]=useState(120);
   const[showHelp,setShowHelp]=useState(false);
@@ -122,7 +127,7 @@ export function Game(){
   },[s.logs]);
   useEffect(()=>{
     if(!pending || s.fired || s.burnedOut || s.win || s.missed || s.repo)return;
-    const a=AUDIO(); if(a) a.onModal(pending.title);
+    const a=AUDIO(); if(a) a.onModal(pending.id);
   },[pending]);
 
   const endWeek=()=>{
@@ -140,34 +145,16 @@ export function Game(){
         s.win ? "club" :
         s.missed ? "missed" :
         "fired";
-      // v1.15: endCause is set wherever an ending lands; log parsing is only for pre-v1.15 saves
-      const legacyCause=()=>{
-        if(type!=="fired")return type==="burnout" ? "stress" : type;
-        const lastBad=s.logs.find(e=>e.kind==="bad");
-        return !lastBad ? "qbr" : lastBad.msg.indexOf("🪓")===0 ? "org" : lastBad.msg.indexOf("📉 Mid-quarter")===0 ? "review" : "qbr";
-      };
-      const cause=s.endCause || legacyCause();
-      const title=
-        type==="club" ? "President’s Club ✨" :
-        type==="burnout" ? (cause==="caffeine" ? "Ascension 🚀" : "Meltdown ☢️") :
-        type==="missed" ? "Barely Missed 😮‍💨" :
-        type==="repo" ? "Jacket Repo’d 🧥" :
-        "Terminated 💼";
-      const body=
-        type==="club"
-          ? `Closed ${money(s.closedWon)}. Pack for Cabo.`
-          : type==="burnout"
-            ? (cause==="caffeine"
-              ? `Closed ${money(s.closedWon)}. Then you went orbital.`
-              : `Closed ${money(s.closedWon)}. Core breached.`)
-            : type==="missed"
-              ? `Closed ${money(s.closedWon)}. Badge kept. Back to the phones.`
-              : type==="repo"
-                ? (cause==="claink" ? `Cash hit ${money(s.cash)}. clAInk sent you to Collections.` : `Cash hit ${money(s.cash)}. The loan came due.`)
-                : `Closed ${money(s.closedWon)}. Your Slack is already gone.`;
+      // v1.15: endCause is set wherever an ending lands; log parsing (game/legacy.js) is only for pre-v1.15 saves
+      const cause=s.endCause || legacyCause(type,s.logs);
+      // the burnout ending has two faces; everything else is its own ending
+      const id=type==="burnout" ? (cause==="caffeine" ? "ascension" : "meltdown") : type;
+      const words=ENDINGS[id], p={closed:s.closedWon,cash:s.cash,cause};
+      const title=words.title(p);
+      const body=words.body(p);
       const meta={pct:s.quota>0 ? s.closedWon/s.quota : 0, cause, shots:s.coffeesThisWeek||0};
       setPending(null);
-      setOver({title,body,type,meta});
+      setOver({id,title,body,type,meta});
     }else{
       setOver(null);
     }
@@ -189,7 +176,8 @@ export function Game(){
 
   const tryOpportunisticClose=()=>{ const ns=hailMary(s); if(ns) setS(ns); };
 
-  // v1.20: the Writing Lesson arrives after the run's report has played. It only opens on the run, week and clAInk run
+  // v1.20: the Writing Lesson (ev: {id, params} from clainkManager, plus where it came from) arrives after the run's
+  // report has played. It only opens on the run, week and clAInk run
   // that produced it (New Game or Load mid-report drop it), waits for the Rules to close, and gives way to any other
   // dialog: then it stays in the log only. It brings the run's result for screen readers, as v1.19's did.
   const helpOpen=useRef(false); helpOpen.current=showHelp;
@@ -198,9 +186,9 @@ export function Game(){
     const cur=sRef.current;
     if(!cur || isRunOver(cur) || ev.runId!==cur.runId || ev.week!==cur.week || !cur.claink || cur.claink.deploys!==ev.run)return;
     if(helpOpen.current){ lessonWait.current=ev; return; }
-    setPending(p=>p||{title:ev.title,body:ev.body,options:[{label:ev.label,className:"primary",action:x=>x}]});
+    setPending(p=>p||{id:ev.id,params:ev.params});
     if(ev.announce) setTimeout(()=>{
-      const d=[...document.querySelectorAll("dialog[open]")].find(x=>{ const h=x.querySelector(".d-header"); return h && h.textContent===ev.title; });
+      const d=[...document.querySelectorAll("dialog[open]")].find(x=>x.getAttribute("data-dialog")===ev.id);
       const sr=d && d.querySelector(".tst-sr");
       if(sr && sr.textContent!==ev.announce){ sr.textContent=""; sr.textContent=ev.announce; } // once, even if the run's own effect got there first
     },120);
@@ -210,6 +198,14 @@ export function Game(){
   const opportunisticDisabled=(
     s.energy<10 || s.slots<=0 || s.fired || s.burnedOut || s.win || s.missed || s.repo || !hasLateDeal
   );
+
+  // the event dialog on screen: what its buttons do (game/events.js) and what it says (copy/events.js)
+  const eventDef=pending ? EVENTS[pending.id] : null;
+  const eventWords=pending ? EVENT_COPY[pending.id] : null;
+  const eventParams=(pending && pending.params)||{};
+  // the numbers the Rules quote, straight from the game
+  const helpNumbers={rechargeEnergy:RECHARGE_ENERGY, luckPct:pct(RECHARGE_LUCK), tripPct:pct(TRIP_AT), crash:CRASH_PER_SHOT,
+    seat:CLAINK.INSTALL, strikes:CLAINK.STRIKES, trueUpLo:CLAINK.TRUEUP_OVER[0], trueUpHi:CLAINK.TRUEUP_OVER[1], offerWeek:CLAINK.OFFER_LAST_WEEK};
 
   return(
     <>
@@ -305,52 +301,42 @@ export function Game(){
 
       <Modal
         open={showHelp}
-        title="How It Works"
+        title={HELP_TITLE}
+        dialogId="help"
         onDismiss={()=>setShowHelp(false)}
         actions={[
           {
-            label:"Got it",
+            label:HELP_OK,
             className:"primary",
             onClick:()=>setShowHelp(false)
           }
         ]}
       >
         {helpOpens>0 && <WelcomeMemo key={helpOpens} active={showHelp} />}
-        <p className="tiny"><strong>Energy</strong> fuels actions. Small refill at week end.</p>
-        <p className="tiny"><strong>Recharge</strong> once a week: +{RECHARGE_ENERGY} energy, -12 stress, plus a 0–{pct(RECHARGE_LUCK)}% lucky bonus. Over {pct(TRIP_AT)}% and your manager signs off a trip. Coffee blunts it.</p>
-        <p className="tiny"><strong>Stress</strong> hurts close rates. 80+ can melt you down at week end; 100 is instant.</p>
-        <p className="tiny"><strong>Quad Shot</strong> hits harder each shot that week. Shot 3+ can put you in orbit; a shot to 100 stress will. Each one: +{CRASH_PER_SHOT} stress at week end, weaker Recharge.</p>
-        <p className="tiny"><strong>CRM Cleanup</strong> weekly: prunes dead leads, +manager, freezes warnings, trims fire odds. Boss may nuke a good deal.</p>
-        <p className="tiny"><strong>clAInk</strong> is a sponsored AI pilot. Close the ad and it's gone this run. A {money(CLAINK.INSTALL)} seat buys one agent run a week (no energy or slots; billed Friday, idle weeks too): 1 in 5 closes real deals, the rest burn tokens on billed “outcomes” and earn a strike from the AI Governance Council, sometimes with damage. Strike {CLAINK.STRIKES}: seat revoked, a deal walks, and a token true-up that takes all your cash and leaves you {money(CLAINK.TRUEUP_OVER[0])}–{money(CLAINK.TRUEUP_OVER[1])} in the red (more if you're already there). The pilot offer ends after week {CLAINK.OFFER_LAST_WEEK}. Your manager may notice: the first time is a warning to improve your writing, after that he steps into your deals.</p>
-        <p className="tiny"><strong>Cash</strong> is salary and commission in, rent out. At -$1,500 the jacket goes.</p>
-        <p className="tiny"><strong>Pipeline</strong> is the value of live deals. Actions move them down the funnel.</p>
-        <p className="tiny"><strong>Closed (Q)</strong> is revenue this quarter. Behind pace from week 5? Warnings, or a surprise exit.</p>
-        <p className="tiny"><strong>Manager</strong> nudges close odds, drives PIPs and firing. Emails without calls annoy them.</p>
-        <p className="tiny"><strong>Reputation</strong> grows deal size and nudges close odds.</p>
-        <p className="tiny"><strong>Product</strong> is how cursed the stack is. Low product sinks demos and closes.</p>
-        <p className="tiny"><strong>Skills</strong> boost their matching action and feed the close math.</p>
-        <p className="tiny"><strong>Modifiers</strong> are short-term close and discount effects from events and full-funnel weeks.</p>
+        {HELP.map((row,i)=><p className="tiny" key={i}><strong>{row.term}</strong>{row.body(helpNumbers)}</p>)}
       </Modal>
 
       <Modal
         open={!!pending}
-        title={pending?.title || "Event"}
-        actions={pending ? pending.options.map(opt=>({
-          label:opt.label,
+        title={eventWords ? eventWords.title(eventParams) : "Event"}
+        dialogId={pending ? pending.id : undefined}
+        actions={eventDef && eventWords ? eventDef.options.map(opt=>({
+          label:eventWords.options[opt.id](eventParams),
           className:opt.className||"ghost",
           onClick:()=>{
-            let ns=checkBurnout(opt.action({...s}));
+            let ns=checkBurnout(opt.apply(s));
             setS(ns);
             setPending(null);
           }
         })) : []}
       >
-        <p className="tiny">{pending?.body}</p>
+        <p className="tiny">{eventWords ? eventWords.body(eventParams) : null}</p>
       </Modal>
 
       <Modal
         open={!!over}
         title={over?.title || "Game Over"}
+        dialogId={over ? "end:"+over.id : undefined}
         actions={[
           {
             label:"New Run",

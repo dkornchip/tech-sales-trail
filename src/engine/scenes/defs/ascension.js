@@ -1,15 +1,17 @@
 import { ART, COLS, Grid, blink, clamp, mod, pick, prog, rep, rnd, stepParts } from "../core.js";
 import { drawDesk } from "../desk.js";
+import { SCENE_COPY } from "../../../copy/scenes.js";
 import { SCENES } from "../registry.js";
 import { SPR } from "../sprites.js";
 import { fxRandom } from "../../../fxrng.js";
 
 /* ---------------- ASCENSION (caffeine): the desk ignites and the rep rides espresso fire into orbit ---------------- */
+var WORDS = SCENE_COPY.ascension, TEXT = WORDS.text; // the words: captions, title card, summary; TEXT = the words in the picture
 export var ASC = { ign:2300, cut:5400 };
-export var PINGS = [[6,-9,"(1)"],[40,-12,"@matt"],[22,-16,"(3)"],[52,-19,"ping"],[12,-23,"(99+)"],[34,-27,"1:1?"],[46,-31,"(2)"],[8,-35,"re: re: re:"]];
+export var PINGS = [[6,-9],[40,-12],[22,-16],[52,-19],[12,-23],[34,-27],[46,-31],[8,-35]]; // where each of TEXT.pings drifts past: [column, world row]
 SCENES.ascension = {
   dur: 8600,
-  cap: { title:"ASCENSION", a:function(m){ return [m.shots > 1 ? "Shot #"+m.shots+"." : "One shot too many.","Orbit achieved."]; }, b:["OOO. Forever.","Badge in low orbit."], tTitle:200, tA:2500, tB:6000, k:"k-y", rule:"k-y-d" },
+  cap: { title:WORDS.title, a:WORDS.a, b:WORDS.b, tTitle:200, tA:2500, tB:6000, k:"k-y", rule:"k-y-d" },
   cues: [
     {t:0, sfx:"heartbeat"}, {t:0, pulse:.03, ms:380}, {t:650, sfx:"heartbeat"}, {t:650, pulse:.035, ms:360},
     {t:1200, sfx:"heartbeat"}, {t:1200, pulse:.04, ms:340}, {t:1200, sfx:"rumble"}, {t:1650, sfx:"heartbeat"}, {t:1650, pulse:.045, ms:300},
@@ -20,7 +22,7 @@ SCENES.ascension = {
     {t:3420, sfx:"ceiling"}, {t:3420, shake:200},
     {t:3900, sfx:"ping"}, {t:4250, sfx:"ping"}, {t:4650, sfx:"sparkle"},
     {t:5400, slash:340}, {t:5400, sfx:"shing"}, {t:5400, letterbox:false},
-    {t:5900, sfx:"stingerAscend", key:true}, {t:5900, card:"ASCENSION", ms:1500, k:"k-y"}, {t:5900, impact:100}, {t:5900, lines:"radial", ms:900},
+    {t:5900, sfx:"stingerAscend", key:true}, {t:5900, card:WORDS.card, ms:1500, k:"k-y"}, {t:5900, impact:100}, {t:5900, lines:"radial", ms:900},
     {t:6100, say:"burnout", key:true}
   ],
   cam: [
@@ -37,7 +39,7 @@ SCENES.ascension = {
     {t:8600, x:-1, y:-1,   z:1.1,  r:0}
   ],
   drift: {x:.6, z:.015, p:8000},
-  summary: "The desk ignites and you ride a column of espresso fire through the ceiling into orbit. A crater and a Post-it remain.",
+  summary: WORDS.summary,
   draw: function(g,c){
     var t = c.t, st = c.st, MX = 24, MY = 3; // where the rep stays framed during the climb
     var clearChair = function(gr){ gr.text(23,3,"     ",""); gr.text(22,4,"       ",""); gr.text(22,5,"       ",""); gr.text(22,6,"       ",""); };
@@ -56,10 +58,10 @@ SCENES.ascension = {
       for(var si=0;si<st.stars.length;si++){ var S = st.stars[si], y0 = sky(S[1]); if(y0 >= 0 && y0 < ART && (S[2] < .5 || blink(t+si*97,700))) g.set(S[0],y0,S[2] < .25 ? "." : S[2] < .6 ? "+" : "*","k-d"); }
       var clouds = [[4,-9],[44,-11],[20,-14],[52,-17],[8,-20],[36,-22]];
       for(var ci=0;ci<clouds.length;ci++){ var cl = clouds[ci], cy = sky(cl[1]), cx = Math.round(cl[0] + Math.sin(t/900+ci)*2); if(cy > -3 && cy < ART) g.sprO(cx,cy,SPR.cloud,"k-d"); }
-      for(var pi=0;pi<PINGS.length;pi++){ var P = PINGS[pi], py = sky(P[1]); if(py >= 0 && py < ART) g.text(P[0]+Math.round(Math.sin(t/400+pi)*1.5),py,P[2],blink(t+pi*131,500) ? "k-m" : "k-p"); }
+      for(var pi=0;pi<PINGS.length;pi++){ var P = PINGS[pi], py = sky(P[1]); if(py >= 0 && py < ART) g.text(P[0]+Math.round(Math.sin(t/400+pi)*1.5),py,TEXT.pings[pi],blink(t+pi*131,500) ? "k-m" : "k-p"); }
       // the roof (wy -6) and the plenum (wy -4..-3)
       var ry = sky(-6), roofHole = oy >= 8.3;
-      if(ry >= 0 && ry < ART){ g.tile(ry,"/\\/\\/\\/\\",0,"k-d"); if(roofHole){ g.text(MX-3,ry,"\\         /","k-w"); g.text(MX-2,ry,"         ",""); } if(ry-1 >= 0) g.text(50,ry-1,"[HVAC]","k-d"); }
+      if(ry >= 0 && ry < ART){ g.tile(ry,"/\\/\\/\\/\\",0,"k-d"); if(roofHole){ g.text(MX-3,ry,"\\         /","k-w"); g.text(MX-2,ry,"         ",""); } if(ry-1 >= 0) g.text(50,ry-1,TEXT.hvac,"k-d"); }
       var py2 = sky(-4); if(py2 >= 0 && py2 < ART) g.tile(py2,"___|___|___|",0,"k-d");
       var py3 = sky(-3); if(py3 >= 0 && py3 < ART) g.tile(py3,"  ~  ~    ~ ",3,"k-b-d");
       // the drop ceiling (wy -2): intact until the rep punches through at oy 5
@@ -100,12 +102,12 @@ SCENES.ascension = {
     }
     // the office afterwards: a crater, a Post-it on the monitor, a growing unread count
     drawDesk(g,ASC.cut,61,88,true,"plain",false); clearChair(g);
-    g.text(MX-4,7,"\\__( crater )__/","k-r"); g.text(MX-2,8," ~ ~ ~ ","k-d");
+    g.text(MX-4,7,TEXT.crater,"k-r"); g.text(MX-2,8," ~ ~ ~ ","k-d");
     st.sm = st.sm || [];
     if(fxRandom() < (c.idle ? .35 : .7)) st.sm.push({x:MX+rnd(-2,4),y:6.2,vx:rnd(-1.5,1.5),vy:rnd(-5,-2.5),life:rnd(900,1500),ch:pick(["o","O","."]),k:"k-d",fade:400,ch2:"o"}); // starts above the crater label
     stepParts(st.sm,c.dt,g);
-    g.text(3,2,"OOO. Forever. ","k-y k-bold"); g.text(3,3,"              ",""); g.text(3,4,"              ","");
-    g.text(4,4,blink(t,600) ? "(1) unread" : "(1)       ","k-m");
+    g.text(3,2,TEXT.postit,"k-y k-bold"); g.text(3,3,"              ",""); g.text(3,4,"              ","");
+    g.text(4,4,blink(t,600) ? TEXT.unread : TEXT.unreadOff,"k-m");
     var heads2 = [[6,9,"(._.)"],[48,9,"(o_o)"],[56,10,"(-_-)"]];
     for(var h2=0;h2<heads2.length;h2++){ g.text(heads2[h2][0],heads2[h2][1],heads2[h2][2],"k-w"); g.text(heads2[h2][0]-1,heads2[h2][1]+1,"|=====|","k-b"); }
     g.text(0,12,rep("_",COLS),"k-d");

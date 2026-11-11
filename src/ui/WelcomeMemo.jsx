@@ -1,4 +1,5 @@
 import React from "react";
+import { MEMO } from "../copy/memo.js";
 import { AUDIO, reducedNow, sfx } from "./env.js";
 
 const { useState, useEffect, useRef } = React;
@@ -45,12 +46,11 @@ export const WelcomeMemo=({active})=>{
   };
   return(
     <div className={"memo"+(done?" done":"")+(live?" live":"")} onClick={skip}>
-      <div className="memo-head" aria-hidden="true"><span>Shitcorp • People & Culture</span><span>Internal • Do not forward</span></div>
-      <h3>Welcome to Shitcorp, Matt! <span className="memo-cannon" aria-hidden="true">🎉<i className="memo-bit"/><i className="memo-bit"/><i className="memo-bit"/></span></h3>
-      <p>The next disruptor in SaaS. (Our PE owners say we’re on track to overtake Scheisskorp in market cap by the end of the decade!)</p>
-      <p>Here, our culture is our glue. Your fair and killer comp plan rewards builders, not takers. You could become a gorillionaire!</p>
-      <p>And since you close deals, internally you’ll be known as an <span className="memo-title">Associate Account Executive<span className="memo-stamp" aria-hidden="true">SDR*</span></span>. How cool is that, for a young man of your tenure!</p>
-      <p className="memo-foot">*HR will classify you as an SDR… for… ahem… admin and streamlining purposes.</p>
+      <div className="memo-head" aria-hidden="true"><span>{MEMO.head[0]}</span><span>{MEMO.head[1]}</span></div>
+      <h3>{MEMO.greeting}<span className="memo-cannon" aria-hidden="true">{MEMO.cannon}<i className="memo-bit"/><i className="memo-bit"/><i className="memo-bit"/></span></h3>
+      {MEMO.paragraphs.map((text,i)=><p key={i}>{text}</p>)}
+      <p>{MEMO.role.before}<span className="memo-title">{MEMO.role.title}<span className="memo-stamp" aria-hidden="true">{MEMO.role.stamp}</span></span>{MEMO.role.after}</p>
+      <p className="memo-foot">{MEMO.footnote}</p>
     </div>
   );
 };

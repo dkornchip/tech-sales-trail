@@ -1,7 +1,8 @@
-import { checkRepo, cost, killDeals, makeDeal, makeReferralDeal, tryCloseSome } from "./deals.js";
+import { TRIPS } from "../copy/names.js";
+import { checkRepo, cost, killDeals, makeDeal, makeReferral, tryCloseSome } from "./deals.js";
 import { log } from "./log.js";
-import { RECHARGE_ENERGY, RECHARGE_LUCK, TRIPS, TRIP_AT, checkBurnout, coffeeEnergy, coffeeRisk, coffeeStress, rechargeRelief } from "./stress.js";
-import { choice, clamp, money, pct, randi } from "./util.js";
+import { RECHARGE_ENERGY, RECHARGE_LUCK, TRIP_AT, checkBurnout, coffeeEnergy, coffeeRisk, coffeeStress, rechargeRelief } from "./stress.js";
+import { choice, clamp, pct, randi } from "./util.js";
 
 // What each action does to the run. Every function takes the current state and returns the next one, or null when
 // the action can't be taken (no slot, no energy, already used this week). The caller applies the burnout check.
@@ -17,7 +18,7 @@ export const actProspect=(s)=>{
   ns.stress=clamp(ns.stress+2,0,100);
   ns.deals=[...adds,...ns.deals];
   ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
-  ns=log(ns,`📞 Blitz: +${adds.length} lead(s). -30 energy.`);
+  ns=log(ns,"act.prospect",{n:adds.length});
   return ns;
 };
 
@@ -30,7 +31,7 @@ export const actCadence=(s)=>{
   ns.meetings=(ns.meetings||0)+randi(0,n);
   ns.deals=[...adds,...ns.deals];
   ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
-  ns=log(ns,`✉️ Cadence: +${n} warm lead(s). -18 energy.`);
+  ns=log(ns,"act.cadence",{n});
   return ns;
 };
 
@@ -48,7 +49,7 @@ export const actDiscovery=(s)=>{
   });
   ns.skills.discovery=clamp(ns.skills.discovery+2,0,100);
   ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
-  ns=log(ns,`🔎 Discovery: ${advanced} qualified. -22 energy.`);
+  ns=log(ns,"act.discovery",{n:advanced});
   return ns;
 };
 
@@ -66,7 +67,7 @@ export const actDemo=(s)=>{
   });
   ns.skills.demo=clamp(ns.skills.demo+2,0,100);
   ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
-  ns=log(ns,`🖥️ Demos: ${advanced} advanced. -28 energy.`);
+  ns=log(ns,"act.demo",{n:advanced});
   return ns;
 };
 
@@ -83,7 +84,7 @@ export const actPropose=(s)=>{
     return d;
   });
   ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
-  ns=log(ns,`📑 Proposals: ${advanced} sent. -25 energy.`);
+  ns=log(ns,"act.propose",{n:advanced});
   return ns;
 };
 
@@ -92,7 +93,7 @@ export const actClose=(s)=>{
   if(!ok)return null;
   ns.used.close=true;
   ns.skills.negotiate=clamp(ns.skills.negotiate+1,0,100);
-  ns=tryCloseSome(ns,"🤝 Close push");
+  ns=tryCloseSome(ns,"close");
   return ns;
 };
 
@@ -105,23 +106,24 @@ export const actNetwork=(s)=>{
   ns.reputation=clamp(ns.reputation+4,0,100);
 
   const n=randi(1,2);
-  const adds=Array.from({length:n},()=>makeReferralDeal(ns));
+  const made=Array.from({length:n},()=>makeReferral(ns));
+  const adds=made.map(m=>m.deal);
 
   ns.meetings=(ns.meetings||0)+randi(0,n);
   ns.deals=[...adds,...ns.deals];
   ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
 
-  const hasWhale=adds.some(d=>d.probNote==="referral whale");
-  const hasBig=adds.some(d=>d.probNote==="referral big");
-  const tag = hasWhale ? " 🐋 Whale." : hasBig ? " 🐳 Big one." : "";
+  const hasWhale=made.some(m=>m.tier==="whale");
+  const hasBig=made.some(m=>m.tier==="big");
+  const size = hasWhale ? "whale" : hasBig ? "big" : "";
 
-  ns=log(ns,`🧑‍🤝‍🧑 Referrals: +${n} intro(s). -16 energy.${tag}`);
+  ns=log(ns,"act.network",{n,size});
   return ns;
 };
 
 export const actRecharge=(s)=>{
   let[ns,ok,reason]=cost(s,{energy:0,slots:1,onceKey:"restedThisWeek"});
-  if(!ok)return reason==="once" ? log(s,"⏱️ Already recharged this week.","warn") : null;
+  if(!ok)return reason==="once" ? log(s,"act.recharge.already",null,"warn") : null;
   ns.used.recharge=true;
   // v1.15: caffeine in the system blunts the reset. v1.17: a lucky nap adds 0-25% to both, one roll per use.
   const luck=Math.random()*RECHARGE_LUCK;
@@ -130,9 +132,9 @@ export const actRecharge=(s)=>{
   const relief=base+Math.round(base*luck);
   ns.energy=clamp(ns.energy+gain,0,100);
   ns.stress=clamp(ns.stress-relief,0,100);
-  const tag=luck>=0.15 ? ` Good nap, +${pct(luck)}%.` : "";
-  ns=log(ns,relief>0 ? `🧘 Recharged. +${gain} energy, -${relief} stress.${tag}` : `🧘 Recharged. +${gain} energy. Caffeine ate the calm.`);
-  if(luck>TRIP_AT){ ns.trip=choice(TRIPS); ns=log(ns,`🏝️ Manager approved your ${ns.trip} trip.`); }
+  const nap=luck>=0.15 ? pct(luck) : 0; // the lucky bonus, in percent, when it is worth a mention
+  ns=log(ns,relief>0 ? "act.recharge" : "act.recharge.flat",relief>0 ? {energy:gain,relief,nap} : {energy:gain});
+  if(luck>TRIP_AT){ ns.trip=choice(TRIPS); ns=log(ns,"act.recharge.trip",{trip:ns.trip}); }
   return ns;
 };
 
@@ -150,10 +152,10 @@ export const actCoffee=(s)=>{
   if(ns.stress>=100 || (risk>0 && Math.random()<risk)){
     ns.burnedOut=true;
     ns.endCause="caffeine";
-    return log(ns,`🚀 Shot #${k}. Liftoff.`,"bad");
+    return log(ns,"end.ascension",{shot:k},"bad");
   }
   ns=checkRepo(ns);
-  ns=log(ns,`☕ Shot #${k}. +${e} energy, +${st} stress.`);
+  ns=log(ns,"coffee.shot",{shot:k,energy:e,stress:st});
   return ns;
 };
 
@@ -179,10 +181,8 @@ export const actCrm=(s)=>{
     ns.deals=ns.deals.filter(d=>d.id!==nuked.id);
   }
   ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
-  ns=log(ns,pruned>0
-    ? `🧹 CRM cleanup. -${pruned} dead lead(s), +${gain} manager.`
-    : `🧹 CRM cleanup. Nothing dead. +${gain} manager.`);
-  if(nuked)ns=log(ns,`🗑️ “Close that out.” ${nuked.account} gone. -${money(nuked.value)}.`,"bad");
+  ns=log(ns,pruned>0 ? "act.crm" : "act.crm.clean",pruned>0 ? {pruned,mgr:gain} : {mgr:gain});
+  if(nuked)ns=log(ns,"act.crm.nuked",{account:nuked.account,value:nuked.value},"bad");
   return ns;
 };
 
@@ -194,7 +194,7 @@ export const actPolitics=(s)=>{
   ns.product=clamp(ns.product+3,0,100);
   ns.reputation=clamp(ns.reputation-4,0,100);
   ns.stress=clamp(ns.stress+2,0,100);
-  ns=log(ns,"🏛️ Politics: +8 manager, +3 product, -4 rep.");
+  ns=log(ns,"act.politics");
   return ns;
 };
 
@@ -215,14 +215,14 @@ export const actConference=(s)=>{
     };
   }
   ns=checkRepo(ns);
-  ns=log(ns,`🏟️ Conference: +${n} leads. -40 energy, -$800.`);
+  ns=log(ns,"act.conference",{n});
   return ns;
 };
 
 // The Hail Mary applies its own repo and burnout checks, and reports "no late-stage deals" as a log line.
 export const hailMary=(s)=>{
   if(!s.deals.some(d=>d.stage>=3)){
-    return log(s,"🧪 No late-stage deals to Hail-Mary.","warn");
+    return log(s,"act.hail.none",null,"warn");
   }
   let[ns,ok]=cost(s,{energy:10,slots:1});
   if(!ok)return null;
@@ -232,22 +232,22 @@ export const hailMary=(s)=>{
   ns=log(
     ns,
     miracle
-      ? "🧪 Hail-Mary: “last chance” blast to every exec."
-      : "🧪 Hail-Mary: leaning on every late deal. Hard.",
-    "warn"
+      ? "act.hail.blast"
+      : "act.hail.lean",
+    null,"warn"
   );
-  let st=tryCloseSome(ns,"🧪 Hail-Mary");
+  let st=tryCloseSome(ns,"hail");
   const closedDelta=st.closedWon-beforeClosed;
 
   if(miracle){
     if(closedDelta>0){
       st.manager=clamp(st.manager+8,0,100);
       st.stress=clamp(st.stress+4,0,100);
-      st=log(st,"🌪️ Chaos worked. +8 manager, +4 stress.");
+      st=log(st,"act.hail.chaosWon");
     }else{
       st.manager=clamp(st.manager-4,0,100);
       st.stress=clamp(st.stress+6,0,100);
-      st=log(st,"🤕 All noise, no ink. -4 manager, +6 stress.","bad");
+      st=log(st,"act.hail.chaosLost",null,"bad");
     }
   }else{
     st=killDeals(st,d=>d.stage>=3,0.55);
@@ -255,11 +255,11 @@ export const hailMary=(s)=>{
     st.stress=clamp(st.stress+8,0,100);
     st.reputation=clamp(st.reputation-4,0,100);
     if(closedDelta<=0){
-      st=log(st,"📛 Pipe torched. -8 manager, -4 rep, +8 stress.","bad");
+      st=log(st,"act.hail.torched",null,"bad");
     }else{
       st.manager=clamp(st.manager+2,0,100);
       st.reputation=clamp(st.reputation+1,0,100);
-      st=log(st,"😬 Got ink, cooked the pipe. Net -6 manager, -3 rep.","warn");
+      st=log(st,"act.hail.cooked",null,"warn");
     }
   }
   st=checkRepo(st);
