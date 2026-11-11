@@ -166,7 +166,7 @@ clAInk is a gamble, not a strategy. It is at its best as a late-quarter desperat
 
 ## Controls and settings
 
-- **Mouse, touch or keyboard.** Everything works with Tab and Enter, and a whole run can be played without a pointer. The number row (1 to 9, 0, −, =) runs the twelve actions in order; **E** ends the week, **H** is the Hail Mary, **?** opens the rules, **M** mutes. A held key presses a button once.
+- **Mouse, touch or keyboard.** Everything works with Tab and Enter, and a whole run can be played without a pointer. The number row (`1` to `9`, `0`, `-` and `=`) runs the twelve actions in order; **E** ends the week, **H** is the Hail Mary, **?** opens the rules, **M** mutes. A held key presses a button once.
 - **How it works** (top right) is the rules on one sheet. Its footer reopens the onboarding memo.
 - **Settings** (the gear) holds sound, the office announcer, captions, volume, and Save, Load and New run. The game also autosaves after every move and picks up where you left off, including a choice that was waiting for an answer.
 - **Sound** is synthesized in the page: effects, a heartbeat when stress runs hot, and the office PA. Every line the announcer says is also shown as a caption, so the game plays the same with the sound off.
