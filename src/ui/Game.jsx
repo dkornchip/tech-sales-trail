@@ -199,7 +199,7 @@ export function Game(){
   const eventWords=pending ? EVENT_COPY[pending.id] : null;
   const eventParams=(pending && pending.params)||{};
   // the numbers the Rules quote, straight from the game
-  const helpNumbers={rechargeEnergy:RECHARGE_ENERGY, luckPct:pct(RECHARGE_LUCK), tripPct:pct(TRIP_AT), crash:CRASH_PER_SHOT,
+  const helpNumbers={quota:s.quota, rechargeEnergy:RECHARGE_ENERGY, luckPct:pct(RECHARGE_LUCK), tripPct:pct(TRIP_AT), crash:CRASH_PER_SHOT,
     seat:CLAINK.INSTALL, strikes:CLAINK.STRIKES, trueUpLo:CLAINK.TRUEUP_OVER[0], trueUpHi:CLAINK.TRUEUP_OVER[1], offerWeek:CLAINK.OFFER_LAST_WEEK};
 
   return(
@@ -233,15 +233,16 @@ export function Game(){
         open={!!pending}
         title={eventWords ? eventWords.title(eventParams) : "Event"}
         dialogId={pending ? pending.id : undefined}
-        actions={eventDef && eventWords ? eventDef.options.map(opt=>({
-          label:eventWords.options[opt.id](eventParams),
+        actions={eventDef && eventWords ? eventDef.options.map(opt=>{ const w=eventWords.options[opt.id](eventParams); return {
+          label:typeof w==="string" ? w : w.label,
+          note:typeof w==="string" ? null : w.effect,
           className:opt.className||"ghost",
           onClick:()=>{
             let ns=checkBurnout(opt.apply(s));
             setS(ns);
             setPending(null);
           }
-        })) : []}
+        }; }) : []}
       >
         <p className="tiny">{eventWords ? eventWords.body(eventParams) : null}</p>
       </Modal>

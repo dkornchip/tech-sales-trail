@@ -97,15 +97,15 @@ export const Modal=({open,title,children,actions,onDismiss,dialogId})=>{
       }}>
       <div className="d-header" id={titleId}>{title}</div>
       <div className="d-body">{children}</div>
-      <div className="d-footer">
+      <div className={"d-footer"+(actions && actions.some(a=>a.note) ? " options" : "")}>
         {actions && actions.map((a,i)=>(
           <button
             key={i}
-            className={"btn "+(a.className||"ghost")}
+            className={"btn "+(a.className||"ghost")+(a.note ? " option" : "")}
             onClick={a.onClick}
             autoFocus={i===0}
           >
-            {a.label}
+            {a.note ? <><span className="opt-label">{a.label}</span><span className="opt-effect">{a.note}</span></> : a.label}
           </button>
         ))}
       </div>

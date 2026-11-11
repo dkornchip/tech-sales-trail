@@ -19,7 +19,10 @@
 //     skip: true,                               // not a copy module (the variant engine)
 //     skip: ["helperName"],                     // ...or just these exports
 //     params: { "blitz.late": [{ n: 3 }] },     // call this path with exactly these params instead of the profiles
-//     spoken: true                              // every string here is read aloud by the announcer
+//                                               // ({ args: [a, b, c] } calls a function that takes several arguments)
+//     spoken: true,                             // every string here is read aloud by the announcer
+//     exempt: { "sentence-case": ["DESK_TEXT", "SCENE_COPY.club.title"] }   // rule -> path prefixes it does not
+//                                               // apply to (say why in a comment next to it)
 //   };
 // engine.js and index.js are skipped by name.
 //
@@ -76,6 +79,8 @@ const PROPER = [
   "CRO", "AI Governance Council", "Council", "ChatGDP", "Autonomous Pipeline", "Enterprise Plus", "Enterprise", "Shitcorp AI Use Policy", "Rep of the Month",
   "Japan", "Whistler", "Cancun", "Thailand", "Dubai", "Wikipedia", "Hail Mary", "SaaS", "AI", "SE", "OS", "IT", "OK", "CEO", "CFO", "VP", "SSO", "SPIFF", "SOC", "GA",
 
+  "Tech Sales Trail", "Marketing Ops", "Customer Success", "Closed Won", "Chat GDP", "PDF", "API",
+
   "SHITCORP", "SECURE", "ERROR", "OOO", "REVOKED", "WE’RE A FAMILY", "SDR*"
 ];
 const BANNED = [
@@ -111,7 +116,7 @@ const where = path.relative(process.cwd(), dir) || ".";
 // the "long name" case). Outside it, a list of the same kind.
 let ACCOUNTS = ["Acme Quantum", "Feral Unicorn", "Pinecone Pizza", "Quasar Laundry", "Velvet Switchboard", "Caffeine Cathedral"];
 try{
-  const c = await import(pathToFileURL(path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "src", "game", "constants.js")).href);
+  const c = await import(pathToFileURL(path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "src", "copy", "names.js")).href);
   if(Array.isArray(c.ACCOUNT_NAMES) && c.ACCOUNT_NAMES.length) ACCOUNTS = c.ACCOUNT_NAMES.slice();
 }catch{ /* not in the repository, or constants.js moved: the fallback list stands */ }
 const LONGEST = ACCOUNTS.reduce((a, b) => (b.length > a.length ? b : a));
@@ -176,7 +181,7 @@ function collect(value, segs, call, out, problems, hints, depth){
     if(call && depth > 10) return;
     const key = pathText(segs);
     const given = hints.params && hints.params[key];
-    const runs = given ? given.map((p, i) => ({ id: `lint.params[${i}]`, args: [p] })) : PROFILES.map(p => ({ id: p.id, profile: p }));
+    const runs = given ? given.map((p, i) => ({ id: `lint.params[${i}]`, args: isPlain(p) && Array.isArray(p.args) ? p.args : [p] })) : PROFILES.map(p => ({ id: p.id, profile: p }));
     let worked = 0, lastError = null;
     for(const run of runs){
       let result, ok = false;
@@ -287,6 +292,8 @@ for(const file of files){
     seen.add(k);
     strings++;
     for(const f of check(e, name, hints, moduleHasSay)){
+      const here = pathText(e.segs);
+      if(isPlain(hints.exempt) && Array.isArray(hints.exempt[f.rule]) && hints.exempt[f.rule].some(prefix => here === prefix || here.startsWith(prefix + ".") || here.startsWith(prefix + "["))) continue;
       const id = f.rule + "\u0001" + pathText(e.segs);
       if(at.has(id)){ at.get(id).variants++; continue; }
       const v = { rule: f.rule, module: file, path: pathText(e.segs), call: e.call, text: e.text, why: f.why, variants: 1 };

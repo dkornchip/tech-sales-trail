@@ -15,7 +15,7 @@ export const ACCOUNT_NAMES=[
   "Circuit Sashimi","Helix Orchard","Glacier Lantern","Paper Tiger Rail","Mosaic Marmot",
   "Golem Bistro","Vespertine Motel","Polaris Tacos","Kintsugi Metrics","Chimera Hardware",
   "Murmur Harbor","Lantern Algebra","Cryptic Custard","Midnight Otter","Velvet Switchboard",
-  "Oracle Dumpling","Oblique Wombat","Cerulean Vineyard","Signal Pagoda"
+  "Opal Dumpling","Oblique Wombat","Cerulean Vineyard","Signal Pagoda"
 ];
 
 // Where a lucky Recharge sends you. Same rule as the accounts: a save stores the name, the order is the draw table.
@@ -23,7 +23,7 @@ export const TRIPS=["Japan","Whistler","Cancun","Thailand","Dubai"];
 
 // Achievement labels, by key. A save stores the label next to the key.
 export const ACHIEVEMENTS={
-  whale:"🐋 Whale Hunter"
+  whale:"Whale hunter"
 };
 
 // Deal stages, by the index a save stores (0-4), and the name shown for an index that is not a stage.

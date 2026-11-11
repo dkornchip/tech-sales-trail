@@ -79,7 +79,7 @@ export const HINT = {
   close: c => (c ? `${n(c, "deal")} ready for a signature. The odds are on each row. A miss can lose the deal.` : "Nothing is at proposal yet. It would still cost the energy."),
   conference: () => "3 to 8 warm leads, some of them large. Takes two slots and $800.",
   crm: (pruned, gain, nuke) => `Clears ${n(pruned, "dead lead")}: +${gain} manager.` + (nuke ? ` ${pc(nuke)} chance he closes out a live deal while he is in there.` : ""),
-  recharge: (e, r) => `+${e[0]} to +${e[1]} energy` + (r[1] > 0 ? `, −${r[0]} to −${r[1]} stress.` : ". The caffeine keeps the stress.") + " A very good nap gets a trip approved.",
+  recharge: r => `+${r.energy[0]} to +${r.energy[1]} energy` + (r.relief[1] > 0 ? `, −${r.relief[0]} to −${r.relief[1]} stress.` : ". The caffeine keeps the stress.") + " A very good nap gets a trip approved.",
   coffee: (shot) => `Shot ${shot.n}: +${shot.energy} energy and +${shot.stress} stress now, +${shot.crash} more on Friday.` + (shot.risk >= 1 ? " This one takes stress to 100." : shot.risk > 0 ? ` ${pc(shot.risk)} chance your heart objects.` : ""),
   politics: () => "+8 manager, +3 product, −4 reputation. People notice who you have lunch with.",
   hail: c => (c ? `One push on ${n(c, "late-stage deal")}. Four times in five, each survivor then has a 55% chance to walk.` : "Needs a deal at proposal or closing."),
@@ -114,3 +114,8 @@ export const MENU = { title: "Settings", sound: "Sound", voice: "Office announce
 
 export const STAGE = ["Lead", "Qualified", "Demoed", "Proposal", "Closing"];
 export const MOOD = { skeptical: "skeptical", neutral: "neutral", curious: "curious", happy: "happy" };
+
+// For the copy lint: hints that take structured numbers.
+export const lint = { params: {
+  "HINT.recharge": [{ energy: [35, 52], relief: [12, 18] }, { energy: [35, 52], relief: [0, 0] }]
+} };

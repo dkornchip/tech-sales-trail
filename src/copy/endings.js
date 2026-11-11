@@ -1,34 +1,51 @@
 import { money } from "../game/util.js";
 
 // The ending dialog: its title and the line under it, by ending.
-//   club       quota hit                      missed     70-99% of quota, still employed
-//   fired      let go (any reason)            repo       cash ran out and Collections took the jacket
-//   ascension  one Quad Shot too many         meltdown   stress did it
-// p: {closed: total closed this run, cash: cash at the end, cause: why the run ended ("claink" when clAInk's bill did it)}
-// The cutscene's own captions are in scenes.js; the announcer's line is in pa.js.
+//   club       quota hit                      missed     under quota, still employed
+//   fired      let go (see cause)             repo       cash ran out and Collections took the jacket
+//   ascension  one quad shot too many         meltdown   stress did it
+// p: {closed: total closed this run, cash: cash at the end, cause: why the run ended}
+//   fired causes: "qbr" (the review itself), "review" (a mid-quarter pace review), "org" (a reorganisation with no
+//   warning), "politics" (quota hit, fired anyway). repo: "claink" when clAInk's bill did it.
+// The line is the company's own account of what became of Matt. It reports; it does not comment.
+// The cutscene's captions are in scenes.js; the announcer's line is in pa.js.
+const usd = v => money(v).replace("-", "−");
+
 export const ENDINGS = {
   club: {
-    title: () => "President’s Club ✨",
-    body: p => `Closed ${money(p.closed)}. Pack for Cabo.`
+    title: () => "President’s Club",
+    body: p => `${usd(p.closed)} closed. Quota met. Matt has been approved for Cabo.`
   },
   ascension: {
-    title: () => "Ascension 🚀",
-    body: p => `Closed ${money(p.closed)}. Then you went orbital.`
+    title: () => "Ascension",
+    body: p => `${usd(p.closed)} closed. Matt is out of office. Altitude: 408 km.`
   },
   meltdown: {
-    title: () => "Meltdown ☢️",
-    body: p => `Closed ${money(p.closed)}. Core breached.`
+    title: () => "Meltdown",
+    body: p => `${usd(p.closed)} closed. Matt is on leave. The leave has no end date.`
   },
   missed: {
-    title: () => "Barely Missed 😮‍💨",
-    body: p => `Closed ${money(p.closed)}. Badge kept. Back to the phones.`
+    title: () => "Barely missed",
+    body: p => `${usd(p.closed)} closed, short of quota. Matt retains system access.`
   },
   repo: {
-    title: () => "Jacket Repo’d 🧥",
-    body: p => (p.cause === "claink" ? `Cash hit ${money(p.cash)}. clAInk sent you to Collections.` : `Cash hit ${money(p.cash)}. The loan came due.`)
+    title: () => "Jacket repossessed",
+    body: p => (p.cause === "claink"
+      ? `Cash reached ${usd(p.cash)} after the token true-up. Collections has recovered the jacket.`
+      : `Cash reached ${usd(p.cash)}. Collections has recovered the jacket.`)
   },
   fired: {
-    title: () => "Terminated 💼",
-    body: p => `Closed ${money(p.closed)}. Your Slack is already gone.`
+    title: p => (p.cause === "politics" ? "Terminated, over quota" : "Terminated"),
+    body: p => (p.cause === "politics" ? `${usd(p.closed)} closed: over quota. Matt is no longer with the company. HR considers these facts unrelated.`
+      : p.cause === "org" ? `${usd(p.closed)} closed. Matt was part of a strategic realignment.`
+        : p.cause === "review" ? `${usd(p.closed)} closed, behind pace. Matt’s role has been impacted.`
+          : `${usd(p.closed)} closed. Matt is pursuing other opportunities.`)
   }
 };
+
+// For the copy lint: the causes each ending can be given.
+export const lint = { params: {
+  "ENDINGS.fired.title": [{ cause: "qbr" }, { cause: "politics" }],
+  "ENDINGS.fired.body": [{ closed: 61400, cause: "qbr" }, { closed: 61400, cause: "review" }, { closed: 61400, cause: "org" }, { closed: 171300, cause: "politics" }],
+  "ENDINGS.repo.body": [{ cash: -1620, cause: "repo" }, { cash: -1740, cause: "claink" }]
+} };

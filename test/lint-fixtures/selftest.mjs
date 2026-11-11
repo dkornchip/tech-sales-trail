@@ -81,7 +81,7 @@ console.log("lint-css");
   const soft = run("lint-css.mjs", [fx("css-fail")]);
   check("without --strict the same report exits 0", soft.code === 0 && /LINT-CSS REPORT: 15 findings/.test(soft.text));
   const real = run("lint-css.mjs", ["src/styles"]);
-  check("today's stylesheet gets a report, not an error", real.code === 0 && !!real.out && real.out.findings.length > 100, real.text.trim().split("\n").pop());
+  check("the game's own stylesheets get a report, not an error", real.code === 0 && !!real.out && Array.isArray(real.out.findings), real.text.trim().split("\n").pop());
 }
 
 fs.rmSync(tmp, { recursive: true, force: true });

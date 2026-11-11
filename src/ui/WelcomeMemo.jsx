@@ -1,4 +1,5 @@
 import React from "react";
+import { Icon } from "./app/Icon.jsx";
 import { MEMO } from "../copy/memo.js";
 import { AUDIO, reducedNow, sfx } from "./env.js";
 
@@ -47,7 +48,7 @@ export const WelcomeMemo=({active})=>{
   return(
     <div className={"memo"+(done?" done":"")+(live?" live":"")} onClick={skip}>
       <div className="memo-head" aria-hidden="true"><span>{MEMO.head[0]}</span><span>{MEMO.head[1]}</span></div>
-      <h3>{MEMO.greeting}<span className="memo-cannon" aria-hidden="true">{MEMO.cannon}<i className="memo-bit"/><i className="memo-bit"/><i className="memo-bit"/></span></h3>
+      <h3>{MEMO.greeting}<span className="memo-cannon" aria-hidden="true"><Icon name="party-popper" /><i className="memo-bit"/><i className="memo-bit"/><i className="memo-bit"/></span></h3>
       {MEMO.paragraphs.map((text,i)=><p key={i}>{text}</p>)}
       <p>{MEMO.role.before}<span className="memo-title">{MEMO.role.title}<span className="memo-stamp" aria-hidden="true">{MEMO.role.stamp}</span></span>{MEMO.role.after}</p>
       <p className="memo-foot">{MEMO.footnote}</p>

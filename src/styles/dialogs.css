@@ -9,6 +9,12 @@ dialog .d-body p{margin:0 0 var(--sp-3)}
 dialog .d-body p:last-child{margin-bottom:0}
 dialog .d-body strong{color:var(--text);font-weight:500}
 dialog .d-footer{position:sticky;bottom:0;z-index:1;display:flex;justify-content:flex-end;flex-wrap:wrap;gap:var(--sp-3);padding:var(--sp-4) var(--sp-6) var(--sp-5);background:var(--surface-1)}
+/* A choice: each option says what it does, and neither is dressed as the right answer. */
+dialog .d-footer.options{flex-direction:column;align-items:stretch}
+.btn.option,.btn.option.primary{height:auto;flex-direction:column;align-items:flex-start;gap:2px;padding:var(--sp-4) var(--sp-5);text-align:left;white-space:normal;background:var(--surface-2);border-color:var(--border-strong);color:var(--text);min-width:0}
+.btn.option:hover,.btn.option.primary:hover{background:var(--surface-3);border-color:var(--text-3)}
+.btn.option .opt-label{font-weight:600}
+.btn.option .opt-effect{font-size:var(--fs-1);font-weight:400;line-height:1.45;color:var(--text-2)}
 @keyframes dialogIn{from{opacity:0;transform:translate(-50%,-48%)}to{opacity:1;transform:translate(-50%,-50%)}}
 @media (max-width:640px){
   dialog .d-header{padding:var(--sp-5) var(--sp-5) 0}
