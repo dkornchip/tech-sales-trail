@@ -10,7 +10,16 @@ export const pct=(p)=>Math.round(p*100);
 // token counts, the way an invoice prints them: 1.2B, 3.4M, 12K
 export const fmtTok=(n)=>n>=1e9 ? `${(n/1e9).toFixed(1)}B` : n>=1e6 ? `${(n/1e6).toFixed(1)}M` : n>=1e3 ? `${Math.round(n/1e3)}K` : String(Math.round(n||0));
 export const now=()=>new Date().toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
-export const idGen=(()=>{let i=0;return()=> (++i).toString(36)+"-"+Date.now().toString(36).slice(-4)})();
+// An id is a counter and a scrap of the clock. The counter restarts with the page, so after a save is read back
+// it is moved past every id in that save (idsPast): a new deal or log line can then never repeat an old id.
+let idCount=0;
+export const idGen=()=> (++idCount).toString(36)+"-"+Date.now().toString(36).slice(-4);
+export const idsPast=(ids)=>{
+  for(const id of ids){
+    const n=typeof id==="string" ? parseInt(id.split("-")[0],36) : NaN;
+    if(Number.isFinite(n) && n>idCount && n<1e9) idCount=n;
+  }
+};
 
 
 export const getQuarterInfo=(week)=>{

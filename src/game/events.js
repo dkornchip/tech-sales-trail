@@ -1,4 +1,4 @@
-import { killDeals, makeDeal } from "./deals.js";
+import { killDeals, makeDeal, withDeals } from "./deals.js";
 import { log } from "./log.js";
 import { clamp, randi } from "./util.js";
 
@@ -87,7 +87,7 @@ export const randomEvents=(state,queueEvent,maxFires=2)=>{
   fire(0.22,st=>{
     const n=randi(2,6);
     const adds=Array.from({length:n},()=>makeDeal(st,{warm:true}));
-    st.deals=[...adds,...st.deals];
+    st.deals=withDeals(st.deals,adds);
     st.pipeline=st.deals.reduce((sum,d)=>sum+d.value,0);
     return log(st,"evt.marketing",{n});
   });
@@ -148,7 +148,7 @@ export const randomEvents=(state,queueEvent,maxFires=2)=>{
   fire(0.10,st=>{
     const n=randi(1,3);
     const adds=Array.from({length:n},()=>makeDeal(st,{warm:true,big:Math.random()<0.5}));
-    st.deals=[...adds,...st.deals];
+    st.deals=withDeals(st.deals,adds);
     st.pipeline=st.deals.reduce((sum,d)=>sum+d.value,0);
     st.reputation=clamp(st.reputation+4,0,100);
     return log(st,"evt.meme",{n});
@@ -196,7 +196,7 @@ export const randomEvents=(state,queueEvent,maxFires=2)=>{
     }
     const n=randi(1,3);
     const adds=Array.from({length:n},()=>makeDeal(st,{warm:true,big:Math.random()<0.5}));
-    st.deals=[...adds,...st.deals];
+    st.deals=withDeals(st.deals,adds);
     st.pipeline=st.deals.reduce((sum,d)=>sum+d.value,0);
     return log(st,"evt.favors",{n});
   });

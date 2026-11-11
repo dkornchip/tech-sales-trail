@@ -48,6 +48,26 @@ export const makeDeal=(state,{warm=false,big=false}={})=>{
   };
 };
 
+// New deals join the front of the pipeline. Two open deals never share an account name: a name that is already
+// taken is traded for the next free one down the list. No dice: the draw that picked the name has already happened,
+// and nothing in the rules reads a name. (With every name taken, the duplicate stands.)
+export const withDeals=(deals,adds)=>{
+  const taken=new Set(deals.map(d=>d.account));
+  const fresh=adds.map(d=>{
+    let name=d.account;
+    if(taken.has(name)){
+      const at=Math.max(0,ACCOUNT_NAMES.indexOf(name));
+      for(let k=1;k<ACCOUNT_NAMES.length;k++){
+        const next=ACCOUNT_NAMES[(at+k)%ACCOUNT_NAMES.length];
+        if(!taken.has(next)){ name=next; break; }
+      }
+    }
+    taken.add(name);
+    return name===d.account ? d : {...d,account:name};
+  });
+  return [...fresh,...deals];
+};
+
 // High-variance referrals: mostly peanuts, rare whales. Returns {deal, tier}: tier is "peanut", "big", "whale" or ""
 // (the ordinary middle), so nothing has to read the size back out of the note on the deal card.
 export const makeReferral=(state)=>{

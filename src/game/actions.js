@@ -1,5 +1,5 @@
 import { TRIPS } from "../copy/names.js";
-import { checkRepo, cost, killDeals, makeDeal, makeReferral, tryCloseSome } from "./deals.js";
+import { checkRepo, cost, killDeals, makeDeal, makeReferral, tryCloseSome, withDeals } from "./deals.js";
 import { log } from "./log.js";
 import { RECHARGE_ENERGY, RECHARGE_LUCK, TRIP_AT, checkBurnout, coffeeEnergy, coffeeRisk, coffeeStress, rechargeRelief } from "./stress.js";
 import { choice, clamp, pct, randi } from "./util.js";
@@ -16,7 +16,7 @@ export const actProspect=(s)=>{
   ns.meetings=(ns.meetings||0)+randi(0,n);
   ns.skills.prospect=clamp(ns.skills.prospect+1,0,100);
   ns.stress=clamp(ns.stress+2,0,100);
-  ns.deals=[...adds,...ns.deals];
+  ns.deals=withDeals(ns.deals,adds);
   ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
   ns=log(ns,"act.prospect",{n:adds.length});
   return ns;
@@ -29,7 +29,7 @@ export const actCadence=(s)=>{
   const adds=Array.from({length:n},()=>makeDeal(s,{warm:true}));
   ns.used.cadence=true;
   ns.meetings=(ns.meetings||0)+randi(0,n);
-  ns.deals=[...adds,...ns.deals];
+  ns.deals=withDeals(ns.deals,adds);
   ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
   ns=log(ns,"act.cadence",{n});
   return ns;
@@ -110,7 +110,7 @@ export const actNetwork=(s)=>{
   const adds=made.map(m=>m.deal);
 
   ns.meetings=(ns.meetings||0)+randi(0,n);
-  ns.deals=[...adds,...ns.deals];
+  ns.deals=withDeals(ns.deals,adds);
   ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
 
   const hasWhale=made.some(m=>m.tier==="whale");
@@ -204,7 +204,7 @@ export const actConference=(s)=>{
   ns.cash-=800;
   const n=randi(3,8);
   const adds=Array.from({length:n},()=>makeDeal(s,{warm:true,big:Math.random()<0.4}));
-  ns.deals=[...adds,...ns.deals];
+  ns.deals=withDeals(ns.deals,adds);
   ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
   ns.stress=clamp(ns.stress+5,0,100);
   if(Math.random()<0.30){

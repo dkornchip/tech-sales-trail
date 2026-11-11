@@ -10,6 +10,7 @@
 //   saves      every save fixture, both ways in          (test/saves/run.cjs)
 //   offline    no network, bundled fonts                 (test/e2e/offline.cjs)
 //   firstday   the onboarding memo and the tour          (test/e2e/firstday.cjs)
+//   resilience a held choice, names, ids, damaged saves  (test/e2e/resilience.cjs)
 //   layout     one screen, nothing covered or cut off    (test/e2e/layout.cjs)
 // and prints a one-screen summary with timings. Each step's full output is kept in test-results/verify/<step>.log;
 // --verbose also streams it.
@@ -62,13 +63,14 @@ const STEPS = {
   saves: { what: "save compatibility", cmd: ["test/saves/run.cjs", "--b", target, "--workers", workers, ...drv("--b-driver")] },
   offline: { what: "no network, bundled fonts", cmd: ["test/e2e/offline.cjs", target] },
   firstday: { what: "a new player's first day", cmd: ["test/e2e/firstday.cjs", target] },
+  resilience: { what: "reloads, damaged saves, names, ids", cmd: ["test/e2e/resilience.cjs", target] },
   layout: { what: "layout on one screen", cmd: ["test/e2e/layout.cjs", target, "--workers", workers, "--min-font", String(LAYOUT_MIN_FONT), "--expect-fail", LAYOUT_KNOWN.join(","), ...drv("--driver")] },
   // not in the default run
   keyboard: { what: "keyboard only", cmd: ["test/e2e/keyboard.cjs", target, "--expect-fail", KEYBOARD_KNOWN.join(","), ...drv("--driver")] },
   "lint-css": { what: "stylesheet rules (report)", cmd: ["scripts/lint-css.mjs"] },
   "lint-copy": { what: "house style (report)", cmd: ["scripts/lint-copy.mjs"] }
 };
-const DEFAULT = ["build", "lint-rng", "parity", "saves", "offline", "firstday", "layout"];
+const DEFAULT = ["build", "lint-rng", "parity", "saves", "offline", "firstday", "resilience", "layout"];
 const order = onlyArg ? onlyArg.split(",").map(s => s.trim()).filter(Boolean) : DEFAULT;
 for(const s of order) if(!STEPS[s]){ console.error(`verify: unknown step ${s}. steps: ${Object.keys(STEPS).join(", ")}`); process.exit(2); }
 

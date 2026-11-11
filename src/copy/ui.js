@@ -113,6 +113,13 @@ export const CHIP = {
 
 export const MENU = { title: "Settings", sound: "Sound", voice: "Office announcer", captions: "Captions for the announcer", volume: "Volume", voiceOn: "Announcer on.", save: "Save run", load: "Load saved run", newRun: "New run" };
 
+// The page that replaces the game when it cannot be drawn (a save that is not a save).
+export const CRASH = {
+  title: "This run could not be opened",
+  body: "The saved run on this browser is damaged. A new run will set it aside and start the quarter over.",
+  newRun: "New run"
+};
+
 export const STAGE = ["Lead", "Qualified", "Demoed", "Proposal", "Closing"];
 export const MOOD = { skeptical: "skeptical", neutral: "neutral", curious: "curious", happy: "happy" };
 

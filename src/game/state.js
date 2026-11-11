@@ -1,7 +1,7 @@
 import { newClaink, sanitizeClaink } from "./claink.js";
 import { AUTOSAVE_KEY, LEGACY_KEYS, MAX_QUARTERS, SAVE_KEY } from "./constants.js";
 import { newStory, sanitizeStory } from "./story.js";
-import { idGen } from "./util.js";
+import { idGen, idsPast } from "./util.js";
 
 // FIX: page refresh now resumes the autosave (most recent state); the Load button prefers the manual save.
 export const readStoredRun=(preferAutosave=true)=>{
@@ -20,6 +20,8 @@ export const readStoredRun=(preferAutosave=true)=>{
 // Single merge path for restored runs (was duplicated between initial load and the Load button).
 export const mergeSaved=(parsed)=>{
   const base=newGame();
+  // ids handed out from here on must not repeat one the save already holds
+  idsPast([...(Array.isArray(parsed.deals) ? parsed.deals : []),...(Array.isArray(parsed.logs) ? parsed.logs : [])].map(x=>x && x.id));
   return{
     ...base,
     ...parsed,

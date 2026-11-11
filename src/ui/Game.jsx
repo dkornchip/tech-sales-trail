@@ -28,6 +28,24 @@ import { Tour, Welcome, endFirstDay, isFirstDay, useBooting } from "./FirstRun.j
 
 const { useState, useEffect, useRef } = React;
 
+// An End Week choice ("evt:" dialogs) is kept beside the autosave while it is on screen, with the run and week it
+// belongs to, so a reload cannot be used to walk away from it. It is honoured only for that same run and week.
+const PENDING_KEY="tst-pending-v2";
+const heldEvent=s=>{
+  try{
+    const p=JSON.parse(localStorage.getItem(PENDING_KEY)||"null");
+    if(!p || typeof p.id!=="string" || p.id.indexOf("evt:")!==0 || !EVENTS[p.id])return null;
+    if(p.runId!==s.runId || p.week!==s.week || isRunOver(s))return null;
+    return {id:p.id,params:p.params && typeof p.params==="object" ? p.params : undefined};
+  }catch{ return null; }
+};
+const holdEvent=(pending,s)=>{
+  try{
+    if(pending && pending.id.indexOf("evt:")===0) localStorage.setItem(PENDING_KEY,JSON.stringify({runId:s.runId,week:s.week,id:pending.id,params:pending.params}));
+    else localStorage.removeItem(PENDING_KEY);
+  }catch{}
+};
+
 export function Game(){
   const createInitial=()=>{
     const base=newGame();
@@ -39,7 +57,9 @@ export function Game(){
   };
 
   const[s,setS]=useState(createInitial);
-  const[pending,setPending]=useState(null); // the event dialog on screen: {id, params} (EVENTS in game/events.js), or null
+  // the event dialog on screen: {id, params} (EVENTS in game/events.js), or null. A choice that was on screen when
+  // the page closed is still waiting when it opens again (v1.21 dropped it, and both of its outcomes with it).
+  const[pending,setPending]=useState(()=>heldEvent(s));
   const[over,setOver]=useState(null);
   const[showHelp,setShowHelp]=useState(false);
   // The first day (ui/FirstRun.jsx): "memo" (the opening), then 0, 1, 2 (the tour's stops), then null for good.
@@ -140,6 +160,7 @@ export function Game(){
     if(!pending || s.fired || s.burnedOut || s.win || s.missed || s.repo)return;
     const a=AUDIO(); if(a) a.onModal(pending.id);
   },[pending]);
+  useEffect(()=>{ holdEvent(pending,s); },[pending]);
 
   const endWeek=()=>{
     const r=runEndWeek(s,setPending);
@@ -252,7 +273,7 @@ export function Game(){
       )}
 
       <Modal
-        open={!!pending}
+        open={!!pending && !booting}
         title={eventWords ? eventWords.title(eventParams) : "Event"}
         dialogId={pending ? pending.id : undefined}
         actions={eventDef && eventWords ? eventDef.options.map(opt=>{ const w=eventWords.options[opt.id](eventParams); return {
