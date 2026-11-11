@@ -77,7 +77,7 @@ const PROPER = [
 
   "Matt", "Associate Account Executive", "People & Culture", "Finance", "Collections", "Legal", "Procurement", "RevOps", "IT Security", "Facilities", "Marketing",
   "CRO", "AI Governance Council", "Council", "ChatGDP", "Autonomous Pipeline", "Enterprise Plus", "Enterprise", "Shitcorp AI Use Policy", "Rep of the Month",
-  "Japan", "Whistler", "Cancun", "Thailand", "Dubai", "Wikipedia", "Hail Mary", "Hail Marys", "SaaS", "AI", "SE", "OS", "IT", "OK", "CEO", "CFO", "VP", "SSO", "SPIFF", "SOC", "GA",
+  "Japan", "Whistler", "Cancun", "Thailand", "Dubai", "Wikipedia", "Hail Mary", "Hail Marys", "Esc", "SaaS", "AI", "SE", "OS", "IT", "OK", "CEO", "CFO", "VP", "SSO", "SPIFF", "SOC", "GA",
 
   "Tech Sales Trail", "Marketing Ops", "Customer Success", "Closed Won", "Chat GDP", "PDF", "API",
 

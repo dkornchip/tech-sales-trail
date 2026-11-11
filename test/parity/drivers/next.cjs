@@ -19,6 +19,9 @@ module.exports = {
   benign: ['recharge-when-rested'],
 
   // Copy that is stored in a save and has to be reduced to a code before two builds can be compared.
+  // Moves that sit in a menu: the keyboard test reaches them through `via` (focus it, press Enter, then Tab to the item).
+  menu: { via: 'settings', moves: ['save', 'load', 'newgame'] },
+
   canon: {
     // Save, Load and New run moved into the settings menu, so reaching one costs a click the baseline never made
     // (opening the menu). That one click is taken out of the sound trace for those moves; nothing else is.
@@ -167,6 +170,7 @@ module.exports = {
         if (a.closest && a.closest('#boot')) return 'boot';
         for (const [move, el] of controls().map) if (el === a) return move;
         for (const name of Object.keys(MENU)) if (a === q('[data-ui="' + name + '"]')) return name;
+        if (a === q('[data-ui="settings"]')) return 'settings';     // the way to Save, Load and New run (see `menu` below)
         return null;
       },
       region(name) {

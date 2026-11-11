@@ -16,6 +16,16 @@
     window.TST_TOAST(A.settings.on ? "Sound on" : "Sound off");
   });
 
+  /* ---------- a held key presses a button once ---------- */
+  // Holding Enter makes the keyboard repeat it, and each repeat used to press the focused button again: three
+  // actions, or three weeks, from one press. Repeats of Enter and Space on anything button-like are dropped here,
+  // before the button hears them. Typing into a field is left alone.
+  document.addEventListener("keydown",function(e){
+    if(!e.repeat || (e.key !== "Enter" && e.key !== " ")) return;
+    var tg = e.target;
+    if(tg && tg.closest && tg.closest("button,[role=button],[role=switch],summary,a[href]")){ e.preventDefault(); e.stopPropagation(); }
+  },true);
+
   /* ---------- toast (in-page replacement for alert(), which the artifact viewer blocks) ---------- */
   // Both nodes exist before the first message, so the live region is registered when it speaks. The visible
   // toast is a manual popover: the top layer keeps it above an open <dialog> and its backdrop.
@@ -85,6 +95,9 @@
     document.removeEventListener("keydown",onKey,true);
     document.documentElement.classList.remove("tst-booting");
     if(behind) behind.inert = false;
+    // v2.0: the button that had the focus is about to go; hand the focus to the desk, not to <body>
+    // (a dialog that opens next, such as the first day's memo, takes it from there)
+    try{ var first = behind && behind.querySelector('[data-act]:not([aria-disabled="true"])'); if(first) first.focus({preventScroll:true}); }catch(e){}
     if(reduced){ ov.remove(); return; }
     pre.classList.remove("tst-crt-on"); pre.classList.add("tst-crt-off");
     ov.classList.add("off");

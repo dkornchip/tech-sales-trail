@@ -11,12 +11,12 @@
 //   offline    no network, bundled fonts                 (test/e2e/offline.cjs)
 //   firstday   the onboarding memo and the tour          (test/e2e/firstday.cjs)
 //   resilience a held choice, names, ids, damaged saves  (test/e2e/resilience.cjs)
+//   keyboard   a whole run with the keyboard only        (test/e2e/keyboard.cjs)
 //   layout     one screen, nothing covered or cut off    (test/e2e/layout.cjs)
 // and prints a one-screen summary with timings. Each step's full output is kept in test-results/verify/<step>.log;
 // --verbose also streams it.
 //
-// --only also takes the steps that are not part of the default run: keyboard (test/e2e/keyboard.cjs), lint-css,
-// lint-copy. "npm run test:layout", "test:saves" and "test:keyboard" are this script with --only, so that the
+// --only also takes the steps that are not part of the default run: lint-css, lint-copy. "npm run test:layout", "test:saves" and "test:keyboard" are this script with --only, so that the
 // lists below are the one place where today's known failures are written down.
 //
 // --driver names the harness driver for the build (default next: the v2.0 markup, test/parity/drivers/next.cjs).
@@ -37,13 +37,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
  * ============================================================================================================ */
 const LAYOUT_MIN_FONT = 13;
 const LAYOUT_KNOWN = [];
-const KEYBOARD_KNOWN = [
-  // the boot screen's button is removed while it has focus
-  "focus-lost@boot",
-  // a held Enter repeats the action, and ends several weeks in a row
-  "held-key@enter-on-action",
-  "held-key@enter-on-end-week"
-];
+const KEYBOARD_KNOWN = [];
 
 /* ---------------------------------------------------------------- arguments */
 const argv = process.argv.slice(2);
@@ -70,7 +64,7 @@ const STEPS = {
   "lint-css": { what: "stylesheet rules (report)", cmd: ["scripts/lint-css.mjs"] },
   "lint-copy": { what: "house style (report)", cmd: ["scripts/lint-copy.mjs"] }
 };
-const DEFAULT = ["build", "lint-rng", "parity", "saves", "offline", "firstday", "resilience", "layout"];
+const DEFAULT = ["build", "lint-rng", "parity", "saves", "offline", "firstday", "resilience", "keyboard", "layout"];
 const order = onlyArg ? onlyArg.split(",").map(s => s.trim()).filter(Boolean) : DEFAULT;
 for(const s of order) if(!STEPS[s]){ console.error(`verify: unknown step ${s}. steps: ${Object.keys(STEPS).join(", ")}`); process.exit(2); }
 

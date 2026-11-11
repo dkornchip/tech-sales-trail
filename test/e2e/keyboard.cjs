@@ -102,8 +102,17 @@ async function journey(browser, env, opts) {
   const state = () => JSON.parse(snap.state);
   const dialogId = () => (snap.dialog ? snap.dialog.id : null);
 
-  // Tab (or Shift+Tab) until the control for `move` has focus.
+  // Tab (or Shift+Tab) until the control for `move` has focus. A move the driver lists under `menu` is reached the
+  // way a player reaches it: focus the menu's button, press Enter, then Tab to the item inside.
+  const menu = env.driver.menu || { via: null, moves: [] };
   const tabTo = async (move, back) => {
+    if (menu.moves.indexOf(move) >= 0 && (await page.evaluate(() => window.__e2e.focusInfo())).move !== move) {
+      const at = await page.evaluate(m => !!window.__drv.el(m) && window.__drv.el(m).getAttribute('data-ui') === m, move);
+      if (!at) { await tabStops(menu.via, back); await press('Enter', { after: 'the ' + menu.via + ' menu opens' }); }
+    }
+    return tabStops(move, back);
+  };
+  const tabStops = async (move, back) => {
     const key = back ? 'Shift+Tab' : 'Tab';
     const now = await page.evaluate(() => window.__e2e.focusInfo());
     if (now.move === move) return;
