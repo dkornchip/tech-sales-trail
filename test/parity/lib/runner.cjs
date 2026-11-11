@@ -257,17 +257,6 @@ async function runSession(browser, spec, env) {
           if (lag === 'a') a = more; else b = more;
         }
       }
-      // A second look before a dialog difference is called. On a loaded machine the baseline (which compiles itself
-      // in the browser and runs React's development build) has twice been caught one render short of opening the
-      // rules: its snapshot said "no dialog", and the same session passed every time it was replayed alone. Both
-      // builds get the same two extra rounds of fake time and are read again. A real difference is still there
-      // afterwards and fails exactly as before; only a page that had not finished drawing gets the benefit.
-      if (move !== 'reload' && a.settled && b.settled && (a.dialog ? a.dialog.id : null) !== (b.dialog ? b.dialog.id : null)) {
-        const again = await Promise.all([A.extra(2), B.extra(2)]);
-        const merge = (old, more) => { more.sound = old.sound.concat(more.sound); more.speech = old.speech.concat(more.speech); more.logs = old.logs.concat(more.logs); more.logsSwapped = old.logsSwapped; more.rounds = old.rounds + 2; return more; };
-        a = merge(a, again[0]); b = merge(b, again[1]);
-        result.notes.secondLooks = (result.notes.secondLooks || 0) + 1;
-      }
       // With --sound, an ending gets to play out: its cutscene cues run for about nine seconds, and the next move
       // (New Run) would otherwise cut them off half way.
       if ((env.sound || spec.playEndings) && a.dialog && /^end:/.test(a.dialog.id) && !(prevDialog && prevDialog.id === a.dialog.id) && a.settled && b.settled) {

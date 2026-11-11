@@ -64,6 +64,9 @@ export const Modal=({open,title,children,actions,onDismiss,dialogId,className,as
     <dialog ref={ref} className={className||undefined} aria-labelledby={titleId} data-dialog={dialogId||undefined}
       onCancel={e=>{ if(!onDismiss)e.preventDefault(); }}
       onClose={()=>{
+        // close() only queues this event. If the dialog has been opened again by the time it arrives, the event is
+        // from the close before, not from the player: acting on it used to dismiss the dialog that had just opened.
+        if(ref.current && ref.current.open)return;
         if(onDismiss){ if(open)onDismiss(); return; }
         // Chromium force-closes on a repeated Esc even when cancel is prevented; keep the dialog in step with state
         if(open && ref.current && !ref.current.open)ref.current.showModal();

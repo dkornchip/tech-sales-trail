@@ -5,6 +5,7 @@
 //   3. ids handed out after a reload never repeat one in the save
 //   4. a save that parses but is not a save gets a plain page with a way out, not a blank one
 //   5. an ending whose cutscene cannot play still opens, says what happened and shows the paperwork
+//   6. a dialog's close event that arrives late does not dismiss a dialog that has been opened since
 // Exits 1 if any check fails. (CommonJS on purpose: Playwright only resolves through require() here.)
 "use strict";
 const { chromium } = require("playwright");
@@ -143,6 +144,24 @@ const dice = (page, v) => page.evaluate(x => { Math.random = () => x; }, v);
     check("and the paperwork is out at once", still.card && still.run, JSON.stringify(still));
     await page.click('dialog[open] [data-ui="newrun"]'); await page.waitForTimeout(400);
     check("New run starts a new quarter from it", await dialog(page) === null && (await save(page)).week === 1);
+    check("no errors", errors.length === 0, errors.join(" | "));
+    await context.close();
+
+    /* ---------- 6. a close event that arrives late ---------- */
+    // dialog.close() only queues its close event. If the dialog is open again when the event lands (a scripted
+    // press can get in between; a busy machine makes the gap wide), the event is stale. v1.21 took it for the
+    // player dismissing the dialog and closed the rules that had just been opened.
+    ({ context, page, errors } = await open(browser));
+    await page.click('[data-ui="rules"]');
+    await page.waitForSelector('dialog[open][data-dialog="help"]', { timeout: 3000 }).catch(() => {});
+    await page.evaluate(() => document.querySelector('dialog[open]').dispatchEvent(new Event("close")));
+    await page.waitForTimeout(300);
+    check("a stale close event does not dismiss the rules", await dialog(page) === "help", "dialog " + await dialog(page));
+    await page.keyboard.press("Escape"); await page.waitForTimeout(300);
+    check("Escape still closes them", await dialog(page) === null, "dialog " + await dialog(page));
+    await page.click('[data-ui="rules"]'); await page.waitForTimeout(200);
+    await page.click('dialog[open] .d-footer .btn'); await page.click('[data-ui="rules"]'); await page.waitForTimeout(300);
+    check("closed with its button and reopened at once, they are open", await dialog(page) === "help", "dialog " + await dialog(page));
     check("no errors", errors.length === 0, errors.join(" | "));
     await context.close();
   } finally { await browser.close(); }

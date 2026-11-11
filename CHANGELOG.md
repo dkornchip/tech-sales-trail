@@ -63,6 +63,7 @@ Everything a player sees, reads or hears was redone. Nothing about how the game 
 - A save that parses but is not a save gets a plain page with a way out, instead of a blank screen. New run sets the damaged save aside and starts in place.
 - When the boot screen closes, the keyboard focus goes to the first action instead of nowhere.
 - Debug text is out of the interface (“Turn”, “Run id”, “roll 42% vs 31%”).
+- Reopening a dialog the instant it closed no longer dismisses it again. (Closing a dialog only queues its close event; one that arrived after the dialog was open again used to be taken for the player dismissing it. Nobody can press that fast, but a script can, and the parity harness did.)
 - If an ending's cutscene cannot start, the screen says what happened in one sentence and the paperwork comes out at once. v1.21 fell back to a two-frame animation that looped for ever.
 - “Oracle Dumpling”, an account named after a real vendor, is now “Opal Dumpling”.
 

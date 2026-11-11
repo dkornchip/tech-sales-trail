@@ -78,6 +78,7 @@ module.exports = function parityInPage(cfg) {
     return id;
   };
   const dropTimer = id => { timers.delete(id); };
+  const realSetTimeout = W.setTimeout.bind(W);   // the real one, kept for the one wait that has to be in real time (close events, below)
   W.setTimeout = (fn, delay, ...args) => addTimer(fn, delay, args, 0, false);
   W.setInterval = (fn, delay, ...args) => addTimer(fn, delay, args, Math.max(1, Math.trunc(Number(delay) || 0)), false);
   W.clearTimeout = dropTimer;
@@ -277,6 +278,24 @@ module.exports = function parityInPage(cfg) {
     };
   }
 
+  // Dialog close events. dialog.close() only queues the event, and the game's dialog component acts on it when it
+  // arrives (v1.21 dismisses a dismissable dialog that is open when one lands). A player cannot press anything in
+  // between; a scripted press can. On a loaded machine the event has been seen to arrive after the NEXT move, where
+  // it closed, in the baseline, the rules that move had just opened: a dialog difference that was the harness's
+  // doing. So a step is not settled while a close event is still on its way. The wait is in real time, because
+  // the event is a browser task, not a timer of the fake clock.
+  let closing = 0;
+  if (W.HTMLDialogElement) {
+    const proto = W.HTMLDialogElement.prototype, close = proto.close;
+    proto.close = function () { const was = this.open; const r = close.apply(this, arguments); if (was && !this.open) closing++; return r; };
+    W.document.addEventListener('close', e => { if (closing > 0 && e.target instanceof W.HTMLDialogElement) closing--; }, true);
+  }
+  const closeEventsIn = async () => {
+    const t0 = RealDate.now();
+    while (closing > 0 && RealDate.now() - t0 < 4000) { await realTicks(2); if (closing > 0) await new Promise(r => realSetTimeout(r, 8)); }
+    return closing <= 0;
+  };
+
   // What must stop changing before a step counts as settled.
   const signature = () => {
     let raw = null;
@@ -292,6 +311,8 @@ module.exports = function parityInPage(cfg) {
       await realTicks(3);
       await runFor(roundMs);
       await realTicks(3);
+      const delivered = await closeEventsIn();
+      if (!delivered) { closing = 0; return { rounds: rounds + 1, settled: false }; }   // reported as "did not settle"
       rounds++;
       const sig = signature();
       if (prev !== null && sig === prev) return { rounds, settled: true };
@@ -300,7 +321,7 @@ module.exports = function parityInPage(cfg) {
     }
   }
   async function rounds(n, roundMs) {
-    for (let i = 0; i < n; i++) { await realTicks(3); await runFor(roundMs); await realTicks(3); }
+    for (let i = 0; i < n; i++) { await realTicks(3); await runFor(roundMs); await realTicks(3); await closeEventsIn(); }
   }
 
   W.__parity = {
