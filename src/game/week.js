@@ -1,3 +1,4 @@
+import { FRIDAY } from "./rules.js";
 import { billClaink, expireClaink } from "./claink.js";
 import { QUARTER_WEEKS } from "./constants.js";
 import { ageAndGhost, checkRepo, tickModifiers, tryCloseSome } from "./deals.js";
@@ -85,7 +86,7 @@ export const endWeek=(s,queueEvent)=>{
     }
   }
 
-  ns.energy=clamp(ns.energy+15,0,100);
+  ns.energy=clamp(ns.energy+FRIDAY.energy,0,100);
   // v1.15: caffeinated weeks crash instead of recovering
   const shots=ns.coffeesThisWeek||0;
   if(shots>0){
@@ -93,7 +94,7 @@ export const endWeek=(s,queueEvent)=>{
     ns.stress=clamp(ns.stress+crash,0,100);
     ns=log(ns,"coffee.crash",{stress:crash},"warn");
   }else{
-    ns.stress=clamp(ns.stress-4,0,100);
+    ns.stress=clamp(ns.stress-FRIDAY.relief,0,100);
   }
 
   // v1.15: burnout lands before reviews. Danger zone rolls every weekend.

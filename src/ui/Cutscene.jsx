@@ -1,4 +1,5 @@
 import React from "react";
+import { NAMES } from "../copy/ui.js";
 import { CUTSCENES } from "./cutscenesFallback.js";
 
 const { useState, useEffect, useRef } = React;
@@ -42,7 +43,7 @@ export const Cutscene=({type,speed=120,play,meta,ctrlRef,maxFont,onDone})=>{
       </div>
     );
   }
-  const label=(engine.summaryFor && engine.summaryFor(type,meta)) || "Ending animation";
+  const label=(engine.summaryFor && engine.summaryFor(type,meta)) || NAMES.ending;
   return(
     <div className="cutbox crt" role="img" aria-label={label}>
       <pre className="cutscene" ref={preRef}></pre>

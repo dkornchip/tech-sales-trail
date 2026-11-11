@@ -10,15 +10,15 @@ export const describe = (a, s) => {
   const copy = ACTION[a.id];
   const used = a.id === "crm" ? !!(s.used && s.used.crm) : a.id === "recharge" ? !!s.restedThisWeek : false;
   const block = blocked(s, { energy: a.energy, slots: a.slots || 1, used });
-  let count = null, hint = "", cost = copy.cost;
+  let count = null, hint = "", cost = a.id === "coffee" ? "" : copy.cost(a);
   if (a.id === "discovery") { count = stageCount(s, 0); hint = HINT.discovery(count, qualifyChance(s)); }
   else if (a.id === "demo") { count = stageCount(s, 1); hint = HINT.demo(count, demoChance(s)); }
   else if (a.id === "propose") { count = stageCount(s, 2); hint = HINT.propose(count, PROPOSE_CHANCE); }
   else if (a.id === "close") { count = lateDeals(s).length; hint = HINT.close(count); }
   else if (a.id === "crm") { const c = crmPreview(s); hint = HINT.crm(c.pruned, c.gain, c.nuke); }
   else if (a.id === "recharge") hint = HINT.recharge(rechargeRange(s));
-  else if (a.id === "coffee") { const shot = nextShot(s); hint = HINT.coffee(shot); cost = shot.risk > 0 ? copy.risk(shot.risk) : copy.cost(shot.stress, shot.crash); }
-  else hint = HINT[a.id]();
+  else if (a.id === "coffee") { const shot = nextShot(s); hint = HINT.coffee(shot); cost = shot.risk > 0 ? copy.risk(a, shot.risk) : copy.cost(a, shot.stress, shot.crash); }
+  else hint = HINT[a.id](a);
   if (used && copy.used) cost = copy.used;
   return { title: copy.title, cost, count, block, hint: block ? HINT.blocked[block.why](block) : hint, risky: a.id === "coffee" && nextShot(s).risk > 0 };
 };

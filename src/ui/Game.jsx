@@ -12,7 +12,7 @@ import { isRunOver } from "../game/log.js";
 import { mergeSaved, newGame, readStoredRun } from "../game/state.js";
 import { CRASH_PER_SHOT, RECHARGE_ENERGY, RECHARGE_LUCK, TRIP_AT, checkBurnout } from "../game/stress.js";
 import { money, pct } from "../game/util.js";
-import { MENU } from "../copy/ui.js";
+import { MENU, NAMES, TOAST } from "../copy/ui.js";
 import { describe } from "./app/ActionGrid.jsx";
 import { Board } from "./app/Board.jsx";
 import { hailBlock } from "./app/Foot.jsx";
@@ -91,17 +91,17 @@ export function Game(){
     try{
       localStorage.setItem(SAVE_KEY,JSON.stringify(sRef.current));
       sfx("save");
-      notify("Run saved.");
+      notify(TOAST.saved);
     }catch{
       sfx("nope");
-      notify("Couldn’t save — storage is blocked in this browser.");
+      notify(TOAST.saveBlocked);
     }
   };
   const onLoad=()=>{
     const v=readStoredRun(false);
     if(!v){
       sfx("nope");
-      notify("No save found.");
+      notify(TOAST.noSave);
       return;
     }
     try{
@@ -111,7 +111,7 @@ export function Game(){
       setPending(null);
       setOver(null);
     }catch{
-      notify("Save was corrupted. Starting a new run.");
+      notify(TOAST.damaged);
       setS(newGame());
       setEpoch(e=>e+1); // v1.19: fresh clAInk UI state
       setPending(null);
@@ -274,7 +274,7 @@ export function Game(){
 
       <Modal
         open={!!pending && !booting}
-        title={eventWords ? eventWords.title(eventParams) : "Event"}
+        title={eventWords ? eventWords.title(eventParams) : NAMES.event}
         dialogId={pending ? pending.id : undefined}
         actions={eventDef && eventWords ? eventDef.options.map(opt=>{ const w=eventWords.options[opt.id](eventParams); return {
           label:typeof w==="string" ? w : w.label,

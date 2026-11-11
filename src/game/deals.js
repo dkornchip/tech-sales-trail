@@ -1,6 +1,7 @@
 import { ACCOUNT_NAMES, ACHIEVEMENTS, DEAL_NOTES } from "../copy/names.js";
 import { MOODS } from "./constants.js";
 import { log } from "./log.js";
+import { PAY, closeOdds } from "./rules.js";
 import { choice, clamp, idGen, pct, randi } from "./util.js";
 
 // Clone nested sub-objects that actions mutate, to avoid accidental state mutation bugs.
@@ -159,25 +160,11 @@ export const tryCloseSome=(state,src="negotiations")=>{
   }
   let closedCount=0,totalWon=0,totalDiscount=0,lost=0,lostVal=0;
   let top=null; // the largest deal signed in this pass, for the run's story
-  const pipPenalty=s.pip ? 0.05*(s.pipLevel||1) : 0;
 
   const nextDeals=[];
   for(const d of s.deals){
     if(d.stage<3){nextDeals.push(d);continue;}
-    let chance=
-      0.05 +
-      0.26*(s.skills.negotiate/100) +
-      0.10*(s.skills.discovery/100) +
-      0.07*(s.manager/100) +
-      0.08*(s.reputation/100) +
-      0.08*(s.product/100) -
-      0.20*(s.stress/100) +
-      (s.modifiers.conversion||0) +
-      (d.stage>=4?0.05:0) +
-      (d.mood==="happy"?0.08:0) -
-      (d.mood==="skeptical"?0.06:0) -
-      pipPenalty;
-    chance=clamp(chance,0.03,0.88);
+    const chance=closeOdds(s,d);
     const roll=Math.random();
     if(roll<chance){
       const rate=s.modifiers.discount||0;
@@ -207,11 +194,11 @@ export const tryCloseSome=(state,src="negotiations")=>{
   s.pipeline=s.deals.reduce((sum,d)=>sum+d.value,0);
   s.closedWon+=totalWon;
   s.closedQuarter+=totalWon;
-  s.cash+=Math.round(totalWon*0.12);
+  s.cash+=Math.round(totalWon*PAY.commission);
   s.discounts+=totalDiscount;
 
   if(closedCount>0){
-    s=log(s,"close.signed",{src,n:closedCount,won:totalWon,keep:Math.round(totalWon*0.12),top});
+    s=log(s,"close.signed",{src,n:closedCount,won:totalWon,keep:Math.round(totalWon*PAY.commission),top});
     if(totalWon>=65000)s=addAchievement(s,"whale");
   }else{
     s=log(s,"close.nobody",{src},"warn");

@@ -1,4 +1,5 @@
 import React from "react";
+import { NAMES } from "../../copy/ui.js";
 import { ActionGrid } from "./ActionGrid.jsx";
 import { Activity } from "./Activity.jsx";
 import { Deals } from "./Deals.jsx";
@@ -15,7 +16,7 @@ export const Board = ({ s, top, dock, onAct, onHail, onEndWeek }) => {
     <div className="app">
       {top}
       <main className="main">
-        <section className="panel left" aria-label="Your week">
+        <section className="panel left" aria-label={NAMES.week}>
           <Quarter s={s} />
           <Kpis s={s} />
           <Stats s={s} />
@@ -23,7 +24,7 @@ export const Board = ({ s, top, dock, onAct, onHail, onEndWeek }) => {
           <HintBar hint={hint} s={s} />
           <Foot s={s} onHail={onHail} onEndWeek={onEndWeek} onHint={setHint} />
         </section>
-        <section className="panel right" aria-label="Your deals and activity">
+        <section className="panel right" aria-label={NAMES.desk}>
           <Deals s={s} />
           <Activity s={s} />
           {dock}

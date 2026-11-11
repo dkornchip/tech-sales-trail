@@ -1,6 +1,7 @@
 import { TRIPS } from "../copy/names.js";
 import { checkRepo, cost, killDeals, makeDeal, makeReferral, tryCloseSome, withDeals } from "./deals.js";
 import { log } from "./log.js";
+import { COST, PROPOSE_ODDS, crmGain, crmNukeOdds, demoOdds, isDeadLead, qualifyOdds } from "./rules.js";
 import { RECHARGE_ENERGY, RECHARGE_LUCK, TRIP_AT, checkBurnout, coffeeEnergy, coffeeRisk, coffeeStress, rechargeRelief } from "./stress.js";
 import { choice, clamp, pct, randi } from "./util.js";
 
@@ -8,7 +9,7 @@ import { choice, clamp, pct, randi } from "./util.js";
 // the action can't be taken (no slot, no energy, already used this week). The caller applies the burnout check.
 export const actProspect=(s)=>{
   // Phones cost more energy now.
-  let[ns,ok]=cost(s,{energy:30,slots:1});
+  let[ns,ok]=cost(s,COST.prospect);
   if(!ok)return null;
   const n=randi(1,4)+(Math.random()<(s.skills.prospect/100)*0.4?1:0);
   const adds=Array.from({length:n},()=>makeDeal(s,{warm:false}));
@@ -23,7 +24,7 @@ export const actProspect=(s)=>{
 };
 
 export const actCadence=(s)=>{
-  let[ns,ok]=cost(s,{energy:18,slots:1});
+  let[ns,ok]=cost(s,COST.cadence);
   if(!ok)return null;
   const n=randi(0,3);
   const adds=Array.from({length:n},()=>makeDeal(s,{warm:true}));
@@ -36,12 +37,12 @@ export const actCadence=(s)=>{
 };
 
 export const actDiscovery=(s)=>{
-  let[ns,ok]=cost(s,{energy:22,slots:1});
+  let[ns,ok]=cost(s,COST.discovery);
   if(!ok)return null;
   ns.used.discovery=true;
   let advanced=0;
   ns.deals=ns.deals.map(d=>{
-    if(d.stage===0 && Math.random()<(0.35+ns.skills.discovery/200)){
+    if(d.stage===0 && Math.random()<qualifyOdds(ns)){
       advanced++;
       return {...d,stage:1,mood:d.mood==="skeptical"?"neutral":d.mood};
     }
@@ -54,12 +55,12 @@ export const actDiscovery=(s)=>{
 };
 
 export const actDemo=(s)=>{
-  let[ns,ok]=cost(s,{energy:28,slots:1});
+  let[ns,ok]=cost(s,COST.demo);
   if(!ok)return null;
   ns.used.demo=true;
   let advanced=0;
   ns.deals=ns.deals.map(d=>{
-    if(d.stage===1 && Math.random()<(0.30+ns.skills.demo/220+ns.product/350)){
+    if(d.stage===1 && Math.random()<demoOdds(ns)){
       advanced++;
       return {...d,stage:2,mood:d.mood==="neutral"?"curious":d.mood};
     }
@@ -72,12 +73,12 @@ export const actDemo=(s)=>{
 };
 
 export const actPropose=(s)=>{
-  let[ns,ok]=cost(s,{energy:25,slots:1});
+  let[ns,ok]=cost(s,COST.propose);
   if(!ok)return null;
   ns.used.propose=true;
   let advanced=0;
   ns.deals=ns.deals.map(d=>{
-    if(d.stage===2 && Math.random()<0.38){
+    if(d.stage===2 && Math.random()<PROPOSE_ODDS){
       advanced++;
       return {...d,stage:3,mood:d.mood==="curious"?"happy":d.mood};
     }
@@ -89,7 +90,7 @@ export const actPropose=(s)=>{
 };
 
 export const actClose=(s)=>{
-  let[ns,ok]=cost(s,{energy:28,slots:1});
+  let[ns,ok]=cost(s,COST.close);
   if(!ok)return null;
   ns.used.close=true;
   ns.skills.negotiate=clamp(ns.skills.negotiate+1,0,100);
@@ -98,7 +99,7 @@ export const actClose=(s)=>{
 };
 
 export const actNetwork=(s)=>{
-  let[ns,ok]=cost(s,{energy:16,slots:1});
+  let[ns,ok]=cost(s,COST.network);
   if(!ok)return null;
   ns.used.network=true;
 
@@ -122,7 +123,7 @@ export const actNetwork=(s)=>{
 };
 
 export const actRecharge=(s)=>{
-  let[ns,ok,reason]=cost(s,{energy:0,slots:1,onceKey:"restedThisWeek"});
+  let[ns,ok,reason]=cost(s,{...COST.recharge,onceKey:"restedThisWeek"});
   if(!ok)return reason==="once" ? log(s,"act.recharge.already",null,"warn") : null;
   ns.used.recharge=true;
   // v1.15: caffeine in the system blunts the reset. v1.17: a lucky nap adds 0-25% to both, one roll per use.
@@ -140,13 +141,13 @@ export const actRecharge=(s)=>{
 
 // v1.15: each shot this week hits harder and does less; from shot 3 the heart rolls dice.
 export const actCoffee=(s)=>{
-  let[ns,ok]=cost(s,{energy:0,slots:1});
+  let[ns,ok]=cost(s,COST.coffee);
   if(!ok)return null;
   const n=ns.coffeesThisWeek||0, k=n+1;
   const e=coffeeEnergy(n), st=coffeeStress(n), risk=coffeeRisk(n);
   ns.coffeesThisWeek=k;
   ns.energy=clamp(ns.energy+e,0,100);
-  ns.cash-=6;
+  ns.cash-=COST.coffee.cash;
   ns.stress=clamp(ns.stress+st,0,100);
   // a shot that maxes stress counts as the heart giving out too
   if(ns.stress>=100 || (risk>0 && Math.random()<risk)){
@@ -162,15 +163,14 @@ export const actCoffee=(s)=>{
 // v1.15: pipeline hygiene. Not a funnel motion; once per week.
 export const actCrm=(s)=>{
   if(s.used && s.used.crm)return null;
-  let[ns,ok]=cost(s,{energy:15,slots:1});
+  let[ns,ok]=cost(s,COST.crm);
   if(!ok)return null;
   ns.used.crm=true;
-  const dead=d=>d.stage<=1 && (d.mood==="skeptical" || d.age>=5);
-  const pruned=ns.deals.filter(dead).length;
-  ns.deals=ns.deals.filter(d=>!dead(d));
-  const gain=Math.min(10,5+pruned);
+  const pruned=ns.deals.filter(isDeadLead).length;
+  ns.deals=ns.deals.filter(d=>!isDeadLead(d));
+  const gain=crmGain(pruned);
   // "Close that out" reads the manager's mood before the cleanup lands
-  const nukeChance=s.manager<40?0.25:0.15;
+  const nukeChance=crmNukeOdds(s.manager);
   ns.manager=clamp(ns.manager+gain,0,100);
   ns.hygieneShield=true;
   let nuked=null;
@@ -188,7 +188,7 @@ export const actCrm=(s)=>{
 
 export const actPolitics=(s)=>{
   // Internal politics costs more energy now.
-  let[ns,ok]=cost(s,{energy:20,slots:1});
+  let[ns,ok]=cost(s,COST.politics);
   if(!ok)return null;
   ns.manager=clamp(ns.manager+8,0,100);
   ns.product=clamp(ns.product+3,0,100);
@@ -199,9 +199,9 @@ export const actPolitics=(s)=>{
 };
 
 export const actConference=(s)=>{
-  let[ns,ok]=cost(s,{energy:40,slots:2});
+  let[ns,ok]=cost(s,COST.conference);
   if(!ok)return null;
-  ns.cash-=800;
+  ns.cash-=COST.conference.cash;
   const n=randi(3,8);
   const adds=Array.from({length:n},()=>makeDeal(s,{warm:true,big:Math.random()<0.4}));
   ns.deals=withDeals(ns.deals,adds);
@@ -224,7 +224,7 @@ export const hailMary=(s)=>{
   if(!s.deals.some(d=>d.stage>=3)){
     return log(s,"act.hail.none",null,"warn");
   }
-  let[ns,ok]=cost(s,{energy:10,slots:1});
+  let[ns,ok]=cost(s,COST.hail);
   if(!ok)return null;
   const miracle=Math.random()<0.2;
   const beforeClosed=ns.closedWon;

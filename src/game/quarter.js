@@ -1,3 +1,4 @@
+import { PAY, RENT_WEEKS } from "./rules.js";
 import { QUARTER_WEEKS } from "./constants.js";
 import { checkRepo } from "./deals.js";
 import { log } from "./log.js";
@@ -118,10 +119,10 @@ export const evaluateQuarter=(state)=>{
 // ---- helpers that used to be re-created inside the component on every render ----
 export const salaryAndBills=(state)=>{
   let ns={...state};
-  ns.cash+=1000;
+  ns.cash+=PAY.salary;
   const {weekInQuarter}=getQuarterInfo(ns.week);
-  if(weekInQuarter===1||weekInQuarter===5||weekInQuarter===9){
-    ns.cash-=1600;
+  if(RENT_WEEKS.includes(weekInQuarter)){
+    ns.cash-=PAY.rent;
     ns=log(ns,"pay.rent",null,"warn");
   }
   ns=log(ns,"pay.salary");

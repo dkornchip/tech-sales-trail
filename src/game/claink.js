@@ -1,3 +1,4 @@
+import { PAY } from "./rules.js";
 import { CK_CANCEL, CK_CLEAR, CK_COUNCIL, CK_INCIDENT, CK_MGR, CK_MIRACLE, CK_NOTES, CK_OLD_SAVE, CK_ONBOARD, CK_OUTCOMES, CK_REVOKE, CK_RUN, CK_WASTE } from "../copy/claink.js";
 import { ACCOUNT_NAMES } from "../copy/names.js";
 import { QUARTER_WEEKS } from "./constants.js";
@@ -190,7 +191,7 @@ export const clainkMiracle=(state)=>{
   const nudged=new Set(order.slice(0,CLAINK.MIRACLE_NUDGE).map(x=>x.id));
   if(nudged.size) s.deals=s.deals.map(d=>nudged.has(d.id)?{...d,stage:d.stage+1,mood:d.mood==="skeptical"?"neutral":d.mood,probNote:CK_NOTES.touched}:d);
   const total=signed.reduce((t,d)=>t+d.value,0);
-  const keep=Math.round(total*0.12);
+  const keep=Math.round(total*PAY.commission);
   s.closedWon+=total; s.closedQuarter+=total; s.cash+=keep;
   s=ckPipe(s);
   let fees=0; for(let i=0;i<signed.length;i++) fees+=ckInt(CLAINK.PER_OUTCOME[0],CLAINK.PER_OUTCOME[1]);
@@ -239,7 +240,7 @@ export const clainkIncident=(state,rKind)=>{
     card=CK_INCIDENT.leak({n:lost.length,value:val,rep:I.leak.rep,mgr:I.leak.mgr});
   }else{
     const amt=Math.min(s.closedQuarter,Math.max(I.churn.lo,Math.min(I.churn.hi,Math.round(s.closedQuarter*I.churn.frac))));
-    const back=Math.round(amt*0.12);
+    const back=Math.round(amt*PAY.commission);
     s.closedWon-=amt; s.closedQuarter-=amt; s.cash-=back;
     const a=ckFreshName(s);
     card=CK_INCIDENT.churn({account:a,amt,back});

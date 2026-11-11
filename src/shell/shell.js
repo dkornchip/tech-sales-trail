@@ -1,4 +1,5 @@
 /* ===== Tech Sales Trail: the mute key, the toast, and the SHITCORP OS boot screen ===== */
+import { BOOT, TOAST } from "../copy/ui.js";
 (function(){
   "use strict";
   var A = window.TST_AUDIO, Sc = window.TST_SCENES;
@@ -13,7 +14,7 @@
     if(document.getElementById("boot")) return;
     A.setOn(!A.settings.on);
     if(A.settings.on) A.play("coin");
-    window.TST_TOAST(A.settings.on ? "Sound on" : "Sound off");
+    window.TST_TOAST(A.settings.on ? TOAST.soundOn : TOAST.soundOff);
   });
 
   /* ---------- a held key presses a button once ---------- */
@@ -60,14 +61,14 @@
   function readWeek(){ return saved && saved.week > 0 ? ((saved.week-1)%13)+1 : 1; }
   var ov = document.createElement("div");
   ov.id = "boot";
-  ov.setAttribute("role","dialog"); ov.setAttribute("aria-modal","true"); ov.setAttribute("aria-label","Shitcorp OS boot screen");
+  ov.setAttribute("role","dialog"); ov.setAttribute("aria-modal","true"); ov.setAttribute("aria-label",BOOT.label);
   ov.innerHTML =
     '<div class="boot-monitor">'+
       '<div class="cutbox crt boot-screen"><pre class="cutscene" aria-hidden="true"></pre></div>'+
       '<div class="boot-bezel">'+
-        '<span class="boot-led" aria-hidden="true"></span><span class="boot-brand">SHITCORP</span>'+
-        '<span class="boot-hint">M mutes</span>'+
-        '<button type="button" class="btn primary boot-btn" data-nosfx>Clock in</button>'+
+        '<span class="boot-led" aria-hidden="true"></span><span class="boot-brand">'+BOOT.brand+'</span>'+
+        '<span class="boot-hint">'+BOOT.hint+'</span>'+
+        '<button type="button" class="btn primary boot-btn" data-nosfx>'+BOOT.clockIn+'</button>'+
       '</div>'+
     '</div>';
   document.body.appendChild(ov);
@@ -82,7 +83,7 @@
     stage = "booting"; A.unlock();
     ctrl.stop();
     ov.classList.add("on");
-    btn.textContent = "Skip"; hint.textContent = "Booting…";
+    btn.textContent = BOOT.skip; hint.textContent = BOOT.booting;
     // no impact frames until the game behind the boot has mounted (Babel compiling = long main-thread stall)
     ctrl = Sc.play(pre,"boot",{crt:false, maxFont:20, meta:{week:readWeek()}, impactOk:function(){ return !!document.querySelector("#root .main"); }, onDone:function(){ setTimeout(finish, reduced ? 2000 : 400); }});
   }
@@ -113,7 +114,7 @@
       if(e.repeat) return;
       A.setOn(!A.settings.on);
       if(A.settings.on){ A.unlock(); A.play("coin"); }
-      window.TST_TOAST(A.settings.on ? "Sound on" : "Sound off");
+      window.TST_TOAST(A.settings.on ? TOAST.soundOn : TOAST.soundOff);
       return;
     }
     if(e.key === "Escape"){ e.preventDefault(); if(stage === "standby") A.unlock(); finish(); return; }

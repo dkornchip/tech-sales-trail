@@ -54,19 +54,22 @@ export const KPI = {
 
 export const STAT = { manager: "Manager", reputation: "Reputation", product: "Product", prospect: "Prospecting", discovery: "Discovery", demo: "Demo", negotiate: "Negotiation" };
 
+// Each action's name and the cost line under it. A cost line is built from the action's real cost
+// (c: { energy, slots, cash }, from src/game/rules.js), so the words follow the rules.
+const energy = c => `${c.energy} energy`;
 export const ACTION = {
-  prospect: { title: "Prospect blitz", cost: "30 energy" },
-  cadence: { title: "Email cadence", cost: "18 energy" },
-  network: { title: "Referrals", cost: "16 energy" },
-  discovery: { title: "Discovery", cost: "22 energy" },
-  demo: { title: "Demo marathon", cost: "28 energy" },
-  propose: { title: "Proposals", cost: "25 energy" },
-  close: { title: "Close deals", cost: "28 energy" },
-  conference: { title: "Conference run", cost: "40 energy · $800 · 2 slots" },
-  crm: { title: "CRM cleanup", cost: "15 energy · once a week", used: "Done this week" },
-  recharge: { title: "Recharge", cost: "Once a week", used: "Used this week" },
-  coffee: { title: "Quad shot", cost: (stress, crash) => `$6 · +${stress + crash} stress by Friday`, risk: p => `$6 · ${pc(p)} heart risk` },
-  politics: { title: "Internal politics", cost: "20 energy" },
+  prospect: { title: "Prospect blitz", cost: energy },
+  cadence: { title: "Email cadence", cost: energy },
+  network: { title: "Referrals", cost: energy },
+  discovery: { title: "Discovery", cost: energy },
+  demo: { title: "Demo marathon", cost: energy },
+  propose: { title: "Proposals", cost: energy },
+  close: { title: "Close deals", cost: energy },
+  conference: { title: "Conference run", cost: c => `${c.energy} energy · ${usd(c.cash)} · ${n(c.slots, "slot")}` },
+  crm: { title: "CRM cleanup", cost: c => `${c.energy} energy · once a week`, used: "Done this week" },
+  recharge: { title: "Recharge", cost: () => "Once a week", used: "Used this week" },
+  coffee: { title: "Quad shot", cost: (c, stress, crash) => `${usd(c.cash)} · +${stress + crash} stress by Friday`, risk: (c, p) => `${usd(c.cash)} · ${pc(p)} heart risk` },
+  politics: { title: "Internal politics", cost: energy }
 };
 
 export const HINT = {
@@ -77,7 +80,7 @@ export const HINT = {
   demo: (c, p) => (c ? `${n(c, "qualified deal")} waiting. Each has a ${pc(p)} chance to move on.` : "Nobody is qualified for a demo. It would still cost the energy."),
   propose: (c, p) => (c ? `${n(c, "demoed deal")} waiting. Each has a ${pc(p)} chance to take a proposal.` : "Nobody has seen a demo. It would still cost the energy."),
   close: c => (c ? `${n(c, "deal")} ready for a signature. The odds are on each row. A miss can lose the deal.` : "Nothing is at proposal yet. It would still cost the energy."),
-  conference: () => "3 to 8 warm leads, some of them large. Takes two slots and $800.",
+  conference: c => `3 to 8 warm leads, some of them large. Takes ${n(c.slots, "slot")} and ${usd(c.cash)}.`,
   crm: (pruned, gain, nuke) => `Clears ${n(pruned, "dead lead")}: +${gain} manager.` + (nuke ? ` ${pc(nuke)} chance he closes out a live deal while he is in there.` : ""),
   recharge: r => `+${r.energy[0]} to +${r.energy[1]} energy` + (r.relief[1] > 0 ? `, −${r.relief[0]} to −${r.relief[1]} stress.` : ". The caffeine keeps the stress.") + " A very good nap gets a trip approved.",
   coffee: (shot) => `Shot ${shot.n}: +${shot.energy} energy and +${shot.stress} stress now, +${shot.crash} more on Friday.` + (shot.risk >= 1 ? " This one takes stress to 100." : shot.risk > 0 ? ` ${pc(shot.risk)} chance your heart objects.` : ""),
@@ -113,6 +116,20 @@ export const CHIP = {
 
 export const MENU = { title: "Settings", sound: "Sound", voice: "Office announcer", captions: "Captions for the announcer", volume: "Volume", voiceOn: "Announcer on.", save: "Save run", load: "Load saved run", newRun: "New run" };
 
+// One-line confirmations (the toast at the bottom of the screen).
+export const TOAST = {
+  saved: "Run saved.",
+  saveBlocked: "Could not save. This browser is blocking storage.",
+  noSave: "No saved run found.",
+  damaged: "That save was damaged. A new run has started.",
+  soundOn: "Sound on",
+  soundOff: "Sound off"
+};
+
+// The boot screen's bezel, and names for things that have no visible label (screen readers read these).
+export const BOOT = { label: "Shitcorp OS boot screen", brand: "SHITCORP", hint: "M mutes", clockIn: "Clock in", skip: "Skip", booting: "Booting…" };
+export const NAMES = { week: "Your week", desk: "Your deals and activity", sound: "Sound", soundTitle: "Sound (M)", ending: "Ending animation", event: "Event" };
+
 // The page that replaces the game when it cannot be drawn (a save that is not a save).
 export const CRASH = {
   title: "This run could not be opened",
@@ -124,6 +141,11 @@ export const STAGE = ["Lead", "Qualified", "Demoed", "Proposal", "Closing"];
 export const MOOD = { skeptical: "skeptical", neutral: "neutral", curious: "curious", happy: "happy" };
 
 // For the copy lint: hints that take structured numbers.
-export const lint = { params: {
-  "HINT.recharge": [{ energy: [35, 52], relief: [12, 18] }, { energy: [35, 52], relief: [0, 0] }]
+// (BOOT.brand is the badge on the monitor's bezel, in the company's capitals.)
+export const lint = { exempt: { "sentence-case": ["BOOT.brand"] }, params: {
+  "HINT.recharge": [{ energy: [35, 52], relief: [12, 18] }, { energy: [35, 52], relief: [0, 0] }],
+  "ACTION.coffee.cost": [{ args: [{ energy: 0, slots: 1, cash: 6 }, 12, 13] }],
+  "ACTION.coffee.risk": [{ args: [{ energy: 0, slots: 1, cash: 6 }, 0.18] }],
+  "ACTION.conference.cost": [{ energy: 40, slots: 2, cash: 800 }],
+  "HINT.conference": [{ energy: 40, slots: 2, cash: 800 }]
 } };
