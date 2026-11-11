@@ -1,64 +1,49 @@
-# 🧭 Tech Sales Trail
+# Tech Sales Trail
 
 **Survive one quarter of enterprise tech sales. Hit your number, keep your job, keep your jacket.**
 
-[![Play in your browser](https://img.shields.io/badge/play-in%20your%20browser-1f7aff?style=for-the-badge)](https://dkornchip.github.io/tech-sales-trail/)
-[![Now ships with AI](https://img.shields.io/badge/now%20ships%20with-AI-a78bfa?style=for-the-badge)](#-now-ships-with-ai-meet-claink)
-[![No install](https://img.shields.io/badge/install-none-22d3ee?style=for-the-badge)](#play)
+[![Play in your browser](https://img.shields.io/badge/play-in%20your%20browser-2f6fed?style=for-the-badge)](https://dkornchip.github.io/tech-sales-trail/)
+[![No install, works offline](https://img.shields.io/badge/install-none%20·%20works%20offline-15181c?style=for-the-badge)](#play)
 
-> [!IMPORTANT]
-> **New in v1.20: Tech Sales Trail now ships with AI.** Meet **clAInk**, your very own AI sales agent. It closes deals while you sleep (about one week in five). [Meet clAInk ↓](#-now-ships-with-ai-meet-claink)
+You are Matt, 25, freshly hired at **Shitcorp**, “the next disruptor in SaaS.” Your onboarding memo says *Associate Account Executive*. HR's stamp says *SDR\**. You have **13 weeks** to close **$160,000** in software deals, or the quarterly business review decides what happens to you.
 
-You're Matt, 25, freshly hired at **Shitcorp**, "the next disruptor in SaaS." Your onboarding memo says *Associate Account Executive*. HR's stamp says *SDR\**. You have **13 weeks** to close **$160,000** in software deals before the quarterly review decides whether you're going to President's Club in Cabo or carrying a cardboard box to the parking lot.
+Make calls, chase leads, run demos, survive your manager, and try not to drink yourself into orbit.
 
-Make calls, chase leads, run demos, survive your manager, and try not to drink yourself into orbit on espresso.
+![Tech Sales Trail in week 6: the week's numbers and twelve actions on the left; on the right the deal list, the activity log and clAInk's agent workspace reporting a run that closed nothing and earned a strike](screenshots/main.webp)
 
-![Tech Sales Trail mid-quarter: your stats and actions on the left, your deals and the activity log on the right, and clAInk's agent workspace reporting a strike](screenshots/main.webp)
+The game is told by the company you work for. The CRM logs what you did. The office PA announces what it thinks matters. HR writes the memo, Finance sends the bill, and your manager says the things sales managers say. Nobody comments on any of it.
 
 ---
 
-## 🤖 Now ships with AI: meet clAInk
+## Play
 
-**The latest version comes with an AI sales agent.** Shitcorp has signed an enterprise pilot with **clAInk**, the agentic revenue platform: *"Your reps sell. Our agents do everything else."*
+**In your browser:** https://dkornchip.github.io/tech-sales-trail/
 
-Activate a seat and, once a week, your agents research accounts, write the outreach and advance your deals while you get on with your life. Pricing is outcome-based: you pay for every outcome, plus the tokens it took to get there.
+**On your own machine:** download this repository and open `index.html`. That one file is the whole game: no install, no server, no network. It loads nothing from anywhere, so it works on a plane.
 
-The pilot results, straight from the fine print: **1 in 5 agent runs closed real revenue. The other 4 delivered outcomes.**
+A new player opens on Shitcorp's onboarding memo and a tour of three stops. After that the game opens on your desk.
 
-<img src="screenshots/claink.webp" width="340" alt="clAInk's agent workspace: 4.4M tokens of billed outcomes, $0 closed, and strike 1 of 3, filed by Procurement because the agent tried to buy itself a second seat">
-
-How it works:
-
-- **It shows up as an ad** at the start of every run. Minimize it to a pill if it's in your way. Close it and clAInk is off for that run. Ignore it and the pilot offer ends after week 3, gone for the rest of the run.
-- **A seat costs $500.** You get one agent run per week. It costs no energy and no action slots; the bill comes on Friday.
-- **1 in 5 runs actually works.** It signs $12,000 to $22,000 of real business and nudges two more deals forward. A great week.
-- **The other runs deliver "outcomes."** "Influenced $78,000 of pipeline (all of it)." "Drafted 1,400 emails. Sent 0." "Booked 3 meetings with other agents." Every outcome is billed, and so are the tokens. Nothing closes.
-- **Every run that closes $0 earns a strike** from Shitcorp's AI Governance Council, filed by whoever noticed: Finance wants to know about the token bill, Procurement caught the agent trying to buy itself a seat, Legal found the 45% discount it offered "in writing." Some strikes do real damage to your deals, your closed revenue, your reputation or your manager's patience.
-- **Three strikes and your seat is revoked.** Finance runs the token true-up, which somehow comes to everything in your account and then some. On its way out, the agent emails your best deal to say goodbye. They take it badly.
-- **The bill comes every Friday.** Even idle weeks cost money, because background agents keep "thinking."
-- **Your manager may notice.** "Always on ChatGDP, huh?" The first time is a warning, delivered as an event you have to acknowledge: improve your writing skills, or management will start intervening in your deals. After that, he might take your best deal and close it himself, to teach you about writing.
-
-> **Tip:** clAInk is a gamble, not a strategy. It's at its best as a late-quarter desperation play when you're behind. Quit before the third strike if you can't afford the true-up.
+<img src="screenshots/first-day.webp" width="640" alt="The first day: the onboarding dialog shows HR's welcome memo, with the job title Associate Account Executive stamped over in red with SDR*, and under it the job in three lines: a $160,000 quota, 13 weeks, five slots a week">
 
 ---
 
 ## New to tech sales? The 60-second version
 
-Software companies sell to other companies, and the deals can be big, slow and political. The people who sell them live by a few rules:
+Software companies sell to other companies, and the deals can be big, slow and political. The people who sell them live by a few words:
 
-- **SDR** (Sales Development Rep): the entry-level job. You cold-call strangers, send a lot of emails and book meetings for someone more senior.
-- **AE** (Account Executive): runs deals from first meeting to signature and gets paid when they close.
+- **SDR** (sales development rep): the entry-level job. You cold-call strangers, send a lot of emails and book meetings for someone more senior.
+- **AE** (account executive): runs deals from first meeting to signature and gets paid when they close.
 - **Quota:** the amount you have to sell this quarter. Everything is measured against it.
-- **Pipeline:** every deal you're working on and what it would be worth if it closed. Most of it won't.
-- **The funnel:** a deal starts as a lead, gets qualified on a discovery call, sees a demo, gets a proposal and, if you're lucky, closes.
+- **Pipeline:** every deal you are working on and what it would be worth if it closed. Most of it won't.
+- **The funnel:** a deal starts as a lead, gets qualified on a discovery call, sees a demo, gets a proposal and, if you are lucky, closes.
 - **Commission:** your cut of what you sell, on top of a modest salary. Close nothing and rent is a problem.
-- **Pace:** where you should be by now. Week 7 of 13 means you should have about half your quota closed.
-- **QBR** (Quarterly Business Review): the meeting at the end of the quarter where your number gets judged.
-- **PIP** (Performance Improvement Plan): the formal warning that comes before the exit interview.
+- **Pace:** where you should be by now. Week 7 of 13 means about half your quota should be closed.
+- **QBR** (quarterly business review): the meeting at the end of the quarter where your number gets judged.
+- **PIP** (performance improvement plan): the formal warning that comes before the exit interview.
 - **President's Club:** the trip for reps who hit their number. Also the jacket.
 - **CRM:** the database where every deal is supposed to be kept up to date. It is not up to date.
 
-That's enough to play. The game teaches the rest the hard way.
+That is enough to play. The game teaches the rest the hard way.
 
 ---
 
@@ -68,120 +53,181 @@ That's enough to play. The game teaches the rest the hard way.
 
 Close **$160,000** before the end of week 13. The quarter ends at the QBR:
 
-| Closed by week 13 | Result |
+| Closed by week 13 | What happens |
 |---|---|
-| 100% of quota or more | **President's Club.** Pack for Cabo. |
-| 70 to 99% | **Barely Missed.** You keep your badge. Back to the phones. |
-| Under 70% | **Terminated.** Your Slack is already gone. |
+| 100% of quota or more | **President's Club.** Matt is approved for Cabo. |
+| 80 to 99% | **Barely missed.** You keep the job. |
+| 70 to 79% | **Your manager's call.** At best he lets you go one time in four; a performance plan, a manager who dislikes you or a thin pipeline all make it worse. |
+| Under 70% | **Terminated.** The QBR is short. |
 
-Hitting your number with a manager who can't stand you is not a guarantee, either.
+Hitting your number while your manager can't stand you is not a guarantee, either.
 
-Every ending, good or bad, plays as an animated ASCII cutscene with its own score:
+Every ending plays as an ASCII cutscene on the terminal the company never replaced. When the scene is over, the paperwork comes out: the quarter in four numbers, and what the company has put on file about this particular run.
 
-<img src="screenshots/ending.webp" width="520" alt="The President's Club ending: an ASCII cutscene of a jet landing on a beach, the jacket, palm trees and fireworks, captioned Pipeline: obliterated. Commission rains.">
+<img src="screenshots/ending.webp" width="560" alt="The President's Club ending. An ASCII scene of a jet on a beach with palm trees and the jacket, captioned Cabo: approved. Expenses: under review. Under it: $171,300 closed, 107% of quota, 9 deals signed, the largest deal, and two notes on file, one of them that the Whistler trip is still approved and is the same week as Cabo">
 
 You can also lose before week 13:
 
-- **Fired mid-quarter.** From week 5, falling behind pace brings warnings ("Manager wants a meeting audit"), and from week 6 you can be let go on the spot.
-- **Meltdown.** Stress hits 100.
-- **Ascension.** Too many espressos. You ride a column of fire through the ceiling and into orbit.
-- **Jacket Repo'd.** Your cash falls to -$1,500 and Collections takes the President's Club jacket.
+- **Terminated mid-quarter.** From week 5, being behind pace brings warnings. From week 6, it can end the quarter on the spot.
+- **Meltdown.** Stress reaches 100, or a weekend at 80 or more goes badly.
+- **Ascension.** One quad shot too many. Matt leaves through the ceiling.
+- **Jacket repossessed.** Cash falls to −$1,500 and Collections takes the President's Club jacket.
 
 ### A week
 
-Each week you get **5 action slots** and a pool of **energy**. Spend them on actions, then press **End Week**. At the end of every week:
+Each week you get **5 slots** and whatever **energy** you have. Spend them on actions, then press **End week**. On Friday:
 
-- you get **$1,000** salary, and rent (**$1,600**) is due in weeks 1, 5 and 9
-- energy partly refills and stress eases a little (unless you've been drinking espresso)
-- random events hit: free leads, competitor price cuts, outages, security incidents, budget freezes, promotions, territory "rebalances"
+- you are paid **$1,000**, and rent (**$1,600**) comes out in weeks 1, 5 and 9
+- you get 15 energy back, and stress eases a little (unless you have been drinking quad shots, in which case it does the opposite)
+- things happen: inbound leads, a competitor's price cut, an outage, a security incident, a budget freeze, a promotion, a territory “rebalance”
 - deals age, and neglected or skeptical prospects go dark
-- your manager judges your pace
+- from week 5, your manager judges your pace
 
-Doing a bit of everything pays off. Touch at least three parts of the funnel in a week and you close better next week. Neglect it and you close worse.
+Doing a bit of everything pays. Touch at least three parts of the funnel in a week and you close better the next week. Neglect it and you close worse.
 
 ### Moving deals
 
-Every deal has a stage and a mood (skeptical, neutral, curious or happy). Moods matter: happy buyers sign more, skeptical ones ghost.
+Every deal has a stage and a mood (skeptical, neutral, curious or happy). Moods matter: happy buyers sign more, skeptical ones stop answering.
 
-| Stage | How a deal gets to the next stage |
+| Stage | What moves it on |
 |---|---|
-| **Lead** | 🔎 Discovery Deep Dive qualifies it |
-| **Qualified** | 🖥️ Demo Marathon demos it |
-| **Demoed** | 📑 Proposals & Commit puts it on paper |
-| **Proposal** / **Closing** | 🤝 Close Deals tries to get a signature |
+| **Lead** | Discovery qualifies it |
+| **Qualified** | Demo marathon shows it the product |
+| **Demoed** | Proposals puts it on paper |
+| **Proposal**, **Closing** | Close deals asks for a signature |
 
-When you try to close, your odds depend on your negotiation and discovery skills, your manager, your reputation, how good the product is, your stress level and the buyer's mood. Missed deals can walk away for good.
+Each of those buttons works on every deal waiting at that stage, and the hint bar under the buttons tells you how many are waiting and what chance each one has before you spend anything. The odds of a signature are shown on each deal's row. They depend on your negotiation and discovery skills, your manager, your reputation, the product, your stress and the buyer's mood. A deal that does not sign can walk away for good.
 
 ### Actions
 
 | Action | Cost | What it does |
 |---|---|---|
-| 📞 Prospect Blitz | 30 energy | Cold calls. A handful of new leads. |
-| ✉️ Email Cadence | 18 energy | Warmer leads, but fewer. Your manager hates it if you never pick up the phone. |
-| 🔎 Discovery Deep Dive | 22 energy | Qualifies some of your leads. |
-| 🖥️ Demo Marathon | 28 energy | Demos qualified deals. Better product, better demos. |
-| 📑 Proposals & Commit | 25 energy | Sends proposals to demoed deals. |
-| 🤝 Close Deals | 28 energy | Pushes every late-stage deal for a signature. |
-| 🧑‍🤝‍🧑 Referrals & Social | 16 energy | Usually small intros. Occasionally a whale. |
-| 🏟️ Conference Run | 40 energy, 2 slots, $800 | A pile of warm leads, some of them big. |
-| 🧘 Recharge | once a week | Big energy refill and less stress. A really good nap might get your manager to approve a trip. |
-| ☕ Quad Shot | $6 | Energy now, stress later. Each shot in a week hits harder, and from the third your heart starts rolling dice. |
-| 🏛️ Internal Politics | 20 energy | Your manager likes you more. Everyone else likes you less. |
-| 🧹 CRM Cleanup | 15 energy, weekly | Prunes dead leads and pleases your manager, but he might tell you to "close out" a good deal. |
-| 🧪 Hail-Mary | 10 energy | A desperate push on every late-stage deal. Chaos sometimes works. Usually it torches your pipeline. |
+| Prospect blitz | 30 energy | Cold calls. 1 to 4 new leads, now and then a fifth. |
+| Email cadence | 18 energy | Fewer leads, but warmer. Your manager notices a week of emails with no calls. |
+| Referrals | 16 energy | One or two introductions, usually small. About one in thirty is a whale. |
+| Discovery | 22 energy | Qualifies some of your leads. |
+| Demo marathon | 28 energy | Demos your qualified deals. A better product demos better. |
+| Proposals | 25 energy | Sends proposals to your demoed deals. |
+| Close deals | 28 energy | Asks every late-stage deal for a signature. |
+| Conference run | 40 energy, $800, 2 slots | 3 to 8 warm leads, some of them large. |
+| CRM cleanup | 15 energy, once a week | Clears dead leads and pleases your manager. He may close out a live deal while he is in there. |
+| Recharge | once a week | A lot of energy back and less stress. A very good nap gets a trip approved. |
+| Quad shot | $6 | Energy now, stress now, and more stress on Friday. Each shot in a week hits harder, and from the third your heart gets a vote. |
+| Internal politics | 20 energy | Your manager likes you more. Everyone else likes you a little less. |
+| Hail Mary | 10 energy | One desperate push on every late-stage deal. It sometimes works. It usually costs you the pipeline. |
 
-Every action takes one slot, except the Conference (two) and clAInk's runs (none).
+Every action takes one slot, except the conference (two) and clAInk's runs (none).
 
-### Your stats
+### Your numbers
 
-| Stat | What it means |
+| Number | What it means |
 |---|---|
-| **Energy** | Fuels actions. Run out and you can only rest or drink coffee. |
-| **Stress** | Hurts your close rate. 80+ can melt you down at the end of a week; 100 always does. |
-| **Cash** | Salary plus 12% commission on everything you close, minus rent. -$1,500 and the jacket goes. |
-| **Pipeline** | The total value of your live deals. |
-| **Closed (Q)** | Revenue closed this quarter, with your % of quota and where your pace should be. |
-| **Manager** | Your relationship with your boss. Helps you close, keeps PIPs and firings away. |
-| **Prospecting, Discovery, Demo, Negotiation** | Your skills. They grow as you use them. |
-| **Reputation** | Bigger deals and better odds. |
-| **Product** | How cursed the software you're selling is. Low product sinks demos and closes. |
+| **Energy** | Pays for actions. Without it you can rest, drink coffee or end the week. |
+| **Stress** | Lowers your close odds. At 80 or more a weekend can end the quarter; at 100 it ends on the spot. |
+| **Cash** | Salary plus 12% commission, minus rent. At −$1,500 the jacket goes. |
+| **Closed this quarter** | What you have signed, as a share of quota, against where pace says you should be. |
+| **Manager** | What your manager thinks of you. It improves your close odds and decides what happens when you are behind. |
+| **Reputation** | Bigger deals, and slightly better odds. |
+| **Product** | How well the software holds up. When it is low, demos and closes suffer. |
+| **Prospecting, discovery, demo, negotiation** | Your skills. They grow as you use them. |
 
 ### Tips
 
-- **Keep the funnel moving.** A pile of leads you never qualify goes stale. A pile of demos you never propose to goes cold.
-- **Don't fall behind pace after week 5.** That's when your manager starts asking questions.
+- **Keep the funnel moving.** Leads you never qualify go stale. Demos you never follow with a proposal go cold.
+- **Do not fall behind pace after week 5.** That is when your manager starts asking questions.
 - **Coffee is a loan.** Every shot is paid back in stress on Friday.
 - **Watch rent weeks** (1, 5 and 9) and keep some cash in the bank.
 - **Recharge is once a week.** Use it.
 
 ---
 
+## Now with AI: meet clAInk
+
+Shitcorp has signed an enterprise pilot with **clAInk**, the agentic revenue platform: *“Your reps sell. Our agents do everything else.”*
+
+Activate a seat and, once a week, your agents research accounts, write the outreach and advance your deals while you get on with your life. Pricing is outcome-based: you pay for every outcome, plus the tokens it took to get there.
+
+The pilot results, straight from the fine print: **1 in 5 agent runs closed real revenue. The other 4 delivered outcomes.**
+
+<img src="screenshots/claink.webp" width="360" alt="clAInk's agent workspace after a run: 3.9 million tokens, three outcomes delivered (it influenced all of the pipeline, drafted 1,200 emails and sent none, and built a 40-slide account plan), $0 closed, and strike 1 of 3 filed by Customer Success">
+
+- **It shows up as an ad** in the corner of the board at the start of every run (once your first day's onboarding is over). Minimize it if it is in your way. Close it and clAInk is off for that run. Ignore it and the pilot offer ends after week 3.
+- **A seat costs $500.** You get one agent run a week. It costs no energy and no slot; the bill comes on Friday.
+- **One run in five actually works.** It signs $12,000 to $22,000 of real business and moves two more deals forward.
+- **The other runs deliver “outcomes.”** It influenced all of your pipeline. It drafted 1,400 emails and sent none. It booked three meetings with other agents. Every outcome is billed, and so are the tokens. Nothing closes.
+- **Every run that closes $0 earns a strike** from Shitcorp's AI Governance Council, filed by whoever noticed: Finance, Procurement, Legal, Customer Success. Some strikes do real damage to your deals, your closed revenue, your reputation or your manager's patience.
+- **Three strikes and the seat is revoked.** Finance runs the token true-up, which comes to everything in your account and then some. On its way out, the agent emails your best deal to say goodbye. They take it badly.
+- **Idle weeks are billed too.** Background agents keep “thinking.”
+- **Your manager may notice.** “Always on ChatGDP, huh?” The first time is a warning. After that he may take your best deal and close it himself, as a writing lesson.
+
+clAInk is a gamble, not a strategy. It is at its best as a late-quarter desperation play, and it is worth cancelling before the third strike if you cannot afford the true-up.
+
+---
+
 ## Controls and settings
 
-- **Mouse, touch or keyboard.** Every button works with Tab and Enter. It plays on phones too.
-- **Rules** (top of the Quarter Map) opens the in-game guide, with a warm welcome from Shitcorp HR.
-- **Sound:** synthesized sound effects, a stress heartbeat and an office PA announcer. Toggle sound with the 🔊 button or the **M** key, turn the announcer off with 📢, and set the volume with the slider.
-- **Save, Load, New Game** are in the header. The game also autosaves after every move and picks up where you left off when you come back.
-- **The clAInk window** can be dragged anywhere by its title bar, or minimized to a small pill. The clAInk ad minimizes to a pill too (the – button, or Esc).
-- **Desktop displays:** on a 16:9 PC screen the whole game fits on one screen, with no page scrolling. The activity log and the deal list scroll inside their own boxes.
-- **Reduced motion** is respected: if your device asks for less motion, the animations and cutscenes calm down.
+- **Mouse, touch or keyboard.** Everything works with Tab and Enter, and a whole run can be played without a pointer. The number row (1 to 9, 0, −, =) runs the twelve actions in order; **E** ends the week, **H** is the Hail Mary, **?** opens the rules, **M** mutes. A held key presses a button once.
+- **How it works** (top right) is the rules on one sheet. Its footer reopens the onboarding memo.
+- **Settings** (the gear) holds sound, the office announcer, captions, volume, and Save, Load and New run. The game also autosaves after every move and picks up where you left off, including a choice that was waiting for an answer.
+- **Sound** is synthesized in the page: effects, a heartbeat when stress runs hot, and the office PA. Every line the announcer says is also shown as a caption, so the game plays the same with the sound off.
+- **One screen.** On a desktop display the whole game fits the window with no page scrolling; the deal list and the activity log scroll inside their own boxes. On a phone the page stacks and scrolls.
+- **Reduced motion** is respected: if your device asks for less motion, the cutscenes show their last frame and say what happened.
+
+Saves from earlier versions load and continue.
 
 ---
 
-## Play
+## What's new in v2.0
 
-**In your browser:** https://dkornchip.github.io/tech-sales-trail/
+Everything a player sees or reads was redone, and nothing about how the game plays was changed. A test harness plays v1.21 and v2.0 side by side on the same dice and requires the same state after every move: 54,000 moves and 319,000 dice rolls, identical.
 
-**On your own machine:** download this repository and open `index.html` in any modern browser. There's nothing to install. You'll need an internet connection, because the page loads React from a CDN.
+- **One look.** A restrained dark dashboard with one accent colour, real icons instead of emoji, one type scale. The CRT keeps its phosphor for the boot screen and the endings, and clAInk keeps its brand, because it would.
+- **Every line rewritten** in one voice: the company's. Repeating lines have variants that change with the week and with how often you have done the thing, and never repeat twice running.
+- **The board explains itself.** Close odds on every deal before you commit. A hint bar that says what a button will do right now, or why it can't. Stat changes shown where they happen. The log grouped by week.
+- **Endings are results screens**, and they remember your run: the largest deal, the approved trip, the quad shots, the strikes.
+- **A first day** for new players, **captions** for the announcer, a **settings menu**, a **rules sheet** that fits one screen, keyboard shortcuts.
+- **One self-contained file.** No CDN, no in-browser compiler, no network. It opens from disk and starts at once.
+- **The rules are honest.** The game always let your manager fire you between 70 and 79% of quota; the rules now say so.
+
+The full history is in [CHANGELOG.md](CHANGELOG.md).
 
 ---
 
-## What's new
+## For developers
 
-**v1.21: fits a desktop screen.** The game fits a 16:9 PC display with no scrolling, the clAInk ad minimizes to a pill and its pilot offer ends after week 3, and your manager's first "Always on ChatGDP?" is a proper warning event. **v1.20: the game now ships with AI** (see [clAInk](#-now-ships-with-ai-meet-claink) above), and it's much lighter on your graphics card. The full version history is in [CHANGELOG.md](CHANGELOG.md).
+`index.html` at the root of the repository is generated. The source is in `src/` and the build puts everything (React, the game, the styles, two fonts, the icons) into that one file.
 
-On the roadmap: an Account Executive mode, a Customer Success and renewals mode, and stats for your past runs.
+```
+npm install          # esbuild, React, the fonts, the icons
+npm run build        # src/ -> dist/index.html
+npm run release      # src/ -> ./index.html (the file GitHub Pages serves)
+npm run verify       # build, then every check below
+```
+
+The checks drive a real browser with [Playwright](https://playwright.dev), which is not in `package.json`. Install it once beside the project: `npm install --no-save playwright && npx playwright install chromium`.
+
+| Where | What |
+|---|---|
+| `src/game/` | The rules, as pure functions of the run's state. `rules.js` holds every cost and chance once; the interface reads the same numbers. |
+| `src/copy/` | Every word the player reads. `engine.js` picks between variants without touching the game's dice. |
+| `src/ui/` | The interface (React). `src/styles/tokens.css` is the only file that names a colour or a size. |
+| `src/engine/` | The ASCII scene engine and the synthesized sound. |
+| `scripts/` | The build, the lints, `verify.mjs`, and `screenshots.cjs` (plays the game and takes this page's pictures). |
+| `test/` | See below. |
+
+`npm run verify` runs:
+
+- **parity** (`test/parity/`): plays the frozen v1.21 file (`test/baseline/`) and the build through the same seeded dice, move by move, and compares state, dice rolls, dialogs and legal moves. `npm run parity:full` is the long run; `npm run parity:selftest` proves the harness catches planted bugs.
+- **saves** (`test/saves/`): saves from every state and ending of v1.21, and older, load and play on identically.
+- **offline**, **first day**, **resilience**, **keyboard**, **layout** (`test/e2e/`): no network and the bundled fonts in use; the onboarding flow; reloads, damaged saves and duplicate names; a whole run on the keyboard; one screen at seven desktop sizes and a phone, with nothing covered or cut off.
+- **lints**: dice only where the rules roll (`lint:rng`), house style on every string (`lint:copy`), colours and sizes only from the tokens (`lint:css`).
+
+The rule for changes: jokes never touch dice. Anything cosmetic draws from its own stream (`src/fxrng.js`), and a change that moves a single game roll fails parity.
 
 ---
 
-*Tech Sales Trail is satire. Shitcorp, Scheisskorp, clAInk and every customer in the game are made up. Any resemblance to your actual quarter is a coincidence, and we're sorry.*
+## Credits and licences
+
+The game is built on [React](https://react.dev) (MIT), set in [Inter](https://rsms.me/inter/) and [JetBrains Mono](https://www.jetbrains.com/lp/mono/) (both SIL Open Font License 1.1), and drawn with [Lucide](https://lucide.dev) icons (ISC). All four are bundled into `index.html`; their licences are in [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
+
+*Tech Sales Trail is satire. Shitcorp, Scheisskorp, clAInk and every customer in the game are made up. Any resemblance to your actual quarter is a coincidence, and we are sorry.*

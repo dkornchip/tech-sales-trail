@@ -1,5 +1,74 @@
 # Changelog
 
+## v2.0 — the same quarter, done properly
+
+Everything a player sees, reads or hears was redone. Nothing about how the game plays was changed: the odds, the costs, the events and the endings are v1.21's, and saves from any earlier version load and continue. A test harness plays v1.21 and v2.0 side by side on the same dice and requires the same state, the same number of rolls, the same dialogs and the same legal moves after every move.
+
+### Changed: one look
+- A restrained dark dashboard: one accent colour, one type scale (13, 14, 16, 20 and 28px), one spacing scale, no glows or gradients. Icons are drawn (Lucide) instead of emoji, everywhere, the activity log included.
+- Two things keep their own palettes on purpose. The CRT, the terminal the company never replaced, still plays the boot screen and the endings in phosphor. clAInk keeps its purple, because a vendor would.
+- The stats are a strip of four numbers (energy, stress, cash, closed against pace) with what Friday will do to each, then compact meters for standing and skills. A change to a number shows beside it for a moment.
+- A thirteen-week strip shows where you are, which weeks cost rent, and when reviews start.
+- Sora is gone; the interface is set in Inter, and the log, the numbers and the CRT in JetBrains Mono. Both are bundled.
+
+### Changed: every line rewritten
+- The game is told by the company: the CRM logs, the PA announces, HR writes, Finance bills, your manager says what sales managers say. Matt never speaks and nothing comments on its own joke.
+- Lines you see often have several wordings, which change with the part of the quarter you are in and with how often you have done the thing, and never repeat twice running. The choice is a hash of the run, not a dice roll, so a joke can never move a game roll and a reloaded run reads the same.
+- A stat change is no longer part of the sentence. It is drawn after it, in one format (−8 manager · +4 stress · this week).
+- Each of the eight ways a run can end has its own title, its own one-line account of what became of Matt, and its own announcement.
+- An event's choices say what they do before you choose.
+
+### Changed: the board explains itself
+- Every late-stage deal shows its odds of signing before you press Close deals. Deals are listed by stage.
+- The hint bar says what the button under your pointer (or your focus) will do with the numbers as they stand: how many deals are waiting and the chance each has, what a quad shot will cost you on Friday, what Friday itself will do. If a button can't be used, it says why.
+- The log is grouped by week.
+- Recharge is disabled once used, instead of staying clickable to tell you so.
+- End week is the one primary button.
+
+### Changed: endings are results screens
+- The cutscene plays at full size. When it is over, the paperwork unfolds under it: what you closed, your cash, how many deals you signed and the largest, and up to two notes the company has put on file.
+- The notes are about your run: the largest account, the trip a good nap got approved, the quad shots, clAInk's strikes, the deal your manager took.
+- The focus stays on the scene's own button until the paperwork arrives, so a key meant for the week that just ended cannot dismiss the ending.
+
+### New: a first day
+- A new player opens on the onboarding memo (it used to sit at the top of the rules), then the job in three lines, then a tour of three stops. The tour never blocks the game: press a game button and it steps aside. clAInk's ad waits until it is over.
+- Anyone with a saved run, or who has been through it once, opens on the desk.
+
+### New: captions, a settings menu, a rules sheet, shortcuts
+- Every line the office announcer or HR gets to say is shown on screen: in the top bar on the main screen, under the title of whatever dialog is open. With the sound off, the caption is the announcement.
+- The header's row of buttons is now a settings menu: sound, the announcer, captions, volume, Save, Load, New run.
+- How it works is a two-column reference card in five sections that fits one screen.
+- The number row runs the twelve actions; E ends the week, H is the Hail Mary, ? opens the rules, M mutes. A held key presses a button once: holding Enter used to play three actions, or end three weeks.
+
+### Changed: clAInk is docked
+- The ad and the agent workspace sit at the bottom of the right column instead of floating over the log. Nothing overlaps anything, so dragging is gone. Both still minimize.
+- Its emoji are icons and its words are typeset like the rest.
+
+### Changed: one self-contained file
+- `index.html` no longer compiles itself in the browser with Babel or loads React and fonts from CDNs. The source is in `src/`, and `npm run build` puts React, the game, the styles, two fonts and the icons into one file of about 500 KB that makes no network request at all. It opens from disk and starts at once.
+
+### Changed: the rules are honest
+- The game has always let your manager fire you at the QBR between 70 and 79% of quota, while the rules promised that 70% kept your job. The odds are unchanged; the rules, the README and the ending now say that 80 to 99% keeps the job and 70 to 79% is your manager's call.
+
+### Fixed
+- An End Week choice that was on screen when the page closed is still waiting when it opens again. Reloading used to drop the dialog and both of its outcomes.
+- Two open deals can no longer share an account name. (The dice roll that picks a name is unchanged; a name that is taken is traded for the next free one.)
+- A save that parses but is not a save gets a plain page with a way out, instead of a blank screen.
+- When the boot screen closes, the keyboard focus goes to the first action instead of nowhere.
+- Debug text is out of the interface (“Turn”, “Run id”, “roll 42% vs 31%”).
+- “Oracle Dumpling”, an account named after a real vendor, is now “Opal Dumpling”.
+
+### Left alone, on purpose
+These are odds, so they were not touched:
+- An event whose condition is not met still uses one of the week's two event slots.
+- A competitor's price cut replaces any other close-odds modifier instead of stacking with it.
+- A performance plan cannot be reached before the QBR, and the approved trip has no effect on play (it now pays off in the ending).
+
+### For developers
+- `src/game/` holds the rules as pure functions; `src/game/rules.js` holds every cost and chance once, and the interface reads the same numbers. `src/copy/` holds every word. `src/styles/tokens.css` is the only file that names a colour or a size.
+- `npm run verify` builds and then runs: mechanics parity against the frozen v1.21 file (`test/parity/`, with a self-test that proves it catches planted bugs), save compatibility (`test/saves/`), and end-to-end checks for offline use, the first day, reloads and damaged saves, a whole run on the keyboard, and one-screen layout at seven desktop sizes and a phone (`test/e2e/`). Three lints keep dice out of cosmetic code, the house style on every string, and colours in the tokens.
+- A save gains one field, `story` (what the ending quotes back). No rule reads it. v1.21 ignores it.
+
 ## v1.21 — one screen, a smaller ad, a shorter offer, a clearer warning
 
 ### Changed: the whole game fits a 16:9 desktop display, with no page scrolling
