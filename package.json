@@ -14,7 +14,17 @@
     "parity": "node scripts/build.mjs && node test/parity/run.cjs --b dist/index.html --workers 2",
     "parity:full": "node scripts/build.mjs && node test/parity/run.cjs --b dist/index.html --workers 2 --full",
     "parity:sound": "node scripts/build.mjs && node test/parity/run.cjs --b dist/index.html --workers 2 --sound",
-    "parity:selftest": "node test/parity/selftest.cjs"
+    "parity:selftest": "node test/parity/selftest.cjs",
+    "verify": "node scripts/verify.mjs",
+    "test:saves": "node scripts/verify.mjs --only build,saves --verbose",
+    "test:layout": "node scripts/verify.mjs --only build,layout --verbose",
+    "test:keyboard": "node scripts/verify.mjs --only build,keyboard --verbose",
+    "test:selftest": "node scripts/build.mjs && node test/lint-fixtures/selftest.mjs && node test/saves/run.cjs --selftest && node test/e2e/layout.cjs dist/index.html --selftest && node test/e2e/keyboard.cjs dist/index.html --selftest",
+    "saves:generate": "node test/saves/generate.cjs",
+    "saves:check": "node test/saves/generate.cjs --check",
+    "lint:rng": "node scripts/lint-rng.mjs",
+    "lint:copy": "node scripts/lint-copy.mjs",
+    "lint:css": "node scripts/lint-css.mjs"
   },
   "devDependencies": {
     "@babel/standalone": "7.28.4",

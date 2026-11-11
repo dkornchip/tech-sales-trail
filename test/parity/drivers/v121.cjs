@@ -126,7 +126,55 @@ module.exports = {
 
     let soundHooked = false;
 
+    // The e2e surface (drivers/interface.cjs). Where a control IS, whatever state it is in: a disabled End Week
+    // still has to be on the screen. Same selectors as controls() above, without the "could a player press it".
+    function locate(move) {
+      const m = /^act:(.+)$/.exec(move);
+      if (m) return qa('.actions .btn')[ACTIONS.indexOf(m[1])] || null;
+      if (move === 'hail') return q('.footer .btn.ghost');
+      if (move === 'end') return q('.footer .btn.primary');
+      if (move === 'newgame') return q('#new-game');
+      if (move === 'save') return q('#save');
+      if (move === 'load') return q('#load');
+      if (move === 'ui:rules') return q('#root .grid .pill-btn');
+      const open = qa('dialog[open]');
+      const btns = open.length ? qa('.d-footer .btn', open[open.length - 1]) : [];
+      if (move === 'newrun') return btns[0] || null;
+      const d = /^dlg:(\d+)$/.exec(move);
+      if (d) return btns[Number(d[1])] || null;
+      return controls().map.get(move) || null;                               // the clAInk controls
+    }
+
     return {
+      el(move) { return locate(move); },
+      // The canonical move id of the control that has keyboard focus, or null (focus is on <body>, or on something
+      // that is not a move: the sound controls, the workspace's grip, an ending's cutscene buttons).
+      focused() {
+        const a = document.activeElement;
+        if (!a || a === document.body) return null;
+        if (a.closest && a.closest('#boot')) return 'boot';
+        for (const [move, el] of controls().map) if (el === a) return move;
+        return null;
+      },
+      region(name) {
+        if (name === 'log') return qa('#root .log');
+        if (name === 'deals') return qa('#root .deal-list');
+        if (name === 'dialog') return qa('dialog[open]');
+        if (name === 'boot') return qa('#boot');
+        if (name === 'ascii') return qa('pre');                              // the cutscene and the boot screen
+        if (name === 'dock') return qa('.claink-ad, .claink-console');
+        throw new Error('v121 driver: unknown region "' + name + '"');
+      },
+      // clAInk's window (ClainkDock, game.jsx:1871-2234)
+      dock() {
+        const ad = q('.claink-ad'), con = q('.claink-console');
+        if (ad) return ad.classList.contains('is-mini') ? 'ad-pill' : q('.claink-policy', ad) ? 'ad+policy' : 'ad';
+        if (!con) return 'none';
+        if (con.classList.contains('is-end')) return q('.claink-offboarded', con) ? 'card:cancelled' : 'card:revoked';
+        if (con.classList.contains('is-mini')) return 'workspace-pill';
+        return q('.claink-report', con) ? 'workspace+report' : 'workspace';
+      },
+
       mounted() { return !!q('#root .grid'); },
       bootOpen() { return !!document.getElementById('boot'); },
       // "Clock in" starts the boot animation, the same button (now "Skip") ends it (shell.js:110, 129).

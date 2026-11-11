@@ -94,6 +94,27 @@
  *                            sink.sayAccepted(key)    the announcer took it (not on cooldown, not busy)
  *                          `name` and `key` are the v1.21 identifiers (TST_AUDIO.presets / TST_AUDIO.LINES keys).
  *
+ *   THE E2E SURFACE. Four more members of the in-page object, used by test/e2e/layout.cjs, test/e2e/keyboard.cjs
+ *   and test/saves/run.cjs, never by the parity comparison. Those tests measure the page and press real keys, so
+ *   they need to know where things are; like everything else about a build's DOM, that knowledge lives here and
+ *   nowhere in the tests.
+ *
+ *     el(move)             -> Element | null. The control for a canonical move id, WHATEVER state it is in
+ *                          (disabled, covered, off screen): "is End Week inside the viewport" has to be asked even
+ *                          when End Week cannot be pressed.
+ *     focused()            -> the canonical move id of the control that has keyboard focus; 'boot' while focus is
+ *                          inside the boot overlay; null when focus is on <body> or on something that is not a
+ *                          move (the sound controls, a cutscene's Skip button).
+ *     region(name)         -> Element[] (empty when that part is not on screen). Names:
+ *                            'log'     the activity log's box          'deals'   the deal list's box
+ *                            'dialog'  the open modal dialog(s)        'boot'    the boot overlay
+ *                            'dock'    clAInk's window (ad, workspace, pill or end card)
+ *                            'ascii'   boxes whose text is ASCII art, drawn at a computed size (exempt from the
+ *                                      minimum font size)
+ *     dock()               -> what clAInk's window is showing, as one of:
+ *                            'none' | 'ad' | 'ad+policy' | 'ad-pill' | 'workspace' | 'workspace+report' |
+ *                            'workspace-pill' | 'card:revoked' | 'card:cancelled'
+ *
  * The four functions the rest of the harness is written against are the Node-side wrappers below:
  *   legalMoves(page), doMove(page, move), readState(page), dialog(page).
  * The runner itself batches them into one round trip per step (window.__parity.step in lib/inpage.cjs), but it
@@ -102,6 +123,8 @@
 const path = require('path');
 
 const IN_PAGE = ['mounted', 'bootOpen', 'bootDismiss', 'observe', 'act', 'readState', 'writeSave', 'pinFlavor', 'audioState', 'soundInstall'];
+// The e2e surface. Not required by loadDriver (a parity run does not need it); the e2e tests call requireE2E().
+const IN_PAGE_E2E = ['el', 'focused', 'region', 'dock'];
 
 function loadDriver(name) {
   if (!/^[a-z0-9_-]+$/i.test(name)) throw new Error(`driver: bad name ${JSON.stringify(name)}`);
@@ -113,6 +136,13 @@ function loadDriver(name) {
   const src = d.inPage.toString();
   for (const fn of IN_PAGE) if (!new RegExp('\\b' + fn + '\\s*\\(').test(src)) throw new Error(`driver ${name}: inPage() does not define ${fn}()`);
   return d;
+}
+
+function requireE2E(driver) {
+  const src = driver.inPage.toString();
+  const missing = IN_PAGE_E2E.filter(fn => !new RegExp('\\b' + fn + '\\s*\\(').test(src));
+  if (missing.length) throw new Error(`driver ${driver.name}: inPage() does not define the e2e surface: ${missing.map(m => m + '()').join(', ')} (see drivers/interface.cjs)`);
+  return driver;
 }
 
 // 'reload' is legal when nothing modal is open, or when the open dialog is an ending (an ending survives a reload
@@ -128,4 +158,4 @@ async function dialog(page) { return (await page.evaluate(() => window.__drv.obs
 async function readState(page) { return page.evaluate(() => window.__drv.readState()); }
 async function doMove(page, move) { await page.evaluate(m => window.__drv.act(m), move); }
 
-module.exports = { loadDriver, legalMoves, dialog, readState, doMove, reloadAllowed, withReload, IN_PAGE };
+module.exports = { loadDriver, requireE2E, legalMoves, dialog, readState, doMove, reloadAllowed, withReload, IN_PAGE, IN_PAGE_E2E };

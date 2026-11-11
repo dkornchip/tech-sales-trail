@@ -1,0 +1,5 @@
+/* Fixture for scripts/lint-css.mjs: claink.css may hold literals and glows, but the two rules that apply to every
+   file still apply here. Two findings. */
+.ck{color:#a78bfa;box-shadow:0 0 12px #22d3ee;background:radial-gradient(circle,#0c0a22,#000)}
+.ck-tier{font-size:9px}                                        /* font-size */
+@media (max-width:520px){ .ck{display:none} }                  /* media */

@@ -1,0 +1,17 @@
+/* Fixture for scripts/lint-css.mjs: every rule, broken on purpose. Each declaration below is one finding;
+   test/lint-fixtures/selftest.mjs checks the counts. */
+.panel{
+  color:#e9f2ff;                                               /* hex */
+  border-color:#FFF;                                           /* hex */
+  background:linear-gradient(180deg,var(--a),var(--b));        /* gradient */
+  text-shadow:0 0 8px rgba(31,122,255,.65);                    /* text-shadow */
+  box-shadow:0 10px 24px rgba(0,0,0,.5),0 0 18px rgba(31,122,255,.28); /* glow (the second layer) */
+  filter:drop-shadow(0 0 10px rgba(25,168,255,.6));            /* glow */
+}
+.tiny{font-size:11px}                                          /* font-size */
+.fine{font:600 10.5px/1.2 "TST Sans",sans-serif}               /* font-size */
+.fluid{font-size:clamp(11px,1vw,14px)}                         /* font-size */
+.rem{font-size:.75rem}                                         /* font-size */
+@media (max-width:1200px){ .panel{padding:8px} }               /* media */
+@media (min-width:1025px) and (max-height:900px){ .panel{padding:6px} } /* media (the second condition) */
+@media (prefers-color-scheme: dark){ .panel{opacity:1} }       /* media */

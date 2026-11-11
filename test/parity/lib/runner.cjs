@@ -42,10 +42,12 @@ class Script {
       if (this.i >= this.list.length) return null;
       const sc = this.list[this.i];
       if (this.k === -1) {
-        if (!sc.save) { this.k = 0; continue; }
+        if (!sc.save && !sc.storage) { this.k = 0; continue; }
         if (dialog) return { move: /^end:/.test(dialog.id) ? 'newrun' : 'dlg:0', scenario: sc.name, auto: true };
         this.k = 0;
-        return { move: 'inject:' + sc.name, save: sc.save, scenario: sc.name };
+        // sc.storage ({ localStorage key: raw string }) and sc.onLoad (expectations for the state right after the
+        // Load button) are for test/saves; the scenarios in lib/scenarios.cjs use neither.
+        return { move: 'inject:' + sc.name, save: sc.save, storage: sc.storage || null, expect: sc.onLoad || null, scenario: sc.name, last: !sc.steps.length };
       }
       if (this.k < sc.steps.length) {
         const st = sc.steps[this.k++];
@@ -59,6 +61,9 @@ class Script {
 
 /*
  * spec  { id, seed, policy, scenarios, maxMoves, motion, fx, startSave, repro(step) }
+ *       and, for test/saves only: startStorage ({ localStorage key: raw string } in place before the first load),
+ *       expectOnLoad (scenario-style expectations for the state right after that load), playEndings (let an
+ *       ending's cutscene cues play out even without --sound, so `said` can be checked)
  * env   { buildA, buildB, driverA, driverB, sound, roundMs, maxRounds, strictNetwork,
  *         seedOffsetB, flavorB, fxB        (selftest only: deliberately different dice / flavor / cosmetic stream in B)
  *         onStep(info)                     (optional progress hook) }
@@ -146,8 +151,30 @@ async function runSession(browser, spec, env) {
     return null;
   };
 
+  // Check 9: is the baseline where the scenario (or a save fixture) says it should be? Returns what is wrong.
+  // `dock` and `said` are asked of BOTH builds, because nothing else compares them: the dock id is not part of
+  // parity, and sound intents are only compared with --sound.
+  const expectations = (x, ctx) => {
+    // (plain(): an emoji with and without its variation selector is the same emoji)
+    const msgs = a.logsSwapped ? [] : a.logs.map(l => plain(l.msg)), bad = [];
+    for (const t of x.log || []) if (!msgs.some(m => m.indexOf(plain(t)) >= 0)) bad.push(`expected a log line containing ${JSON.stringify(t)}; got ${JSON.stringify(msgs)}`);
+    for (const t of x.nolog || []) if (msgs.some(m => m.indexOf(plain(t)) >= 0)) bad.push(`expected NO log line containing ${JSON.stringify(t)}`);
+    if ('dialog' in x && (a.dialog ? a.dialog.id : null) !== x.dialog) bad.push(`expected dialog ${x.dialog}, got ${a.dialog ? a.dialog.id : null}`);
+    if ('cause' in x && stateA.endCause !== x.cause) bad.push(`expected endCause ${x.cause}, got ${stateA.endCause}`);
+    for (const k of x.hits || []) if (!ctx.hits.includes(k)) bad.push(`expected census key ${k}; this step hit ${ctx.hits.join(' ')}`);
+    for (const m of x.legal || []) if (!a.choosable.includes(m)) bad.push(`expected ${m} to be legal; legal: ${a.choosable.join(' ')}`);
+    for (const m of x.illegal || []) if (a.choosable.includes(m)) bad.push(`expected ${m} NOT to be legal`);
+    if (x.state && !x.state(stateA)) bad.push(`state check failed: ${x.state}`);
+    if ('draws' in x && ctx.drawsUsed !== x.draws) bad.push(`expected the move to consume ${x.draws} draw(s), it consumed ${ctx.drawsUsed}`);
+    if ('dock' in x) for (const [side, s] of [['A', a], ['B', b]]) if (s.dock !== x.dock) bad.push(`expected clAInk dock ${x.dock}, ${side} shows ${s.dock}`);
+    for (const key of x.said || []) for (const [side, s] of [['A', a], ['B', b]]) {
+      if (!s.sound.some(t => t === 'say:' + key || t.indexOf('say:' + key + '!') === 0)) bad.push(`expected ${side} to ask the announcer for "${key}"; its sound intents: ${s.sound.join(' ') || '(none)'}`);
+    }
+    return bad;
+  };
+
   try {
-    [a, b] = await Promise.all([A.open(browser, spec.startSave || null), B.open(browser, spec.startSave || null)]);
+    [a, b] = await Promise.all([A.open(browser, spec.startSave || null, spec.startStorage || null), B.open(browser, spec.startSave || null, spec.startStorage || null)]);
     // What drew from Math.random before the dice were reset. The baseline's game logic draws nothing at load
     // (newGame and mergeSaved are draw-free); what does is the framework. Build B must not draw more than a few.
     result.notes.earlyA = { draws: A.boots[0].earlyDraws, by: A.boots[0].early };
@@ -159,6 +186,10 @@ async function runSession(browser, spec, env) {
       if (!s.audio || !s.audio.on || !s.audio.voice) return failWith('trouble', [`${side}: sound or announcer is off (${JSON.stringify(s.audio)}); the sound engine would decide nothing`]);
     }
     if (compare()) return result;
+    if (spec.expectOnLoad) {
+      const bad = expectations(spec.expectOnLoad, { hits: [], drawsUsed: 0 });
+      if (bad.length) return failWith('scenario', bad.map(t => `${spec.id} (on load): ${t}`));
+    }
     census.sound(a.sound, a.speech);      // what the boot screen played
     if (env.strictNetwork && B.net.fonts) return failWith('trouble', [`B made ${B.net.fonts} network request(s) besides its own document (Google Fonts)`]);
 
@@ -198,7 +229,9 @@ async function runSession(browser, spec, env) {
           // A scenario starts from its own dice as well as its own save, so it plays out the same whether it runs
           // alone (--scenario) or in the middle of the suite.
           const dice = pick.keepDice ? null : fnv('scenario:' + pick.scenario);
-          await Promise.all([A.inject(pick.save, dice), B.inject(pick.save, dice === null ? null : (dice + (env.seedOffsetB || 0)) >>> 0)]);
+          const diceB = dice === null ? null : (dice + (env.seedOffsetB || 0)) >>> 0;
+          if (pick.storage) await Promise.all([A.store(pick.storage, dice), B.store(pick.storage, diceB)]);
+          else await Promise.all([A.inject(pick.save, dice), B.inject(pick.save, diceB)]);
         }
         [a, b] = await Promise.all([A.step(domMove, pick.queue), B.step(domMove, pick.queue)]);
         // Both builds must have lived through the same amount of fake time, or cooldowns and timestamps drift.
@@ -213,7 +246,7 @@ async function runSession(browser, spec, env) {
       }
       // With --sound, an ending gets to play out: its cutscene cues run for about nine seconds, and the next move
       // (New Run) would otherwise cut them off half way.
-      if (env.sound && a.dialog && /^end:/.test(a.dialog.id) && !(prevDialog && prevDialog.id === a.dialog.id) && a.settled && b.settled) {
+      if ((env.sound || spec.playEndings) && a.dialog && /^end:/.test(a.dialog.id) && !(prevDialog && prevDialog.id === a.dialog.id) && a.settled && b.settled) {
         const [ma, mb] = await Promise.all([A.extra(ENDING_ROUNDS), B.extra(ENDING_ROUNDS)]);
         for (const [old, more] of [[a, ma], [b, mb]]) {
           more.sound = old.sound.concat(more.sound); more.speech = old.speech.concat(more.speech); more.logs = old.logs.concat(more.logs);
@@ -243,17 +276,7 @@ async function runSession(browser, spec, env) {
 
       // 9. did the baseline go where the scenario says it should?
       if (pick.expect) {
-        // (plain(): an emoji with and without its variation selector is the same emoji)
-        const x = pick.expect, msgs = a.logsSwapped ? [] : a.logs.map(l => plain(l.msg)), bad = [];
-        for (const t of x.log || []) if (!msgs.some(m => m.indexOf(plain(t)) >= 0)) bad.push(`expected a log line containing ${JSON.stringify(t)}; got ${JSON.stringify(msgs)}`);
-        for (const t of x.nolog || []) if (msgs.some(m => m.indexOf(plain(t)) >= 0)) bad.push(`expected NO log line containing ${JSON.stringify(t)}`);
-        if ('dialog' in x && (a.dialog ? a.dialog.id : null) !== x.dialog) bad.push(`expected dialog ${x.dialog}, got ${a.dialog ? a.dialog.id : null}`);
-        if ('cause' in x && stateA.endCause !== x.cause) bad.push(`expected endCause ${x.cause}, got ${stateA.endCause}`);
-        for (const k of x.hits || []) if (!hits.includes(k)) bad.push(`expected census key ${k}; this step hit ${hits.join(' ')}`);
-        for (const m of x.legal || []) if (!a.choosable.includes(m)) bad.push(`expected ${m} to be legal; legal: ${a.choosable.join(' ')}`);
-        for (const m of x.illegal || []) if (a.choosable.includes(m)) bad.push(`expected ${m} NOT to be legal`);
-        if (x.state && !x.state(stateA)) bad.push(`state check failed: ${x.state}`);
-        if ('draws' in x && a.draws - prevDrawsA !== x.draws) bad.push(`expected the move to consume ${x.draws} draw(s), it consumed ${a.draws - prevDrawsA}`);
+        const bad = expectations(pick.expect, { hits, drawsUsed: a.draws - prevDrawsA });
         if (bad.length) return failWith('scenario', bad.map(t => `scenario ${pick.scenario}: ${t}`));
       }
       if (pick.scenario && pick.last) result.scenarioEnds[pick.scenario] = JSON.stringify({ state: normA(stateA), dialog: a.dialog });
