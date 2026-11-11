@@ -36,16 +36,19 @@ const chips = s => {
   return out;
 };
 
+// Why the Hail Mary can't be thrown right now, or null.
+export const hailBlock = s => blocked(s, { energy: HAIL.energy, slots: 1 }) || (lateDeals(s).length ? null : { why: "none" });
+
 export const Foot = ({ s, onHail, onEndWeek, onHint }) => {
   const late = lateDeals(s).length;
-  const hailBlock = blocked(s, { energy: HAIL.energy, slots: 1 }) || (late ? null : { why: "none" });
-  const hailHint = () => onHint({ title: UI.hail, text: hailBlock && hailBlock.why !== "none" ? HINT.blocked[hailBlock.why](hailBlock) : HINT.hail(late), key: "H" });
+  const hailBlocked = hailBlock(s);
+  const hailHint = () => onHint({ title: UI.hail, text: hailBlocked && hailBlocked.why !== "none" ? HINT.blocked[hailBlocked.why](hailBlocked) : HINT.hail(late), key: "H" });
   const endHint = () => onHint({ title: UI.endWeek, text: isRunOver(s) ? HINT.blocked.over() : HINT.endWeek(fridayPreview(s)), key: "E" });
   const over = isRunOver(s);
   return (
     <div className="foot">
       <div className="chips">{chips(s).map(c => <span key={c.id} className={"chip" + (c.kind ? " " + c.kind : "")} data-chip={c.id}><Icon name={c.icon} />{c.text}</span>)}</div>
-      <button type="button" className="btn" data-ui="hail" aria-disabled={hailBlock ? "true" : undefined} onClick={() => { if (!hailBlock) onHail(); }}
+      <button type="button" className="btn" data-ui="hail" aria-disabled={hailBlocked ? "true" : undefined} onClick={() => { if (!hailBlocked) onHail(); }}
         onMouseEnter={hailHint} onFocus={hailHint} onMouseLeave={() => onHint(null)} onBlur={() => onHint(null)}><Icon name="dices" />{UI.hail}</button>
       <button type="button" className="btn primary" data-ui="end" aria-disabled={over ? "true" : undefined} onClick={() => { if (!over) onEndWeek(); }}
         onMouseEnter={endHint} onFocus={endHint} onMouseLeave={() => onHint(null)} onBlur={() => onHint(null)}>{UI.endWeek}<Icon name="arrow-right" /></button>

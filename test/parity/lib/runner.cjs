@@ -127,6 +127,7 @@ async function runSession(browser, spec, env) {
       return failWith('legal', [`legal moves differ. only in A: ${missing.filter(m => !excused.includes(m)).join(' ') || '-'}   only in B: ${extra.join(' ') || '-'}`,
         `A: ${la.join(' ')}`, `B: ${lb.join(' ')}`]);
     a.choosable = la.filter(m => !excused.includes(m));
+    a.excused = excused;
     if (env.sound) {
       const sa = a.sound.join(' '), sb = b.sound.join(' ');
       if (sa !== sb) return failWith('sound', ['sound intents differ', `A: ${sa || '(none)'}`, `B: ${sb || '(none)'}`]);
@@ -216,6 +217,12 @@ async function runSession(browser, spec, env) {
       move = pick.move;
       const isInject = move.indexOf('inject:') === 0;
       const domMove = isInject ? 'load' : move;
+      if (!legal.includes(domMove) && (a.excused || []).includes(domMove)) {
+        // A reviewed, benign difference (lib/allowlist.cjs): build B does not offer this move here, so a script that
+        // presses it has nothing to compare. The step is skipped in both builds and counted.
+        result.notes.excusedSteps = (result.notes.excusedSteps || 0) + 1;
+        continue;
+      }
       if (!legal.includes(domMove)) {
         return failWith(pick.scenario ? 'scenario' : 'harness', [`${pick.scenario ? 'scenario ' + pick.scenario + ': ' : ''}move ${move} is not legal in the baseline here. legal: ${legal.join(' ')}`]);
       }

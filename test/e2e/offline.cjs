@@ -158,15 +158,15 @@ async function pass(browser, name, open){
       const started = await page.waitForFunction(() => document.querySelector("#boot.on"), null, { timeout: 3000 }).then(() => true, () => false);
       if(await boot.count()) await btn.click({ timeout: 3000 }).catch(() => {}); // skip the rest of it
       const gone = await page.waitForFunction(() => !document.getElementById("boot"), null, { timeout: 6000 }).then(() => true, () => false);
-      const live = await page.evaluate(() => { const c = document.querySelector(".container"); return !!c && !c.inert && !document.documentElement.classList.contains("tst-booting"); });
+      const live = await page.evaluate(() => { const c = document.getElementById("root"); return !!c && !c.inert && !!c.querySelector("[data-act]") && !document.documentElement.classList.contains("tst-booting"); });
       r.check("the boot screen can be clicked through", started && gone && live, "started " + started + ", removed " + gone + ", game live " + live);
     }
 
     /* ---------- one action ---------- */
-    await page.waitForSelector("#root .actions .btn", { timeout: 5000 }).catch(() => {});
+    await page.waitForSelector("#root [data-act]", { timeout: 5000 }).catch(() => {});
     const readSave = () => page.evaluate(k => { try{ return localStorage.getItem(k); }catch(e){ return null; } }, AUTOSAVE);
     const before = await readSave();
-    const action = page.locator("#root .actions .btn:not([disabled])").first();
+    const action = page.locator('#root [data-act]:not([aria-disabled="true"])').first();
     let played = false, detail = "no enabled action found";
     if(await action.count()){
       const label = (await action.locator(".title").innerText().catch(() => "")).trim();

@@ -27,7 +27,7 @@ export const SettingsMenu = ({ open, onClose, audio, captions, onCaptions, onSav
     <div className="menu" role="dialog" aria-label={MENU.title} ref={box} data-menu-open="">
       <Switch id="menu-sound" label={MENU.sound} on={audio.on} onChange={audio.setOn} />
       <Switch id="menu-voice" label={MENU.voice} on={audio.voice} onChange={audio.setVoice} />
-      <Switch id="menu-captions" label={MENU.captions} on={captions} onChange={onCaptions} />
+      {onCaptions ? <Switch id="menu-captions" label={MENU.captions} on={captions} onChange={onCaptions} /> : null}
       <label className="menu-row"><span>{MENU.volume}</span>
         <input type="range" min="0" max="100" step="5" value={Math.round(audio.vol * 100)} aria-label={MENU.volume} onChange={e => audio.setVolume(Number(e.target.value) / 100)} /></label>
       <hr />

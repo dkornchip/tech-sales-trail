@@ -1,28 +1,11 @@
-/* ===== Tech Sales Trail v1.14: header sound controls, toast, SHITCORP OS boot screen ===== */
+/* ===== Tech Sales Trail: the mute key, the toast, and the SHITCORP OS boot screen ===== */
 (function(){
   "use strict";
   var A = window.TST_AUDIO, Sc = window.TST_SCENES;
   if(!A || !Sc) return;
   var reduced = !!Sc.reduced;
 
-  /* ---------- header sound controls ---------- */
-  var bS = document.getElementById("snd-toggle"), bV = document.getElementById("voice-toggle"), vol = document.getElementById("snd-vol");
-  function sync(st){
-    if(bS){
-      bS.setAttribute("aria-pressed",st.on ? "true" : "false");
-      bS.querySelector(".ico").textContent = st.on ? "🔊" : "🔇";
-      bS.querySelector(".lbl").textContent = st.on ? "Sound" : "Muted";
-    }
-    if(bV){ bV.setAttribute("aria-pressed",st.voice ? "true" : "false"); bV.disabled = !st.on; bV.querySelector(".lbl").textContent = st.voice ? "Announcer" : "No announcer"; }
-    if(vol){ vol.value = String(Math.round(st.vol*100)); vol.disabled = !st.on; vol.style.setProperty("--fill",Math.round(st.vol*100)+"%"); }
-  }
-  A.onChange = sync; sync(A.settings); // setter on TST_AUDIO forwards to the engine
-  if(bS) bS.addEventListener("click",function(){ A.setOn(!A.settings.on); if(A.settings.on){ A.unlock(); A.play("coin"); } });
-  if(bV) bV.addEventListener("click",function(){ A.setVoice(!A.settings.voice); if(A.settings.voice) A.say("Announcer on.",{force:true}); });
-  if(vol){
-    vol.addEventListener("input",function(){ A.setVolume(Number(vol.value)/100); });
-    vol.addEventListener("change",function(){ A.play("coin"); });
-  }
+  /* ---------- M mutes (the sound controls themselves are in the top bar and the settings menu) ---------- */
   document.addEventListener("keydown",function(e){
     if((e.key !== "m" && e.key !== "M") || e.metaKey || e.ctrlKey || e.altKey) return;
     var tg = e.target;
@@ -79,7 +62,7 @@
     '</div>';
   document.body.appendChild(ov);
   document.documentElement.classList.add("tst-booting");
-  var behind = document.querySelector(".container");
+  var behind = document.getElementById("root");
   if(behind) behind.inert = true;
   var pre = ov.querySelector("pre"), btn = ov.querySelector(".boot-btn"), hint = ov.querySelector(".boot-hint");
   var stage = "standby", ctrl = Sc.play(pre,"standby",{crt:false, maxFont:20});
@@ -91,7 +74,7 @@
     ov.classList.add("on");
     btn.textContent = "Skip"; hint.textContent = "Booting…";
     // no impact frames until the game behind the boot has mounted (Babel compiling = long main-thread stall)
-    ctrl = Sc.play(pre,"boot",{crt:false, maxFont:20, meta:{week:readWeek()}, impactOk:function(){ return !!document.querySelector("#root .grid"); }, onDone:function(){ setTimeout(finish, reduced ? 2000 : 400); }});
+    ctrl = Sc.play(pre,"boot",{crt:false, maxFont:20, meta:{week:readWeek()}, impactOk:function(){ return !!document.querySelector("#root .main"); }, onDone:function(){ setTimeout(finish, reduced ? 2000 : 400); }});
   }
   function finish(){
     if(stage === "done") return;

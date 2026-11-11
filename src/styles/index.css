@@ -1,2 +1,10 @@
+/* The stylesheet, in the order it cascades. tokens.css is the only place that names a colour, a size or a radius. */
 @import "./fonts.css";
-@import "./legacy.css";
+@import "./tokens.css";
+@import "./base.css";
+@import "./app.css";
+@import "./dialogs.css";
+@import "./crt.css";
+@import "./boot.css";
+@import "./memo.css";
+@import "./claink.css";

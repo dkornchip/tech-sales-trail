@@ -75,7 +75,7 @@ export const shieldNextClick=(e)=>{
   arm();
 };
 // keyboard-activated close: send focus somewhere useful instead of <body> (held-key repeats are already swallowed)
-export const focusEndWeek=(e)=>{ if(e && e.detail===0){ const b=document.querySelector(".footer .btn.primary"); if(b) try{ b.focus(); }catch(_){} } else shieldNextClick(e); };
+export const focusEndWeek=(e)=>{ if(e && e.detail===0){ const b=document.querySelector('[data-ui="end"]'); if(b) try{ b.focus(); }catch(_){} } else shieldNextClick(e); };
 
 let clainkMarkSeq=0;
 export const ClainkMark=({size=24})=>{

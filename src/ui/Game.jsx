@@ -7,16 +7,22 @@ import { EVENTS } from "../game/events.js";
 import { legacyCause } from "../game/legacy.js";
 import { endWeek as runEndWeek } from "../game/week.js";
 import { CLAINK } from "../game/claink.js";
-import { AUTOSAVE_KEY, QUARTER_WEEKS, SAVE_KEY } from "../game/constants.js";
+import { AUTOSAVE_KEY, SAVE_KEY } from "../game/constants.js";
 import { isRunOver } from "../game/log.js";
 import { mergeSaved, newGame, readStoredRun } from "../game/state.js";
-import { CRASH_PER_SHOT, RECHARGE_ENERGY, RECHARGE_LUCK, STRESS_DANGER, TRIP_AT, checkBurnout } from "../game/stress.js";
-import { getQuarterInfo, money, pct } from "../game/util.js";
-import { Actions } from "./Actions.jsx";
+import { CRASH_PER_SHOT, RECHARGE_ENERGY, RECHARGE_LUCK, TRIP_AT, checkBurnout } from "../game/stress.js";
+import { money, pct } from "../game/util.js";
+import { MENU } from "../copy/ui.js";
+import { describe } from "./app/ActionGrid.jsx";
+import { Board } from "./app/Board.jsx";
+import { hailBlock } from "./app/Foot.jsx";
+import { SettingsMenu } from "./app/SettingsMenu.jsx";
+import { useShortcuts } from "./app/shortcuts.js";
+import { TopBar } from "./app/TopBar.jsx";
 import { CLAINK_UI_KEY, ClainkDock, clainkUiFor, isShortScreen, readClainkUi } from "./ClainkUi.jsx";
 import { Cutscene } from "./Cutscene.jsx";
 import { AUDIO, REDUCED_MOTION, notify, sfx } from "./env.js";
-import { DealCard, Modal, Stat } from "./primitives.jsx";
+import { Modal } from "./primitives.jsx";
 import { WelcomeMemo } from "./WelcomeMemo.jsx";
 
 const { useState, useEffect, useRef } = React;
@@ -46,62 +52,63 @@ export function Game(){
   const expandAd=()=>setClaUi(u=>u.adMini===null ? u : {...u,adMini:null}); // v1.21: a new run's ad starts fresh (expanded; the pill on a short screen)
   const sceneRef=useRef(null);
 
-  // FIX: header buttons were re-bound on every state change. Bind once; read live state through a ref.
+  // New run, Save and Load live in the settings menu. They read the live state through a ref.
   const sRef=useRef(s);
   (React.useLayoutEffect||useEffect)(()=>{ sRef.current=s; },[s]);
 
-  useEffect(()=>{
-    const ng=document.getElementById("new-game");
-    const sv=document.getElementById("save");
-    const ld=document.getElementById("load");
-    const onNew=()=>{
-      const a=AUDIO(); if(a){ a.hush(); a.play("newgame"); a.say("newrun",{cooldown:3000}); }
-      setS(newGame());
+  const onNew=()=>{
+    const a=AUDIO(); if(a){ a.hush(); a.play("newgame"); a.say("newrun",{cooldown:3000}); }
+    setS(newGame());
+    setEpoch(e=>e+1); // v1.19: fresh clAInk UI state
+    expandAd();
+    setPending(null); // an event that fired on the final week must not leak into the next run
+    setOver(null);
+  };
+  const onSave=()=>{
+    try{
+      localStorage.setItem(SAVE_KEY,JSON.stringify(sRef.current));
+      sfx("save");
+      notify("Run saved.");
+    }catch{
+      sfx("nope");
+      notify("Couldn’t save — storage is blocked in this browser.");
+    }
+  };
+  const onLoad=()=>{
+    const v=readStoredRun(false);
+    if(!v){
+      sfx("nope");
+      notify("No save found.");
+      return;
+    }
+    try{
+      const a=AUDIO(); if(a){ a.hush(); a.play("load"); }
+      setS(mergeSaved(JSON.parse(v)));
       setEpoch(e=>e+1); // v1.19: fresh clAInk UI state
-      expandAd();
       setPending(null);
       setOver(null);
-    };
-    const onSave=()=>{
-      try{
-        localStorage.setItem(SAVE_KEY,JSON.stringify(sRef.current));
-        sfx("save");
-        notify("Run saved.");
-      }catch{
-        sfx("nope");
-        notify("Couldn’t save — storage is blocked in this browser.");
-      }
-    };
-    const onLoad=()=>{
-      const v=readStoredRun(false);
-      if(!v){
-        sfx("nope");
-        notify("No save found.");
-        return;
-      }
-      try{
-        const a=AUDIO(); if(a){ a.hush(); a.play("load"); }
-        setS(mergeSaved(JSON.parse(v)));
-        setEpoch(e=>e+1); // v1.19: fresh clAInk UI state
-        setPending(null);
-        setOver(null);
-      }catch{
-        notify("Save was corrupted. Starting a new run.");
-        setS(newGame());
-        setEpoch(e=>e+1); // v1.19: fresh clAInk UI state
-        setPending(null);
-        setOver(null);
-      }
-    };
-    if(ng)ng.addEventListener("click",onNew);
-    if(sv)sv.addEventListener("click",onSave);
-    if(ld)ld.addEventListener("click",onLoad);
-    return()=>{
-      if(ng)ng.removeEventListener("click",onNew);
-      if(sv)sv.removeEventListener("click",onSave);
-      if(ld)ld.removeEventListener("click",onLoad);
-    };
-  },[]);
+    }catch{
+      notify("Save was corrupted. Starting a new run.");
+      setS(newGame());
+      setEpoch(e=>e+1); // v1.19: fresh clAInk UI state
+      setPending(null);
+      setOver(null);
+    }
+  };
+
+  // Sound settings belong to the audio engine; the top bar and the settings menu mirror them.
+  const[audio,setAudio]=useState(()=>{ const a=AUDIO(); return a ? {...a.settings} : {on:false,voice:false,vol:0}; });
+  useEffect(()=>{ const a=AUDIO(); if(!a)return; a.onChange=st=>setAudio({...st}); setAudio({...a.settings}); return()=>{ a.onChange=null; }; },[]);
+  const audioApi={
+    ...audio,
+    setOn:on=>{ const a=AUDIO(); if(!a)return; a.setOn(on); if(on){ a.unlock(); a.play("coin"); } },
+    setVoice:on=>{ const a=AUDIO(); if(!a)return; a.setVoice(on); if(on) a.say(MENU.voiceOn,{force:true}); },
+    setVolume:v=>{ const a=AUDIO(); if(a) a.setVolume(v); }
+  };
+  const[menuOpen,setMenuOpen]=useState(false);
+  const menuBtn=useRef(null);
+  const closeMenu=refocus=>{ setMenuOpen(false); if(refocus && menuBtn.current) try{ menuBtn.current.focus(); }catch{} };
+  const openRules=()=>{ setHelpOpens(n=>n+1); setShowHelp(true); };
 
   useEffect(()=>{
     try{
@@ -163,18 +170,10 @@ export function Game(){
   // v1.14: heartbeat under the music when stress runs hot
   useEffect(()=>{ const a=AUDIO(); if(a) a.setStress(over ? 0 : s.stress); },[s.stress,over]);
 
-  const {weekInQuarter}=getQuarterInfo(s.week);
-  const hasLateDeal = s.deals.some(d=>d.stage>=3);
-  const pacePercent=pct(weekInQuarter/QUARTER_WEEKS);
-  // v1.15: the caffeine crash lands inside End Week, right before the danger roll, so label stress by where it will be
-  const crashDue=CRASH_PER_SHOT*(s.coffeesThisWeek||0);
-  const projStress=Math.min(100,s.stress+crashDue);
-  const stressZone=projStress>=STRESS_DANGER ? "Danger zone" : projStress>=60 ? "Edgy" : "";
-  const stressSub=(stressZone||crashDue)
-    ? <span style={{color:projStress>=STRESS_DANGER?"var(--bad)":"var(--warn)"}}>{[stressZone,crashDue?(stressZone?`+${crashDue} Fri`:`Crash +${crashDue} Fri`):""].filter(Boolean).join(" • ")}</span>
-    : null;
-
-  const tryOpportunisticClose=()=>{ const ns=hailMary(s); if(ns) setS(ns); };
+  const tryOpportunisticClose=()=>{ if(hailBlock(s))return; const ns=hailMary(s); if(ns) setS(ns); };
+  // every action result passes through the burnout check
+  const act=a=>{ if(describe(a,s).block)return; const ns=a.run(s); if(ns) setS(checkBurnout(ns)); };
+  useShortcuts({ onActKey:act, onEndWeek:()=>endWeek(), onHail:tryOpportunisticClose, onRules:openRules });
 
   // v1.20: the Writing Lesson (ev: {id, params} from clainkManager, plus where it came from) arrives after the run's
   // report has played. It only opens on the run, week and clAInk run
@@ -195,10 +194,6 @@ export function Game(){
   };
   useEffect(()=>{ if(!showHelp && lessonWait.current){ const ev=lessonWait.current; lessonWait.current=null; offerLesson(ev); } },[showHelp]);
 
-  const opportunisticDisabled=(
-    s.energy<10 || s.slots<=0 || s.fired || s.burnedOut || s.win || s.missed || s.repo || !hasLateDeal
-  );
-
   // the event dialog on screen: what its buttons do (game/events.js) and what it says (copy/events.js)
   const eventDef=pending ? EVENTS[pending.id] : null;
   const eventWords=pending ? EVENT_COPY[pending.id] : null;
@@ -209,95 +204,13 @@ export function Game(){
 
   return(
     <>
-      <div className="grid">
-        <div className="panel">
-          <div className="row between wrap" style={{marginBottom:8}}>
-            <h2>Quarter Map</h2>
-            <div className="row wrap">
-              <span className="kbd">Week {weekInQuarter}/{QUARTER_WEEKS}</span>
-              <span className="kbd">Turn {s.week}</span>
-              <span className="kbd">Slots {s.slots}/{s.maxSlots}</span>
-              <span className="kbd">Run {s.runId.slice(0,5)}</span>
-              <button className="pill-btn" onClick={()=>{ setHelpOpens(n=>n+1); setShowHelp(true); }}>Rules</button>
-            </div>
-          </div>
-          <div className="stats">
-            <Stat label="Energy" num={s.energy} fmt={v=>`${Math.round(v)}/100`} barValue={s.energy} barKind={s.energy>50?"good":s.energy>25?"warn":"bad"} />
-            <Stat label="Stress" num={s.stress} fmt={v=>`${Math.round(v)}/100`} barValue={s.stress} barKind={s.stress<40?"good":s.stress<70?"warn":"bad"}
-              sub={stressSub} />
-            <Stat label="Cash" num={s.cash} fmt={money} sub="Salary + commission" />
-            <Stat label="Pipeline" num={s.pipeline} fmt={money} sub={`${s.deals.length} live deals`} />
-            <Stat label="Closed (Q)" num={s.closedQuarter} fmt={money} sub={`${pct(s.closedQuarter/s.quota)}% of quota • Pace ${pacePercent}%`} />
-            <Stat label="Manager" num={s.manager} barValue={s.manager} />
-            <Stat label="Prospecting" num={s.skills.prospect} barValue={s.skills.prospect} />
-            <Stat label="Discovery" num={s.skills.discovery} barValue={s.skills.discovery} />
-            <Stat label="Demo" num={s.skills.demo} barValue={s.skills.demo} />
-            <Stat label="Negotiation" num={s.skills.negotiate} barValue={s.skills.negotiate} />
-            <Stat label="Reputation" num={s.reputation} barValue={s.reputation} />
-            <Stat label="Product" num={s.product} sub="How cursed the stack is" barValue={s.product} />
-          </div>
-          <div className="sep"></div>
-          <Actions s={s} setS={setS} />
-          <div className="footer">
-            <div className="badge-row">
-              <span className="badge">Total Closed: {money(s.closedWon)}</span>
-              <span className="badge">Quota: {money(s.quota)}</span>
-              {s.pip && <span className="badge">📄 PIP L{(s.pipLevel||1)}</span>}
-              {s.modifiers.discount>0 && <span className="badge">🧾 Discount {pct(s.modifiers.discount)}%</span>}
-              {s.modifiers.conversion!==0 && <span className="badge">🎲 Conv Mod {s.modifiers.conversion>0?"+":""}{pct(s.modifiers.conversion)}%</span>}
-              {s.restedThisWeek && <span className="badge">🧘 Rested</span>}
-              {s.trip && <span className="badge">🏝️ {s.trip} trip approved</span>}
-              {s.claink && s.claink.status==="active" && <span className={"badge claink-badge"+(s.claink.strikes>=CLAINK.STRIKES-1?" hot":"")}>🤖 clAInk{s.claink.strikes>0 ? ` • ${s.claink.strikes}/${CLAINK.STRIKES} strikes` : " • live"}</span>}
-              {s.coffeesThisWeek>0 && <span className="badge">☕×{s.coffeesThisWeek}</span>}
-              {s.repo && <span className="badge">🧥 Jacket Repo’d</span>}
-            </div>
-            <div className="row right">
-              <button
-                className="btn ghost"
-                onClick={tryOpportunisticClose}
-                disabled={opportunisticDisabled}
-              >
-                🧪 Hail-Mary (10 Energy • 1 Slot • Risky)
-              </button>
-              <button
-                className={"btn primary"+(s.slots<=0 && !isRunOver(s) ? " nudge" : "")}
-                onClick={endWeek}
-                disabled={s.fired || s.burnedOut || s.win || s.missed || s.repo}
-              >
-                End Week
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div className="panel">
-          <h2>Active Deals</h2>
-          <div className="deal-list">
-            {s.deals.length>0 ? (
-              s.deals.map(d=>(
-                <DealCard key={d.id} deal={d} />
-              ))
-            ) : (
-              <div className="tiny">No deals. Start dialing.</div>
-            )}
-          </div>
-          <div className="sep"></div>
-          <h2>Activity Log</h2>
-          <div className="log">
-            {s.logs.length>0 ? (
-              s.logs.map(entry=>(
-                <p key={entry.id}>
-                  <span className="muted">{entry.t}</span> — {entry.msg}
-                </p>
-              ))
-            ) : (
-              <p className="muted">Nothing yet. Quota’s waiting.</p>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <ClainkDock key={s.runId+":"+epoch} s={s} setS={setS} ui={clainkUiFor(claUi,shortScreen)} setUi={setClaUiByYou} onEvent={offerLesson} />
+      <Board s={s} onAct={act} onHail={tryOpportunisticClose} onEndWeek={endWeek}
+        top={
+          <TopBar onRules={openRules} soundOn={audio.on} onSound={()=>audioApi.setOn(!audio.on)} onSettings={()=>setMenuOpen(o=>!o)} settingsRef={menuBtn} menuOpen={menuOpen}>
+            <SettingsMenu open={menuOpen} onClose={closeMenu} audio={audioApi} onSave={onSave} onLoad={onLoad} onNewRun={onNew} anchorRef={menuBtn} />
+          </TopBar>
+        }
+        dock={<ClainkDock key={s.runId+":"+epoch} s={s} setS={setS} ui={clainkUiFor(claUi,shortScreen)} setUi={setClaUiByYou} onEvent={offerLesson} />} />
 
       <Modal
         open={showHelp}
@@ -341,14 +254,7 @@ export function Game(){
           {
             label:"New Run",
             className:"success",
-            onClick:()=>{
-              const a=AUDIO(); if(a){ a.hush(); a.play("newgame"); a.say("newrun",{cooldown:3000}); }
-              setS(newGame());
-              setEpoch(e=>e+1); // v1.19: fresh clAInk UI state
-              expandAd();
-              setPending(null); // FIX: an event that fired on the final week no longer leaks into the next run
-              setOver(null);
-            }
+            onClick:onNew
           }
         ]}
       >
