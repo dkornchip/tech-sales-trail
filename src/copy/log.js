@@ -81,7 +81,7 @@ export const LOG = {
       "Proposals: none taken. They would like it as a one-pager. It is a one-pager."
     ]
     : [
-      `${n(p.n, "proposal")} sent. Each is “valid for 30 days.”`,
+      `${n(p.n, "proposal")} sent, “valid for 30 days.”`,
       `${n(p.n, "proposal")} sent. Their procurement portal has a portal.`,
       `${n(p.n, "proposal")} sent.`
     ]),
@@ -192,10 +192,12 @@ export const LOG = {
   "week.neglected": () => line("Most of the funnel went untouched this week. It noticed.", "−6% close odds next week"),
   "week.stale": p => `${n(p.n, "lead")} went stale waiting for a discovery call.`,
   "week.backlog": p => `${n(p.n, "qualified deal")} got tired of waiting for a demo and cooled off.`,
-  "week.next": p => (p.week === 5 ? "Week 5. Pace reviews start now."
-    : p.week === 6 ? "Week 6. From here, being behind pace can end the quarter early."
-      : p.week === 13 ? "Week 13. The last one."
-        : `Week ${p.week}.`),
+  // The log already puts a divider at the top of each week, so most weeks need no sentence (an empty line is not
+  // shown). Three weeks change the rules, and say so.
+  "week.next": p => (p.week === 5 ? "Pace reviews start this week."
+    : p.week === 6 ? "From here, being behind pace can end the quarter early."
+      : p.week === 13 ? "The last week. The QBR is on Friday."
+        : ""),
 
   /* ---- money in and out ---- */
   "pay.rent": () => line("Rent came out.", "−$1,600"),

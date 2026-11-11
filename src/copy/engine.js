@@ -20,21 +20,31 @@ const hash = text => { let h = 2166136261; for (let i = 0; i < text.length; i++)
 
 export function render(entry, params, ctx, seed, last) {
   const c = ctx || { week: 1, band: 0, n: 0 };
-  let v = -1, e = entry;
-  for (let depth = 0; depth < 8; depth++) {
-    if (Array.isArray(e)) {
-      const i0 = hash(seed + "|" + depth) % e.length;
-      const i = e.length > 1 && v < 0 && i0 === last ? (i0 + 1) % e.length : i0;
-      if (v < 0) v = i;                       // the outermost choice is the one remembered
-      e = e[i];
-    } else if (typeof e === "function") {
-      e = e(params || {}, c);
-    } else if (e && typeof e === "object" && Array.isArray(e.bands)) {
-      let b = Math.min(c.band, e.bands.length - 1);
-      while (b > 0 && e.bands[b] === undefined) b--;
-      e = e.bands[b];
-    } else break;
+  let v = -1;
+  // Follow an entry down to what it finally says. `salt` keeps a nested choice independent of the one above it.
+  const settle = (start, salt) => {
+    let e = start;
+    for (let depth = 0; depth < 8; depth++) {
+      if (Array.isArray(e)) {
+        const i0 = hash(seed + "|" + salt + depth) % e.length;
+        const i = e.length > 1 && v < 0 && i0 === last ? (i0 + 1) % e.length : i0;
+        if (v < 0) v = i;                     // the first choice made is the one remembered
+        e = e[i];
+      } else if (typeof e === "function") {
+        e = e(params || {}, c);
+      } else if (e && typeof e === "object" && Array.isArray(e.bands)) {
+        let b = Math.min(c.band, e.bands.length - 1);
+        while (b > 0 && e.bands[b] === undefined) b--;
+        e = e.bands[b];
+      } else break;
+    }
+    return e;
+  };
+  const out = settle(entry, "");
+  if (out && typeof out === "object") {
+    // { text, dl }: the sentence may itself have variants
+    const text = settle(out.text, "t");
+    return { text: String(text && typeof text === "object" ? text.text : text), dl: out.dl ? String(out.dl) : "", v };
   }
-  if (e && typeof e === "object") return { text: String(e.text), dl: e.dl ? String(e.dl) : "", v };
-  return { text: String(e), dl: "", v };
+  return { text: String(out), dl: "", v };
 }

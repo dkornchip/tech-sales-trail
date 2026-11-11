@@ -129,10 +129,11 @@
 .activity{flex:1 1 0}
 .week-div{display:flex;align-items:center;gap:var(--sp-3);padding:var(--sp-3) var(--sp-5) var(--sp-2);font-size:var(--fs-1);color:var(--text-3);position:sticky;top:0;background:var(--surface-1)}
 .week-div::after{content:"";flex:1;height:1px;background:var(--border)}
-.line{display:grid;grid-template-columns:16px minmax(0,1fr) auto;column-gap:var(--sp-3);align-items:start;padding:5px var(--sp-5);font-size:var(--fs-1);line-height:1.45}
+.line{display:grid;grid-template-columns:16px minmax(0,1fr);column-gap:var(--sp-3);align-items:start;padding:5px var(--sp-5);font-size:var(--fs-1);line-height:1.45}
 .line .icon{width:14px;height:14px;margin-top:2px;color:var(--text-3)}
-.line p{color:var(--text)}
-.line .deltas{font-family:var(--mono);color:var(--text-3);white-space:nowrap;padding-left:var(--sp-3)}
+.line .body{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:var(--sp-4);min-width:0}
+.line p{color:var(--text);flex:1 1 60%;min-width:0}
+.line .deltas{font-family:var(--mono);color:var(--text-3);margin-left:auto}
 .line.warn .icon{color:var(--warn)} .line.bad .icon{color:var(--bad)} .line.good .icon{color:var(--good)}
 .line .deltas .up{color:var(--good)} .line .deltas .down{color:var(--bad)}
 

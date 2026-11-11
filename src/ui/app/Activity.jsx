@@ -9,8 +9,7 @@ const Line = ({ e }) => {
   return (
     <li className={"line" + (kind ? " " + kind : "")} data-tag={e.tag || undefined}>
       <Icon name={iconFor(e)} />
-      <p>{e.tag ? e.msg : legacyText(e.msg)}</p>
-      <span className="deltas">{e.dl || ""}</span>
+      <div className="body"><p>{e.tag ? e.msg : legacyText(e.msg)}</p>{e.dl ? <span className="deltas">{e.dl}</span> : null}</div>
     </li>
   );
 };
@@ -20,7 +19,9 @@ export const Activity = ({ s }) => {
   const ref = useOverflowFade([s.logs.length]);
   const out = []; let last;
   s.logs.forEach(e => {
-    const wk = typeof e.wk === "number" ? e.wk : null;
+    if (e.tag && !e.msg) return;                                   // a line with nothing to say (most week rollovers)
+    // the line that opens a week is written just before the week turns: it belongs to the week it announces
+    const wk = e.tag === "week.next" && e.d && typeof e.d.week === "number" ? e.d.week : typeof e.wk === "number" ? e.wk : null;
     if (wk !== last) { out.push(<li key={"w" + e.id} className="week-div">{wk === null ? UI.earlier : UI.weekDivider(wk)}</li>); last = wk; }
     out.push(<Line key={e.id} e={e} />);
   });

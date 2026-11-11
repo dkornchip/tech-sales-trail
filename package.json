@@ -24,7 +24,8 @@
     "saves:check": "node test/saves/generate.cjs --check",
     "lint:rng": "node scripts/lint-rng.mjs",
     "lint:copy": "node scripts/lint-copy.mjs",
-    "lint:css": "node scripts/lint-css.mjs"
+    "lint:css": "node scripts/lint-css.mjs",
+    "test:copy": "node test/copy/check.cjs && node test/copy/render.mjs"
   },
   "devDependencies": {
     "@babel/standalone": "7.28.4",
