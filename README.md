@@ -149,7 +149,7 @@ Activate a seat and, once a week, your agents research accounts, write the outre
 
 The pilot results, straight from the fine print: **1 in 5 agent runs closed real revenue. The other 4 delivered outcomes.**
 
-<img src="screenshots/claink.webp" width="360" alt="clAInk's agent workspace after a run: 3.9 million tokens, three outcomes delivered (it influenced all of the pipeline, drafted 1,200 emails and sent none, and built a 40-slide account plan), $0 closed, and strike 1 of 3 filed by Customer Success">
+<img src="screenshots/claink.webp" width="360" alt="clAInk's agent workspace after a run: 4.6 million tokens, outcomes delivered (it influenced all of the pipeline, enriched 9,000 CRM fields with Unknown, and rescheduled your 1:1 with your manager), $0 closed, and strike 1 of 3, filed by Customer Success because the agent upgraded a customer to the 3x tier and they churned">
 
 - **It shows up as an ad** in the corner of the board at the start of every run (once your first day's onboarding is over). Minimize it if it is in your way. Close it and clAInk is off for that run. Ignore it and the pilot offer ends after week 3.
 - **A seat costs $500.** You get one agent run a week. It costs no energy and no slot; the bill comes on Friday.

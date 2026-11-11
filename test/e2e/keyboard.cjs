@@ -293,7 +293,8 @@ const HELD = {
   guard: { what: 'every auto-repeated Enter and Space is swallowed page-wide', gone: 'held-key',
     js: `() => { document.addEventListener('keydown', e => { if (e.repeat && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); e.stopImmediatePropagation(); } }, true); }` },
   repeat: { what: 'an action is made to act again on every auto-repeat', want: 'held-key',
-    js: `() => { const b = window.__drv.el('act:politics'); b.addEventListener('keydown', e => { if (e.repeat) b.click(); }); }` }
+    // (on window, in the capture phase: ahead of a page's own guard against repeats, which listens on the document)
+    js: `() => { const b = window.__drv.el('act:politics'); window.addEventListener('keydown', e => { if (e.repeat && e.target === b) b.click(); }, true); }` }
 };
 
 async function selftest(browser, env) {
