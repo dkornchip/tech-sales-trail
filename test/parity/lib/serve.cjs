@@ -61,7 +61,7 @@ function blocks(html) {
  * Asserted here: exactly 22 sites in the scene engine, 25 in the sound engine, 0 in the shell, and a babel block
  * that is byte-identical to the file on disk unless a mutant was asked for.
  */
-function patchBaseline(html, mutant) {
+function patchBaseline(html, mutant, adapt) {
   const onDisk = sha256(html);
   const want = fs.readFileSync(BASELINE_SHA_FILE, 'utf8').trim().split(/\s+/)[0];
   if (onDisk !== want) throw new Error(`baseline: sha256 ${onDisk} does not match ${path.relative(REPO, BASELINE_SHA_FILE)} (${want})`);
@@ -87,25 +87,36 @@ function patchBaseline(html, mutant) {
     if (outBabel === babel) throw new Error(`mutant ${mutant.name}: the patch changed nothing`);
     applied = mutant.name;
   }
+  // Adaptations: named, documented changes to the baseline that a newer build's driver asks for, so that a
+  // difference the build made on purpose does not hide everything after it (see soundAdaptations in
+  // drivers/next.cjs). An adapted baseline says so in its label; it is never served silently.
+  const adapted = [];
+  for (const a of adapt || []) {
+    const next = a.apply(outBabel, { replaceOnce: (t, f, r) => replaceOnce(t, f, r, 'adaptation ' + a.name) });
+    if (next === outBabel) throw new Error(`adaptation ${a.name}: the patch changed nothing`);
+    outBabel = next;
+    adapted.push(a.name);
+  }
   const out = html.slice(0, b.plain[0]) + patchedPlain + html.slice(b.plain[1], b.babel[0]) + outBabel + html.slice(b.babel[1]);
 
   // Re-read what is about to be served and check the babel block again.
   const served = out.slice(blocks(out).babel[0], blocks(out).babel[1]);
-  if (!applied && sha256(served) !== BABEL_SHA256) throw new Error('baseline: the babel block changed while patching');
-  if (applied && sha256(served) === BABEL_SHA256) throw new Error(`mutant ${applied}: the served babel block is still the original`);
-  return { html: out, cosmeticSites: sites, babelSha256: sha256(served), mutant: applied };
+  if (!applied && !adapted.length && sha256(served) !== BABEL_SHA256) throw new Error('baseline: the babel block changed while patching');
+  if ((applied || adapted.length) && sha256(served) === BABEL_SHA256) throw new Error(`${applied ? 'mutant ' + applied : 'adaptation ' + adapted.join(', ')}: the served babel block is still the original`);
+  return { html: out, cosmeticSites: sites, babelSha256: sha256(served), mutant: applied, adapted };
 }
 
 /*
  * A build ready to serve.
- *   kind 'baseline'  test/baseline/v1.21/index.html + the cosmetic patch (+ an optional mutant)
+ *   kind 'baseline'  test/baseline/v1.21/index.html + the cosmetic patch (+ an optional mutant, + optional named
+ *                    adaptations: spec.adapt, a list of { name, apply })
  *   kind 'file'      any other index.html, untouched
  */
 function loadBuild(spec) {
   if (spec.kind === 'baseline') {
     const html = fs.readFileSync(BASELINE, 'utf8');
-    const p = patchBaseline(html, spec.mutant || null);
-    return { kind: 'baseline', label: spec.mutant ? 'baseline+' + spec.mutant.name : 'baseline v1.21', file: BASELINE, html: p.html, sha256: sha256(html), babelSha256: p.babelSha256, cosmeticSites: p.cosmeticSites, allowCdn: true };
+    const p = patchBaseline(html, spec.mutant || null, spec.adapt || null);
+    return { kind: 'baseline', label: (spec.mutant ? 'baseline+' + spec.mutant.name : 'baseline v1.21') + (p.adapted.length ? ' (adapted: ' + p.adapted.join(', ') + ')' : ''), adapted: p.adapted, file: BASELINE, html: p.html, sha256: sha256(html), babelSha256: p.babelSha256, cosmeticSites: p.cosmeticSites, allowCdn: true };
   }
   const file = path.resolve(spec.file);
   const html = fs.readFileSync(file, 'utf8');

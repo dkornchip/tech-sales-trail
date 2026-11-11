@@ -59,6 +59,13 @@ async function pastBoot(page) {
     let { context, page, errors } = await open(browser);
     let s = await look(page);
     check("nothing opens over the boot screen", s.dialog === null && s.stop === null, JSON.stringify(s));
+    // listen to what the game asks its sound engine for: the memo's cues moved here from the rules with the memo
+    await page.evaluate(() => {
+      const A = window.TST_AUDIO, heard = window.__heard = [];
+      const play = A.play, say = A.say;
+      A.play = function (name) { heard.push("play:" + name); return play.apply(this, arguments); };
+      A.say = function (key) { heard.push("say:" + key); return say.apply(this, arguments); };
+    });
     await pastBoot(page);
     await page.waitForSelector('dialog[open][data-dialog="welcome"]', { timeout: 4000 }).catch(() => {});
     s = await look(page);
@@ -68,6 +75,11 @@ async function pastBoot(page) {
     check("Escape does not dismiss the opening", (await page.keyboard.press("Escape"), await page.waitForTimeout(150), (await look(page)).dialog) === "welcome");
     const memo = await page.evaluate(() => { const m = document.querySelector('dialog[open] .memo'); const l = document.querySelectorAll('dialog[open] .welcome-lines li'); return { memo: !!m && m.textContent.length > 200, lines: l.length, quota: /\$160,000/.test(document.querySelector('dialog[open]').textContent) }; });
     check("it holds the memo and the job in three lines, quota included", memo.memo && memo.lines === 3 && memo.quota, JSON.stringify(memo));
+    // the gag takes 1.65 s to reach the stamp; the welcome line waits out the boot screen's own announcement
+    await page.waitForFunction(() => { const h = window.__heard || []; return h.includes("play:stamp") && !!document.querySelector('dialog[open] .d-cap'); }, null, { timeout: 8000 }).catch(() => {});
+    const cues = await page.evaluate(() => ({ heard: window.__heard.filter(x => /welcome|sadHorn|stamp/.test(x)), caption: (document.querySelector('dialog[open] .d-cap') || { textContent: "" }).textContent }));
+    check("the memo's cues fire here now: the welcome announcement, the sad horn, the stamp", cues.heard.includes("say:welcome") && cues.heard.includes("play:sadHorn") && cues.heard.includes("play:stamp"), cues.heard.join(" "));
+    check("and the announcement is captioned under the dialog's title", /Welcome to Shitcorp/.test(cues.caption), cues.caption);
     await page.keyboard.press("Enter");
     await page.waitForSelector(".coach", { timeout: 3000 }).catch(() => {});
     s = await look(page);

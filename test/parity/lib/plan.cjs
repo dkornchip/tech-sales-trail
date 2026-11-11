@@ -45,10 +45,13 @@ async function runAll(opts) {
   const t0 = Date.now();
   const say = opts.log || (() => {});
   const mode = opts.full ? DEFAULTS.full : DEFAULTS.quick;
-  const buildA = loadBuild(opts.a || { kind: 'baseline' });
-  const buildB = loadBuild(opts.b || { kind: 'file', file: path.join(REPO, 'index.html') });
   const driverA = loadDriver(opts.aDriver || 'v121');
   const driverB = loadDriver(opts.bDriver || (opts.b && (opts.b.kind === 'baseline' || opts.b.kind === 'mutant') ? 'v121' : 'next'));
+  // In a sound run, the baseline is served with the adaptations build B's driver asks for (drivers/next.cjs).
+  const adapt = opts.sound && !opts.a ? (driverB.soundAdaptations || []) : [];
+  const buildA = loadBuild(opts.a || { kind: 'baseline', adapt });
+  const buildB = loadBuild(opts.b || { kind: 'file', file: path.join(REPO, 'index.html') });
+  for (const a of adapt) say(`sound: the baseline is adapted (${a.name}): ${a.why}`);
   const fx = opts.fx || parseFx('seeded');
   const motionOpt = opts.motion || 'mix';
   const seeds = opts.seeds === undefined ? mode.seeds : opts.seeds;
@@ -157,6 +160,8 @@ async function runAll(opts) {
       const sf = Object.assign({}, SOUND_FLOORS);
       // the filler line is a 30% cosmetic roll: with the cosmetic stream pinned at or above 0.3 it is never asked for
       if (fx.mode === 'const' && fx.value >= 0.3) delete sf['snd.say.filler'];
+      // what an adapted baseline can no longer produce
+      for (const a of adapt) for (const k of a.floors || []) delete sf[k];
       unmet = unmet.concat(census.unmet(sf).map(u => Object.assign(u, { set: 'sound' })));
     }
     if (opts.flavorB === undefined && (notes.flavorA === 0 || notes.flavorB === 0)) problems.push(`the pinned clAInk flavor stream was never read (A ${notes.flavorA} calls, B ${notes.flavorB}): token fields were compared vacuously`);

@@ -21,6 +21,7 @@
 //   resilience   a held choice, names, ids, damaged saves  (test/e2e/resilience.cjs)
 //   keyboard     a whole run with the keyboard only        (test/e2e/keyboard.cjs)
 //   layout       one screen, nothing covered or cut off    (test/e2e/layout.cjs)
+//   sound        with --release only: the same sounds fire as in v1.21, move by move (test/parity/run.cjs --sound)
 //   released     with --release only: the committed ./index.html is exactly what the source builds (scripts/build.mjs --check)
 // and prints a one-screen summary with timings. Each step's full output is kept in test-results/verify/<step>.log;
 // --verbose also streams it.
@@ -78,11 +79,12 @@ const STEPS = {
   fonts: { what: "bundled fonts", cmd: ["scripts/fonts.mjs", "--check"] },
   notices: { what: "licence notices", cmd: ["scripts/notices.mjs", "--check"] },
   fixtures: { what: "save fixtures are the baseline's", cmd: ["test/saves/generate.cjs", "--check"] },
-  // with --release: the committed ./index.html is exactly what the source builds
+  // with --release: which sounds fire, move by move, and that the committed ./index.html is exactly what the source builds
+  sound: { what: "sound parity, both pinned passes", cmd: ["test/parity/run.cjs", "--b", target, "--workers", workers, "--sound", ...drv("--b-driver")] },
   released: { what: "./index.html is current", cmd: ["scripts/build.mjs", "--check"] }
 };
 const DEFAULT = ["build", "lint-rng", "lint-copy", "lint-css", "copy-check", "copy-render", "fonts", "notices", "parity", "scenes", "fixtures", "saves", "offline", "firstday", "resilience", "keyboard", "layout"];
-const order = onlyArg ? onlyArg.split(",").map(s => s.trim()).filter(Boolean) : release ? DEFAULT.concat("released") : DEFAULT;
+const order = onlyArg ? onlyArg.split(",").map(s => s.trim()).filter(Boolean) : release ? DEFAULT.concat("sound", "released") : DEFAULT;
 for(const s of order) if(!STEPS[s]){ console.error(`verify: unknown step ${s}. steps: ${Object.keys(STEPS).join(", ")}`); process.exit(2); }
 
 /* ---------------------------------------------------------------- run */

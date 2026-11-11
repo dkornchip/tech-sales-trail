@@ -19,6 +19,19 @@ module.exports = {
   benign: ['recharge-when-rested'],
 
   // Copy that is stored in a save and has to be reduced to a code before two builds can be compared.
+  // Differences this build made on purpose that change what the BASELINE sounds like. In a --sound run the baseline
+  // is served with these applied (and says so in its label), so that every other sound can still be compared, and
+  // the floors that the adapted baseline can no longer meet are dropped.
+  soundAdaptations: [
+    { name: 'memo-cues-silenced',
+      why: 'v2.0 moved the onboarding memo from the rules dialog to the first-day dialog, and its three cues (the welcome announcement, the sad horn, the stamp) went with it. test/e2e/firstday.cjs checks that they fire there.',
+      floors: ['snd.say.welcome', 'snd.play.sadHorn', 'snd.play.stamp'],
+      apply(babel, { replaceOnce }) {
+        const noCues = replaceOnce(babel, 'const MEMO_SFX=[["sadHorn",300],["stamp",1650]];', 'const MEMO_SFX=[];');
+        return replaceOnce(noCues, 'let welcomeSaid=false;', 'let welcomeSaid=true;');
+      } }
+  ],
+
   // Moves that sit in a menu: the keyboard test reaches them through `via` (focus it, press Enter, then Tab to the item).
   menu: { via: 'settings', moves: ['save', 'load', 'newgame'] },
 
