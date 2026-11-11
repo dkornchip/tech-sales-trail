@@ -5,8 +5,9 @@ import { AUDIO, reducedNow, sfx } from "./env.js";
 
 const { useState, useEffect, useRef } = React;
 
-// v1.16: Shitcorp onboarding memo at the top of the Rules. Game remounts it (new key) on every open so the
-// gag replays; `active` is the modal's open state, and closing cancels anything still queued.
+// v1.16: Shitcorp onboarding memo. v2.0: it is the opening of a first run (ui/FirstRun.jsx) and can be reread from
+// the rules. It is remounted on every open so the gag replays; `active` is the dialog's open state, and closing
+// cancels anything still queued.
 // The cues line up with the CSS: the cannon fizzles at .3s, the stamp lands at 1.4s + 60% of .42s,
 // and the HR footnote's fade-in (1.9s + .4s) is the last beat.
 export const MEMO_SFX=[["sadHorn",300],["stamp",1650]];
@@ -27,7 +28,10 @@ export const WelcomeMemo=({active})=>{
     // The PA is sound, not motion, so it plays under reduced motion too. On a fresh tab the Rules click can be
     // the first gesture, and the audio unlock's silent primer then makes say() decline; try once more after it.
     const greet=()=>{ if(welcomeSaid)return false; const a=AUDIO(); if(a && a.say("welcome",{cooldown:3000})){ welcomeSaid=true; paQueued.current=true; } return welcomeSaid; };
-    if(!greet())retry.current=setTimeout(greet,800);
+    // (v2.0: the memo can open right behind the boot screen's own announcement, so it keeps trying for a few seconds)
+    let tries=0;
+    const again=()=>{ if(!greet() && ++tries<5)retry.current=setTimeout(again,800); };
+    again();
     if(!rm){
       cues.current=MEMO_SFX.map(([name,ms])=>setTimeout(()=>{ if(name==="stamp")stamped.current=true; sfx(name); },ms));
       cues.current.push(setTimeout(()=>setLive(false),MEMO_END));

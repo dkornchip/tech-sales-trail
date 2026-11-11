@@ -64,7 +64,31 @@ dialog .d-footer .btn.at-start{margin-right:auto}
 }
 @media (prefers-reduced-motion:reduce){ .end-card{transition:none} }
 
-/* The few helper classes the rules dialog still uses. */
+/* The first day: the memo, then the job in three lines. */
+.welcome-lines{display:grid;gap:var(--sp-2);margin:var(--sp-5) 0 0;padding:0;list-style:none;color:var(--text);font-size:var(--fs-2)}
+
+/* The rules: a reference card. Sections, two columns where there is room. */
+dialog.help{width:min(960px,94vw)}
+.rules{columns:2;column-gap:var(--sp-7)}
+.rules section{break-inside:avoid;margin-bottom:var(--sp-5)}
+.rules h3{margin:0 0 var(--sp-3);font-size:var(--fs-1);font-weight:500;color:var(--text-3)}
+dialog .d-body .rules p{margin:0 0 var(--sp-3);font-size:var(--fs-1);line-height:1.5;color:var(--text-2)}
+dialog .d-footer .d-aside{margin-right:auto;margin-left:calc(-1 * var(--sp-3));display:flex;align-items:center}
+@media (max-width:1024px){ .rules{columns:1} dialog.help{width:min(600px,94vw)} }
+
+/* The tour: three stops. A card points at one thing on the screen; the thing gets a ring. Nothing is blocked. */
+.coach-ring{position:fixed;z-index:60;border:2px solid var(--accent);border-radius:var(--r-3);pointer-events:none;animation:fadeIn .2s both}
+.coach{position:fixed;z-index:61;padding:var(--sp-5);border:1px solid var(--border-strong);border-radius:var(--r-3);background:var(--surface-3);color:var(--text);box-shadow:var(--shadow-overlay);animation:fadeIn .2s both}
+.coach-arrow{position:absolute;top:-6px;width:10px;height:10px;margin-left:-5px;border-left:1px solid var(--border-strong);border-top:1px solid var(--border-strong);background:var(--surface-3);transform:rotate(45deg)}
+.coach.above .coach-arrow{top:auto;bottom:-6px;transform:rotate(225deg)}
+.coach-step{font:400 var(--fs-1)/1.4 var(--mono);color:var(--text-3)}
+.coach-title{margin-top:var(--sp-2);font-size:var(--fs-3);font-weight:600;letter-spacing:-.01em}
+.coach-body{margin:var(--sp-3) 0 0;font-size:var(--fs-2);line-height:1.5;color:var(--text-2)}
+.coach-foot{display:flex;align-items:center;justify-content:flex-end;gap:var(--sp-3);margin-top:var(--sp-5)}
+.coach-foot .linkbtn{margin-right:auto;margin-left:calc(-1 * var(--sp-3))}
+.coach-foot .btn.primary{min-width:0}
+
+/* The helper class event bodies still use. */
 dialog .tiny{font-size:var(--fs-2);line-height:1.5;color:var(--text-2)}
 .btn.success{background:var(--accent);border-color:var(--accent);color:var(--text-on-accent)}
 .btn.success:hover{background:var(--accent-hover);border-color:var(--accent-hover)}

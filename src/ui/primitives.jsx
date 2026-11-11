@@ -80,7 +80,8 @@ export const DealCard=({deal})=>{
 // "evt:competitor", "evt:security", "ck:warning", "ck:lesson", "end:club" ... "end:repo", "help".
 // className: a variant ("ending"). An action may carry ui (data-ui, for tests), side:"start" (sits at the left of
 // the footer) and focus (takes the focus when the dialog opens; the first action does otherwise).
-export const Modal=({open,title,children,actions,onDismiss,dialogId,className})=>{
+// aside: something quiet at the left of the footer (a link), which is not one of the dialog's answers.
+export const Modal=({open,title,children,actions,onDismiss,dialogId,className,aside})=>{
   const ref=useRef(null);
   const titleId=React.useId()+"t";
   // what the announcer says while this dialog is open is captioned under its title, and stays until it closes
@@ -113,6 +114,7 @@ export const Modal=({open,title,children,actions,onDismiss,dialogId,className})=
         {cap && <span className="d-cap" role="status"><span className="pa-who">{WHO[cap.who]||WHO.pa}</span>{cap.text}</span>}</div>
       <div className="d-body">{children}</div>
       <div className={"d-footer"+(actions && actions.some(a=>a.note) ? " options" : "")}>
+        {aside ? <span className="d-aside">{aside}</span> : null}
         {actions && actions.map((a,i)=>(
           <button
             key={a.ui||i}

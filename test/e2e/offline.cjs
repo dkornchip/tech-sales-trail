@@ -86,6 +86,8 @@ async function pass(browser, name, open){
   const r = reporter(name);
   r.title();
   const context = await browser.newContext({ viewport: { width: 1280, height: 720 } });
+  // someone who has played before: a new player's first day (the memo and the tour) has its own test, firstday.cjs
+  await context.addInitScript(() => { try { window.localStorage.setItem("tst-onboarded-v2", "1"); } catch (e) {} });
   const page = await context.newPage();
   const requests = [], blocked = [], consoleErrors = [], pageErrors = [];
   let documentUrl = "";

@@ -1,7 +1,7 @@
 import React from "react";
 import { ENDINGS } from "../copy/endings.js";
 import { EVENT_COPY } from "../copy/events.js";
-import { HELP, HELP_OK, HELP_TITLE } from "../copy/help.js";
+import { HELP, HELP_MEMO, HELP_OK, HELP_TITLE } from "../copy/help.js";
 import { hailMary } from "../game/actions.js";
 import { EVENTS } from "../game/events.js";
 import { legacyCause } from "../game/legacy.js";
@@ -24,7 +24,7 @@ import { clearCaption, pushCaption } from "./captions.js";
 import { Ending } from "./Ending.jsx";
 import { AUDIO, REDUCED_MOTION, notify, sfx } from "./env.js";
 import { Modal } from "./primitives.jsx";
-import { WelcomeMemo } from "./WelcomeMemo.jsx";
+import { Tour, Welcome, endFirstDay, isFirstDay, useBooting } from "./FirstRun.jsx";
 
 const { useState, useEffect, useRef } = React;
 
@@ -42,7 +42,11 @@ export function Game(){
   const[pending,setPending]=useState(null); // the event dialog on screen: {id, params} (EVENTS in game/events.js), or null
   const[over,setOver]=useState(null);
   const[showHelp,setShowHelp]=useState(false);
-  const[helpOpens,setHelpOpens]=useState(0); // keys the onboarding memo so its gag replays on each open
+  // The first day (ui/FirstRun.jsx): "memo" (the opening), then 0, 1, 2 (the tour's stops), then null for good.
+  // "memo-again" is the memo reopened from the rules. A browser with a saved run never gets a first day.
+  const[first,setFirst]=useState(()=>{ const hasRun=!!readStoredRun(true); if(hasRun) endFirstDay(); return isFirstDay(hasRun) ? "memo" : null; });
+  const booting=useBooting();
+  const[helpOpens,setHelpOpens]=useState(0); // keys the onboarding memo so its gag replays each time it is reopened
   const[claUi,setClaUi]=useState(readClainkUi); // v1.19: clAInk console position + minimized (a UI preference, not run state)
   const[epoch,setEpoch]=useState(0);            // v1.19: New Game, Load and New Run remount clAInk's local UI state
   const setClaUiByYou=fn=>setClaUi(u=>({...(typeof fn==="function"?fn(u):fn),chosen:true})); // only your own moves/toggles are saved
@@ -108,7 +112,7 @@ export function Game(){
   const[menuOpen,setMenuOpen]=useState(false);
   const menuBtn=useRef(null);
   const closeMenu=refocus=>{ setMenuOpen(false); if(refocus && menuBtn.current) try{ menuBtn.current.focus(); }catch{} };
-  const openRules=()=>{ setHelpOpens(n=>n+1); setShowHelp(true); };
+  const openRules=()=>setShowHelp(true);
 
   useEffect(()=>{
     try{
@@ -210,12 +214,15 @@ export function Game(){
             <SettingsMenu open={menuOpen} onClose={closeMenu} audio={audioApi} captions={audio.captions!==false} onCaptions={audioApi.setCaptions} onSave={onSave} onLoad={onLoad} onNewRun={onNew} anchorRef={menuBtn} />
           </TopBar>
         }
-        dock={<ClainkDock key={s.runId+":"+epoch} s={s} setS={setS} ui={clainkUiFor(claUi,shortScreen)} setUi={setClaUiByYou} onEvent={offerLesson} />} />
+        dock={first!==null && first!=="memo-again" ? null /* the vendor waits until onboarding is over */
+          : <ClainkDock key={s.runId+":"+epoch} s={s} setS={setS} ui={clainkUiFor(claUi,shortScreen)} setUi={setClaUiByYou} onEvent={offerLesson} />} />
 
       <Modal
         open={showHelp}
         title={HELP_TITLE}
         dialogId="help"
+        className="help"
+        aside={<button type="button" className="linkbtn" data-ui="memo-again" onClick={()=>{ setShowHelp(false); setHelpOpens(n=>n+1); setFirst("memo-again"); }}>{HELP_MEMO}</button>}
         onDismiss={()=>setShowHelp(false)}
         actions={[
           {
@@ -225,9 +232,24 @@ export function Game(){
           }
         ]}
       >
-        {helpOpens>0 && <WelcomeMemo key={helpOpens} active={showHelp} />}
-        {HELP.map((row,i)=><p className="tiny" key={i}><strong>{row.term}</strong>{row.body(helpNumbers)}</p>)}
+        <div className="rules">
+          {HELP.map(sec=>(
+            <section key={sec.title}>
+              <h3>{sec.title}</h3>
+              {sec.rows.map((row,i)=><p key={i}><strong>{row.term}</strong>{row.body(helpNumbers)}</p>)}
+            </section>
+          ))}
+        </div>
       </Modal>
+
+      <Welcome key={"w"+helpOpens} open={!booting && (first==="memo" || first==="memo-again")} again={first==="memo-again"} s={s}
+        onClose={()=>{ if(first==="memo"){ endFirstDay(); setFirst(0); } else setFirst(null); }} />
+      {typeof first==="number" && !over && !pending && !showHelp && (
+        <Tour step={first} onStep={setFirst} onEnd={toDesk=>{
+          setFirst(null);
+          if(toDesk===true){ const b=document.querySelector('[data-act="prospect"]'); if(b) try{ b.focus({preventScroll:true}); }catch{} }
+        }} />
+      )}
 
       <Modal
         open={!!pending}

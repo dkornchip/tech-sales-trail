@@ -54,6 +54,10 @@ module.exports = {
    */
   inPage: function () {
     const AUTOSAVE = 'tst-autosave-v4-3', SAVE = 'tst-save-v4-3';   // game.jsx:16-17
+    // The harness plays as someone who has been here before: v2.0 gives a brand-new browser a first day (the
+    // onboarding memo and a tour, src/ui/FirstRun.jsx), which the baseline does not have. test/e2e/firstday.cjs
+    // covers that flow on its own. This runs before any of the page's scripts, on every load.
+    try { window.localStorage.setItem('tst-onboarded-v2', '1'); } catch (_) {}
     const ACTIONS = ['prospect', 'cadence', 'discovery', 'demo', 'propose', 'close', 'network', 'conference', 'recharge', 'coffee', 'politics', 'crm'];
     const q = (sel, root) => (root || document).querySelector(sel);
     const qa = (sel, root) => Array.from((root || document).querySelectorAll(sel));

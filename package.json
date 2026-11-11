@@ -11,6 +11,7 @@
     "fonts": "node scripts/fonts.mjs",
     "fonts:check": "node scripts/fonts.mjs --check",
     "test:offline": "node test/e2e/offline.cjs",
+    "test:firstday": "node scripts/build.mjs && node test/e2e/firstday.cjs",
     "parity": "node scripts/build.mjs && node test/parity/run.cjs --b dist/index.html --workers 2",
     "parity:full": "node scripts/build.mjs && node test/parity/run.cjs --b dist/index.html --workers 2 --full",
     "parity:sound": "node scripts/build.mjs && node test/parity/run.cjs --b dist/index.html --workers 2 --sound",
