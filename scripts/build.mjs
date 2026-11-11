@@ -55,7 +55,8 @@ async function bundle(){
 }
 
 /* ---------- icons ---------- */
-// The interface names its icons as <Icon name="phone"/> or as icon:"phone" in a table. Every name found in the
+// The interface names its icons as <Icon name="phone"/> or as icon:"phone" in a table (or picks between quoted
+// names in an expression after icon: or name=). Every name found in the
 // bundled source is taken from lucide-static and inlined once as an SVG symbol; <Icon> then points at it with
 // <use href="#i-phone">. A name Lucide does not have stops the build.
 function iconSprite(sources){
@@ -63,7 +64,10 @@ function iconSprite(sources){
   for(const file of sources){
     const text = fs.readFileSync(path.join(ROOT, file), "utf8");
     for(const m of text.matchAll(/<Icon\b[^>]*?\bname="([a-z0-9-]+)"/g)) names.add(m[1]);
-    for(const m of text.matchAll(/\bicon:\s*"([a-z0-9-]+)"/g)) names.add(m[1]);
+    // an icon can also be chosen by an expression (icon: up ? "trending-up" : "trending-down", name={...}):
+    // every quoted name in that expression is taken
+    for(const m of text.matchAll(/\bicon:\s*([^,}\n]+)/g)) for(const q of m[1].matchAll(/"([a-z0-9-]+)"/g)) names.add(q[1]);
+    for(const m of text.matchAll(/<Icon\b[^>]*?\bname=\{([^}]+)\}/g)) for(const q of m[1].matchAll(/"([a-z0-9-]+)"/g)) names.add(q[1]);
   }
   if(!names.size) return { svg: "", names: [] };
   const symbols = [...names].sort().map(name => {

@@ -164,7 +164,14 @@
 @media (min-width:1025px) and (min-height:620px){
   html,body{overflow:hidden}
   .app{height:100dvh}
+  /* On a tall screen the week's card fills the height like the card beside it. The actions take the first of the
+     spare room (up to a comfortable size) and the rest is shared out between the sections, so End week always
+     sits in the same corner. On a screen with no room to spare this changes nothing. */
+  .left{align-self:stretch;justify-content:space-between}
+  .actions{flex:0 1 auto;grid-auto-rows:minmax(54px,1fr);height:100%;max-height:calc(4 * 80px + 3 * var(--sp-3))}
+  .action{height:auto}
 }
+@media (min-width:1500px) and (min-height:900px){ .actions{grid-auto-rows:minmax(62px,1fr);max-height:calc(4 * 88px + 3 * var(--sp-3))} }
 /* stacked: one column, the page scrolls */
 @media (max-width:1024px), (max-height:619px){
   .main{grid-template-columns:minmax(0,1fr)}
