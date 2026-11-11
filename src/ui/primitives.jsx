@@ -76,19 +76,26 @@ export const DealCard=({deal})=>{
 // onDismiss: Esc may close it (info-only dialogs). Without it, Esc does nothing.
 // dialogId: what this dialog is (data-dialog), so tests and code can find it without reading its title:
 // "evt:competitor", "evt:security", "ck:warning", "ck:lesson", "end:club" ... "end:repo", "help".
-export const Modal=({open,title,children,actions,onDismiss,dialogId})=>{
+// className: a variant ("ending"). An action may carry ui (data-ui, for tests), side:"start" (sits at the left of
+// the footer) and focus (takes the focus when the dialog opens; the first action does otherwise).
+export const Modal=({open,title,children,actions,onDismiss,dialogId,className})=>{
   const ref=useRef(null);
   const titleId=React.useId()+"t";
   useEffect(()=>{
     if(!ref.current)return;
     if(open){
-      if(!ref.current.open)ref.current.showModal();
+      if(!ref.current.open){
+        ref.current.showModal();
+        // the browser focuses the first control; an action marked `focus` takes it instead
+        const want=ref.current.querySelector("[data-focus]");
+        if(want)want.focus();
+      }
     }else{
       if(ref.current.open)ref.current.close();
     }
   },[open]);
   return(
-    <dialog ref={ref} aria-labelledby={titleId} data-dialog={dialogId||undefined}
+    <dialog ref={ref} className={className||undefined} aria-labelledby={titleId} data-dialog={dialogId||undefined}
       onCancel={e=>{ if(!onDismiss)e.preventDefault(); }}
       onClose={()=>{
         if(onDismiss){ if(open)onDismiss(); return; }
@@ -100,10 +107,12 @@ export const Modal=({open,title,children,actions,onDismiss,dialogId})=>{
       <div className={"d-footer"+(actions && actions.some(a=>a.note) ? " options" : "")}>
         {actions && actions.map((a,i)=>(
           <button
-            key={i}
-            className={"btn "+(a.className||"ghost")+(a.note ? " option" : "")}
+            key={a.ui||i}
+            className={"btn "+(a.className||"ghost")+(a.note ? " option" : "")+(a.side==="start" ? " at-start" : "")}
+            data-ui={a.ui||undefined}
+            data-focus={a.focus ? "" : undefined}
             onClick={a.onClick}
-            autoFocus={i===0}
+            autoFocus={actions.some(x=>x.focus) ? !!a.focus : i===0}
           >
             {a.note ? <><span className="opt-label">{a.label}</span><span className="opt-effect">{a.note}</span></> : a.label}
           </button>

@@ -79,3 +79,20 @@ export const blocked = (s, { energy = 0, slots = 1, used = false } = {}) => {
   if (used) return { why: "once" };
   return null;
 };
+
+// What the ending screen says about a run: the save's own totals, plus the run's story where it has one
+// (game/story.js; saves from before v2.0 have none, and then `known` is false and the story fields are null).
+export const runFacts = s => {
+  const st = s.story && typeof s.story === "object" ? s.story : null, ck = s.claink || {};
+  const k = key => (st ? st.n[key] || 0 : null);
+  return {
+    known: !!st,
+    week: Math.min(weekOf(s), QUARTER_WEEKS), weeks: QUARTER_WEEKS,
+    closed: s.closedWon, quotaPct: s.quota > 0 ? Math.floor((100 * s.closedWon) / s.quota) : 0,
+    cash: s.cash, discounts: s.discounts || 0, pipeline: s.pipeline || 0,
+    trip: s.trip || null,
+    signed: st ? st.signed : null, top: st ? st.top : null, took: st ? st.took : null,
+    shots: k("shots"), hails: k("hails"), lunches: k("lunches"), cadences: k("cadences"), lost: k("lost"),
+    strikes: ck.strikes || 0, revoked: ck.status === "revoked", billed: ck.billed || 0
+  };
+};

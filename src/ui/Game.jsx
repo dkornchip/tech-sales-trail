@@ -20,7 +20,7 @@ import { SettingsMenu } from "./app/SettingsMenu.jsx";
 import { useShortcuts } from "./app/shortcuts.js";
 import { TopBar } from "./app/TopBar.jsx";
 import { CLAINK_UI_KEY, ClainkDock, clainkUiFor, isShortScreen, readClainkUi } from "./ClainkUi.jsx";
-import { Cutscene } from "./Cutscene.jsx";
+import { Ending } from "./Ending.jsx";
 import { AUDIO, REDUCED_MOTION, notify, sfx } from "./env.js";
 import { Modal } from "./primitives.jsx";
 import { WelcomeMemo } from "./WelcomeMemo.jsx";
@@ -40,7 +40,6 @@ export function Game(){
   const[s,setS]=useState(createInitial);
   const[pending,setPending]=useState(null); // the event dialog on screen: {id, params} (EVENTS in game/events.js), or null
   const[over,setOver]=useState(null);
-  const[asciiSpeed,setAsciiSpeed]=useState(120);
   const[showHelp,setShowHelp]=useState(false);
   const[helpOpens,setHelpOpens]=useState(0); // keys the onboarding memo so its gag replays on each open
   const[claUi,setClaUi]=useState(readClainkUi); // v1.19: clAInk console position + minimized (a UI preference, not run state)
@@ -50,7 +49,6 @@ export function Game(){
   useEffect(()=>{ const on=()=>setShortScreen(isShortScreen()); window.addEventListener("resize",on); return()=>window.removeEventListener("resize",on); },[]);
   useEffect(()=>{ if(!claUi.chosen)return; try{ localStorage.setItem(CLAINK_UI_KEY,JSON.stringify({x:claUi.x,y:claUi.y,mini:claUi.mini,adMini:claUi.adMini})); }catch{} },[claUi]);
   const expandAd=()=>setClaUi(u=>u.adMini===null ? u : {...u,adMini:null}); // v1.21: a new run's ad starts fresh (expanded; the pill on a short screen)
-  const sceneRef=useRef(null);
 
   // New run, Save and Load live in the settings menu. They read the live state through a ref.
   const sRef=useRef(s);
@@ -247,48 +245,7 @@ export function Game(){
         <p className="tiny">{eventWords ? eventWords.body(eventParams) : null}</p>
       </Modal>
 
-      <Modal
-        open={!!over}
-        title={over?.title || "Game Over"}
-        dialogId={over ? "end:"+over.id : undefined}
-        actions={[
-          {
-            label:"New Run",
-            className:"success",
-            onClick:onNew
-          }
-        ]}
-      >
-        <p className="tiny">{over?.body}</p>
-        <Cutscene
-          type={over?.type || "club"}
-          speed={asciiSpeed}
-          play={!!over}
-          meta={over?.meta}
-          ctrlRef={sceneRef}
-        />
-        {REDUCED_MOTION && over && window.TST_SCENES && window.TST_SCENES.summaryFor(over.type,over.meta) && (
-          <p className="tiny scene-note">{window.TST_SCENES.summaryFor(over.type,over.meta)}</p>
-        )}
-        {!REDUCED_MOTION && window.TST_SCENES && (
-          <div className="row right scene-ctl">
-            <button className="pill-btn" onClick={()=>{ if(sceneRef.current)sceneRef.current.skip(); }}>Skip to end</button>
-            <button className="pill-btn" onClick={()=>{ if(sceneRef.current)sceneRef.current.replay(); }}>Replay</button>
-          </div>
-        )}
-        <div className="row between" style={{marginTop:6}}>
-          <div className="badge-row">
-            <span className="badge">Total Closed: {money(s.closedWon)}</span>
-            <span className="badge">Pipeline: {money(s.pipeline)}</span>
-            <span className="badge">Total Discounts: {money(s.discounts)}</span>
-          </div>
-          <div className="row">
-            <span className="tiny">ASCII speed</span>
-            <button className="btn ghost" onClick={()=>setAsciiSpeed(p=>Math.max(60,p-20))}>Faster</button>
-            <button className="btn ghost" onClick={()=>setAsciiSpeed(p=>Math.min(260,p+20))}>Slower</button>
-          </div>
-        </div>
-      </Modal>
+      <Ending over={over} s={s} onNew={onNew} />
     </>
   );
 }

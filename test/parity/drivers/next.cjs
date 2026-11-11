@@ -84,9 +84,11 @@ module.exports = {
       if (open.length) {
         const d = open[open.length - 1];
         const id = open.map(x => dialogId(x)).join('+');
-        const btns = qa('.d-footer .btn', d).filter(usable);
-        if (dialogId(d).indexOf('end:') === 0) {
-          if (btns[0]) map.set('newrun', btns[0]);                           // the ending's "New Run" (game.jsx:2797)
+        const ending = dialogId(d).indexOf('end:') === 0;
+        // an ending offers one move, New run; its Skip / Replay button only drives the cutscene
+        const btns = qa(ending ? '.d-footer [data-ui="newrun"]' : '.d-footer .btn', d).filter(usable);
+        if (ending) {
+          if (btns[0]) map.set('newrun', btns[0]);
         } else {
           btns.forEach((b, i) => map.set('dlg:' + i, b));                    // event options, or "Got it"
         }
@@ -136,7 +138,7 @@ module.exports = {
       if (MENU[move]) return q('[data-ui="' + move + '"]') || q('[data-ui="settings"]');   // the item if the menu is open, else its button
       const open = qa('dialog[open]');
       const btns = open.length ? qa('.d-footer .btn', open[open.length - 1]) : [];
-      if (move === 'newrun') return btns[0] || null;
+      if (move === 'newrun') return (open.length && q('.d-footer [data-ui="newrun"]', open[open.length - 1])) || null;
       const d = /^dlg:(\d+)$/.exec(move);
       if (d) return btns[Number(d[1])] || null;
       const c = controls().map.get(move);                                    // the clAInk controls

@@ -1,6 +1,7 @@
 import { bandOf, render } from "../copy/engine.js";
 import { LOG } from "../copy/log.js";
 import { QUARTER_WEEKS } from "./constants.js";
+import { tally } from "./story.js";
 import { idGen, now } from "./util.js";
 
 // One entry in the activity log. `tag` names the line (a key of LOG in src/copy/log.js) and `params` is what the line
@@ -19,7 +20,11 @@ export const log=(state,tag,params,kind="info")=>{
   if(r.dl) entry.dl=r.dl;
   if(r.v>=0) entry.v=r.v;
   if(params && Object.keys(params).length) entry.d=params;
-  return{...state,logs:[entry,...state.logs].slice(0,220)};
+  const next={...state,logs:[entry,...state.logs].slice(0,220)};
+  // the run's story (game/story.js) is kept here, where every line passes; a run without one stays without
+  const story=tally(state.story,tag,params);
+  if(story!==state.story) next.story=story;
+  return next;
 };
 
 // v1.15: caffeine and stress can end a run. Numbers tuned with the Monte Carlo sim.

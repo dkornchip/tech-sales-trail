@@ -204,7 +204,8 @@ export const clainkMiracle=(state)=>{
       clear:ckFPick(CK_CLEAR),
       announce:CK_MIRACLE.announce(signed.length,total)})};
   s=log(s,"ck.miracle");
-  return log(s,"ck.signed",{n:signed.length,won:total,keep});
+  const top=signed.reduce((a,d)=>(!a || d.value>a.value ? {account:d.account,value:d.value} : a),null);
+  return log(s,"ck.signed",{n:signed.length,won:total,keep,top});
 };
 
 // a strike with real damage, picked by weight; it falls back to what it can actually hit. Returns the state and the story.

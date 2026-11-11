@@ -1,5 +1,6 @@
 import { newClaink, sanitizeClaink } from "./claink.js";
 import { AUTOSAVE_KEY, LEGACY_KEYS, MAX_QUARTERS, SAVE_KEY } from "./constants.js";
+import { newStory, sanitizeStory } from "./story.js";
 import { idGen } from "./util.js";
 
 // FIX: page refresh now resumes the autosave (most recent state); the Load button prefers the manual save.
@@ -35,7 +36,8 @@ export const mergeSaved=(parsed)=>{
     trip:typeof parsed.trip==="string"?parsed.trip:null,
     hygieneShield:!!parsed.hygieneShield,
     claink:sanitizeClaink(parsed.claink,parsed.week), // v1.19; also maps the v1.16 prototype's save shape
-    endCause:typeof parsed.endCause==="string"?parsed.endCause:null
+    endCause:typeof parsed.endCause==="string"?parsed.endCause:null,
+    story:sanitizeStory(parsed.story) // v2.0; null for older saves, whose history nobody recorded
   };
 };
 
@@ -80,6 +82,7 @@ export const newGame=()=>({
   trip:null,
   claink:newClaink(),
   endCause:null,
+  story:newStory(),
   runId:idGen(),
   used:{
     prospect:false,

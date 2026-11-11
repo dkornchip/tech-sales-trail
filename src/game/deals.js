@@ -138,6 +138,7 @@ export const tryCloseSome=(state,src="negotiations")=>{
     return log(s,"close.none",{src},"muted");
   }
   let closedCount=0,totalWon=0,totalDiscount=0,lost=0,lostVal=0;
+  let top=null; // the largest deal signed in this pass, for the run's story
   const pipPenalty=s.pip ? 0.05*(s.pipLevel||1) : 0;
 
   const nextDeals=[];
@@ -164,6 +165,7 @@ export const tryCloseSome=(state,src="negotiations")=>{
       totalWon+=net;
       totalDiscount+=Math.round(d.value*rate);
       closedCount++;
+      if(!top || net>top.value) top={account:d.account,value:net};
     }else{
       const loseProb=d.stage>=4?0.22:0.14;
       if(Math.random()<loseProb){
@@ -189,7 +191,7 @@ export const tryCloseSome=(state,src="negotiations")=>{
   s.discounts+=totalDiscount;
 
   if(closedCount>0){
-    s=log(s,"close.signed",{src,n:closedCount,won:totalWon,keep:Math.round(totalWon*0.12)});
+    s=log(s,"close.signed",{src,n:closedCount,won:totalWon,keep:Math.round(totalWon*0.12),top});
     if(totalWon>=65000)s=addAchievement(s,"whale");
   }else{
     s=log(s,"close.nobody",{src},"warn");

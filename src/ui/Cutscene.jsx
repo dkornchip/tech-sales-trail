@@ -5,16 +5,20 @@ const { useState, useEffect, useRef } = React;
 
 // v1.14: endings play on the ASCII scene engine (plain script above the React tags).
 // The original two-frame flipbook is kept as a fallback if that engine is unavailable.
-export const Cutscene=({type,speed,play,meta,ctrlRef})=>{
+// maxFont: the largest type the screen may use (the engine fits all 64 columns to the box, up to this).
+// onDone: called when the scene reaches its last frame, or is skipped there.
+export const Cutscene=({type,speed=120,play,meta,ctrlRef,maxFont,onDone})=>{
   const preRef=useRef(null);
   const[fallback,setFallback]=useState(false);
   const[index,setIndex]=useState(0);
   const engine=window.TST_SCENES;
+  const doneRef=useRef(onDone); doneRef.current=onDone;
+  useEffect(()=>{ if(fallback && play && doneRef.current)doneRef.current(); },[fallback,play]);
   useEffect(()=>{
     if(!play)return;
     if(!engine||!preRef.current){ setFallback(true); return; }
     let ctrl=null;
-    try{ ctrl=engine.play(preRef.current,type,{speed:120/speed,meta:meta||{}}); }
+    try{ ctrl=engine.play(preRef.current,type,{speed:120/speed,meta:meta||{},maxFont,onDone:()=>{ if(doneRef.current)doneRef.current(); }}); }
     catch(e){ setFallback(true); return; }
     if(ctrlRef)ctrlRef.current=ctrl;
     return()=>{ try{ctrl.stop();}catch(e){} if(ctrlRef && ctrlRef.current===ctrl)ctrlRef.current=null; };
