@@ -1,0 +1,11 @@
+/* Fixture for scripts/lint-css.mjs: the one file where colours are literals. #fff in a comment is not a finding. */
+:root{
+  --bg:#0b0d12;
+  --surface-1:#12151c;
+  --text:#e8eaf0;
+  --accent:#4f8cff;
+  --focus:#9cc2ff;
+  --shadow-dialog:0 12px 32px rgba(0,0,0,.5);
+  --size-1:13px;
+  --size-2:14px;
+}

@@ -1,0 +1,113 @@
+{
+ "week": 6,
+ "maxQuarters": 1,
+ "quartersSurvived": 0,
+ "slots": 5,
+ "maxSlots": 5,
+ "restedThisWeek": false,
+ "energy": 72,
+ "stress": 34,
+ "skills": {
+  "prospect": 47,
+  "discovery": 37,
+  "demo": 31,
+  "negotiate": 26
+ },
+ "reputation": 42,
+ "manager": 51.5,
+ "product": 60,
+ "cash": 2300,
+ "quota": 160000,
+ "closedWon": 18000,
+ "closedQuarter": 18000,
+ "discounts": 0,
+ "pipeline": 45000,
+ "meetings": 6,
+ "deals": [
+  {
+   "id": "a1-k2m0",
+   "account": "Acme Quantum",
+   "value": 10000,
+   "stage": 1,
+   "mood": "neutral",
+   "probNote": "",
+   "age": 2
+  },
+  {
+   "id": "a2-k2m0",
+   "account": "NebulaSoft",
+   "value": 12000,
+   "stage": 2,
+   "mood": "curious",
+   "probNote": "roll 44% vs 21%",
+   "age": 1
+  },
+  {
+   "id": "a3-k2m0",
+   "account": "Feral Unicorn",
+   "value": 15000,
+   "stage": 3,
+   "mood": "happy",
+   "probNote": "",
+   "age": 3
+  },
+  {
+   "id": "a4-k2m0",
+   "account": "DataRamen",
+   "value": 8000,
+   "stage": 0,
+   "mood": "skeptical",
+   "probNote": "referral peanut",
+   "age": 0
+  }
+ ],
+ "logs": [
+  {
+   "id": "l2-k2m0",
+   "t": "09:40 AM",
+   "msg": "📆 Week 4 begins.",
+   "kind": "info"
+  },
+  {
+   "id": "l1-k2m0",
+   "t": "09:41 AM",
+   "msg": "🤝 Close push: 1 signed, $18,000. Commission +$2,160.",
+   "kind": "good"
+  }
+ ],
+ "pip": false,
+ "pipLevel": 0,
+ "fired": false,
+ "burnedOut": false,
+ "win": false,
+ "missed": false,
+ "repo": false,
+ "repoWarned": false,
+ "modifiers": {
+  "conversion": 0,
+  "discount": 0,
+  "expiresIn": 0
+ },
+ "achievements": [],
+ "perfWarnings": 0,
+ "coffeesThisWeek": 0,
+ "stressWarned": false,
+ "hygieneShield": false,
+ "trip": null,
+ "claink": {
+  "status": "ad"
+ },
+ "endCause": null,
+ "runId": "adp-k2m0",
+ "used": {
+  "prospect": false,
+  "cadence": false,
+  "discovery": false,
+  "demo": false,
+  "propose": false,
+  "close": false,
+  "network": false,
+  "recharge": false,
+  "crm": false
+ }
+}

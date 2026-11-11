@@ -1,0 +1,83 @@
+/* The CRT: the terminal the company never replaced. It plays the boot screen and the ending cutscenes as ASCII,
+   and it keeps its own phosphor palette on purpose; nothing here uses the interface's colour tokens. */
+.cutbox{--border:#16315a;--ink:#bfdbfe;--muted:#9fb6db;--text:#e9f2ff}
+.cutbox{
+  background:#061737;
+  border-radius:10px;
+  border:1px solid var(--border);
+  padding:8px;
+  height:170px;
+  overflow:auto;
+  font-family:"TST Mono",ui-monospace,Menlo,Consolas,"Courier New",monospace;
+  font-size:13px;
+  line-height:1.25;
+  color:var(--ink);
+  white-space:pre;
+  position:relative;
+  text-shadow:0 0 8px rgba(31,122,255,.65);
+  box-shadow:inset 0 0 40px rgba(31,122,255,.12);
+}
+.cutbox::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(0deg,rgba(0,0,0,.16) 0 2px,transparent 2px 4px);
+}
+
+.cutscene{margin:0;}
+
+/* ---------- v1.14: CRT screen for the ASCII scenes ---------- */
+.cutbox.crt{height:auto;overflow:hidden;padding:10px;border-radius:16px;animation:none;
+  background:radial-gradient(ellipse at 50% 45%,#0a2350 0%,#061737 55%,#030c1f 100%);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.04),inset 0 0 50px rgba(0,0,0,.65),inset 0 0 22px rgba(31,122,255,.22),0 0 24px rgba(31,122,255,.12)}
+.cutbox.crt::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:2;border-radius:inherit;
+  background:radial-gradient(ellipse at 50% 50%,transparent 58%,rgba(0,0,0,.5) 100%),linear-gradient(115deg,rgba(255,255,255,.06) 0%,transparent 28%)}
+.cutbox.crt::after{z-index:3;border-radius:inherit}
+.cutbox.crt pre{position:relative;z-index:1;margin:0;font-family:"TST Mono",ui-monospace,Menlo,Consolas,"DejaVu Sans Mono","Courier New",monospace;
+  font-size:13px;line-height:1.14;white-space:pre;color:var(--ink);text-shadow:0 0 5px currentColor;transform-origin:50% 50%}
+/* v1.20: the CRT flickers only while a scene is live (in practice the boot screen: an ending's pre keeps its finished
+   power-on animation, which outranks this rule) */
+.cutbox.crt.tst-live pre{animation:flicker 6s steps(1,end) infinite}
+.cutbox.crt.bsod{background:#0b3fb8}
+.cutbox.crt.bsod pre{text-shadow:0 0 3px rgba(255,255,255,.55)}
+.cutbox.crt pre.tst-crt-on{animation:crtOn .62s cubic-bezier(.2,.8,.2,1) both}
+.cutbox.crt pre.tst-crt-off{animation:crtOff .42s ease-in both}
+.cutbox.tst-shake{animation:tstShake .32s linear both}
+.cutbox.tst-glitch pre{text-shadow:-2px 0 rgba(255,0,90,.75),2px 0 rgba(0,229,255,.75)}
+.cutbox.crt pre{width:-moz-fit-content;width:fit-content;max-width:100%;margin:0 auto}
+.scene-ctl{margin-top:6px}
+
+.scene-note{margin:6px 0 0}
+/* a scene that could not be played: the screen says what happened, in one sentence */
+.cutbox.crt.scene-still{white-space:normal}
+.cutbox.crt.scene-still p{position:relative;z-index:1;margin:0;padding:var(--sp-6) var(--sp-5);font-size:var(--fs-2);line-height:1.5;text-align:center;color:var(--ink)}
+.k-w{color:#e9f2ff}.k-d{color:#5d77a3}.k-b{color:#60a5fa}.k-b-d{color:#2c4f86}.k-c{color:#22d3ee}.k-c-d{color:#155e75}
+.k-g{color:#4ade80}.k-y{color:#facc15}.k-y-d{color:#854d0e}.k-o{color:#fb923c}.k-o-d{color:#9a3412}.k-r{color:#fb7185}.k-r-d{color:#9f1239}
+.k-m{color:#c084fc}.k-p{color:#f472b6}.k-s{color:#d6b98c}.k-br{color:#b07a4a}.k-au{color:#fbbf24}.k-au-d{color:#92400e}
+.k-glow{text-shadow:0 0 8px #fbbf24,0 0 2px #fde68a}.k-bs{color:#ffffff}.k-bold{font-weight:700}
+@keyframes crtOn{0%{transform:scale(.04,.004);filter:brightness(4);opacity:.2}30%{transform:scale(1,.004);filter:brightness(4);opacity:1}62%{transform:scale(1,1.06);filter:brightness(1.8)}100%{transform:scale(1,1);filter:brightness(1)}}
+@keyframes crtOff{0%{transform:scale(1,1);filter:brightness(1)}55%{transform:scale(1,.005);filter:brightness(4)}100%{transform:scale(0,.005);filter:brightness(6);opacity:0}}
+@keyframes tstShake{0%,100%{transform:translate(0,0)}20%{transform:translate(-3px,1px)}40%{transform:translate(3px,-2px)}60%{transform:translate(-2px,2px)}80%{transform:translate(2px,-1px)}}
+/* v1.15: anime camera. The art sits in a clipped window; only .tst-cam moves (look-at, zoom, roll, whip skew),
+   effects that must not move with it (title cards, slash gleam, letterbox) live in .tst-fx, captions stay put */
+.tst-cam-win,.tst-cam,.tst-band{display:block}
+.tst-cam-win{position:relative;overflow:hidden}
+.tst-cam{transform-origin:50% 50%;
+  transform:translate(calc(var(--cx,0)*1%),calc(var(--cy,0)*1%)) scale(var(--cz,1)) rotate(calc(var(--rot,0)*1deg)) skewX(calc(var(--skew,0)*1deg))}
+.tst-fx{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.tst-fx::before,.tst-fx::after{content:"";position:absolute;left:0;right:0;height:0;z-index:3;background:rgba(1,4,12,.94);transition:height calc(.4s / var(--spd,1)) cubic-bezier(.2,.8,.2,1)}
+.tst-fx::before{top:0}.tst-fx::after{bottom:0}
+.tst-fx.tst-lb::before,.tst-fx.tst-lb::after{height:8%}
+.cutbox.crt.tst-impact{filter:invert(.85) hue-rotate(180deg) brightness(.6)}
+.tst-slash{position:absolute;inset:0;display:block;z-index:2;background:linear-gradient(180deg,#ffffff,#a5f3fc);
+  clip-path:polygon(60% 0,61.6% 0,41.6% 100%,40% 100%);animation:tstSlash calc(var(--slash-ms,320ms) / var(--spd,1)) ease-out both}
+.tst-card{position:absolute;left:0;right:0;top:50%;display:block;z-index:1;text-align:center;line-height:1;padding:.5em 0;
+  background:linear-gradient(90deg,rgba(2,6,23,0),rgba(2,6,23,.9) 12%,rgba(2,6,23,.9) 88%,rgba(2,6,23,0));
+  box-shadow:inset 0 1px 0 currentColor,inset 0 -1px 0 currentColor;
+  animation:tstCard calc(var(--card-ms,1300ms) / var(--spd,1)) linear both}
+.tst-card-w{display:inline-block;line-height:1;text-shadow:0 0 10px currentColor,0 0 2px currentColor}
+@keyframes tstSlash{0%{clip-path:polygon(61.6% 0,61.6% 0,61.6% 0,61.6% 0);opacity:1}35%{clip-path:polygon(60% 0,61.6% 0,41.6% 100%,40% 100%);opacity:1}
+  100%{clip-path:polygon(59.4% 0,62.2% 0,42.2% 100%,39.4% 100%);opacity:0}}
+@keyframes tstCard{0%{opacity:0;transform:translate(0,-50%) scale(2.5) skewX(-14deg)}9%{opacity:1;transform:translate(0,-50%) scale(.95) skewX(-3deg)}
+  13%{transform:translate(0,-50%) scale(1.03) skewX(0deg)}17%,84%{opacity:1;transform:translate(0,-50%) scale(1) skewX(0deg)}
+  100%{opacity:0;transform:translate(-75%,-50%) scale(1) skewX(22deg)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes flicker{0%,96%,100%{opacity:1}97%{opacity:.82}98%{opacity:.96}99%{opacity:.88}}
