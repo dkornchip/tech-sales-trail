@@ -1,6 +1,8 @@
 import React from "react";
 import { MOOD_NAMES, STAGE_NAMES, STAGE_UNKNOWN } from "../copy/names.js";
+import { WHO } from "../copy/pa.js";
 import { clamp, money } from "../game/util.js";
+import { captionSeq, useCaption } from "./captions.js";
 import { REDUCED_MOTION } from "./env.js";
 
 const { useState, useEffect, useRef } = React;
@@ -81,6 +83,11 @@ export const DealCard=({deal})=>{
 export const Modal=({open,title,children,actions,onDismiss,dialogId,className})=>{
   const ref=useRef(null);
   const titleId=React.useId()+"t";
+  // what the announcer says while this dialog is open is captioned under its title, and stays until it closes
+  const said=useCaption();
+  const[since,setSince]=useState(0);
+  const cap=open && said && since && said.id>=since ? said : null;
+  useEffect(()=>{ setSince(open ? captionSeq()+1 : 0); },[open]);
   useEffect(()=>{
     if(!ref.current)return;
     if(open){
@@ -102,7 +109,8 @@ export const Modal=({open,title,children,actions,onDismiss,dialogId,className})=
         // Chromium force-closes on a repeated Esc even when cancel is prevented; keep the dialog in step with state
         if(open && ref.current && !ref.current.open)ref.current.showModal();
       }}>
-      <div className="d-header" id={titleId}>{title}</div>
+      <div className="d-header"><span className="d-title" id={titleId}>{title}</span>
+        {cap && <span className="d-cap" role="status"><span className="pa-who">{WHO[cap.who]||WHO.pa}</span>{cap.text}</span>}</div>
       <div className="d-body">{children}</div>
       <div className={"d-footer"+(actions && actions.some(a=>a.note) ? " options" : "")}>
         {actions && actions.map((a,i)=>(

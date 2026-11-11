@@ -3,7 +3,7 @@ import { root } from "../root.js";
 export var HAS_DOM = typeof document !== "undefined";
 export var KEY = "tst-audio-v1";
 export var A = { ctx:null, master:null, unlocked:false, voices:[], amb:null, hb:null, hbTimer:0, stress:0, lastHydrate:0,
-          settings:{ on:true, voice:true, vol:0.6 } };
+          settings:{ on:true, voice:true, vol:0.6, captions:true } };
 
 /* ---------- settings ---------- */
 try{
@@ -12,6 +12,7 @@ try{
     if(typeof v.on === "boolean") A.settings.on = v.on;
     if(typeof v.voice === "boolean") A.settings.voice = v.voice;
     if(typeof v.vol === "number" && v.vol >= 0 && v.vol <= 1) A.settings.vol = v.vol;
+    if(typeof v.captions === "boolean") A.settings.captions = v.captions;
   } }
 }catch(e){}
 export function saveSettings(){ try{ root.localStorage.setItem(KEY,JSON.stringify(A.settings)); }catch(e){} }

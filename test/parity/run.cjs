@@ -85,7 +85,14 @@ function parseArgs(argv) {
   const bFlag = o.mutant ? ` --mutant ${o.mutant}` : o.b ? ` --b ${o.b.kind === 'baseline' ? 'baseline' : path.relative(process.cwd(), o.b.file) || o.b.file}` : '';
   const drvFlag = (o.aDriver ? ` --a-driver ${o.aDriver}` : '') + (o.bDriver ? ` --b-driver ${o.bDriver}` : '');
   // --sound without --fx: three passes. Anything else: one pass.
-  const passes = o.sound && o.fxArg === undefined ? ['0', '0.99', 'seeded'] : [o.fxArg === undefined ? 'seeded' : o.fxArg];
+  // A build whose scenes type different words than the baseline's (driver canon.rewrittenCaptions) spends a
+  // different number of cosmetic draws in every scene, so with a SEEDED cosmetic stream the two builds part ways at
+  // the first scene and their cosmetic rolls (the 30% filler line) stop being comparable. The two pinned passes
+  // still check every sound decision, at both ends of each cosmetic roll; the seeded sound pass is left out.
+  const { loadDriver } = require('./drivers/interface.cjs');
+  const rewritten = !!loadDriver(o.bDriver || (o.b && (o.b.kind === 'baseline' || o.b.kind === 'mutant') ? 'v121' : 'next')).canon.rewrittenCaptions;
+  const passes = o.sound && o.fxArg === undefined ? (rewritten ? ['0', '0.99'] : ['0', '0.99', 'seeded']) : [o.fxArg === undefined ? 'seeded' : o.fxArg];
+  if (o.sound && o.fxArg === undefined && rewritten) console.log('parity: the seeded sound pass is left out (build B types rewritten captions; see the comment in test/parity/run.cjs)');
   const t0 = Date.now();
   let ok = true;
   const summaries = [];

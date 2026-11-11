@@ -129,7 +129,13 @@ async function runSession(browser, spec, env) {
     a.choosable = la.filter(m => !excused.includes(m));
     a.excused = excused;
     if (env.sound) {
-      const sa = a.sound.join(' '), sb = b.sound.join(' ');
+      // a driver may reduce its build's trace for a move whose route differs (canon.sound, e.g. a control that moved into a menu)
+      // Typing ticks (play:key) follow the words a scene types: how many there are, and where they fall between
+      // the other sounds, is the length of each sentence. Where build B's words were rewritten
+      // (canon.rewrittenCaptions) the ticks are left out of both traces; every other sound is still compared in order.
+      const runs = list => (canonB.rewrittenCaptions ? list.filter(t => t !== 'play:key') : list);
+      const heard = (canon, list) => runs(canon.sound ? canon.sound(list, move) : list);
+      const sa = heard(canonA, a.sound).join(' '), sb = heard(canonB, b.sound).join(' ');
       if (sa !== sb) return failWith('sound', ['sound intents differ', `A: ${sa || '(none)'}`, `B: ${sb || '(none)'}`]);
       if (a.speech.length !== b.speech.length) return failWith('sound', [`lines spoken: A ${a.speech.length} ${short(a.speech)}, B ${b.speech.length} ${short(b.speech)}`]);
     }

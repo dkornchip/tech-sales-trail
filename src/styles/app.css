@@ -8,6 +8,10 @@
 .crumbs .sep{color:var(--border-strong)}
 .crumbs strong{color:var(--text);font-weight:500}
 .topbar .spacer{flex:1}
+/* The office PA, captioned: one line in the empty middle of the top bar, then gone. */
+.pa-line{flex:1;min-width:0;display:flex;justify-content:center;overflow:hidden}
+.pa-cap{display:inline-flex;align-items:baseline;gap:var(--sp-3);min-width:0;font-size:var(--fs-1);color:var(--text-2);white-space:nowrap;animation:fadeIn .25s both}
+.pa-who{flex:none;padding:0 var(--sp-2);border:1px solid var(--border-strong);border-radius:var(--r-1);font:500 var(--fs-1)/1.35 var(--mono);color:var(--text-3)}
 .iconbtn{width:32px;height:32px;display:grid;place-items:center;background:none;border:1px solid transparent;border-radius:var(--r-2);cursor:pointer}
 .iconbtn:hover{background:var(--surface-2);border-color:var(--border)}
 .linkbtn{background:none;border:0;padding:6px 10px;border-radius:var(--r-2);color:var(--text-2);font-size:var(--fs-1);cursor:pointer}
@@ -173,6 +177,8 @@
 @media (max-width:640px){
   .topbar{padding:0 var(--sp-4)}
   .crumbs{display:none}
+  .pa-line:not(:empty){position:fixed;top:0;left:0;right:0;z-index:40;padding:var(--sp-4) var(--sp-5);background:var(--surface-2);border-bottom:1px solid var(--border-strong)}
+  .pa-cap{white-space:normal}
   .topbar .linkbtn{padding:6px}
   .hint kbd{display:none}
   .action{height:auto;min-height:54px;padding-top:8px;padding-bottom:8px}

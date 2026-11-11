@@ -20,6 +20,7 @@ import { SettingsMenu } from "./app/SettingsMenu.jsx";
 import { useShortcuts } from "./app/shortcuts.js";
 import { TopBar } from "./app/TopBar.jsx";
 import { CLAINK_UI_KEY, ClainkDock, clainkUiFor, isShortScreen, readClainkUi } from "./ClainkUi.jsx";
+import { clearCaption, pushCaption } from "./captions.js";
 import { Ending } from "./Ending.jsx";
 import { AUDIO, REDUCED_MOTION, notify, sfx } from "./env.js";
 import { Modal } from "./primitives.jsx";
@@ -96,12 +97,13 @@ export function Game(){
 
   // Sound settings belong to the audio engine; the top bar and the settings menu mirror them.
   const[audio,setAudio]=useState(()=>{ const a=AUDIO(); return a ? {...a.settings} : {on:false,voice:false,vol:0}; });
-  useEffect(()=>{ const a=AUDIO(); if(!a)return; a.onChange=st=>setAudio({...st}); setAudio({...a.settings}); return()=>{ a.onChange=null; }; },[]);
+  useEffect(()=>{ const a=AUDIO(); if(!a)return; a.onChange=st=>setAudio({...st}); a.onCaption=pushCaption; setAudio({...a.settings}); return()=>{ a.onChange=null; a.onCaption=null; }; },[]);
   const audioApi={
     ...audio,
     setOn:on=>{ const a=AUDIO(); if(!a)return; a.setOn(on); if(on){ a.unlock(); a.play("coin"); } },
     setVoice:on=>{ const a=AUDIO(); if(!a)return; a.setVoice(on); if(on) a.say(MENU.voiceOn,{force:true}); },
-    setVolume:v=>{ const a=AUDIO(); if(a) a.setVolume(v); }
+    setVolume:v=>{ const a=AUDIO(); if(a) a.setVolume(v); },
+    setCaptions:on=>{ const a=AUDIO(); if(!a)return; a.setCaptions(on); if(!on) clearCaption(); }
   };
   const[menuOpen,setMenuOpen]=useState(false);
   const menuBtn=useRef(null);
@@ -205,7 +207,7 @@ export function Game(){
       <Board s={s} onAct={act} onHail={tryOpportunisticClose} onEndWeek={endWeek}
         top={
           <TopBar onRules={openRules} soundOn={audio.on} onSound={()=>audioApi.setOn(!audio.on)} onSettings={()=>setMenuOpen(o=>!o)} settingsRef={menuBtn} menuOpen={menuOpen}>
-            <SettingsMenu open={menuOpen} onClose={closeMenu} audio={audioApi} onSave={onSave} onLoad={onLoad} onNewRun={onNew} anchorRef={menuBtn} />
+            <SettingsMenu open={menuOpen} onClose={closeMenu} audio={audioApi} captions={audio.captions!==false} onCaptions={audioApi.setCaptions} onSave={onSave} onLoad={onLoad} onNewRun={onNew} anchorRef={menuBtn} />
           </TopBar>
         }
         dock={<ClainkDock key={s.runId+":"+epoch} s={s} setS={setS} ui={clainkUiFor(claUi,shortScreen)} setUi={setClaUiByYou} onEvent={offerLesson} />} />

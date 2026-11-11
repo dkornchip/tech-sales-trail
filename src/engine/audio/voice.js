@@ -1,7 +1,7 @@
 import { A, HAS_DOM } from "./core.js";
 import { play, stopAmbient } from "./mixer.js";
 import { root } from "../root.js";
-import { HR_LINES, LINES } from "../../copy/pa.js";
+import { HR_LINES, LINES, captionOf } from "../../copy/pa.js";
 import { fxRandom } from "../../fxrng.js";
 
 /* ---------- PA announcer (speechSynthesis) ---------- */
@@ -76,21 +76,40 @@ export function utter(text,key,voice,isRetry,kind){
   ss.speak(u);
   if(A.onSay) A.onSay(text);
 }
+// v2.0: every line the announcer gets to say is also handed to the page as a caption (A.onCaption), and when the
+// voice cannot be heard (sound or the announcer is off, the browser has no speech, nothing has unlocked audio yet)
+// the caption is the announcement. Captions keep the spoken lines' pacing: the same cooldowns, one line at a time.
+export var CAP = { last:0, turn:{} };
+export function caption(key,text){
+  if(A.settings.captions === false || !A.onCaption) return;
+  try{ A.onCaption({ key:key, text:captionOf(text), who:HR_KEYS[key] ? "hr" : "pa" }); }catch(e){}
+}
 export function say(key,opts){
   opts = opts || {};
-  if(!A.settings.on || !A.settings.voice || !A.unlocked) return false;
-  if(!("speechSynthesis" in root)) return false;
+  var heard = A.settings.on && A.settings.voice && A.unlocked && ("speechSynthesis" in root);
+  if(!heard && (A.settings.captions === false || !A.onCaption)) return false;
   if(key === "fired" && opts.meta){ if(opts.meta.cause === "org") key = "firedOrg"; else if(opts.meta.cause === "review") key = "firedReview"; }
   if(key === "burnout" && opts.meta && opts.meta.cause === "caffeine") key = "burnoutCaffeine";
   if(key === "repo" && opts.meta && opts.meta.cause === "claink") key = "repoClaink";
-  var bank = LINES[key], text = bank ? bank[Math.floor(fxRandom()*bank.length)] : String(key);
-  var ss = root.speechSynthesis, now = Date.now();
+  var bank = LINES[key], now = Date.now();
+  if(!heard){
+    // caption only. The line is taken in turn, not drawn: a silent page draws nothing the audible one would not.
+    if(!bank) return false;
+    if(!opts.force && now - CAP.last < (opts.cooldown || 12000)) return false;
+    CAP.last = now;
+    var turn = CAP.turn[key] = (CAP.turn[key] || 0) + 1;
+    caption(key,bank[(turn-1)%bank.length]);
+    return false;
+  }
+  var text = bank ? bank[Math.floor(fxRandom()*bank.length)] : String(key);
+  var ss = root.speechSynthesis;
   if(!opts.force){
     if(now - SAY.last < (opts.cooldown || 12000)) return false;
     if(speechBusy()) return false;
   } else { try{ ss.cancel(); }catch(e){} SAY.current = null; SAY.primer = null; }
-  SAY.last = now;
+  SAY.last = now; CAP.last = now;
   play("pa");
+  if(bank) caption(key,text);
   clearTimeout(SAY.timer);
   // the chime leads the voice by 720ms, which also keeps speak() clear of a cancel() (back to back they can drop the line)
   SAY.timer = setTimeout(function(){

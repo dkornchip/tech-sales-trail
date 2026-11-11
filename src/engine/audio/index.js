@@ -46,12 +46,14 @@ export function setVolume(v){
   if(A.onChange) A.onChange(A.settings);
 }
 
+export function setCaptions(on){ A.settings.captions = !!on; saveSettings(); if(A.onChange) A.onChange(A.settings); }
+
 root.TST_AUDIO = {
   play:play, say:say, cancelSay:cancelSay, hush:hush, ambient:ambient, stopAmbient:stopAmbient, setStress:setStress,
-  onLogs:onLogs, onModal:onModal, ruleFor:ruleFor, setOn:setOn, setVoice:setVoice, setVolume:setVolume, unlock:unlock,
+  onLogs:onLogs, onModal:onModal, ruleFor:ruleFor, setOn:setOn, setVoice:setVoice, setVolume:setVolume, setCaptions:setCaptions, unlock:unlock,
   get settings(){ return A.settings; }, get unlocked(){ return A.unlocked; },
   get lastSpeechError(){ return A.lastSpeechError || null; }, get voiceName(){ return SAY.voiceName.m; }, get voiceNames(){ return SAY.voiceName; },
-  set onChange(fn){ A.onChange = fn; },
+  set onChange(fn){ A.onChange = fn; }, set onCaption(fn){ A.onCaption = fn; },
   presets:P, _A:A, LINES:LINES,
   // render a preset into an offline context (tests)
   renderInto:function(c,name){ var p = P[name]; return p.fn({c:c,d:c.destination,t:0.01,j:1}); }

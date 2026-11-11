@@ -4,6 +4,9 @@ dialog{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);margin:0;p
 dialog[open]{animation:dialogIn .16s var(--ease) both}
 dialog::backdrop{background:var(--overlay);animation:fadeIn .16s both}
 dialog .d-header{padding:var(--sp-5) var(--sp-6) 0;font-size:var(--fs-3);font-weight:600;letter-spacing:-.01em}
+dialog .d-title{display:block}
+/* what the announcer said while the dialog was open, as a caption under its title */
+dialog .d-cap{display:flex;align-items:baseline;gap:var(--sp-3);margin-top:var(--sp-3);font-size:var(--fs-1);font-weight:400;letter-spacing:0;color:var(--text-2);animation:fadeIn .25s both}
 dialog .d-body{padding:var(--sp-4) var(--sp-6) var(--sp-5);color:var(--text-2);line-height:1.5}
 dialog .d-body p{margin:0 0 var(--sp-3)}
 dialog .d-body p:last-child{margin-bottom:0}
@@ -32,7 +35,10 @@ dialog .d-footer.options{flex-direction:column;align-items:stretch}
 /* The ending. One line from the company, the terminal at full size, and when the scene is over the paperwork
    unfolds under it. New run is in the footer from the first frame. */
 dialog.ending{width:min(720px,94vw)}
-dialog.ending .d-header{display:flex;flex-direction:column;gap:var(--sp-1)}
+dialog.ending .d-title{display:flex;flex-direction:column;gap:var(--sp-1)}
+/* the announcer's line arrives mid-scene: it sits on the overline's row, so the scene does not move when it does */
+dialog.ending .d-header{position:relative}
+dialog.ending .d-cap{position:absolute;top:var(--sp-5);right:var(--sp-6);max-width:70%;margin:0}
 .end-over{font-size:var(--fs-1);font-weight:400;letter-spacing:0;color:var(--text-3)}
 .end-title{font-size:var(--fs-4);letter-spacing:-.015em}
 dialog.ending .d-body{padding-top:var(--sp-3)}
@@ -53,6 +59,7 @@ dialog .scene-note{margin:var(--sp-3) 0 0;font-size:var(--fs-1);color:var(--text
 .end-notes li{font-size:var(--fs-2);line-height:1.5;color:var(--text-2)}
 dialog .d-footer .btn.at-start{margin-right:auto}
 @media (max-width:640px){
+  dialog.ending .d-cap{position:static;max-width:none;margin-top:var(--sp-3)}
   .end-fact{flex:1 1 50%}
 }
 @media (prefers-reduced-motion:reduce){ .end-card{transition:none} }

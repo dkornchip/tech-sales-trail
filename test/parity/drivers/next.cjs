@@ -20,6 +20,14 @@ module.exports = {
 
   // Copy that is stored in a save and has to be reduced to a code before two builds can be compared.
   canon: {
+    // Save, Load and New run moved into the settings menu, so reaching one costs a click the baseline never made
+    // (opening the menu). That one click is taken out of the sound trace for those moves; nothing else is.
+    rewrittenCaptions: true,   // v2.0 rewrote what the scenes type; see lib/runner.cjs (sound)
+    sound(list, move) {
+      if (!/^(newgame|save|load|inject:|\(load\))/.test(String(move))) return list;
+      const i = list.indexOf('play:click');
+      return i < 0 ? list : list.slice(0, i).concat(list.slice(i + 1));
+    },
     // deal.probNote (game.jsx:413, 424-432, 543, 1255, 1295)
     probNote(text) {
       if (text === '' || text === undefined || text === null) return 'empty';

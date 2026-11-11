@@ -54,9 +54,15 @@ Object.assign(LINES,{ claink:["Agent closed a deal. Staff notified."], sev1:["Se
   strike:["Governance Council to room B.","Strike logged. The Council is watching."], clainkRevoked:["Your agent has been offboarded."],
   chatgdp:["Always on Chat GDP, huh?"], yoink:["Manager closing your deal. Take notes."], repoClaink:["Collections thanks the agent."] });
 
+// The same line as a caption. Spoken lines are plain ASCII and spell some words the way a speech engine needs them;
+// on screen they are typeset. WHO is the label in front of the caption.
+const SHOWN = { "Chat GDP": "ChatGDP", "Sev one": "Sev 1" };
+export const captionOf = text => { let t = String(text).replace(/'/g, "\u2019"); for (const k in SHOWN) t = t.split(k).join(SHOWN[k]); return t; };
+export const WHO = { pa: "PA", hr: "HR" };
+
 // For the copy lint. These lines are read aloud, so they are plain ASCII (a speech engine can trip on a curly
 // apostrophe). The six-word limit is for the office PA; HR's terminations are read calmly, in full.
-export const lint = { spoken: true, exempt: {
+export const lint = { spoken: true, skip: ["captionOf"], exempt: {
   "quotes": ["LINES", "HR_LINES"],
   "len-spoken": ["HR_LINES", "LINES.fired", "LINES.firedOrg", "LINES.firedReview"]
 } };
