@@ -42,7 +42,17 @@ async function open(browser, { seed = 7, returning = true, width = 1440, height 
   return { context, page };
 }
 const state = page => page.evaluate(k => JSON.parse(window.localStorage.getItem(k)), AUTOSAVE);
-const press = async (page, sel) => { const el = page.locator(sel).first(); if (await el.count() && await el.getAttribute("aria-disabled") !== "true" && await el.isEnabled()) { await el.click(); await page.waitForTimeout(120); return true; } return false; };
+// Press a control and wait until the game has taken it in (the autosave changes), so the next decision is made on
+// the new state however busy the machine is. Returns false if the control is missing or disabled.
+const press = async (page, sel) => {
+  const el = page.locator(sel).first();
+  if (!(await el.count()) || await el.getAttribute("aria-disabled") === "true" || !(await el.isEnabled())) return false;
+  const before = await page.evaluate(k => window.localStorage.getItem(k), AUTOSAVE);
+  await el.click();
+  await page.waitForFunction(([k, was]) => window.localStorage.getItem(k) !== was, [AUTOSAVE, before], { timeout: 1500 }).catch(() => {});
+  await page.waitForTimeout(60);
+  return true;
+};
 const answer = async page => { for (let i = 0; i < 3; i++) { const b = page.locator("dialog[open] .d-footer .btn").first(); if (!(await b.count())) return; await b.click(); await page.waitForTimeout(250); } };
 
 // One sensible week: rest if tired, work the funnel from the back, then find more leads.
@@ -104,10 +114,12 @@ async function week(page) {
       story: Object.assign({ signed: 0, top: null, took: null, n: {} }, mid.story, { signed: Math.max(9, (mid.story && mid.story.signed) || 0), top: (mid.story && mid.story.top) || { account: "Quasar Laundry", value: 48200 } }) });
     ({ context, page } = await open(browser, { seed: 5 }));
     await page.evaluate(([k, v]) => window.localStorage.setItem(k, v), [AUTOSAVE, JSON.stringify(won)]);
-    await page.reload(); await page.evaluate(() => document.fonts.ready); await page.waitForTimeout(600);
+    await page.reload(); await page.evaluate(() => document.fonts.ready);
+    await page.waitForSelector('[data-ui="end"]', { timeout: 15000 });
+    await page.waitForTimeout(600);
     await press(page, '[data-ui="end"]');
-    await page.waitForSelector('dialog[open][data-dialog="end:club"]', { timeout: 5000 });
-    await page.waitForSelector(".end-card.is-in", { timeout: 20000 });
+    await page.waitForSelector('dialog[open][data-dialog="end:club"]', { timeout: 15000 });
+    await page.waitForSelector(".end-card.is-in", { timeout: 40000 });
     await page.waitForTimeout(900);
     await page.locator("dialog[open]").screenshot({ path: path.join(out, "ending.png") });
     await context.close();

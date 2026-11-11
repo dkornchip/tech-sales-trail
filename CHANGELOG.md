@@ -40,6 +40,13 @@ Everything a player sees, reads or hears was redone. Nothing about how the game 
 - How it works is a two-column reference card in five sections that fits one screen.
 - The number row runs the twelve actions; E ends the week, H is the Hail Mary, ? opens the rules, M mutes. A held key presses a button once: holding Enter used to play three actions, or end three weeks.
 
+### Changed: easier without a mouse, and without sight
+- A whole run can be played on the keyboard, and the focus is never left nowhere: it goes to the first action when the boot screen closes, into a dialog when one opens, and back when it closes.
+- Screen readers get the four numbers as named groups, standing and skills as meters with values, each deal's odds announced as odds, and every dialog named by its title. Bars and passing stat changes are kept out of the reading order.
+- Every text colour passes 4.5:1 on every surface it is used on, and the primary button darkens on hover instead of fading.
+- On a phone, buttons are at least 44px tall.
+- With reduced motion, a cutscene shows its last frame and a sentence saying what happened.
+
 ### Changed: clAInk is docked
 - The ad and the agent workspace sit at the bottom of the right column instead of floating over the log. Nothing overlaps anything, so dragging is gone. Both still minimize.
 - Its emoji are icons and its words are typeset like the rest.
@@ -53,7 +60,7 @@ Everything a player sees, reads or hears was redone. Nothing about how the game 
 ### Fixed
 - An End Week choice that was on screen when the page closed is still waiting when it opens again. Reloading used to drop the dialog and both of its outcomes.
 - Two open deals can no longer share an account name. (The dice roll that picks a name is unchanged; a name that is taken is traded for the next free one.)
-- A save that parses but is not a save gets a plain page with a way out, instead of a blank screen.
+- A save that parses but is not a save gets a plain page with a way out, instead of a blank screen. New run sets the damaged save aside and starts in place.
 - When the boot screen closes, the keyboard focus goes to the first action instead of nowhere.
 - Debug text is out of the interface (“Turn”, “Run id”, “roll 42% vs 31%”).
 - “Oracle Dumpling”, an account named after a real vendor, is now “Opal Dumpling”.
