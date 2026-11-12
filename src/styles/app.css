@@ -146,6 +146,15 @@
 .line .deltas{font-family:var(--mono);color:var(--text-3);margin-left:auto}
 .line.warn .icon{color:var(--warn)} .line.bad .icon{color:var(--bad)} .line.good .icon{color:var(--good)}
 .line .deltas .up{color:var(--good)} .line .deltas .down{color:var(--bad)}
+/* The newest log lines, shown where you are when the log is off the screen (LogPeek.jsx). A notice, not a control. */
+.peek{position:fixed;z-index:35;left:var(--sp-4);right:var(--sp-4);bottom:calc(var(--sp-4) + env(safe-area-inset-bottom,0px));max-width:520px;margin:0 auto;
+  padding:var(--sp-3) 0;background:var(--surface-3);border:1px solid var(--border-strong);border-radius:var(--r-3);box-shadow:var(--shadow-overlay);
+  pointer-events:none;animation:peekIn .18s var(--ease) both,peekOut .3s calc(var(--peek-ms,3200ms) - 300ms) ease-in both}
+.peek ul{list-style:none;margin:0;padding:0}
+.peek .line{padding:var(--sp-2) var(--sp-5)}
+.peek-more{margin:0;padding:var(--sp-2) var(--sp-5) 0 calc(var(--sp-5) + 16px + var(--sp-3));font-size:var(--fs-1);color:var(--text-3)}
+@keyframes peekIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes peekOut{to{opacity:0}}
 
 /* ---------- settings menu ---------- */
 .topbar{position:relative}

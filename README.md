@@ -170,7 +170,7 @@ clAInk is a gamble, not a strategy. It is at its best as a late-quarter desperat
 - **How it works** (top right) is the rules on one sheet. Its footer reopens the onboarding memo.
 - **Settings** (the gear) holds sound, the office announcer, captions, volume, and Save, Load and New run. The game also autosaves after every move and picks up where you left off, including a choice that was waiting for an answer.
 - **Sound** is synthesized in the page: effects, a heartbeat when stress runs hot, and the office PA. Every line the announcer says is also shown as a caption, so the game plays the same with the sound off.
-- **One screen.** On a desktop display the whole game fits the window with no page scrolling; the deal list and the activity log scroll inside their own boxes. On a phone the page stacks and scrolls.
+- **One screen.** On a desktop display the whole game fits the window with no page scrolling; the deal list and the activity log scroll inside their own boxes. On a phone the page stacks and scrolls, and what an action just did shows for a moment at the bottom of the screen, since the log is a scroll away.
 - **Reduced motion** is respected: if your device asks for less motion, the cutscenes show their last frame and say what happened.
 
 Saves from earlier versions load and continue.

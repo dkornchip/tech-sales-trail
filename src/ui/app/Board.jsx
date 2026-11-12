@@ -5,6 +5,7 @@ import { Activity } from "./Activity.jsx";
 import { Deals } from "./Deals.jsx";
 import { Foot, HintBar } from "./Foot.jsx";
 import { Kpis } from "./Kpis.jsx";
+import { LogPeek } from "./LogPeek.jsx";
 import { Quarter } from "./Quarter.jsx";
 import { Stats } from "./Stats.jsx";
 
@@ -30,6 +31,7 @@ export const Board = ({ s, top, dock, onAct, onHail, onEndWeek }) => {
           {dock}
         </section>
       </main>
+      <LogPeek s={s} />
     </div>
   );
 };

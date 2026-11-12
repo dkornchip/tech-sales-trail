@@ -30,6 +30,7 @@ export const UI = {
   hail: "Hail Mary",
   weekDivider: w => `Week ${w}`,
   earlier: "Earlier",
+  peekMore: k => `+${k} more in Activity`,
 };
 
 export const KPI = {
@@ -143,7 +144,8 @@ export const MOOD = { skeptical: "skeptical", neutral: "neutral", curious: "curi
 
 // For the copy lint: hints that take structured numbers.
 // (BOOT.brand is the badge on the monitor's bezel, in the company's capitals.)
-export const lint = { exempt: { "sentence-case": ["BOOT.brand"] }, params: {
+// (BOOT.brand is the badge on the housing, in the company's capitals; UI.peekMore names the Activity panel.)
+export const lint = { exempt: { "sentence-case": ["BOOT.brand", "UI.peekMore"] }, params: {
   "HINT.recharge": [{ energy: [35, 52], relief: [12, 18] }, { energy: [35, 52], relief: [0, 0] }],
   "ACTION.coffee.cost": [{ args: [{ energy: 0, slots: 1, cash: 6 }, 12, 13] }],
   "ACTION.coffee.risk": [{ args: [{ energy: 0, slots: 1, cash: 6 }, 0.18] }],

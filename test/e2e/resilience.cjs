@@ -6,6 +6,7 @@
 //   4. a save that parses but is not a save gets a plain page with a way out, not a blank one
 //   5. an ending whose cutscene cannot play still opens, says what happened and shows the paperwork
 //   6. a dialog's close event that arrives late does not dismiss a dialog that has been opened since
+//   7. on a phone, where the log is a scroll away, what an action did is shown where you are
 // Exits 1 if any check fails. (CommonJS on purpose: Playwright only resolves through require() here.)
 "use strict";
 const { chromium } = require("playwright");
@@ -18,8 +19,8 @@ const AUTOSAVE = "tst-autosave-v4-3", PENDING = "tst-pending-v2", FLAG = "tst-on
 const rows = [];
 const check = (name, ok, detail) => { rows.push(!!ok); console.log("  " + (ok ? "ok  " : "FAIL") + "  " + name + (detail ? "  (" + detail + ")" : "")); return !!ok; };
 
-async function open(browser, storage, fixedTime, init) {
-  const context = await browser.newContext({ viewport: { width: 1280, height: 720 } });
+async function open(browser, storage, fixedTime, init, phone) {
+  const context = await browser.newContext(phone ? { viewport: { width: 390, height: 664 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 } : { viewport: { width: 1280, height: 720 } });
   if (init) await context.addInitScript(init);
   // a returning player in a tab that has already booted: straight to the desk
   await context.addInitScript(([kv, flag]) => {
@@ -163,6 +164,35 @@ const dice = (page, v) => page.evaluate(x => { Math.random = () => x; }, v);
     await page.click('dialog[open] .d-footer .btn'); await page.click('[data-ui="rules"]'); await page.waitForTimeout(300);
     check("closed with its button and reopened at once, they are open", await dialog(page) === "help", "dialog " + await dialog(page));
     check("no errors", errors.length === 0, errors.join(" | "));
+    await context.close();
+
+    /* ---------- 7. what an action did, where you are ---------- */
+    // On a phone the page is one column and the log is far below the buttons. The lines an action writes are shown
+    // for a moment at the bottom of the screen; taps go through the notice, and it goes away by itself. Where the
+    // log is on screen (the desktop layout) there is no notice.
+    const notice = pg => pg.evaluate(() => {
+      const p = document.querySelector(".peek"); if (!p) return null;
+      const r = p.getBoundingClientRect(), log = document.querySelector(".activity").getBoundingClientRect();
+      return { text: p.innerText.replace(/\s+/g, " ").trim(), inView: r.top >= 0 && r.bottom <= window.innerHeight, logInView: log.top < window.innerHeight && log.bottom > 0,
+        passes: getComputedStyle(p).pointerEvents === "none", hidden: p.getAttribute("aria-hidden") === "true" };
+    });
+    ({ context, page, errors } = await open(browser, null, null, null, true));
+    await dice(page, 0.5);
+    await page.tap('[data-act="prospect"]'); await page.waitForTimeout(300);
+    let n1 = await notice(page);
+    const newest = await page.evaluate(() => { const l = document.querySelector(".activity .line"); return l ? l.innerText.replace(/\s+/g, " ").trim() : ""; });
+    check("on a phone the log is off the screen when an action is pressed", !!n1 && !n1.logInView, JSON.stringify(n1));
+    check("so the line it wrote is shown at the bottom of the screen", !!n1 && n1.inView && n1.text.length > 0 && n1.text === newest, n1 ? n1.text + " / log: " + newest : "no notice");
+    check("the notice lets taps through and is hidden from screen readers (they hear the log)", !!n1 && n1.passes && n1.hidden);
+    await page.waitForTimeout(5200);
+    check("it goes away by itself", await notice(page) === null);
+    check("no errors", errors.length === 0, errors.join(" | "));
+    await context.close();
+    ({ context, page, errors } = await open(browser));
+    await dice(page, 0.5);
+    await page.click('[data-act="prospect"]'); await page.waitForTimeout(300);
+    n1 = await notice(page);
+    check("on a desktop, where the log is on screen, there is no notice", n1 === null, JSON.stringify(n1));
     await context.close();
   } finally { await browser.close(); }
   const bad = rows.filter(ok => !ok).length;

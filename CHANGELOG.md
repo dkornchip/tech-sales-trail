@@ -16,8 +16,11 @@
 - The boot screen has a sound button: the M key, for people without a keyboard.
 - On a touch screen, Clock in no longer wears a keyboard focus ring.
 
+### New: on a phone, you see what an action did
+- On a phone the page is one long column and the log is a scroll away from the buttons, so pressing one told you nothing but the energy it cost. The lines an action writes now show for a moment at the bottom of the screen (“Blitz: +5 leads.”); after End week, the three that matter most. The notice appears only when the log is off the screen, so never on the one-screen desktop layout, and taps go through it.
+
 ### Tests
-- The scene test compares the captions again, not only the pictures: all 1,718 frames, every summary and every caption schedule match v1.21, with a typeset apostrophe as the only difference allowed. The harness compares the scenes' typing sounds again, and runs its seeded sound pass again.
+- The scene test compares the captions again, not only the pictures: all 1,718 frames, every summary and every caption schedule match v1.21, with a typeset apostrophe as the only difference allowed. The harness compares the scenes’ typing sounds again.
 - The copy lint no longer bans the words v1.21's own lines use.
 
 ## v2.0 — the same quarter, done properly
