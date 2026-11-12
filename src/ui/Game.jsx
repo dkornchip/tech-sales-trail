@@ -19,10 +19,10 @@ import { hailBlock } from "./app/Foot.jsx";
 import { SettingsMenu } from "./app/SettingsMenu.jsx";
 import { useShortcuts } from "./app/shortcuts.js";
 import { TopBar } from "./app/TopBar.jsx";
-import { CLAINK_UI_KEY, ClainkDock, clainkUiFor, isShortScreen, readClainkUi } from "./ClainkUi.jsx";
+import { CLAINK_UI_KEY, ClainkDock, clainkUiFor, isNarrowScreen, isShortScreen, readClainkUi } from "./ClainkUi.jsx";
 import { clearCaption, pushCaption } from "./captions.js";
 import { Ending } from "./Ending.jsx";
-import { AUDIO, notify, sfx } from "./env.js";
+import { AUDIO, noHover, notify, sfx } from "./env.js";
 import { Modal } from "./primitives.jsx";
 import { Tour, Welcome, endFirstDay, isFirstDay, useBooting } from "./FirstRun.jsx";
 
@@ -46,19 +46,29 @@ const holdEvent=(pending,s)=>{
   }catch{}
 };
 
+// What every screen assumes about a run: its counters are numbers and its lists are lists.
+const isRun=r=>!!r && ["week","energy","stress","cash","slots","maxSlots","quota"].every(k=>Number.isFinite(r[k])) && r.week>=1 && Array.isArray(r.deals) && Array.isArray(r.logs);
+
 // fresh: start a new run without reading storage (the way out of the damaged-save page, ui/main.jsx)
 export function Game({fresh}){
+  // A stored run that cannot be read at all is replaced by a new one, and the player is told. One that parses but
+  // is not a run (a week that is not a number, deals that are not a list) goes to the recovery page (ui/main.jsx)
+  // instead of being played as "Week NaN".
+  const unreadable=useRef(false);
   const createInitial=()=>{
     const base=newGame();
     if(fresh) return base;
-    try{
-      const raw=readStoredRun(true);
-      if(!raw)return base;
-      return mergeSaved(JSON.parse(raw));
-    }catch{ return base; }
+    let raw=null;
+    try{ raw=readStoredRun(true); }catch{ return base; }
+    if(!raw)return base;
+    let run;
+    try{ run=mergeSaved(JSON.parse(raw)); }catch{ unreadable.current=true; return base; }
+    if(!isRun(run)) throw new Error("the stored run is not a run");
+    return run;
   };
 
   const[s,setS]=useState(createInitial);
+  useEffect(()=>{ if(unreadable.current){ unreadable.current=false; notify(TOAST.damaged); } },[]);
   // the event dialog on screen: {id, params} (EVENTS in game/events.js), or null. A choice that was on screen when
   // the page closed is still waiting when it opens again (v1.21 dropped it, and both of its outcomes with it).
   const[pending,setPending]=useState(()=>heldEvent(s));
@@ -73,7 +83,8 @@ export function Game({fresh}){
   const[epoch,setEpoch]=useState(0);            // v1.19: New Game, Load and New Run remount clAInk's local UI state
   const setClaUiByYou=fn=>setClaUi(u=>({...(typeof fn==="function"?fn(u):fn),chosen:true})); // only your own moves/toggles are saved
   const[shortScreen,setShortScreen]=useState(isShortScreen); // re-checked on rotation, for the pill default
-  useEffect(()=>{ const on=()=>setShortScreen(isShortScreen()); window.addEventListener("resize",on); return()=>window.removeEventListener("resize",on); },[]);
+  const[narrowScreen,setNarrowScreen]=useState(isNarrowScreen);
+  useEffect(()=>{ const on=()=>{ setShortScreen(isShortScreen()); setNarrowScreen(isNarrowScreen()); }; window.addEventListener("resize",on); return()=>window.removeEventListener("resize",on); },[]);
   useEffect(()=>{ if(!claUi.chosen)return; try{ localStorage.setItem(CLAINK_UI_KEY,JSON.stringify({mini:claUi.mini,adMini:claUi.adMini})); }catch{} },[claUi]);
   const expandAd=()=>setClaUi(u=>u.adMini===null ? u : {...u,adMini:null}); // v1.21: a new run's ad starts fresh (expanded; the pill on a short screen)
 
@@ -108,7 +119,9 @@ export function Game({fresh}){
     }
     try{
       const a=AUDIO(); if(a){ a.hush(); a.play("load"); }
-      setS(mergeSaved(JSON.parse(v)));
+      const run=mergeSaved(JSON.parse(v));
+      if(!isRun(run)) throw new Error("the saved run is not a run");
+      setS(run);
       setEpoch(e=>e+1); // v1.19: fresh clAInk UI state
       setPending(null);
       setOver(null);
@@ -238,7 +251,7 @@ export function Game({fresh}){
           </TopBar>
         }
         dock={first!==null && first!=="memo-again" ? null /* the vendor waits until onboarding is over */
-          : <ClainkDock key={s.runId+":"+epoch} s={s} setS={setS} ui={clainkUiFor(claUi,shortScreen)} setUi={setClaUiByYou} onEvent={offerLesson} />} />
+          : <ClainkDock key={s.runId+":"+epoch} s={s} setS={setS} ui={clainkUiFor(claUi,shortScreen,narrowScreen)} setUi={setClaUiByYou} onEvent={offerLesson} />} />
 
       <Modal
         open={showHelp}
@@ -256,7 +269,7 @@ export function Game({fresh}){
         ]}
       >
         <div className="rules">
-          {HELP.map(sec=>(
+          {HELP.filter(sec=>!(sec.keys && noHover())).map(sec=>(
             <section key={sec.title}>
               <h3>{sec.title}</h3>
               {sec.rows.map((row,i)=><p key={i}><strong>{row.term}</strong>{row.body(helpNumbers)}</p>)}
@@ -270,7 +283,7 @@ export function Game({fresh}){
       {typeof first==="number" && !over && !pending && !showHelp && (
         <Tour step={first} onStep={setFirst} onEnd={toDesk=>{
           setFirst(null);
-          if(toDesk===true){ const b=document.querySelector('[data-act="prospect"]'); if(b) try{ b.focus({preventScroll:true}); }catch{} }
+          if(toDesk===true){ const b=document.querySelector('[data-act="prospect"]'); if(b) try{ if(b.scrollIntoView) b.scrollIntoView({block:"center",inline:"nearest"}); b.focus({preventScroll:true}); }catch{} }
         }} />
       )}
 

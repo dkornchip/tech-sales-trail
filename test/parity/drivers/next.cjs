@@ -38,7 +38,13 @@ module.exports = {
   canon: {
     // Save, Load and New run moved into the settings menu, so reaching one costs a click the baseline never made
     // (opening the menu). That one click is taken out of the sound trace for those moves; nothing else is.
-    rewrittenCaptions: true,   // v2.0 rewrote what the scenes type; see lib/runner.cjs (sound)
+    rewrittenCaptions: false,  // v2.0.1: the scenes type v1.21's words again, so their typing ticks are compared too (lib/runner.cjs)
+    // That menu click is a sound, and a sound spends cosmetic draws (its jitter): Save costs 6 cosmetic draws in
+    // v1.21 and 8 here, New run 5 and 7. So after the first Save, Load, New run or injected state this build is two
+    // draws ahead per menu move, and a SEEDED cosmetic stream rolls the filler line differently from then on. Plain
+    // play spends exactly the baseline's draws (8,824 at the boot screen, then step for step). run.cjs leaves the
+    // seeded sound pass out for this reason; the two pinned passes are unaffected.
+    cosmeticDrift: 'the settings menu\'s extra click spends cosmetic draws the baseline never makes',
     sound(list, move) {
       if (!/^(newgame|save|load|inject:|\(load\))/.test(String(move))) return list;
       const i = list.indexOf('play:click');

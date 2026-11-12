@@ -148,7 +148,7 @@
 .claink-ping .who{font-weight:800;font-size:13px;color:#fde68a}
 .claink-usage{font-size:13px;color:var(--ck-mut)}
 .claink-usage b{color:#fff}
-.claink-cancel-link{justify-self:start;background:none;border:0;padding:0;font:13px "TST Sans",ui-sans-serif,system-ui,sans-serif;color:#716c9f;text-decoration:underline;cursor:pointer}
+.claink-cancel-link{justify-self:start;background:none;border:0;padding:0;font:13px "TST Sans",ui-sans-serif,system-ui,sans-serif;color:#8f8ac0;text-decoration:underline;cursor:pointer}
 .claink-cancel-box{font-size:13px;color:#fecdd3;background:#1c0a14;border:1px solid #7f1d3a;border-radius:11px;padding:8px 9px;display:grid;gap:7px}
 .claink-cancel-box .offer{font-size:13px;color:#c4b5fd}
 .claink-cancel-box .row2{display:flex;gap:6px;flex-wrap:wrap}
@@ -211,7 +211,18 @@
 .ck-dot{width:7px;height:7px;border-radius:50%;flex:none;background:currentColor}
 /* phone: controls a thumb can hit */
 @media (max-width:640px){
-  .claink-tb-btns button,.claink-ad-close,.claink-ad-min{width:40px;height:40px}
-  .claink-deploy{min-height:44px}
-  .claink-cancel-link{padding:10px 0}
+  .claink-tb-btns button,.claink-ad-close,.claink-ad-min,.claink-ad.is-mini .claink-ad-btns button{width:44px;height:44px}
+  .claink-deploy,.claink-cta,.claink-confirm,.claink-notnow,.claink-cancel-box button{min-height:44px}
+  .claink-cancel-link{padding:14px 0}
+  .claink-deploy>span{white-space:nowrap}
+  .claink-deploy{flex-wrap:wrap}
+  /* the one-line bar: its words take a second line before they are cut */
+  .claink-ad-pill{white-space:normal}
+  .claink-ad-pill .ends{overflow:visible;line-height:1.25}
+  .claink-pilltext{white-space:normal;line-height:1.25}
+}
+@media (pointer:coarse) and (max-width:1024px), (pointer:coarse) and (max-height:619px){
+  .claink-tb-btns button,.claink-ad-close,.claink-ad-min,.claink-ad.is-mini .claink-ad-btns button{width:44px;height:44px}
+  .claink-deploy,.claink-cta,.claink-confirm,.claink-notnow,.claink-cancel-box button{min-height:44px}
+  .claink-cancel-link{padding:14px 0}
 }

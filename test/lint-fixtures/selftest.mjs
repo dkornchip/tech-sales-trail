@@ -36,15 +36,15 @@ console.log("lint-copy");
   const fail = run("lint-copy.mjs", [fx("copy-fail"), "--strict"]);
   // what was planted in test/lint-fixtures/copy-fail, rule by rule (a place that is wrong for several of the
   // synthetic params counts once)
-  const want = { emoji: 3, quotes: 2, plural: 1, minus: 3, ellipsis: 1, banned: 12, "sentence-case": 6, "len-spoken": 1, "len-caption": 1, "len-log": 2, render: 2, callable: 1 };
+  const want = { emoji: 3, quotes: 2, plural: 1, minus: 3, ellipsis: 1, banned: 5, "sentence-case": 6, "len-spoken": 1, "len-caption": 1, "len-log": 2, render: 2, callable: 1 };
   check("the failing modules fail under --strict", fail.code === 1);
   check("every rule fires, with exactly the planted number of findings", !!fail.out && same(fail.out.counts, want), fail.out ? JSON.stringify(fail.out.counts) : "");
   const words = fail.out ? fail.out.violations.filter(v => v.rule === "banned").map(v => v.why).sort() : [];
-  check("each of the twelve banned words is named", same(words, ["buff", "cooked", "drip", "epic", "flex", "gorillionaire", "lol", "mana", "nerfed", "obliterated", "please clap", "vibes"]), words.join(", "));
+  check("each of the five banned words is named", same(words, ["buff", "epic", "lol", "mana", "vibes"]), words.join(", "));
   const byParams = fail.out ? fail.out.violations.filter(v => v.call).map(v => `${v.rule}:${v.path}(${v.call})`) : [];
   check("violations that only exist for some params are found (negative money, a long list)", byParams.some(s => s.startsWith("minus:rent(negative money")) && byParams.some(s => s.startsWith("len-log:ghosted(")), byParams.join(" "));
   const soft = run("lint-copy.mjs", [fx("copy-fail")]);
-  check("without --strict the same report exits 0", soft.code === 0 && /LINT-COPY REPORT: 35 violations/.test(soft.text));
+  check("without --strict the same report exits 0", soft.code === 0 && /LINT-COPY REPORT: 28 violations/.test(soft.text));
   const only = run("lint-copy.mjs", [fx("copy-fail"), "--strict", "--only", "plural,ellipsis"]);
   check("--only limits the report to those rules", only.code === 1 && /LINT-COPY FAILED: 2 violations/.test(only.text));
   const none = run("lint-copy.mjs", [fx("no-such-folder")]);

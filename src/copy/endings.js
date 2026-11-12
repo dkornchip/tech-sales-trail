@@ -4,42 +4,35 @@ import { money } from "../game/util.js";
 //   club       quota hit                      missed     under quota, still employed
 //   fired      let go (see cause)             repo       cash ran out and Collections took the jacket
 //   ascension  one quad shot too many         meltdown   stress did it
-// p: {closed: total closed this run, cash: cash at the end, cause: why the run ended}
-//   fired causes: "qbr" (the review itself), "review" (a mid-quarter pace review), "org" (a reorganisation with no
-//   warning), "politics" (quota hit, fired anyway). repo: "claink" when clAInk's bill did it.
-// The line is the company's own account of what became of Matt. It reports; it does not comment.
-// The cutscene's captions are in scenes.js; the announcer's line is in pa.js.
+// p: {closed: total closed this run, cash: cash at the end, cause: why the run ended ("claink" when clAInk's bill did it)}
+// The words are the ones the game has always ended on. The cutscene's captions are in scenes.js; the announcer's
+// line is in pa.js; the log's last line (which says why) is in log.js.
 const usd = v => money(v).replace("-", "−");
 
 export const ENDINGS = {
   club: {
     title: () => "President’s Club",
-    body: p => `${usd(p.closed)} closed. Quota met. Matt has been approved for Cabo.`
+    body: p => `Closed ${usd(p.closed)}. Pack for Cabo.`
   },
   ascension: {
     title: () => "Ascension",
-    body: p => `${usd(p.closed)} closed. Matt is out of office. Altitude: 408 km.`
+    body: p => `Closed ${usd(p.closed)}. Then you went orbital.`
   },
   meltdown: {
     title: () => "Meltdown",
-    body: p => `${usd(p.closed)} closed. Matt is on leave. The leave has no end date.`
+    body: p => `Closed ${usd(p.closed)}. Core breached.`
   },
   missed: {
     title: () => "Barely missed",
-    body: p => `${usd(p.closed)} closed, short of quota. Matt retains system access.`
+    body: p => `Closed ${usd(p.closed)}. Badge kept. Back to the phones.`
   },
   repo: {
-    title: () => "Jacket repossessed",
-    body: p => (p.cause === "claink"
-      ? `Cash reached ${usd(p.cash)} after the token true-up. Collections has recovered the jacket.`
-      : `Cash reached ${usd(p.cash)}. Collections has recovered the jacket.`)
+    title: () => "Jacket repo’d",
+    body: p => (p.cause === "claink" ? `Cash hit ${usd(p.cash)}. clAInk sent you to Collections.` : `Cash hit ${usd(p.cash)}. The loan came due.`)
   },
   fired: {
-    title: p => (p.cause === "politics" ? "Terminated, over quota" : "Terminated"),
-    body: p => (p.cause === "politics" ? `${usd(p.closed)} closed: over quota. Matt is no longer with the company. HR considers these facts unrelated.`
-      : p.cause === "org" ? `${usd(p.closed)} closed. Matt was part of a strategic realignment.`
-        : p.cause === "review" ? `${usd(p.closed)} closed, behind pace. Matt’s role has been impacted.`
-          : `${usd(p.closed)} closed. Matt is pursuing other opportunities.`)
+    title: () => "Terminated",
+    body: p => `Closed ${usd(p.closed)}. Your Slack is already gone.`
   }
 };
 
@@ -60,46 +53,46 @@ export const RESULTS = {
   claink: "clAInk",
   clainkBilled: v => `${usd(v)} billed`,
   strikes: k => count(k, "strike"),
-  notes: "On file",
+  notes: "For the record",
   replay: "Replay",
   skip: "Skip to the end",
   newRun: "New run"
 };
 
-// What the company wrote down about this run. Each line pays off something the run set up, in the voice of whoever
-// would have filed it. An ending shows the first two that apply (NOTE_ORDER); a line may differ by ending.
+// What the quarter left behind. Each line pays off something the run set up. An ending shows the first two that
+// apply (NOTE_ORDER); a line may differ by ending.
 //   f: { trip, account, value (the largest deal), took (the deal your manager took), shots, hails, lunches,
 //        cadences, lost, strikes, billed }
 export const NOTES = {
   trip: {
-    club: f => `The ${f.trip} trip is still approved. It is the same week as Cabo.`,
-    missed: f => `The ${f.trip} trip is still approved. Travel has asked which quarter.`,
-    fired: f => `The ${f.trip} trip was approved in writing. The writing stays with the company.`,
-    repo: f => `The ${f.trip} trip is still approved. Travel goes on the employee’s own card.`,
-    meltdown: f => `The ${f.trip} trip has been reclassified as leave.`,
-    ascension: f => `The ${f.trip} trip is cancelled. Matt can see ${f.trip} from where he is.`
+    club: f => `Your ${f.trip} trip is approved. Same week as Cabo.`,
+    missed: f => `Your ${f.trip} trip is still approved. You’ll be on the phones.`,
+    fired: f => `Your ${f.trip} trip was approved. So was this.`,
+    repo: f => `Your ${f.trip} trip is still approved. Your card isn’t.`,
+    meltdown: f => `Your ${f.trip} trip is now medical leave.`,
+    ascension: f => `${f.trip} trip cancelled. You can see it from up there.`
   },
   top: {
-    club: f => `${f.account} signed for ${usd(f.value)}. The slide has your manager’s name on it.`,
-    missed: f => `${f.account} signed for ${usd(f.value)}. The forecast had it at twice that.`,
+    club: f => `Biggest deal: ${f.account}, ${usd(f.value)}. Your manager’s name is on the slide.`,
+    missed: f => `Biggest deal: ${f.account}, ${usd(f.value)}. Not big enough.`,
     fired: f => `${f.account} has a new owner. Your manager volunteered.`,
-    repo: f => `${f.account} signed for ${usd(f.value)}. Matt’s 12% is with Collections now.`,
-    meltdown: f => `${f.account} has been told that Matt is “heads down.”`,
-    ascension: f => `${f.account} has been told that their rep is travelling.`
+    repo: f => `Biggest deal: ${f.account}, ${usd(f.value)}. Collections kept your cut.`,
+    meltdown: f => `${f.account} was told you’re “heads down.”`,
+    ascension: f => `${f.account} was told you’re traveling.`
   },
-  none: () => "No deals were signed this quarter. The pipeline review is cancelled.",
-  took: f => `Your manager closed ${f.took} himself. It counts toward his number.`,
-  revoked: () => "clAInk’s seat was revoked at strike 3. clAInk has sent a renewal quote.",
-  strikes: f => `clAInk ended the quarter with ${count(f.strikes, "strike")} on file. The Council kept the dates.`,
-  billed: f => `clAInk billed ${usd(f.billed)} this quarter. The invoice thanks you for your outcomes.`,
+  none: () => "Zero deals signed. Impressive, in a way.",
+  took: f => `Your manager closed ${f.took} himself. It counts for him.`,
+  revoked: () => "clAInk got revoked at strike 3. It sent a renewal quote.",
+  strikes: f => `clAInk racked up ${count(f.strikes, "strike")}. The Council remembers.`,
+  billed: f => `clAInk billed you ${usd(f.billed)}. Thanks for the outcomes.`,
   shots: {
-    ascension: f => `${count(f.shots, "quad shot")} this quarter. Facilities has unplugged the machine.`,
-    other: f => `${count(f.shots, "quad shot")} this quarter. Facilities has ordered a second machine.`
+    ascension: f => `${count(f.shots, "quad shot")}. Facilities unplugged the machine.`,
+    other: f => `${count(f.shots, "quad shot")}. Facilities ordered a second machine.`
   },
-  hails: f => `${count(f.hails, "Hail Mary", "Hail Marys")} this quarter. Legal has asked to see the emails.`,
-  lunches: f => `${count(f.lunches, "lunch", "lunches")} with leadership. Each was expensed by someone else.`,
-  cadences: f => `${count(f.cadences, "email cadence")} went out. Unsubscribes are handled by another team.`,
-  lost: f => `${count(f.lost, "deal")} left the pipeline. RevOps calls that hygiene.`
+  hails: f => `${count(f.hails, "Hail Mary", "Hail Marys")}. Legal wants the emails.`,
+  lunches: f => `${count(f.lunches, "lunch", "lunches")} with leadership. Somebody else expensed them.`,
+  cadences: f => `${count(f.cadences, "email cadence")} sent. Unsubscribes are someone else’s problem.`,
+  lost: f => `${count(f.lost, "deal")} lost. RevOps calls it hygiene.`
 };
 
 // Which notes an ending reaches for first.
@@ -110,7 +103,5 @@ export const NOTE_ORDER = {
 
 // For the copy lint: the causes each ending can be given.
 export const lint = { skip: ["NOTE_ORDER"], params: {
-  "ENDINGS.fired.title": [{ cause: "qbr" }, { cause: "politics" }],
-  "ENDINGS.fired.body": [{ closed: 61400, cause: "qbr" }, { closed: 61400, cause: "review" }, { closed: 61400, cause: "org" }, { closed: 171300, cause: "politics" }],
   "ENDINGS.repo.body": [{ cash: -1620, cause: "repo" }, { cash: -1740, cause: "claink" }]
 } };

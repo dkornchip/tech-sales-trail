@@ -33,25 +33,19 @@ export const SCENE_COPY = {
   /* PRESIDENT'S CLUB: jet lands on the beach, jacket descends, fireworks */
   club: {
     title: "PRESIDENT’S CLUB",
-    a: ["Quota: met.","Jacket: issued."],
-    b: ["Cabo: approved.","Expenses: under review."],
+    a: ["Jacket secured.","You did the thing."],
+    b: ["Pipeline: obliterated.","Commission rains."],
     card: "CLUB",
-    summary: "A jet lands on the beach, the jacket descends, and fireworks go off over Cabo."
+    summary: "A jet lands on the beach, the jacket descends, fireworks rain commission."
   },
 
   /* FIRED: access denied, walk of shame, elevator goes down */
   fired: {
-    title: "TERMINATED",
-    // by cause: the review itself, a pace review, a reorganisation, or quota met and let go anyway
-    a: function(m){
-      return m.cause === "politics" ? ["Quota: met.","Role: eliminated."]
-        : m.cause === "org" ? ["A realignment.","You were not aligned."]
-        : m.cause === "review" ? ["Forecast: reviewed.","Badge: deactivated."]
-        : ["Badge: deactivated.","Laptop: due Friday."];
-    },
+    title: "YOU’RE DONE",
+    a: ["Badge: deactivated.","HR took the dongles."],
     b: ["“Different direction.”","(Not you.)"],
     card: "FIRED",
-    summary: "The badge reader says no, a box is carried past the desks, and the elevator goes down.",
+    summary: "Badge denied, box carried past staring coworkers, elevator down.",
     text: {
       // the badge reader's screen: three states, each 13 characters wide
       ready: "    READY    ",
@@ -69,10 +63,10 @@ export const SCENE_COPY = {
   /* ASCENSION (caffeine): the desk ignites and the rep rides espresso fire into orbit */
   ascension: {
     title: "ASCENSION",
-    a: function(m){ return [m.shots > 1 ? "Quad shot "+m.shots+"." : "One shot too many.","Orbit achieved."]; },
+    a: function(m){ return [m.shots > 1 ? "Shot #"+m.shots+"." : "One shot too many.","Orbit achieved."]; },
     b: ["OOO. Forever.","Badge in low orbit."],
     card: "ASCENSION",
-    summary: "The desk ignites and Matt rides a column of espresso fire through the ceiling into orbit. A crater and a sticky note remain.",
+    summary: "The desk ignites and you ride a column of espresso fire through the ceiling into orbit. A crater and a Post-it remain.",
     text: {
       // notifications drifting past on the way up, lowest first
       pings: ["(1)","@matt","(3)","ping","(99+)","1:1?","(2)","re: re: re:"],
@@ -89,16 +83,16 @@ export const SCENE_COPY = {
   meltdown: {
     title: "MELTDOWN",
     a: ["Core temp: quota.","Containment failed."],
-    b: ["Stop code:","QUOTA_NOT_HANDLED"],
+    b: ["Stop code:","SOUL_NOT_FOUND"],
     card: "MELTDOWN",
-    summary: "Core temperature reaches quota, containment fails, the desk runs to slag, and the screen goes blue.",
+    summary: "Core temp hits quota, containment fails, the desk melts to slag, blue screen.",
     text: {
       alarm: "!! CONTAINMENT FAILED !!",
       // the blue screen
       problem: "Your rep ran into a problem and needs to cool down.",
       cause: "Core temp: QUOTA. Containment: none.",
       complete: "% complete",      // after a number that counts up
-      stopCode: "Stop code: QUOTA_EXCEPTION_NOT_HANDLED",
+      stopCode: "Stop code: SOUL_NOT_FOUND",
       failed: "What failed: containment.sys"
     }
   },
@@ -106,10 +100,10 @@ export const SCENE_COPY = {
   /* BARELY MISSED: the bar stalls, then a long walk under a personal rain cloud */
   missed: {
     title: "BARELY MISSED",
-    a: ["Short of quota.","Badge kept. Ego not."],
-    b: ["Your manager shrugs.","Same desk on Monday."],
+    a: ["70–99% to quota.","Badge kept. Ego not."],
+    b: ["Manager shrugs.","HR forgets your name."],
     card: "MISSED",
-    summary: "The quota bar stalls short of the line, and a rain cloud follows Matt home.",
+    summary: "The quota bar stalls short, then a rain cloud follows you home.",
     text: {
       quota: "QUOTA",
       stalled: "STALLED",
@@ -123,11 +117,11 @@ export const SCENE_COPY = {
   /* REPO: the tow truck takes the jacket */
   repo: {
     title: "REPOSSESSED",
-    a: ["Jacket: recovered.","Hanger: yours to keep."],
-    b: ["Collections thanks you.","The photo stays on the wall."],
+    a: ["Financed the drip.","Not the payments."],
+    b: ["Collections took the flex.","HR keeps the photo."],
     card: "REPO",
-    summary: "A tow truck hauls away the President’s Club jacket.",
-    summaryBy: { claink: "A tow truck hauls away the jacket. clAInk billed it as an outcome." },
+    summary: "A tow truck hauls off the President’s Club jacket.",
+    summaryBy: { claink: "A tow truck hauls off the jacket. clAInk billed it as an outcome." },
     text: {
       billboard: "PRESIDENT'S CLUB",   // (on the sprite: the sprite's own lettering uses a straight apostrophe)
       building: "COLLECTIONS  DEPT.",  // (on the sprite)

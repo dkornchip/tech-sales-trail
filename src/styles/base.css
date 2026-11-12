@@ -21,6 +21,6 @@ button{font:inherit;color:inherit}
   *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important}
 }
 /* When the game cannot draw itself: one calm panel, one way out. */
-.crash{max-width:440px;margin:18vh auto 0;padding:var(--sp-6);border:1px solid var(--border-strong);border-radius:var(--r-3);background:var(--surface-1);color:var(--text-2);line-height:1.5}
+.crash{width:min(440px,calc(100% - 2 * var(--sp-5)));margin:18vh auto 0;padding:var(--sp-6);border:1px solid var(--border-strong);border-radius:var(--r-3);background:var(--surface-1);color:var(--text-2);line-height:1.5}
 .crash h1{margin:0 0 var(--sp-3);font-size:var(--fs-4);font-weight:600;letter-spacing:-.015em;color:var(--text)}
 .crash p{margin:0 0 var(--sp-5)}

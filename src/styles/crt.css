@@ -25,7 +25,7 @@
 .cutscene{margin:0;}
 
 /* ---------- v1.14: CRT screen for the ASCII scenes ---------- */
-.cutbox.crt{height:auto;overflow:hidden;padding:10px;border-radius:16px;animation:none;
+.cutbox.crt{height:auto;overflow:hidden;padding:10px;border-radius:16px;animation:none;isolation:isolate; /* its scanlines must not paint over a pinned footer */
   background:radial-gradient(ellipse at 50% 45%,#0a2350 0%,#061737 55%,#030c1f 100%);
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.04),inset 0 0 50px rgba(0,0,0,.65),inset 0 0 22px rgba(31,122,255,.22),0 0 24px rgba(31,122,255,.12)}
 .cutbox.crt::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:2;border-radius:inherit;

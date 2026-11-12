@@ -1,18 +1,38 @@
-/* SHITCORP OS: the boot overlay, shown once per tab. A monitor bezel around the CRT. */
-#boot{--muted:#9fb6db;--border:#16315a;--good:#4ade80}
-/* ---------- v1.14: SHITCORP OS boot screen ---------- */
-#boot{position:fixed;inset:0;z-index:60;display:grid;place-items:center;padding:16px;background:rgba(2,6,23,.9);
-  animation:fadeIn .3s both;cursor:pointer}
+/* The boot screen, shown once per tab before the desk. The company's terminal sits in a plain housing drawn with
+   the interface's own tokens; only the screen itself keeps the phosphor (crt.css). Nothing of the desk shows
+   behind it: the page is the boot screen until you clock in, and then it fades to the desk. */
+html.tst-booting,html.tst-booting body{overflow:hidden}
+#boot{position:fixed;inset:0;z-index:60;display:grid;place-items:center;padding:calc(48px + var(--sp-4)) var(--sp-5) var(--sp-6);
+  background:var(--bg);cursor:pointer;overscroll-behavior:contain}
 #boot.off{animation:bootOut .5s .3s var(--ease) both;pointer-events:none}
 #boot.off .boot-monitor{pointer-events:auto} /* a late Skip tap during the fade lands on the monitor, not the game */
-.boot-monitor{width:min(780px,100%);width:min(780px,100%,calc((100vh - 110px)*1.75));width:min(780px,100%,calc((100dvh - 110px)*1.75));background:linear-gradient(180deg,#0e1b36,#070f1e);border:1px solid var(--border);border-radius:24px;padding:16px 16px 12px;
-  box-shadow:0 30px 90px rgba(0,0,0,.75),inset 0 1px 0 rgba(255,255,255,.05),0 0 70px rgba(31,122,255,.16)}
-.boot-screen.cutbox.crt{border-radius:18px}
-.boot-bezel{display:flex;align-items:center;gap:10px;margin-top:12px;padding:0 4px}
-.boot-led{width:8px;height:8px;border-radius:50%;background:#4b1d1d;flex:none;transition:background .3s,box-shadow .3s}
-#boot.on .boot-led{background:var(--good);box-shadow:0 0 10px var(--good)}
-.boot-brand{font-family:"TST Sans",ui-sans-serif,system-ui,sans-serif;font-weight:800;font-size:13px;letter-spacing:.32em;color:var(--muted)}
-.boot-hint{font-size:13px;color:var(--muted);margin-left:auto;text-align:right}
-.boot-btn.btn{width:auto;flex:none;text-align:center;padding:7px 16px}
+/* the wordmark, where the top bar has it */
+.boot-title{position:absolute;top:0;left:0;height:48px;padding:0 var(--sp-5)}
+.boot-monitor{width:min(760px,100%);width:min(760px,100%,calc((100vh - 170px)*1.75));width:min(760px,100%,calc((100dvh - 170px)*1.75));
+  background:var(--surface-1);border:1px solid var(--border);border-radius:var(--r-3);padding:var(--sp-4);box-shadow:var(--shadow-overlay)}
+.boot-screen.cutbox.crt{border-radius:var(--r-2)}
+.boot-bezel{display:flex;align-items:center;gap:var(--sp-3);margin-top:var(--sp-4);padding-left:var(--sp-2)}
+.boot-led{width:8px;height:8px;border-radius:50%;background:var(--warn);flex:none;transition:background .3s}
+#boot.on .boot-led{background:var(--good)}
+.boot-brand{font-size:var(--fs-1);font-weight:600;letter-spacing:.16em;color:var(--text-3)}
+.boot-hint{font-size:var(--fs-1);color:var(--text-3);margin-left:auto}
+.boot-sound.iconbtn{flex:none;color:var(--text-2)}
+.boot-btn.btn{flex:none}
 @keyframes bootOut{to{opacity:0;visibility:hidden}}
-@media (max-width:640px){ .boot-hint{display:none} .boot-btn.btn{margin-left:auto} }
+/* a short window that is wider than it is tall (a phone on its side): the terminal gets the height, the wordmark
+   waits for the desk */
+@media (max-height:600px) and (orientation:landscape){
+  #boot{padding-top:var(--sp-4);padding-bottom:var(--sp-4)}
+  .boot-title{display:none}
+  .boot-monitor{width:min(760px,100%,calc((100vh - 96px)*1.75));width:min(760px,100%,calc((100dvh - 96px)*1.75))}
+}
+/* phone: the screen as wide as the phone allows, and one full-width button under it for the thumb */
+@media (max-width:640px){
+  #boot{padding:calc(48px + var(--sp-3)) var(--sp-4) var(--sp-5)}
+  .boot-title{padding:0 var(--sp-3)}
+  .boot-monitor{padding:var(--sp-3)}
+  .boot-bezel{flex-wrap:wrap;margin-top:var(--sp-3);padding-left:var(--sp-2)}
+  .boot-hint{display:none}
+  .boot-sound.iconbtn{margin-left:auto;width:44px;height:44px}
+  .boot-btn.btn{flex:1 0 100%;height:48px;font-size:var(--fs-3)}
+}

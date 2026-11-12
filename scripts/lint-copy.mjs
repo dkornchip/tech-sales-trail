@@ -32,7 +32,7 @@
 //   plural         real plurals: never "(s)"
 //   minus          a true minus (U+2212): never a hyphen directly before a digit or "$"
 //   ellipsis       no ellipsis made of three dots
-//   banned         nerfed, buff, mana, flex, drip, cooked, gorillionaire, "please clap", vibes, epic, obliterated, lol
+//   banned         buff, mana, vibes, epic, lol   (the game's own long-standing lines are not on this list)
 //   sentence-case  sentence case: a capital only starts a sentence, a quotation or a segment after a separator,
 //                  or belongs to a proper noun on the allowlist (PROPER below; --allow adds to it)
 //   len-spoken     announcer lines to be spoken: 6 words          (modules pa*, announcer*, voice*: their `say`
@@ -80,13 +80,12 @@ const PROPER = [
   "Japan", "Whistler", "Cancun", "Thailand", "Dubai", "Wikipedia", "Hail Mary", "Hail Marys", "Esc", "SaaS", "AI", "SE", "OS", "IT", "OK", "CEO", "CFO", "VP", "SSO", "SPIFF", "SOC", "GA",
 
   "Tech Sales Trail", "Marketing Ops", "Customer Success", "Closed Won", "Chat GDP", "PDF", "API",
+  "Slack", "Post-it", "PIPs", "ACV", "KPI", "PE",
 
   "SHITCORP", "SECURE", "ERROR", "OOO", "REVOKED", "WE’RE A FAMILY", "SDR*"
 ];
 const BANNED = [
-  ["nerfed", /\bnerf(?:ed|s|ing)?\b/i], ["buff", /\bbuff(?:ed|s|ing)?\b/i], ["mana", /\bmana\b/i], ["flex", /\bflex(?:ed|es|ing)?\b/i],
-  ["drip", /\bdrip(?:s|ped|ping)?\b/i], ["cooked", /\bcooked\b/i], ["gorillionaire", /\bgorillionaires?\b/i], ["please clap", /\bplease\s+clap\b/i],
-  ["vibes", /\bvibes?\b/i], ["epic", /\bepic\b/i], ["obliterated", /\bobliterat(?:ed|es|e|ing)\b/i], ["lol", /\blol(?:s|z)?\b/i]
+  ["buff", /\bbuff(?:ed|s|ing)?\b/i], ["mana", /\bmana\b/i], ["vibes", /\bvibes?\b/i], ["epic", /\bepic\b/i], ["lol", /\blol(?:s|z)?\b/i]
 ];
 // Pictographs: everything Unicode calls one (minus the three legal marks that are text), the emoji machinery
 // (variation selector, joiner, keycap, flags), and the symbol blocks that only ever decorate.

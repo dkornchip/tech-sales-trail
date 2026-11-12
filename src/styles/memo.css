@@ -30,5 +30,5 @@
 @keyframes memoFizzle{0%{opacity:0;transform:none}12%{opacity:1;transform:translate(var(--dx),-7px)}100%{opacity:0;transform:translate(var(--dx),46px) rotate(190deg)}}
 @keyframes memoShine{0%,100%{filter:none}50%{filter:brightness(1.08)}}
 @keyframes memoStamp{0%{opacity:0;transform:translate(-50%,-50%) rotate(-24deg) scale(2.4)}60%{opacity:1;transform:translate(-50%,-50%) rotate(-11deg) scale(.92)}100%{opacity:1;transform:translate(-50%,-50%) rotate(-12deg) scale(1)}}
-@media (max-width:640px){ .memo-head span+span{display:none} }
+@media (max-width:640px){ .memo-head span+span{display:none} .memo{padding:var(--sp-4) var(--sp-4) var(--sp-3);margin-bottom:var(--sp-4)} .memo p{font-size:var(--fs-1)} }
 @media (prefers-reduced-motion: reduce){ .memo,.memo *{animation:none!important} }

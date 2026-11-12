@@ -85,14 +85,15 @@ function parseArgs(argv) {
   const bFlag = o.mutant ? ` --mutant ${o.mutant}` : o.b ? ` --b ${o.b.kind === 'baseline' ? 'baseline' : path.relative(process.cwd(), o.b.file) || o.b.file}` : '';
   const drvFlag = (o.aDriver ? ` --a-driver ${o.aDriver}` : '') + (o.bDriver ? ` --b-driver ${o.bDriver}` : '');
   // --sound without --fx: three passes. Anything else: one pass.
-  // A build whose scenes type different words than the baseline's (driver canon.rewrittenCaptions) spends a
-  // different number of cosmetic draws in every scene, so with a SEEDED cosmetic stream the two builds part ways at
-  // the first scene and their cosmetic rolls (the 30% filler line) stop being comparable. The two pinned passes
-  // still check every sound decision, at both ends of each cosmetic roll; the seeded sound pass is left out.
+  // The seeded pass compares the cosmetic rolls themselves (the 30% filler line), which only works while both builds
+  // spend the same number of cosmetic draws. A driver says when its build cannot (canon.cosmeticDrift, with the
+  // reason): then the two pinned passes still check every sound decision, at both ends of each cosmetic roll, and
+  // the seeded pass is left out. (canon.rewrittenCaptions, a build whose scenes type different words, does the same.)
   const { loadDriver } = require('./drivers/interface.cjs');
-  const rewritten = !!loadDriver(o.bDriver || (o.b && (o.b.kind === 'baseline' || o.b.kind === 'mutant') ? 'v121' : 'next')).canon.rewrittenCaptions;
-  const passes = o.sound && o.fxArg === undefined ? (rewritten ? ['0', '0.99'] : ['0', '0.99', 'seeded']) : [o.fxArg === undefined ? 'seeded' : o.fxArg];
-  if (o.sound && o.fxArg === undefined && rewritten) console.log('parity: the seeded sound pass is left out (build B types rewritten captions; see the comment in test/parity/run.cjs)');
+  const canonB = loadDriver(o.bDriver || (o.b && (o.b.kind === 'baseline' || o.b.kind === 'mutant') ? 'v121' : 'next')).canon;
+  const drift = canonB.cosmeticDrift || (canonB.rewrittenCaptions ? 'build B types rewritten captions' : '');
+  const passes = o.sound && o.fxArg === undefined ? (drift ? ['0', '0.99'] : ['0', '0.99', 'seeded']) : [o.fxArg === undefined ? 'seeded' : o.fxArg];
+  if (o.sound && o.fxArg === undefined && drift) console.log(`parity: the seeded sound pass is left out (${drift})`);
   const t0 = Date.now();
   let ok = true;
   const summaries = [];

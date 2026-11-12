@@ -56,6 +56,7 @@ module.exports = function parityInPage(cfg) {
   let fxDraws = 0;
   const fxStream = cfg.fx.mode === 'const' ? () => cfg.fx.value : mulberry(cfg.fx.seed);
   W.__TST_FX = () => { fxDraws++; return fxStream(); };
+  W.__fxDraws = () => fxDraws;   // how many cosmetic draws this page has made (for diagnosing a seeded run)
 
   /* ------------------------------------------------------------------ 2. the clock */
   // Why not Playwright's page.clock: its runFor() waits on a real setTimeout after every fake timer it fires, and

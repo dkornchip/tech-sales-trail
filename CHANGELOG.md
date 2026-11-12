@@ -1,5 +1,43 @@
 # Changelog
 
+## v2.0.1 — the old words, and a boot screen that matches
+
+### Changed: the writing is v1.21's again
+- v2.0 rewrote every line in a dry company voice, and it read worse than what it replaced, most of all when you were fired: HR's announcement no longer said what had happened. The rewrite is withdrawn. Every line that existed in v1.21 says what it said in v1.21: the activity log, the announcer and HR, the ending titles and the line under them, the cutscene captions (and the meltdown's stop code), the event dialogs, the onboarding memo, your manager's lines about clAInk, and the rules sheet's entries.
+- Being fired reads as it did. HR: “Thanks for coming to this meeting. Today is your last day with Shitcorp.” The log: “Hit quota, fired anyway. Politics.” The ending: “Terminated. Your Slack is already gone.” The cutscene: “YOU’RE DONE.”
+- What stays from v2.0 is typesetting, not wording: drawn icons instead of emoji, real plurals instead of “lead(s),” the true minus sign, stat changes as chips after the line, and an event’s choices spelling out what they do.
+- The extra wordings v2.0 gave to repeating lines are gone. A line says the one thing it always said.
+- The notes on the results screen are new in v2.0, so there was nothing to restore. They were rewritten to match: short, and said to you (“Your manager closed Quasar Laundry himself. It counts for him.”).
+- The rules stay honest: 70 to 79% of quota is still described as your manager's call.
+
+### Changed: the boot screen belongs to v2.0
+- The boot screen had kept v1.21's navy frame and glow, floating over a dimmed desk. It is now drawn like everything else: a plain housing around the terminal, on the game's own background with nothing behind it, and the wordmark where the top bar has it, so the name stays put when the screen fades to the desk. The terminal itself, and what it plays, are unchanged.
+- On a phone the terminal is as wide as the screen allows and Clock in is a full-width button under it. In a short window (a phone on its side) the terminal gets the height.
+- The boot screen has a sound button: the M key, for people without a keyboard.
+- On a touch screen, Clock in no longer wears a keyboard focus ring.
+
+### Changed: the game on a phone
+Every screen was gone through at phone sizes (390 and 360 wide, and on its side), and what was found was measured before it was fixed.
+- **You see what you did.** The page is one long column on a phone and the log is a scroll away from the buttons, so pressing one told you nothing but the energy it cost. The lines an action writes now show for a moment at the bottom of the screen (“Blitz: +5 leads.”); after End week, the three that matter most. The notice appears only when the log is off the screen, so never on the one-screen desktop layout; taps go through it; it moves up rather than sit on End week; and it waits for an event’s choice to be made instead of showing dimmed under the dialog.
+- **Your numbers follow you.** Once the stat cards have scrolled away, a strip at the top of the screen carries the week, the slots, energy, stress and cash, with the phone either way up. When the week turns, the page returns to the top.
+- **Hints work by touch.** The hint bar followed a pointer, and a tap’s hint was wiped 14 ms after it appeared. On a touch screen the hint now stays until the next tap: tap a blocked action and it says why, in the hint bar, or in the notice at the bottom of the screen when the hint bar is below the fold. A blocked Hail Mary now looks blocked.
+- **The log is a log again.** In the stacked layout it had collapsed to a 63px slot that showed one line. It is 360px with its own scroll.
+- **Nothing is cut off.** Action names are whole instead of ending in “…”. A cost breaks after its dot, not before it. The top bar fits a 360px screen on one line. Deals show the stage’s name, the mood and “24% odds” instead of five unlabelled pips and a bare number, and the deal list scrolls with the page. Every status chip is shown instead of a “+5” that touch could not open. A long announcement no longer makes the page wider than the screen.
+- **The announcer’s caption** is a notice at the bottom of the screen, instead of a bar that covered the top bar’s buttons for as long as it was up.
+- **Endings.** The dialog is anchored to the top, so the scene no longer jumps when HR’s line arrives or the paperwork unfolds; the terminal uses nearly the full width (its type is a fifth larger); and when the paperwork is out the dialog scrolls to it, so the notes are not left under the buttons. On a phone held sideways the scene is fitted to the height with the title and buttons beside it; it used to be cut in half by the footer with the paperwork entirely off screen.
+- **Dialogs.** A swipe on a dialog no longer scrolls the page behind it. The onboarding memo’s button comes after the three lines that state the job instead of covering them. The rules sheet’s footer is one row, and it leaves out the keyboard section where there is no keyboard. The tour’s card never opens below the screen, and ends with the first action in view.
+- **Touch targets** are 44px on any touch screen that stacks, a phone on its side included (they were tied to a narrow width only): buttons, the top bar, the settings rows, the volume slider, clAInk’s controls.
+- **clAInk** sits above the deal list on a phone, where it is seen, instead of two screens down, and its ad starts as its one-line bar there (the full ad is taller than the screen).
+- **The status chips** are measured once for each set of chips and each width. They used to be re-rendered on every frame whenever a “+N” chip was showing (in v2.0 too), which also meant that chip could not keep the keyboard’s focus; and turning a phone on its side now measures them again.
+- **Small phones.** At 320px the wordmark shortens instead of running under the top bar’s buttons, and a dialog taller than the screen opens at its first line instead of scrolled down to its button. A small phone on its side (640×360, 568×320) gets the sideways ending too: the layout is chosen by the window’s shape, not its width.
+- **Damaged saves.** A stored run that parses but is not a run (a week that is not a number) goes to the recovery page; it used to play as “Week NaN.” One that cannot be read at all still starts a new run, and now says so. The recovery card keeps a gutter on a phone.
+
+### Tests
+- The scene test compares the captions again, not only the pictures: all 1,718 frames, every summary and every caption schedule match v1.21, with a typeset apostrophe as the only difference allowed. The harness compares the scenes’ typing sounds again.
+- The copy lint no longer bans the words v1.21's own lines use.
+- A phone test (`npm run test:phone`, part of `npm run verify`) holds the phone fixes in place on touch screens from 320 to 390 wide, sideways, and turned from one to the other: 45 checks, and v2.0 fails it.
+- Two independent reviews were run on the candidate, one reading the diff and one playing it on phones at five sizes. Their fifteen findings are fixed and each has a check in the phone test.
+
 ## v2.0 — the same quarter, done properly
 
 Everything a player sees, reads or hears was redone. Nothing about how the game plays was changed: the odds, the costs, the events and the endings are v1.21's, and saves from any earlier version load and continue. A test harness plays v1.21 and v2.0 side by side on the same dice and requires the same state, the same number of rolls, the same dialogs and the same legal moves after every move.

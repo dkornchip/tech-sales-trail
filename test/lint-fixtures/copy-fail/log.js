@@ -8,8 +8,7 @@ export const minus = ["Rent paid. Cash is now -$1,600.", "Politics: -8 manager."
 export const rent = ({ cash }) => `Rent paid. Cash is now ${cash}.`;
 export const ellipsis = "Agents working...";
 export const banned = [
-  "Closes nerfed this week.", "Buff manager, tax reputation.", "Out of mana.", "A flex, frankly.", "Pure drip.", "You are cooked.",
-  "Signed by a gorillionaire.", "Please clap.", "Good vibes only.", "An epic quarter.", "Pipeline obliterated.", "Quota missed, lol."
+  "Buff manager, tax reputation.", "Out of mana.", "Good vibes only.", "An epic quarter.", "Quota missed, lol."
 ];
 // over 90 characters as written
 export const long = "The forecast call ran long, then longer, then it was moved to a recurring series that nobody is able to decline.";

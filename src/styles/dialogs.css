@@ -1,6 +1,8 @@
 /* Dialogs: events, the rules, endings. Sized to their words; buttons sized to their labels, primary last. */
 dialog{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);margin:0;padding:0;width:min(600px,94vw);max-height:calc(100dvh - 24px);overflow:auto;
   border:1px solid var(--border-strong);border-radius:var(--r-3);background:var(--surface-1);color:var(--text);box-shadow:var(--shadow-overlay)}
+dialog{overscroll-behavior:contain}
+html:has(dialog[open]){overflow:hidden}   /* a swipe on a dialog must not scroll the page behind it */
 dialog[open]{animation:dialogIn .16s var(--ease) both}
 dialog::backdrop{background:var(--overlay);animation:fadeIn .16s both}
 dialog .d-header{padding:var(--sp-5) var(--sp-6) 0;font-size:var(--fs-3);font-weight:600;letter-spacing:-.01em}
@@ -10,6 +12,7 @@ dialog .d-cap{display:flex;align-items:baseline;gap:var(--sp-3);margin-top:var(-
 dialog .d-body{padding:var(--sp-4) var(--sp-6) var(--sp-5);color:var(--text-2);line-height:1.5}
 dialog .d-body p{margin:0 0 var(--sp-3)}
 dialog .d-body p:last-child{margin-bottom:0}
+dialog .d-body p,.btn.option .opt-effect{text-wrap:pretty}
 dialog .d-body strong{color:var(--text);font-weight:500}
 dialog .d-footer{position:sticky;bottom:0;z-index:1;display:flex;justify-content:flex-end;flex-wrap:wrap;gap:var(--sp-3);padding:var(--sp-4) var(--sp-6) var(--sp-5);background:var(--surface-1)}
 /* A choice: each option says what it does, and neither is dressed as the right answer. */
@@ -22,8 +25,14 @@ dialog .d-footer.options{flex-direction:column;align-items:stretch}
 @media (max-width:640px){
   dialog .d-header{padding:var(--sp-5) var(--sp-5) 0}
   dialog .d-body{padding:var(--sp-4) var(--sp-5)}
-  dialog .d-footer{padding:var(--sp-4) var(--sp-5) var(--sp-5)}
+  /* on a phone a dialog is often taller than the screen: the pinned buttons get an edge, so what scrolls under
+     them is seen to continue */
+  dialog .d-footer{padding:var(--sp-4) var(--sp-5) var(--sp-5);border-top:1px solid var(--border)}
   dialog .d-footer .btn{flex:1 1 auto}
+}
+/* The onboarding memo is read top to bottom, and its button comes after the job's three lines, never over them. */
+@media (max-width:640px), (max-height:600px){
+  dialog[data-dialog="welcome"] .d-footer{position:static;border-top:0;padding-top:0}
 }
 
 /* Toast: a line of confirmation above everything, then gone. */
@@ -59,8 +68,31 @@ dialog .scene-note{margin:var(--sp-3) 0 0;font-size:var(--fs-1);color:var(--text
 .end-notes li{font-size:var(--fs-2);line-height:1.5;color:var(--text-2)}
 dialog .d-footer .btn.at-start{margin-right:auto}
 @media (max-width:640px){
-  dialog.ending .d-cap{position:static;max-width:none;margin-top:var(--sp-3)}
-  .end-fact{flex:1 1 50%}
+  /* Anchored to the top, the ending only grows downward: the scene stays where it is when the announcer's line
+     arrives (its two lines are kept free under the title) and when the paperwork unfolds. */
+  dialog.ending{top:12px;transform:translateX(-50%);width:calc(100vw - 12px);max-width:none}
+  dialog.ending[open]{animation:endingIn .16s var(--ease) both}
+  dialog.ending .d-header{min-height:calc(var(--sp-5) + 1.3 * var(--fs-1) + var(--sp-1) + 1.3 * var(--fs-4) + var(--sp-3) + 2.8 * var(--fs-1) + 4px)}
+  dialog.ending .d-cap{position:static;max-width:none;margin-top:var(--sp-3);line-height:1.4}
+  /* the terminal takes nearly the whole width: its sentences are small enough already */
+  dialog.ending .cutbox.crt{margin:0 calc(4px - var(--sp-5));padding:6px}
+  .end-fact{flex:1 1 50%;padding:var(--sp-3) var(--sp-4)}
+  .end-fact dd.end-sub{white-space:normal}
+}
+@keyframes endingIn{from{opacity:0;transform:translate(-50%,8px)}to{opacity:1;transform:translate(-50%,0)}}
+/* A short window that is wider than it is tall (a phone on its side, of any size): the scene on the left at a size
+   that fits the height, the title and the buttons beside it, and the paperwork scrolling under the scene. (A small
+   phone held upright is short too, but it is taller than it is wide: it keeps the phone's layout above.) */
+@media (max-height:600px) and (orientation:landscape){
+  dialog.ending[open]{display:grid;grid-template-columns:minmax(0,1fr) 208px;grid-template-rows:auto minmax(0,1fr);top:50%;transform:translate(-50%,-50%);
+    width:min(980px,calc(100vw - 24px));max-width:none;height:calc(100dvh - 24px);overflow:hidden;animation:dialogIn .16s var(--ease) both}
+  dialog.ending .d-body{grid-column:1;grid-row:1 / -1;overflow:auto;overscroll-behavior:contain;padding:var(--sp-4)}
+  dialog.ending .d-header{grid-column:2;grid-row:1;min-height:0;padding:var(--sp-4) var(--sp-4) 0 0}
+  dialog.ending .d-cap{position:static;max-width:none;margin-top:var(--sp-3);line-height:1.4}
+  dialog.ending .d-footer{grid-column:2;grid-row:2;position:static;align-self:end;flex-direction:column;align-items:stretch;border-top:0;padding:var(--sp-4) var(--sp-4) var(--sp-4) 0}
+  dialog.ending .d-footer .btn.at-start{margin-right:0}
+  dialog.ending .cutbox.crt{margin:0;padding:10px}
+  dialog .d-body p.end-body{margin-bottom:var(--sp-3)}
 }
 @media (prefers-reduced-motion:reduce){ .end-card{transition:none} }
 
@@ -75,6 +107,8 @@ dialog.help{width:min(960px,94vw)}
 dialog .d-body .rules p{margin:0 0 var(--sp-3);font-size:var(--fs-1);line-height:1.5;color:var(--text-2)}
 dialog .d-footer .d-aside{margin-right:auto;margin-left:calc(-1 * var(--sp-3));display:flex;align-items:center}
 @media (max-width:1024px){ .rules{columns:1} dialog.help{width:min(600px,94vw)} }
+/* phone: the memo link and Got it share one row, so the pinned footer stays short */
+@media (max-width:640px){ dialog.help .d-footer{flex-wrap:nowrap} dialog.help .d-footer .btn{flex:0 0 auto} }
 
 /* The tour: three stops. A card points at one thing on the screen; the thing gets a ring. Nothing is blocked. */
 .coach-ring{position:fixed;z-index:60;border:2px solid var(--accent);border-radius:var(--r-3);pointer-events:none;animation:fadeIn .2s both}

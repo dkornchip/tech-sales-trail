@@ -62,12 +62,18 @@ import { BOOT, TOAST } from "../copy/ui.js";
   var ov = document.createElement("div");
   ov.id = "boot";
   ov.setAttribute("role","dialog"); ov.setAttribute("aria-modal","true"); ov.setAttribute("aria-label",BOOT.label);
+  // v2.0: the company's terminal in a plain housing. The wordmark sits exactly where the top bar puts it, so when the
+  // boot screen fades the name stays where it was. The sound button is the M key for people without a keyboard.
+  var noHover = !!(window.matchMedia && window.matchMedia("(hover: none)").matches);   // a touch screen: no M key to mention
+  var icon = function(name){ return '<svg class="icon" aria-hidden="true" focusable="false"><use href="#i-'+name+'"/></svg>'; };
   ov.innerHTML =
+    '<div class="brand boot-title"><span class="mark">'+icon("compass")+'</span>'+BOOT.product+'</div>'+
     '<div class="boot-monitor">'+
       '<div class="cutbox crt boot-screen"><pre class="cutscene" aria-hidden="true"></pre></div>'+
       '<div class="boot-bezel">'+
         '<span class="boot-led" aria-hidden="true"></span><span class="boot-brand">'+BOOT.brand+'</span>'+
-        '<span class="boot-hint">'+BOOT.hint+'</span>'+
+        '<span class="boot-hint">'+(noHover ? '' : BOOT.hint)+'</span>'+
+        '<button type="button" class="iconbtn boot-sound" data-nosfx aria-label="'+BOOT.sound+'" title="'+BOOT.soundTitle+'"></button>'+
         '<button type="button" class="btn primary boot-btn" data-nosfx>'+BOOT.clockIn+'</button>'+
       '</div>'+
     '</div>';
@@ -75,9 +81,19 @@ import { BOOT, TOAST } from "../copy/ui.js";
   document.documentElement.classList.add("tst-booting");
   var behind = document.getElementById("root");
   if(behind) behind.inert = true;
-  var pre = ov.querySelector("pre"), btn = ov.querySelector(".boot-btn"), hint = ov.querySelector(".boot-hint");
+  var pre = ov.querySelector("pre"), btn = ov.querySelector(".boot-btn"), hint = ov.querySelector(".boot-hint"), snd = ov.querySelector(".boot-sound");
+  function drawSound(){ snd.innerHTML = icon(A.settings.on ? "volume-2" : "volume-x"); snd.setAttribute("aria-pressed", A.settings.on ? "true" : "false"); }
+  // byKey: the M key says what it did in a toast; the button shows it itself (and the toast would cover it sideways)
+  function toggleSound(byKey){
+    A.setOn(!A.settings.on);
+    if(A.settings.on){ A.unlock(); A.play("coin"); }
+    drawSound();
+    if(byKey) window.TST_TOAST(A.settings.on ? TOAST.soundOn : TOAST.soundOff);
+  }
+  drawSound();
   var stage = "standby", ctrl = Sc.play(pre,"standby",{crt:false, maxFont:20});
-  try{ btn.focus({preventScroll:true}); }catch(e){}
+  // The keyboard's Enter belongs on Clock in. A finger has no use for a focus ring, and any key works anyway.
+  try{ if(!(window.matchMedia && window.matchMedia("(pointer:coarse)").matches)) btn.focus({preventScroll:true}); }catch(e){}
   function start(){
     if(stage !== "standby") return;
     stage = "booting"; A.unlock();
@@ -112,17 +128,26 @@ import { BOOT, TOAST } from "../copy/ui.js";
     if(e.key === "m" || e.key === "M"){ // mute toggle, without clocking in
       e.preventDefault(); e.stopPropagation();
       if(e.repeat) return;
-      A.setOn(!A.settings.on);
-      if(A.settings.on){ A.unlock(); A.play("coin"); }
-      window.TST_TOAST(A.settings.on ? TOAST.soundOn : TOAST.soundOff);
+      toggleSound(true);
       return;
     }
+    if(e.target === snd && (e.key === "Enter" || e.key === " ")) return; // the sound button answers its own keys
     if(e.key === "Escape"){ e.preventDefault(); if(stage === "standby") A.unlock(); finish(); return; }
     if(/^(Shift|Control|Alt|Meta|CapsLock|Arrow|F\d)/.test(e.key)) return;
     e.preventDefault(); e.stopPropagation();
     if(e.repeat) return; // a held key starts the boot once, never skips it
     advance();
   }
-  ov.addEventListener("click",function(e){ e.stopPropagation(); advance(); });
+  ov.addEventListener("click",function(e){
+    e.stopPropagation();
+    if(e.target.closest && e.target.closest(".boot-sound")){
+      if(stage === "done") return;
+      toggleSound();
+      // a mouse click leaves the focus on Clock in, where Enter is expected; a keyboard press stays put
+      if(e.detail > 0 && document.activeElement === snd){ try{ btn.focus({preventScroll:true}); }catch(err){} }
+      return;
+    }
+    advance();
+  });
   document.addEventListener("keydown",onKey,true);
 })();

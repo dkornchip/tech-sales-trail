@@ -11,7 +11,7 @@ Make calls, chase leads, run demos, survive your manager, and try not to drink y
 
 ![Tech Sales Trail in week 6: the week's numbers and twelve actions on the left; on the right the deal list, the activity log and clAInk's agent workspace reporting a run that closed nothing and earned a strike](screenshots/main.webp)
 
-The game is told by the company you work for. The CRM logs what you did. The office PA announces what it thinks matters. HR writes the memo, Finance sends the bill, and your manager says the things sales managers say. Nobody comments on any of it.
+The log tells it straight: *All noise, no ink. Dodged the axe. Landed on a PIP. Hit quota, fired anyway. Politics.* The office PA announces what it thinks matters, HR reads you the bad news, and your manager says the things sales managers say.
 
 ---
 
@@ -170,19 +170,19 @@ clAInk is a gamble, not a strategy. It is at its best as a late-quarter desperat
 - **How it works** (top right) is the rules on one sheet. Its footer reopens the onboarding memo.
 - **Settings** (the gear) holds sound, the office announcer, captions, volume, and Save, Load and New run. The game also autosaves after every move and picks up where you left off, including a choice that was waiting for an answer.
 - **Sound** is synthesized in the page: effects, a heartbeat when stress runs hot, and the office PA. Every line the announcer says is also shown as a caption, so the game plays the same with the sound off.
-- **One screen.** On a desktop display the whole game fits the window with no page scrolling; the deal list and the activity log scroll inside their own boxes. On a phone the page stacks and scrolls.
+- **One screen.** On a desktop display the whole game fits the window with no page scrolling; the deal list and the activity log scroll inside their own boxes. On a phone the page stacks and scrolls: your numbers follow you in a strip at the top, what an action just did shows for a moment at the bottom, and a hint stays up until your next tap.
 - **Reduced motion** is respected: if your device asks for less motion, the cutscenes show their last frame and say what happened.
 
 Saves from earlier versions load and continue.
 
 ---
 
-## What's new in v2.0
+## What's new in v2.0 (and v2.0.1)
 
 Everything a player sees or reads was redone, and nothing about how the game plays was changed. A test harness plays v1.21 and v2.0 side by side on the same dice and requires the same state after every move: 54,000 moves and 319,000 dice rolls, identical.
 
-- **One look.** A restrained dark dashboard with one accent colour, real icons instead of emoji, one type scale. The CRT keeps its phosphor for the boot screen and the endings, and clAInk keeps its brand, because it would.
-- **Every line rewritten** in one voice: the company's. Repeating lines have variants that change with the week and with how often you have done the thing, and never repeat twice running.
+- **One look.** A restrained dark dashboard with one accent colour, real icons instead of emoji, one type scale, from the boot screen on. The CRT keeps its phosphor for the boot sequence and the endings, and clAInk keeps its brand, because it would.
+- **The words you know.** The log, the announcer, HR, the endings and the cutscene captions say what v1.21 said. (v2.0 rewrote them; v2.0.1 put them back.) What changed is the typesetting: drawn icons instead of emoji, real plurals, and stat changes as chips after the line.
 - **The board explains itself.** Close odds on every deal before you commit. A hint bar that says what a button will do right now, or why it can't. Stat changes shown where they happen. The log grouped by week.
 - **Endings are results screens**, and they remember your run: the largest deal, the approved trip, the quad shots, the strikes.
 - **A first day** for new players, **captions** for the announcer, a **settings menu**, a **rules sheet** that fits one screen, keyboard shortcuts.
@@ -210,7 +210,7 @@ The checks drive a real browser with [Playwright](https://playwright.dev), which
 | Where | What |
 |---|---|
 | `src/game/` | The rules, as pure functions of the run's state. `rules.js` holds every cost and chance once; the interface reads the same numbers. |
-| `src/copy/` | Every word the player reads. `engine.js` picks between variants without touching the game's dice. |
+| `src/copy/` | Every word the player reads. `engine.js` turns a line and its numbers into what the log shows, without touching the game's dice. |
 | `src/ui/` | The interface (React). `src/styles/tokens.css` is the only file that names a colour or a size. |
 | `src/engine/` | The ASCII scene engine and the synthesized sound. |
 | `scripts/` | The build, the lints, `verify.mjs`, and `screenshots.cjs` (plays the game and takes this page's pictures). |
@@ -221,9 +221,9 @@ The checks drive a real browser with [Playwright](https://playwright.dev), which
 - **lints**: dice only where the rules roll (`lint:rng`), house style on every string (`lint:copy`), colours and sizes only from the tokens (`lint:css`); every log line, dialog and announcement is wired and renders in every wording.
 - **fonts and notices**: the bundled fonts are what the pinned packages generate and cover every character the scenes draw; `THIRD-PARTY-NOTICES.md` is current.
 - **parity** (`test/parity/`): plays the frozen v1.21 file (`test/baseline/`) and the build through the same seeded dice, move by move, and compares state, dice rolls, dialogs and legal moves. `npm run parity:full` is the long run; `npm run parity:sound` also compares which sounds fire, move by move (the onboarding memo's three cues moved with the memo, and are checked in the first-day test instead); `npm run parity:selftest` proves the harness catches planted bugs.
-- **scenes**: every frame of every ASCII scene is drawn exactly as v1.21 drew it (the pictures; the captions under them were rewritten).
+- **scenes**: every frame of every ASCII scene, and every caption under it, is exactly v1.21's (apostrophes are typeset; nothing else differs).
 - **saves** (`test/saves/`): saves from every state and ending of v1.21, and older, load and play on identically. The fixtures are regenerated from the baseline and must match what is committed.
-- **offline**, **first day**, **resilience**, **keyboard**, **layout** (`test/e2e/`): no network and the bundled fonts in use; the onboarding flow; reloads, damaged saves, duplicate names and an ending whose cutscene cannot play; a whole run on the keyboard; one screen at seven desktop sizes and a phone, with nothing covered or cut off.
+- **offline**, **first day**, **resilience**, **phone**, **keyboard**, **layout** (`test/e2e/`): no network and the bundled fonts in use; the onboarding flow; reloads, damaged saves, duplicate names and an ending whose cutscene cannot play; a touch screen at phone sizes and on its side (hints by tap, the status strip, the log, captions, endings); a whole run on the keyboard; one screen at seven desktop sizes and a phone, with nothing covered or cut off.
 
 `npm run test:selftest` turns the tests on themselves: each one is given a planted fault and must report it.
 

@@ -23,6 +23,7 @@ export const UI = {
   activity: "Activity",
   dealsMeta: (count, pipeline) => (count ? `${count} open · ${usd(pipeline)} in pipeline` : "None yet"),
   dealCols: ["Account", "Stage", "Mood", "Value", "Odds"],
+  oddsUnit: "odds",                   // after a deal's odds where the column has no heading (a phone)
   oddsSr: "odds of signing ",          // read out before a deal's odds; the column heading is only visual
   noDeals: "No deals. The phone is on your desk.",
   noActivity: "Nothing yet. Quota is waiting.",
@@ -30,6 +31,7 @@ export const UI = {
   hail: "Hail Mary",
   weekDivider: w => `Week ${w}`,
   earlier: "Earlier",
+  peekMore: k => `+${k} more in Activity`,
 };
 
 export const KPI = {
@@ -43,14 +45,14 @@ export const KPI = {
   stressCrash: by => `Crash: +${by} on Friday`,
   stressDanger: "Danger zone",
   rentThisWeek: () => "Rent is due Friday",
-  rentLater: w => `Rent due in week ${w}`,
+  rentLater: w => `Rent due in week\u00A0${w}`,          // a no-break space: the number stays with "week"
   rentDone: "Rent is paid up",
   collections: "Collections at −$1,500",
   ofQuota: share => pc(share),
   onPace: "On pace",
   ahead: pts => `${n(pts, "point")} ahead`,
-  behind: pts => `${n(pts, "point")} behind pace`,
-  reviewsSoon: w => `Reviews from week ${w}`,
+  behind: pts => `${n(pts, "point")} behind\u00A0pace`,
+  reviewsSoon: w => `Reviews from week\u00A0${w}`,
 };
 
 export const STAT = { manager: "Manager", reputation: "Reputation", product: "Product", prospect: "Prospecting", discovery: "Discovery", demo: "Demo", negotiate: "Negotiation" };
@@ -83,10 +85,10 @@ export const HINT = {
   close: c => (c ? `${n(c, "deal")} ready for a signature. The odds are on each row. A miss can lose the deal.` : "Nothing is at proposal yet. It would still cost the energy."),
   conference: c => `3 to 8 warm leads, some of them large. Takes ${n(c.slots, "slot")} and ${usd(c.cash)}, and adds 5 stress.`,
   crm: (pruned, gain, nuke) => `Clears ${n(pruned, "dead lead")}: +${gain} manager.` + (nuke ? ` ${pc(nuke)} chance he closes out a live deal while he is in there.` : ""),
-  recharge: r => `+${r.energy[0]} to +${r.energy[1]} energy` + (r.relief[1] > 0 ? `, −${r.relief[0]} to −${r.relief[1]} stress.` : ". The caffeine keeps the stress.") + " A very good nap gets a trip approved.",
+  recharge: r => `+${r.energy[0]} to +${r.energy[1]} energy` + (r.relief[1] > 0 ? `, −${r.relief[0]} to −${r.relief[1]} stress.` : ". No stress relief: coffee ate the calm.") + " A very good nap gets a trip approved.",
   coffee: (shot) => `Shot ${shot.n}: +${shot.energy} energy and +${shot.stress} stress now, +${shot.crash} more on Friday.` + (shot.risk >= 1 ? " This one takes stress to 100." : shot.risk > 0 ? ` ${pc(shot.risk)} chance your heart objects.` : ""),
   politics: () => "+8 manager, +3 product, −4 reputation, +2 stress. People notice who you have lunch with.",
-  hail: c => (c ? `One push on ${n(c, "late-stage deal")}. Four times in five, each survivor then has a 55% chance to walk.` : "Needs a deal at proposal or closing."),
+  hail: c => (c ? `One push on ${n(c, "late-stage deal")}. Four times in five, each deal left then has a 55% chance to walk.` : "Needs a deal at proposal or closing."),
   endWeek: f => `Friday: salary +${usd(f.salary)}` + (f.rent ? `, rent −${usd(f.rent)}` : "") + `, energy +${f.energy}, stress ${f.stress < 0 ? "−" + -f.stress : "+" + f.stress}.`,
   blocked: {
     over: () => "The quarter is over.",
@@ -112,7 +114,7 @@ export const CHIP = {
   more: k => `${k} more`,
   trip: place => `${place} trip approved`,
   shots: k => n(k, "quad shot"),
-  pip: level => `Performance plan, level ${level}`,
+  pip: level => `PIP level ${level}`,
 };
 
 export const MENU = { title: "Settings", sound: "Sound", voice: "Office announcer", captions: "Captions for the announcer", volume: "Volume", voiceOn: "Announcer on.", save: "Save run", load: "Load saved run", newRun: "New run" };
@@ -128,7 +130,7 @@ export const TOAST = {
 };
 
 // The boot screen's bezel, and names for things that have no visible label (screen readers read these).
-export const BOOT = { label: "Shitcorp OS boot screen", brand: "SHITCORP", hint: "M mutes", clockIn: "Clock in", skip: "Skip", booting: "Booting…" };
+export const BOOT = { label: "Shitcorp OS boot screen", product: "Tech Sales Trail", brand: "SHITCORP", hint: "M mutes", sound: "Sound", soundTitle: "Sound (M)", clockIn: "Clock in", skip: "Skip", booting: "Booting…" };
 export const NAMES = { week: "Your week", desk: "Your deals and activity", sound: "Sound", soundTitle: "Sound (M)", ending: "Ending animation", event: "Event" };
 
 // The page that replaces the game when it cannot be drawn (a save that is not a save).
@@ -143,7 +145,8 @@ export const MOOD = { skeptical: "skeptical", neutral: "neutral", curious: "curi
 
 // For the copy lint: hints that take structured numbers.
 // (BOOT.brand is the badge on the monitor's bezel, in the company's capitals.)
-export const lint = { exempt: { "sentence-case": ["BOOT.brand"] }, params: {
+// (BOOT.brand is the badge on the housing, in the company's capitals; UI.peekMore names the Activity panel.)
+export const lint = { exempt: { "sentence-case": ["BOOT.brand", "UI.peekMore"] }, params: {
   "HINT.recharge": [{ energy: [35, 52], relief: [12, 18] }, { energy: [35, 52], relief: [0, 0] }],
   "ACTION.coffee.cost": [{ args: [{ energy: 0, slots: 1, cash: 6 }, 12, 13] }],
   "ACTION.coffee.risk": [{ args: [{ energy: 0, slots: 1, cash: 6 }, 0.18] }],
