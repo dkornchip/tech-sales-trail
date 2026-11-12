@@ -19,6 +19,7 @@
 //   offline      no network, bundled fonts                 (test/e2e/offline.cjs)
 //   firstday     the onboarding memo and the tour          (test/e2e/firstday.cjs)
 //   resilience   a held choice, names, ids, damaged saves  (test/e2e/resilience.cjs)
+//   phone        a touch screen: hints, the strip, the log, captions, sideways endings  (test/e2e/phone.cjs)
 //   keyboard     a whole run with the keyboard only        (test/e2e/keyboard.cjs)
 //   layout       one screen, nothing covered or cut off    (test/e2e/layout.cjs)
 //   sound        with --release only: the same sounds fire as in v1.21, move by move (test/parity/run.cjs --sound)
@@ -68,6 +69,7 @@ const STEPS = {
   offline: { what: "no network, bundled fonts", cmd: ["test/e2e/offline.cjs", target] },
   firstday: { what: "a new player's first day", cmd: ["test/e2e/firstday.cjs", target] },
   resilience: { what: "reloads, damaged saves, names, ids", cmd: ["test/e2e/resilience.cjs", target] },
+  phone: { what: "a phone: touch, small screens, sideways", cmd: ["test/e2e/phone.cjs", target] },
   layout: { what: "layout on one screen", cmd: ["test/e2e/layout.cjs", target, "--workers", workers, "--min-font", String(LAYOUT_MIN_FONT), "--expect-fail", LAYOUT_KNOWN.join(","), ...drv("--driver")] },
   keyboard: { what: "keyboard only", cmd: ["test/e2e/keyboard.cjs", target, "--expect-fail", KEYBOARD_KNOWN.join(","), ...drv("--driver")] },
   // about the source, not the built file
@@ -83,7 +85,7 @@ const STEPS = {
   sound: { what: "sound parity, both pinned passes", cmd: ["test/parity/run.cjs", "--b", target, "--workers", workers, "--sound", ...drv("--b-driver")] },
   released: { what: "./index.html is current", cmd: ["scripts/build.mjs", "--check"] }
 };
-const DEFAULT = ["build", "lint-rng", "lint-copy", "lint-css", "copy-check", "copy-render", "fonts", "notices", "parity", "scenes", "fixtures", "saves", "offline", "firstday", "resilience", "keyboard", "layout"];
+const DEFAULT = ["build", "lint-rng", "lint-copy", "lint-css", "copy-check", "copy-render", "fonts", "notices", "parity", "scenes", "fixtures", "saves", "offline", "firstday", "resilience", "phone", "keyboard", "layout"];
 const order = onlyArg ? onlyArg.split(",").map(s => s.trim()).filter(Boolean) : release ? DEFAULT.concat("sound", "released") : DEFAULT;
 for(const s of order) if(!STEPS[s]){ console.error(`verify: unknown step ${s}. steps: ${Object.keys(STEPS).join(", ")}`); process.exit(2); }
 

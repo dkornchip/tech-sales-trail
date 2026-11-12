@@ -17,7 +17,7 @@ const PaLine = () => {
   }, [c]);
   return (
     <div className="pa-line" role="status" aria-live="polite">
-      {shown ? <span className="pa-cap" key={shown.id}><span className="pa-who">{WHO[shown.who] || WHO.pa}</span>{shown.text}</span> : null}
+      {shown ? <span className="pa-cap" key={shown.id}><span className="pa-who">{WHO[shown.who] || WHO.pa}</span><span className="pa-text">{shown.text}</span></span> : null}
     </div>
   );
 };

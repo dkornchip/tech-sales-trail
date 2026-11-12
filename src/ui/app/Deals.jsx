@@ -20,7 +20,7 @@ export const Deals = ({ s }) => {
               <span className="stage" title={STAGE[d.stage] || ""}><span className="pips" aria-hidden="true">{[0, 1, 2, 3, 4].map(k => <i key={k} className={k <= d.stage ? "on" : ""} />)}</span><span className="stage-name">{STAGE[d.stage] || ""}</span></span>
               <span className={"mood " + d.mood}>{MOOD[d.mood] || d.mood}</span>
               <span className="val num">{money(d.value)}</span>
-              <span className="odds num">{d.stage >= 3 ? <><span className="sr-only">{UI.oddsSr}</span>{Math.round(closeChance(s, d, { trained: true }) * 100) + "%"}</> : ""}</span>
+              <span className="odds num">{d.stage >= 3 ? <><span className="sr-only">{UI.oddsSr}</span>{Math.round(closeChance(s, d, { trained: true }) * 100) + "%"}<span className="odds-unit" aria-hidden="true"> {UI.oddsUnit}</span></> : ""}</span>
             </li>
           ))}
         </ol>

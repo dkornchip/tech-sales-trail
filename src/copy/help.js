@@ -8,11 +8,13 @@ import { money } from "../game/util.js";
 //   crash           stress per quad shot on Friday   seat            what a clAInk seat costs
 //   strikes         strikes that revoke it           trueUpLo/Hi     how far in the red the true-up leaves you
 //   offerWeek       the last week of the pilot offer
-const usd = v => money(v).replace("-", "−");
+// (the word joiners keep a minus sign with its amount and a range in one piece when a line wraps)
+const usd = v => money(v).replace("-", "−\u2060");
+const range = (lo, hi) => `${usd(lo)}\u2060–\u2060${usd(hi)}`;
 
 export const HELP_TITLE = "How it works";
 export const HELP_OK = "Got it";
-export const HELP_MEMO = "Read the onboarding memo again";
+export const HELP_MEMO = "Read the memo again";
 // The rules come in sections; each section is a heading and its paragraphs.
 export const HELP = [
   { title: "The quarter", rows: [
@@ -37,9 +39,10 @@ export const HELP = [
   { title: "The office", rows: [
     { term: "Manager", body: () => ` nudges close odds, drives PIPs and firing. Emails without calls annoy him.` },
     { term: "CRM cleanup", body: () => ` weekly: prunes dead leads, +manager, freezes warnings, trims fire odds. Boss may nuke a good deal.` },
-    { term: "clAInk", body: v => ` is a sponsored AI pilot. Close the ad and it’s gone this run. A ${usd(v.seat)} seat buys one agent run a week, billed Friday, idle weeks too. 1 in 5 closes real deals; the rest burn tokens on billed “outcomes” and earn a strike, sometimes with damage. Strike ${v.strikes}: seat revoked, a deal walks, and a true-up takes all your cash plus ${usd(v.trueUpLo)}–${usd(v.trueUpHi)}. The offer ends after week ${v.offerWeek}. Your manager may notice.` }
+    { term: "clAInk", body: v => ` is a sponsored AI pilot. Close the ad and it’s gone this run. A ${usd(v.seat)} seat buys one agent run a week, billed Friday, idle weeks too. 1 in 5 closes real deals; the rest burn tokens on billed “outcomes” and earn a strike, sometimes with damage. Strike ${v.strikes}: seat revoked, a deal walks, and a true-up takes all your cash plus ${range(v.trueUpLo, v.trueUpHi)}. The offer ends after week ${v.offerWeek}. Your manager may notice.` }
   ] },
-  { title: "Keyboard", rows: [
+  // keys: shown only where there is a keyboard to press them on
+  { title: "Keyboard", keys: true, rows: [
     { term: "Keys.", body: () => ` The number row runs the actions in order. E ends the week, H is the Hail Mary, M mutes, ? opens this.` }
   ] }
 ];

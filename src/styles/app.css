@@ -1,5 +1,5 @@
 /* ---------- shell ---------- */
-.app{min-height:100dvh;display:grid;grid-template-rows:48px minmax(0,1fr)}
+.app{min-height:100dvh;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:48px minmax(0,1fr)}
 .topbar{display:flex;align-items:center;gap:var(--sp-4);padding:0 var(--sp-5);border-bottom:1px solid var(--border)}
 .brand{display:flex;align-items:center;gap:var(--sp-3);font-weight:600;letter-spacing:-.01em;white-space:nowrap}
 .brand .mark{width:20px;height:20px;border-radius:5px;background:var(--text);color:var(--bg);display:grid;place-items:center}
@@ -11,6 +11,7 @@
 /* The office PA, captioned: one line in the empty middle of the top bar, then gone. */
 .pa-line{flex:1;min-width:0;display:flex;justify-content:center;overflow:hidden}
 .pa-cap{display:inline-flex;align-items:baseline;gap:var(--sp-3);min-width:0;font-size:var(--fs-1);color:var(--text-2);white-space:nowrap;animation:fadeIn .25s both}
+.pa-text{min-width:0;overflow:hidden;text-overflow:ellipsis}
 .pa-who{flex:none;padding:0 var(--sp-2);border:1px solid var(--border-strong);border-radius:var(--r-1);font:500 var(--fs-1)/1.35 var(--mono);color:var(--text-3)}
 .iconbtn{width:32px;height:32px;display:grid;place-items:center;background:none;border:1px solid transparent;border-radius:var(--r-2);cursor:pointer}
 .iconbtn:hover{background:var(--surface-2);border-color:var(--border)}
@@ -98,6 +99,9 @@
 .chip.warn{color:var(--warn);border-color:transparent;background:var(--warn-weak)} .chip.warn .icon{color:var(--warn)}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--sp-3);height:36px;padding:0 var(--sp-5);border-radius:var(--r-2);border:1px solid var(--border-strong);background:transparent;font-weight:500;cursor:pointer;white-space:nowrap;transition:background .12s var(--ease)}
 .btn:hover{background:var(--surface-2)}
+.btn:not(.primary)[aria-disabled="true"]{color:var(--text-3);border-color:var(--border);cursor:not-allowed}
+.btn:not(.primary)[aria-disabled="true"]:hover{background:transparent}
+.btn:not(.primary)[aria-disabled="true"] .icon{color:var(--text-3)}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--text-on-accent);min-width:132px}
 .btn.primary:hover{background:var(--accent-hover);border-color:var(--accent-hover)}
 .btn.primary .icon{color:var(--text-on-accent)}
@@ -129,6 +133,7 @@
 .deal .val{text-align:right;color:var(--text)}
 .deal .odds{text-align:right;color:var(--text-2)}
 .deal-cols{color:var(--text-3);height:24px;border-bottom:1px solid var(--border)}
+.odds-unit{display:none}   /* the column has a heading, except on a phone */
 /* a narrow column keeps the names whole and lets the pips speak for the stage */
 @container (max-width:470px){
   .deal{grid-template-columns:minmax(0,1fr) 40px 78px 68px 36px}
@@ -187,32 +192,91 @@
   .left{align-self:stretch;max-height:none}
   .deals{max-height:none}
   .deals .scroll{max-height:320px}
+  /* in a column that has no fixed height the log must not shrink to its minimum (it used to show one line) */
+  .activity{flex:0 0 auto}
   .activity .scroll{max-height:360px}
+  .topbar:has(.pa-cap) .crumbs{display:none}   /* a caption gets the room the breadcrumbs had */
 }
+/* a finger, on any screen that stacks (a phone either way up, a tablet): controls a thumb can hit */
+@media (pointer:coarse) and (max-width:1024px), (pointer:coarse) and (max-height:619px){
+  .btn{height:44px}
+  .iconbtn{width:44px;height:44px;flex:none}
+  .topbar .linkbtn{min-height:44px;white-space:nowrap}
+  .linkbtn{min-height:44px}
+  .menu-row{min-height:44px}
+  .menu input[type=range]{height:44px}
+  .chip.more{min-width:44px;height:44px;justify-content:center}
+}
+/* the strip that follows you down a phone's page (StatusStrip.jsx); nowhere else */
+.strip{display:none}
 /* phone */
 @media (max-width:640px){
-  .topbar{padding:0 var(--sp-4)}
+  /* top bar: the wordmark, the rules and two buttons fit a 360px screen at full size */
+  .topbar{padding:0 var(--sp-3);gap:var(--sp-3)}
+  .brand{margin-right:auto;min-width:0}
   .crumbs{display:none}
-  .pa-line:not(:empty){position:fixed;top:0;left:0;right:0;z-index:40;padding:var(--sp-4) var(--sp-5);background:var(--surface-2);border-bottom:1px solid var(--border-strong)}
-  .pa-cap{white-space:normal}
-  .topbar .linkbtn{padding:10px 8px}
-  .iconbtn{width:40px;height:40px}
+  .topbar .linkbtn{min-height:44px;padding:0 var(--sp-3);white-space:nowrap}
+  .iconbtn{width:44px;height:44px;flex:none}
+  /* The announcer's caption is a notice at the bottom of the screen: it covers no control, and what an action
+     just did (.peek) sits above it when both are up. */
+  .pa-line{position:fixed;z-index:36;left:var(--sp-4);right:var(--sp-4);bottom:calc(var(--sp-4) + env(safe-area-inset-bottom,0px));flex:none;overflow:visible;pointer-events:none}
+  .pa-cap{max-width:100%;padding:var(--sp-3) var(--sp-4);background:var(--surface-3);border:1px solid var(--border-strong);border-radius:var(--r-3);box-shadow:var(--shadow-overlay);color:var(--text);white-space:normal}
+  .pa-text{overflow:visible}
+  .app:has(.pa-cap) .peek{bottom:calc(var(--sp-4) + 60px + env(safe-area-inset-bottom,0px))}
+  /* once the stat cards have scrolled away, the numbers you act on stay in view */
+  .strip{display:flex;align-items:center;gap:var(--sp-3);position:fixed;z-index:30;top:0;left:0;right:0;height:calc(40px + env(safe-area-inset-top,0px));
+    padding:env(safe-area-inset-top,0px) var(--sp-4) 0;background:var(--bg);border-bottom:1px solid var(--border-strong);font-size:var(--fs-1);color:var(--text-2);
+    transform:translateY(-102%);transition:transform .18s var(--ease);pointer-events:none}
+  .strip.on{transform:none}
+  .strip-week{font-weight:600;color:var(--text)}
+  .strip > *{flex:none;white-space:nowrap}
+  .strip .pips{flex:0 1 58px;min-width:30px;gap:2px}
+  .strip .pips i{flex:1 1 10px;min-width:4px;height:6px;border-radius:2px;background:var(--text);box-shadow:none}
+  .strip .pips i.spent{background:var(--surface-3);box-shadow:inset 0 0 0 1px var(--border-strong)}
+  .strip-n{display:inline-flex;align-items:center;gap:var(--sp-2);color:var(--text)}
+  .strip-n .icon{width:14px;height:14px;color:var(--text-3)}
+  .strip-n.warn .icon{color:var(--warn)} .strip-n.bad .icon{color:var(--bad)}
+  .strip-cash{margin-left:auto}
+  .strip-cash.bad{color:var(--bad)}
   .btn{height:44px}
+  .linkbtn{min-height:44px}
+  .menu-row{min-height:44px}
+  .menu input[type=range]{height:44px}
+  /* the hint keeps room for two lines, so the buttons under it do not move when it changes */
+  .hint{align-items:flex-start;padding:var(--sp-3) var(--sp-4);min-height:calc(2.8em + 2 * var(--sp-3) + 2px);line-height:1.4}
+  .hint .icon{margin-top:2px}
   .hint kbd{display:none}
-  .action{height:auto;min-height:54px;padding-top:8px;padding-bottom:8px}
-  .action .cost{white-space:normal}
+  /* an action's name is never cut short; a long cost takes two even lines; the count sits beside the name */
+  .actions{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .action{height:auto;min-height:54px;padding:var(--sp-3)}
+  .action .title{white-space:normal;overflow:visible}
+  .action .cost{grid-column:2 / -1;white-space:normal;overflow:visible;text-wrap:balance}
+  .action .count{grid-row:1}
   .main{padding:var(--sp-3);gap:var(--sp-3)}
   .left{padding:var(--sp-4);gap:var(--sp-4)}
   .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .statrow{grid-template-columns:repeat(2,minmax(0,1fr))}
+  /* the long label makes way for the change chip instead of sharing its line */
+  .kpi[data-kpi="closed"]:has(.delta) .label{visibility:hidden}
+  .stats{gap:var(--sp-5)}
+  .statrow{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:var(--sp-3)}
   .statrow .group{grid-column:1 / -1}
-  .actions{grid-template-columns:repeat(2,minmax(0,1fr))}
   .weeks .tag{display:none}
   .foot{flex-wrap:wrap}
-  .chips{flex-basis:100%}
+  .chips{flex-basis:100%;height:auto;overflow:visible}
+  .chips:empty{display:none}
   .foot .btn{flex:1}
-  .deal{grid-template-columns:minmax(0,1fr) 68px 36px;row-gap:0;height:auto;padding-top:6px;padding-bottom:6px}
-  .deal .stage,.deal .mood{grid-row:2}
-  .deal .stage{grid-column:1}
+  /* deals: two lines each (name and value; stage, mood and odds), every label spelled out, and the page does the scrolling */
+  .deals .scroll{max-height:none;overflow:visible}
+  .deal{grid-template-columns:minmax(0,1fr) auto auto;column-gap:0;row-gap:2px;height:auto;padding-top:var(--sp-3);padding-bottom:var(--sp-3)}
+  .deal .acct{grid-column:1;grid-row:1}
+  .deal .val{grid-column:2 / -1;grid-row:1;padding-left:var(--sp-4)}
+  .deal .stage{grid-column:1;grid-row:2}
+  .deal .stage .stage-name{display:inline}
+  .deal .mood{grid-column:2;grid-row:2;justify-self:end;padding-left:var(--sp-4)}
+  .deal .odds{grid-column:3;grid-row:2;padding-left:var(--sp-3)}
+  .deal .odds:empty{display:none}
+  .odds-unit{display:inline}
   .deal-cols{display:none}
+  /* the vendor's panel comes before the deals, where it is seen, instead of two screens down */
+  .right > .claink-ad,.right > .claink-console{order:-1;border-top:0;border-bottom:1px solid var(--ck-line);border-radius:11px 11px 0 0}
 }

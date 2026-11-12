@@ -170,7 +170,7 @@ clAInk is a gamble, not a strategy. It is at its best as a late-quarter desperat
 - **How it works** (top right) is the rules on one sheet. Its footer reopens the onboarding memo.
 - **Settings** (the gear) holds sound, the office announcer, captions, volume, and Save, Load and New run. The game also autosaves after every move and picks up where you left off, including a choice that was waiting for an answer.
 - **Sound** is synthesized in the page: effects, a heartbeat when stress runs hot, and the office PA. Every line the announcer says is also shown as a caption, so the game plays the same with the sound off.
-- **One screen.** On a desktop display the whole game fits the window with no page scrolling; the deal list and the activity log scroll inside their own boxes. On a phone the page stacks and scrolls, and what an action just did shows for a moment at the bottom of the screen, since the log is a scroll away.
+- **One screen.** On a desktop display the whole game fits the window with no page scrolling; the deal list and the activity log scroll inside their own boxes. On a phone the page stacks and scrolls: your numbers follow you in a strip at the top, what an action just did shows for a moment at the bottom, and a hint stays up until your next tap.
 - **Reduced motion** is respected: if your device asks for less motion, the cutscenes show their last frame and say what happened.
 
 Saves from earlier versions load and continue.
@@ -223,7 +223,7 @@ The checks drive a real browser with [Playwright](https://playwright.dev), which
 - **parity** (`test/parity/`): plays the frozen v1.21 file (`test/baseline/`) and the build through the same seeded dice, move by move, and compares state, dice rolls, dialogs and legal moves. `npm run parity:full` is the long run; `npm run parity:sound` also compares which sounds fire, move by move (the onboarding memo's three cues moved with the memo, and are checked in the first-day test instead); `npm run parity:selftest` proves the harness catches planted bugs.
 - **scenes**: every frame of every ASCII scene, and every caption under it, is exactly v1.21's (apostrophes are typeset; nothing else differs).
 - **saves** (`test/saves/`): saves from every state and ending of v1.21, and older, load and play on identically. The fixtures are regenerated from the baseline and must match what is committed.
-- **offline**, **first day**, **resilience**, **keyboard**, **layout** (`test/e2e/`): no network and the bundled fonts in use; the onboarding flow; reloads, damaged saves, duplicate names and an ending whose cutscene cannot play; a whole run on the keyboard; one screen at seven desktop sizes and a phone, with nothing covered or cut off.
+- **offline**, **first day**, **resilience**, **phone**, **keyboard**, **layout** (`test/e2e/`): no network and the bundled fonts in use; the onboarding flow; reloads, damaged saves, duplicate names and an ending whose cutscene cannot play; a touch screen at phone sizes and on its side (hints by tap, the status strip, the log, captions, endings); a whole run on the keyboard; one screen at seven desktop sizes and a phone, with nothing covered or cut off.
 
 `npm run test:selftest` turns the tests on themselves: each one is given a planted fault and must report it.
 

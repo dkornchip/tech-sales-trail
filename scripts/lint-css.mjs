@@ -35,7 +35,8 @@ const MIN_FONT = 13;
 const MEDIA_OK = new Set([
   "(max-width:640px)", "(min-width:641px)", "(max-width:1024px)", "(min-width:1025px)", "(min-width:1500px)",
   "(max-height:600px)", "(max-height:619px)", "(min-height:620px)", "(min-height:900px)",
-  "(prefers-reduced-motion:reduce)", "(prefers-reduced-motion:no-preference)"
+  "(prefers-reduced-motion:reduce)", "(prefers-reduced-motion:no-preference)",
+  "(pointer:coarse)"   // only together with a stacked-layout condition: a thumb needs 44px
 ]);
 
 const argv = process.argv.slice(2);

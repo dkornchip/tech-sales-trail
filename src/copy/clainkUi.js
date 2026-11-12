@@ -3,7 +3,8 @@ import { fmtTok, money } from "../game/util.js";
 // Everything the clAInk panel prints that is not a run report (those lines are in claink.js): the ad, the agent
 // workspace, the strike boxes, the end cards. The vendor is the one voice in the game allowed enthusiasm.
 // Amounts arrive as numbers and are formatted here.
-const usd = v => money(v).replace("-", "−");
+// The word joiner keeps a minus sign on the same line as its amount (the panel is narrow on a phone).
+const usd = v => money(v).replace("-", "−\u2060");
 
 export const CK_AD = {
   label: mini => "Sponsored: clAInk Enterprise" + (mini ? " (minimized)" : ""),

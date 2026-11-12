@@ -23,6 +23,7 @@ export const UI = {
   activity: "Activity",
   dealsMeta: (count, pipeline) => (count ? `${count} open · ${usd(pipeline)} in pipeline` : "None yet"),
   dealCols: ["Account", "Stage", "Mood", "Value", "Odds"],
+  oddsUnit: "odds",                   // after a deal's odds where the column has no heading (a phone)
   oddsSr: "odds of signing ",          // read out before a deal's odds; the column heading is only visual
   noDeals: "No deals. The phone is on your desk.",
   noActivity: "Nothing yet. Quota is waiting.",
@@ -44,14 +45,14 @@ export const KPI = {
   stressCrash: by => `Crash: +${by} on Friday`,
   stressDanger: "Danger zone",
   rentThisWeek: () => "Rent is due Friday",
-  rentLater: w => `Rent due in week ${w}`,
+  rentLater: w => `Rent due in week\u00A0${w}`,          // a no-break space: the number stays with "week"
   rentDone: "Rent is paid up",
   collections: "Collections at −$1,500",
   ofQuota: share => pc(share),
   onPace: "On pace",
   ahead: pts => `${n(pts, "point")} ahead`,
-  behind: pts => `${n(pts, "point")} behind pace`,
-  reviewsSoon: w => `Reviews from week ${w}`,
+  behind: pts => `${n(pts, "point")} behind\u00A0pace`,
+  reviewsSoon: w => `Reviews from week\u00A0${w}`,
 };
 
 export const STAT = { manager: "Manager", reputation: "Reputation", product: "Product", prospect: "Prospecting", discovery: "Discovery", demo: "Demo", negotiate: "Negotiation" };

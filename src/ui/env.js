@@ -5,4 +5,8 @@ export const AUDIO=()=>window.TST_AUDIO||null;
 export const sfx=(name,opts)=>{ const a=AUDIO(); if(a) a.play(name,opts); };
 export const notify=(msg)=>{ if(window.TST_TOAST) window.TST_TOAST(msg); else alert(msg); };
 
+// A screen with no hover (a phone, a tablet): a hint cannot follow a pointer there, so the last one stays until the next tap.
+export const noHover=()=>!!(window.matchMedia && window.matchMedia("(hover: none)").matches);
+export const isPhone=()=>!!(window.matchMedia && window.matchMedia("(max-width:640px)").matches);
+
 export const reducedNow=()=>!!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);

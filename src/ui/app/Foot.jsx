@@ -2,6 +2,7 @@ import React from "react";
 import { isRunOver } from "../../game/log.js";
 import { blocked, fridayPreview, lateDeals, stageCount } from "../../game/selectors.js";
 import { CHIP, HINT, UI } from "../../copy/ui.js";
+import { isPhone, noHover } from "../env.js";
 import { HAIL } from "./actionList.js";
 import { Icon } from "./Icon.jsx";
 
@@ -37,17 +38,19 @@ const chips = s => {
 };
 
 // The status chips share one line with the buttons. Whatever does not fit is folded into a "+N" chip, which
-// names the rest when pointed at or focused; nothing is ever cut off mid-word.
+// names the rest when pointed at, focused or tapped; nothing is ever cut off mid-word. A phone gives the chips
+// lines of their own, so there every chip is shown and nothing is folded.
 const Chips = ({ list, onHint }) => {
   const box = React.useRef(null);
   const sig = list.map(c => c.id + ":" + c.text).join("|");
   const [fit, setFit] = React.useState({ sig: "", n: list.length });
-  const n = fit.sig === sig ? fit.n : list.length;              // a new set of chips is measured afresh
+  const phone = isPhone();
+  const n = phone ? list.length : fit.sig === sig ? fit.n : list.length;   // a new set of chips is measured afresh
   React.useLayoutEffect(() => {
     const el = box.current; if (!el) return;
     const measure = () => {
       const kids = Array.from(el.children).filter(k => k.hasAttribute("data-chip"));
-      if (!kids.length) return;
+      if (!kids.length || isPhone()) return;
       const top = kids[0].offsetTop;
       let ok = kids.findIndex(k => k.offsetTop > top);
       if (ok < 0) ok = kids.length;
@@ -60,10 +63,11 @@ const Chips = ({ list, onHint }) => {
   }, [sig, n]);
   const rest = list.slice(n), names = rest.map(c => c.text).join(" · ");
   const tell = () => onHint({ title: CHIP.more(rest.length), text: names });
+  const leave = () => { if (!noHover()) onHint(null); };
   return (
     <>
       <div className="chips" ref={box}>{list.slice(0, n).map(c => <span key={c.id} className={"chip" + (c.kind ? " " + c.kind : "")} data-chip={c.id}><Icon name={c.icon} />{c.text}</span>)}</div>
-      {rest.length ? <span className="chip more" tabIndex={0} title={names} aria-label={CHIP.more(rest.length) + ": " + names} onMouseEnter={tell} onFocus={tell} onMouseLeave={() => onHint(null)} onBlur={() => onHint(null)}>+{rest.length}</span> : null}
+      {rest.length ? <span className="chip more" tabIndex={0} title={names} aria-label={CHIP.more(rest.length) + ": " + names} onMouseEnter={tell} onFocus={tell} onClick={tell} onMouseLeave={leave} onBlur={leave}>+{rest.length}</span> : null}
     </>
   );
 };
@@ -77,13 +81,15 @@ export const Foot = ({ s, onHail, onEndWeek, onHint }) => {
   const hailHint = () => onHint({ title: UI.hail, text: hailBlocked && hailBlocked.why !== "none" ? HINT.blocked[hailBlocked.why](hailBlocked) : HINT.hail(late), key: "H" });
   const endHint = () => onHint({ title: UI.endWeek, text: isRunOver(s) ? HINT.blocked.over() : HINT.endWeek(fridayPreview(s)), key: "E" });
   const over = isRunOver(s);
+  // no pointer to follow (a touch screen): the hint stays until the next tap, so a blocked button can say why
+  const leave = () => { if (!noHover()) onHint(null); };
   return (
     <div className="foot">
       <Chips list={chips(s)} onHint={onHint} />
-      <button type="button" className="btn" data-ui="hail" aria-disabled={hailBlocked ? "true" : undefined} onClick={() => { if (!hailBlocked) onHail(); }}
-        onMouseEnter={hailHint} onFocus={hailHint} onMouseLeave={() => onHint(null)} onBlur={() => onHint(null)}><Icon name="dices" />{UI.hail}</button>
-      <button type="button" className="btn primary" data-ui="end" aria-disabled={over ? "true" : undefined} onClick={() => { if (!over) onEndWeek(); }}
-        onMouseEnter={endHint} onFocus={endHint} onMouseLeave={() => onHint(null)} onBlur={() => onHint(null)}>{UI.endWeek}<Icon name="arrow-right" /></button>
+      <button type="button" className="btn" data-ui="hail" aria-disabled={hailBlocked ? "true" : undefined} onClick={() => { if (hailBlocked) { hailHint(); return; } onHail(); if (noHover()) onHint(null); }}
+        onMouseEnter={hailHint} onFocus={hailHint} onMouseLeave={leave} onBlur={leave}><Icon name="dices" />{UI.hail}</button>
+      <button type="button" className="btn primary" data-ui="end" aria-disabled={over ? "true" : undefined} onClick={() => { if (over) return; onEndWeek(); if (noHover()) onHint(null); }}
+        onMouseEnter={endHint} onFocus={endHint} onMouseLeave={leave} onBlur={leave}>{UI.endWeek}<Icon name="arrow-right" /></button>
     </div>
   );
 };

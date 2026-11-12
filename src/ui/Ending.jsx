@@ -54,6 +54,14 @@ const notesFor=(id,f)=>{
   return out;
 };
 
+// The largest type the scene may use. In a short window (a phone on its side) it is what lets all seventeen rows
+// of the terminal fit the height: 17 rows at a line height of 1.14, less the dialog's margins and the line above.
+const sceneFont=()=>{
+  const h=window.innerHeight;
+  if(h>600) return h>=760 ? 16 : 14;
+  return Math.max(7,Math.min(14,Math.floor(((h-24-2*12-20-34)/(17*1.14))*10)/10));
+};
+
 // The ending: the company's one line about Matt, the cutscene at full size, and then the paperwork.
 // The run is already over when this opens; the card only arrives after the scene so the scene gets watched.
 // New run is there from the first frame.
@@ -79,6 +87,19 @@ export const Ending=({over,s,onNew})=>{
     const go=dlg.querySelector('[data-ui="newrun"]');
     if(go)go.focus({preventScroll:true});
   },[done,key]);
+  // On a small screen the paperwork unfolds below the fold (under the pinned buttons, or under the scene in a short
+  // window). Once it has unfolded, whatever scrolls is taken to its end, so the numbers and the notes are seen.
+  useEffect(()=>{
+    if(!done || !over || !cardRef.current)return;
+    const dlg=cardRef.current.closest("dialog");
+    if(!dlg)return;
+    const id=setTimeout(()=>{
+      for(const el of [dlg,dlg.querySelector(".d-body")]){
+        if(el && el.scrollHeight>el.clientHeight+4) el.scrollTo({top:el.scrollHeight,behavior:REDUCED_MOTION ? "auto" : "smooth"});
+      }
+    },REDUCED_MOTION ? 0 : 560);
+    return()=>clearTimeout(id);
+  },[done,key]);
   if(!over) return <Modal open={false} title="" />;
   const f=runFacts(s);
   const notes=notesFor(over.id,f);
@@ -95,7 +116,7 @@ export const Ending=({over,s,onNew})=>{
       title={<><span className="end-over">{RESULTS.overline(f.week,f.weeks)}</span><span className="end-title">{over.title}</span></>}
       actions={actions}>
       <p className="end-body">{over.body}</p>
-      <Cutscene type={over.type} play meta={over.meta} ctrlRef={sceneRef} maxFont={window.innerHeight>=760 ? 16 : 14} onDone={()=>setDone(true)} />
+      <Cutscene type={over.type} play meta={over.meta} ctrlRef={sceneRef} maxFont={sceneFont()} onDone={()=>setDone(true)} />
       {summary && <p className="scene-note">{summary}</p>}
       <div ref={cardRef} className={"end-card"+(done ? " is-in" : "")} aria-hidden={done ? undefined : "true"}>
         <div className="end-card-in">

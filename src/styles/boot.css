@@ -28,7 +28,7 @@ html.tst-booting,html.tst-booting body{overflow:hidden}
 /* phone: the screen as wide as the phone allows, and one full-width button under it for the thumb */
 @media (max-width:640px){
   #boot{padding:calc(48px + var(--sp-3)) var(--sp-4) var(--sp-5)}
-  .boot-title{padding:0 var(--sp-4)}
+  .boot-title{padding:0 var(--sp-3)}
   .boot-monitor{padding:var(--sp-3)}
   .boot-bezel{flex-wrap:wrap;margin-top:var(--sp-3);padding-left:var(--sp-2)}
   .boot-hint{display:none}

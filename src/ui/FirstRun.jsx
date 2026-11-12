@@ -63,13 +63,15 @@ export const Tour = ({ step, onStep, onEnd }) => {
       const left = Math.max(EDGE, Math.min(r.left, window.innerWidth - w - EDGE));
       setBox({
         ring: { left: r.left - 4, top: r.top - 4, width: r.width + 8, height: r.height + 8 },
-        card: { left, top: below ? r.bottom + GAP : r.top - GAP - h, width: w },
+        // (kept on the screen even when there is room neither under nor over the thing it points at)
+        card: { left, top: Math.max(EDGE, Math.min(below ? r.bottom + GAP : r.top - GAP - h, window.innerHeight - EDGE - h)), width: w },
         arrow: Math.max(16, Math.min(w - 16, r.left + Math.min(r.width / 2, 40) - left)),
         below
       });
     };
     const el = document.querySelector(TARGETS[stop.at]);
-    if (el && el.scrollIntoView) el.scrollIntoView({ block: "center", inline: "nearest" });
+    // in a short window the thing goes to the top of the screen, which leaves the card room under it
+    if (el && el.scrollIntoView) el.scrollIntoView({ block: window.innerHeight < 520 ? "start" : "center", inline: "nearest" });
     place();
     const raf = requestAnimationFrame(place); // again once the card has its real height
     window.addEventListener("resize", place); window.addEventListener("scroll", place, true);

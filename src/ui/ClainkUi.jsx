@@ -27,7 +27,10 @@ export const readClainkUi=()=>{
 };
 // until you choose, a short screen (landscape phone) gets the pills so neither the console nor the ad sits on End Week
 export const isShortScreen=()=>typeof window!=="undefined" && window.innerHeight>0 && window.innerHeight<=600;
-export const clainkUiFor=(u,short)=>({...(u.chosen ? u : {...u,mini:short}), adMini:u.adMini===null ? short : u.adMini});
+// narrow: a phone held upright. The ad is taller than that screen, so until you say otherwise it is its one-line bar
+// (the workspace stays open: Run agents is a weekly control).
+export const isNarrowScreen=()=>typeof window!=="undefined" && window.innerWidth>0 && window.innerWidth<=640;
+export const clainkUiFor=(u,short,narrow)=>({...(u.chosen ? u : {...u,mini:short}), adMini:u.adMini===null ? (short||!!narrow) : u.adMini});
 // A held Enter/Space auto-repeats. Once a clAInk control has used the key, swallow its repeats page-wide until the key
 // comes back up, wherever focus lands next (End Week, the Writing Lesson dialog, an ending).
 let clainkHeldKey=null;
