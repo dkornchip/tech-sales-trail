@@ -85,10 +85,10 @@ export const HINT = {
   close: c => (c ? `${n(c, "deal")} ready for a signature. The odds are on each row. A miss can lose the deal.` : "Nothing is at proposal yet. It would still cost the energy."),
   conference: c => `3 to 8 warm leads, some of them large. Takes ${n(c.slots, "slot")} and ${usd(c.cash)}, and adds 5 stress.`,
   crm: (pruned, gain, nuke) => `Clears ${n(pruned, "dead lead")}: +${gain} manager.` + (nuke ? ` ${pc(nuke)} chance he closes out a live deal while he is in there.` : ""),
-  recharge: r => `+${r.energy[0]} to +${r.energy[1]} energy` + (r.relief[1] > 0 ? `, −${r.relief[0]} to −${r.relief[1]} stress.` : ". The caffeine keeps the stress.") + " A very good nap gets a trip approved.",
+  recharge: r => `+${r.energy[0]} to +${r.energy[1]} energy` + (r.relief[1] > 0 ? `, −${r.relief[0]} to −${r.relief[1]} stress.` : ". No stress relief: coffee ate the calm.") + " A very good nap gets a trip approved.",
   coffee: (shot) => `Shot ${shot.n}: +${shot.energy} energy and +${shot.stress} stress now, +${shot.crash} more on Friday.` + (shot.risk >= 1 ? " This one takes stress to 100." : shot.risk > 0 ? ` ${pc(shot.risk)} chance your heart objects.` : ""),
   politics: () => "+8 manager, +3 product, −4 reputation, +2 stress. People notice who you have lunch with.",
-  hail: c => (c ? `One push on ${n(c, "late-stage deal")}. Four times in five, each survivor then has a 55% chance to walk.` : "Needs a deal at proposal or closing."),
+  hail: c => (c ? `One push on ${n(c, "late-stage deal")}. Four times in five, each deal left then has a 55% chance to walk.` : "Needs a deal at proposal or closing."),
   endWeek: f => `Friday: salary +${usd(f.salary)}` + (f.rent ? `, rent −${usd(f.rent)}` : "") + `, energy +${f.energy}, stress ${f.stress < 0 ? "−" + -f.stress : "+" + f.stress}.`,
   blocked: {
     over: () => "The quarter is over.",
