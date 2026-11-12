@@ -58,7 +58,7 @@ const notesFor=(id,f)=>{
 // of the terminal fit the height: 17 rows at a line height of 1.14, less the dialog's margins and the line above.
 const sceneFont=()=>{
   const h=window.innerHeight;
-  if(h>600) return h>=760 ? 16 : 14;
+  if(h>600 || window.innerWidth<=640) return h>=760 ? 16 : 14;   // tall, or a phone held upright: the width decides
   return Math.max(7,Math.min(14,Math.floor(((h-24-2*12-20-34)/(17*1.14))*10)/10));
 };
 

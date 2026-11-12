@@ -123,13 +123,11 @@ const dice = (page, v) => page.evaluate(x => { Math.random = () => x; }, v);
     await page.click('[data-ui="crash-new"]').catch(() => {});
     await page.waitForSelector('[data-act="prospect"]', { timeout: 5000 }).catch(() => {});
     check("with both saves damaged, New run still reaches the desk", await page.evaluate(() => !!document.querySelector('[data-act="prospect"]') && !document.querySelector(".crash")));
+    // (since v2.0.1 a saved run that parses but is not a run is refused when it is loaded, the way one that does
+    // not parse always was: the player is told, and is at a desk, never on a blank page or the recovery page)
     await page.click('[data-ui="settings"]'); await page.click('[data-ui="load"]'); await page.waitForTimeout(400);
-    const afterLoad = await page.evaluate(() => ({ crash: !!document.querySelector(".crash"), desk: !!document.querySelector('[data-act="prospect"]') }));
-    check("loading the damaged manual save lands on the same page, not a blank one", afterLoad.crash || afterLoad.desk, JSON.stringify(afterLoad));
-    if (afterLoad.crash) {
-      await page.click('[data-ui="crash-new"]'); await page.waitForSelector('[data-act="prospect"]', { timeout: 5000 }).catch(() => {});
-      check("and New run gets out of it again", await page.evaluate(() => !!document.querySelector('[data-act="prospect"]') && !document.querySelector(".crash")));
-    }
+    const afterLoad = await page.evaluate(() => { const t = document.getElementById("tst-toast"); return { crash: !!document.querySelector(".crash"), desk: !!document.querySelector('[data-act="prospect"]'), week: (document.querySelector(".quarter-head h2") || {}).textContent, said: t && t.classList.contains("show") ? t.textContent : "" }; });
+    check("loading the damaged manual save says so and leaves you at a desk", afterLoad.desk && !afterLoad.crash && /damaged/.test(afterLoad.said) && afterLoad.week === "Week 1", JSON.stringify(afterLoad));
     await context.close();
 
     /* ---------- 5. an ending without its cutscene ---------- */

@@ -1,7 +1,7 @@
 import React from "react";
 import { weekOf } from "../../game/selectors.js";
 import { NAMES } from "../../copy/ui.js";
-import { REDUCED_MOTION, isPhone } from "../env.js";
+import { isPhone } from "../env.js";
 import { ActionGrid } from "./ActionGrid.jsx";
 import { Activity } from "./Activity.jsx";
 import { Deals } from "./Deals.jsx";
@@ -21,7 +21,8 @@ export const Board = ({ s, top, dock, onAct, onHail, onEndWeek }) => {
   const week = weekOf(s), turn = React.useRef({ runId: s.runId, week });
   React.useEffect(() => {
     const was = turn.current; turn.current = { runId: s.runId, week };
-    if (was.runId === s.runId && week === was.week + 1 && isPhone()) window.scrollTo({ top: 0, behavior: REDUCED_MOTION ? "auto" : "smooth" });
+    if (was.runId !== s.runId) { window.scrollTo(0, 0); return; }                       // another run starts at the top
+    if (week === was.week + 1 && isPhone()) window.scrollTo(0, 0);                      // (at once: a dialog may be about to lock the page)
   }, [week, s.runId]);
   return (
     <div className="app">

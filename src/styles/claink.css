@@ -216,6 +216,10 @@
   .claink-cancel-link{padding:14px 0}
   .claink-deploy>span{white-space:nowrap}
   .claink-deploy{flex-wrap:wrap}
+  /* the one-line bar: its words take a second line before they are cut */
+  .claink-ad-pill{white-space:normal}
+  .claink-ad-pill .ends{overflow:visible;line-height:1.25}
+  .claink-pilltext{white-space:normal;line-height:1.25}
 }
 @media (pointer:coarse) and (max-width:1024px), (pointer:coarse) and (max-height:619px){
   .claink-tb-btns button,.claink-ad-close,.claink-ad-min,.claink-ad.is-mini .claink-ad-btns button{width:44px;height:44px}
