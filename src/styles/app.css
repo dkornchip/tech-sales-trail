@@ -2,7 +2,8 @@
 .app{min-height:100dvh;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:48px minmax(0,1fr)}
 .topbar{display:flex;align-items:center;gap:var(--sp-4);padding:0 var(--sp-5);border-bottom:1px solid var(--border)}
 .brand{display:flex;align-items:center;gap:var(--sp-3);font-weight:600;letter-spacing:-.01em;white-space:nowrap}
-.brand .mark{width:20px;height:20px;border-radius:5px;background:var(--text);color:var(--bg);display:grid;place-items:center}
+.brand .mark{flex:none;width:20px;height:20px;border-radius:5px;background:var(--text);color:var(--bg);display:grid;place-items:center}
+.brand-name{min-width:0;overflow:hidden;text-overflow:ellipsis}
 .brand .mark svg{width:14px;height:14px;stroke-width:2}
 .crumbs{display:flex;align-items:center;gap:var(--sp-3);color:var(--text-2);font-size:var(--fs-1)}
 .crumbs .sep{color:var(--border-strong)}
@@ -152,7 +153,7 @@
 .line.warn .icon{color:var(--warn)} .line.bad .icon{color:var(--bad)} .line.good .icon{color:var(--good)}
 .line .deltas .up{color:var(--good)} .line .deltas .down{color:var(--bad)}
 /* The newest log lines, shown where you are when the log is off the screen (LogPeek.jsx). A notice, not a control. */
-.peek{position:fixed;z-index:35;left:var(--sp-4);right:var(--sp-4);bottom:calc(var(--sp-4) + env(safe-area-inset-bottom,0px));max-width:520px;margin:0 auto;
+.peek{position:fixed;z-index:35;left:var(--sp-4);right:var(--sp-4);bottom:calc(var(--sp-4) + var(--peek-cap,0px) + var(--peek-lift,0px) + env(safe-area-inset-bottom,0px));max-width:520px;margin:0 auto;
   padding:var(--sp-3) 0;background:var(--surface-3);border:1px solid var(--border-strong);border-radius:var(--r-3);box-shadow:var(--shadow-overlay);
   pointer-events:none;animation:peekIn .18s var(--ease) both,peekOut .3s calc(var(--peek-ms,3200ms) - 300ms) ease-in both}
 .peek ul{list-style:none;margin:0;padding:0}
@@ -192,6 +193,8 @@
   .left{align-self:stretch;max-height:none}
   .deals{max-height:none}
   .deals .scroll{max-height:320px}
+  /* while a dialog locks the page's scrolling, the scrollbar's place is kept, so the page does not shift sideways */
+  html:has(dialog[open]){scrollbar-gutter:stable}
   /* in a column that has no fixed height the log must not shrink to its minimum (it used to show one line) */
   .activity{flex:0 0 auto}
   .activity .scroll{max-height:360px}
@@ -207,23 +210,10 @@
   .menu input[type=range]{height:44px}
   .chip.more{min-width:44px;height:44px;justify-content:center}
 }
-/* the strip that follows you down a phone's page (StatusStrip.jsx); nowhere else */
+/* The strip that follows you down a phone's page (StatusStrip.jsx): on a narrow screen, and on a touch screen too
+   short for the one-screen layout (a phone on its side). Nowhere else. env.js isStackedTouch() is the same test. */
 .strip{display:none}
-/* phone */
-@media (max-width:640px){
-  /* top bar: the wordmark, the rules and two buttons fit a 360px screen at full size */
-  .topbar{padding:0 var(--sp-3);gap:var(--sp-3)}
-  .brand{margin-right:auto;min-width:0}
-  .crumbs{display:none}
-  .topbar .linkbtn{min-height:44px;padding:0 var(--sp-3);white-space:nowrap}
-  .iconbtn{width:44px;height:44px;flex:none}
-  /* The announcer's caption is a notice at the bottom of the screen: it covers no control, and what an action
-     just did (.peek) sits above it when both are up. */
-  .pa-line{position:fixed;z-index:36;left:var(--sp-4);right:var(--sp-4);bottom:calc(var(--sp-4) + env(safe-area-inset-bottom,0px));flex:none;overflow:visible;pointer-events:none}
-  .pa-cap{max-width:100%;padding:var(--sp-3) var(--sp-4);background:var(--surface-3);border:1px solid var(--border-strong);border-radius:var(--r-3);box-shadow:var(--shadow-overlay);color:var(--text);white-space:normal}
-  .pa-text{overflow:visible}
-  .app:has(.pa-cap) .peek{bottom:calc(var(--sp-4) + 60px + env(safe-area-inset-bottom,0px))}
-  /* once the stat cards have scrolled away, the numbers you act on stay in view */
+@media (max-width:640px), (pointer:coarse) and (max-height:619px){
   .strip{display:flex;align-items:center;gap:var(--sp-3);position:fixed;z-index:30;top:0;left:0;right:0;height:calc(40px + env(safe-area-inset-top,0px));
     padding:env(safe-area-inset-top,0px) var(--sp-4) 0;background:var(--bg);border-bottom:1px solid var(--border-strong);font-size:var(--fs-1);color:var(--text-2);
     transform:translateY(-102%);transition:transform .18s var(--ease);pointer-events:none}
@@ -238,6 +228,24 @@
   .strip-n.warn .icon{color:var(--warn)} .strip-n.bad .icon{color:var(--bad)}
   .strip-cash{margin-left:auto}
   .strip-cash.bad{color:var(--bad)}
+  /* what the tour points at stops below the strip, not under it */
+  [data-act="prospect"],[data-tour="slots"],[data-ui="end"]{scroll-margin-top:48px}
+}
+/* phone */
+@media (max-width:640px){
+  /* top bar: the wordmark, the rules and two buttons fit a 360px screen at full size */
+  .topbar{padding:0 var(--sp-3);gap:var(--sp-3)}
+  .brand{margin-right:auto;min-width:0}
+  .crumbs{display:none}
+  .topbar .linkbtn{min-height:44px;padding:0 var(--sp-3);white-space:nowrap}
+  .iconbtn{width:44px;height:44px;flex:none}
+  /* The announcer's caption is a notice at the bottom of the screen: it covers no control, and what an action
+     just did (.peek) sits above it when both are up. */
+  .pa-line{position:fixed;z-index:36;left:var(--sp-4);right:var(--sp-4);bottom:calc(var(--sp-4) + env(safe-area-inset-bottom,0px));flex:none;overflow:visible;pointer-events:none}
+  .pa-cap{max-width:100%;padding:var(--sp-3) var(--sp-4);background:var(--surface-3);border:1px solid var(--border-strong);border-radius:var(--r-3);box-shadow:var(--shadow-overlay);color:var(--text);white-space:normal}
+  .pa-text{overflow:visible}
+  .app:has(.pa-cap) .peek{--peek-cap:60px}
+  html:has(dialog[open]) .pa-cap{visibility:hidden}   /* a dialog shows the announcer's line itself; not dimmed under it as well */
   .btn{height:44px}
   .linkbtn{min-height:44px}
   .menu-row{min-height:44px}

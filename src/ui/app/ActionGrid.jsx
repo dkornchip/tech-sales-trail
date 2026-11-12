@@ -24,7 +24,7 @@ export const describe = (a, s) => {
   return { title: copy.title, cost, count, block, hint: block ? HINT.blocked[block.why](block) : hint, risky: a.id === "coffee" && nextShot(s).risk > 0 };
 };
 
-export const ActionGrid = ({ s, onAct, onHint }) => (
+export const ActionGrid = ({ s, onAct, onHint, onBlocked }) => (
   <div className="actions">
     {ACTIONS.map((a, i) => {
       const d = describe(a, s);
@@ -32,7 +32,7 @@ export const ActionGrid = ({ s, onAct, onHint }) => (
       // With no pointer to follow (a touch screen) a hint stays until the next tap: a blocked action says why, and
       // after an action runs the bar goes back to what to do next.
       const leave = () => { if (!noHover()) onHint(null); };
-      const press = () => { if (d.block) { show(); return; } onAct(a); if (noHover()) onHint(null); };
+      const press = () => { if (d.block) { show(); if (onBlocked && noHover()) onBlocked({ title: d.title, text: d.hint }); return; } onAct(a); if (noHover()) onHint(null); };
       const parts = String(d.cost).split(" · ");    // the dot stays with the part before it, so no line starts with one
       return (
         <button key={a.id} type="button" className={"action" + (d.block ? " off" : "")} data-act={a.id} aria-disabled={d.block ? "true" : undefined}

@@ -8,13 +8,13 @@ const usd = v => money(v).replace("-", "−");
 
 // On a phone the numbers you act on scroll away above the buttons. Once the stat cards have left the top of the
 // screen this strip takes their place: the week, the slots, energy, stress and cash, in one line. It repeats what
-// the cards say, so it is hidden from a screen reader, and the stylesheet shows it on a phone only.
+// the cards say, so it is hidden from a screen reader, and the stylesheet shows it on a phone only (either way up).
 export const StatusStrip = ({ s }) => {
   const [on, setOn] = React.useState(false);
   React.useEffect(() => {
     const cards = document.querySelector(".kpis");
     if (!cards || typeof IntersectionObserver === "undefined") return;
-    const io = new IntersectionObserver(([e]) => setOn(!e.isIntersecting && e.boundingClientRect.bottom <= 0), { threshold: 0 });
+    const io = new IntersectionObserver(entries => { const e = entries[entries.length - 1]; setOn(!e.isIntersecting && e.boundingClientRect.bottom <= 0); }, { threshold: 0 });
     io.observe(cards);
     return () => io.disconnect();
   }, []);

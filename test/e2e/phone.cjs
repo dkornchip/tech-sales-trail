@@ -7,6 +7,8 @@
 //   5. sideways: a caption does not widen the page; an ending shows its whole scene and then its paperwork
 //   6. the onboarding memo's button comes after the job's three lines
 //   7. a stored run that is not a run goes to the recovery page; one that cannot be read says so
+//   8. a 320px screen: the wordmark makes way for the top bar's buttons; a tall dialog opens at its first line
+//   9. turned on its side: the chips are measured again, and settle (they used to be redrawn on every frame)
 // Every screen here is a touch screen (no hover, a coarse pointer). Exits 1 if any check fails.
 // (CommonJS on purpose: Playwright only resolves through require() here.)
 "use strict";
@@ -83,6 +85,11 @@ const wide = page => page.evaluate(() => ({ page: document.documentElement.scrol
     await page.waitForTimeout(400);
     const broke = await text(page, ".hint");
     check("a tap on an action you cannot afford says what it needs", /Prospect blitz/.test(broke || "") && /energy/.test(broke || ""), broke);
+    // with the action at the foot of the screen the hint bar is below the fold: the reason must still be on the screen
+    await page.evaluate(() => document.querySelector('[data-act="prospect"]').scrollIntoView({ block: "end" })); await page.waitForTimeout(300);
+    await page.locator('[data-act="prospect"]').tap({ force: true }); await page.waitForTimeout(450);
+    const where = await page.evaluate(() => { const seen = e => { if (!e) return false; const r = e.getBoundingClientRect(); return r.top >= 0 && r.bottom <= window.innerHeight && r.height > 0; }; const h = document.querySelector(".hint"), p = document.querySelector(".peek"); return { hint: seen(h), notice: seen(p), text: p ? p.innerText.replace(/\s+/g, " ").trim() : "" }; });
+    check("and when the hint bar is off the screen, the reason is shown in a notice that is on it", !where.hint && where.notice && /Prospect blitz/.test(where.text) && /energy/.test(where.text), JSON.stringify(where));
 
     /* ---------- 3. the numbers follow you ---------- */
     const state = () => page.evaluate(k => { const s = JSON.parse(window.localStorage.getItem(k)); return { week: s.week, energy: Math.round(s.energy), stress: Math.round(s.stress), cash: Math.round(s.cash) }; }, AUTOSAVE);
@@ -92,11 +99,25 @@ const wide = page => page.evaluate(() => ({ page: document.documentElement.scrol
     const strip = await page.evaluate(() => { const s = document.querySelector(".strip"); const r = s.getBoundingClientRect(); return { on: s.classList.contains("on"), top: Math.round(r.top), right: Math.round(r.right), text: s.innerText.replace(/\s+/g, " ").trim(), sw: s.scrollWidth, cw: s.clientWidth }; });
     const now = await state();
     check("scrolled down to End week, the strip is at the top of the screen", strip.on && strip.top === 0 && strip.sw <= strip.cw, JSON.stringify(strip));
-    check("and carries the week, energy, stress and cash as they are", strip.text.indexOf("Week " + now.week) === 0 && strip.text.indexOf(" " + now.energy + " ") > 0 && strip.text.indexOf(" " + now.stress + " ") > 0, strip.text + " / " + JSON.stringify(now));
+    const cash = (now.cash < 0 ? "−$" : "$") + Math.abs(now.cash).toLocaleString("en-US");
+    check("and carries the week, energy, stress and cash as they are", strip.text.indexOf("Week " + now.week) === 0 && strip.text.indexOf(" " + now.energy + " ") > 0 && strip.text.indexOf(" " + now.stress + " ") > 0 && strip.text.endsWith(" " + cash), strip.text + " / " + JSON.stringify(now));
     await page.evaluate(() => { Math.random = () => 0.95; });   // a quiet Friday: no event dialog
-    await tap(page, '[data-ui="end"]'); await page.waitForTimeout(1200);
+    // End week at the top of the screen, so the log's first lines are on it when the button is pressed
+    await page.evaluate(() => document.querySelector('[data-ui="end"]').scrollIntoView({ block: "start" })); await page.waitForTimeout(300);
+    await page.locator('[data-ui="end"]').tap(); await page.waitForTimeout(1200);
     const turned = await page.evaluate(() => ({ y: Math.round(window.scrollY), week: document.querySelector(".quarter-head h2").innerText, strip: !!document.querySelector(".strip.on") }));
     check("when the week turns the page goes back to the top, where the new week is", turned.y <= 2 && turned.week === "Week " + (now.week + 1) && !turned.strip, JSON.stringify(turned));
+    const friday = await text(page, ".peek");
+    check("and what Friday did is shown, wherever End week was on the screen when it was pressed", !!friday && friday.length > 3, friday);
+    // a week that ends in a choice: nothing is shown under the dialog, and the week's lines are shown once it is made
+    await page.evaluate(() => { Math.random = () => 0.1; });
+    await page.waitForTimeout(5200);                           // the last notice has gone
+    await tap(page, '[data-ui="end"]'); await page.waitForTimeout(900);
+    const under = await page.evaluate(() => ({ dialog: (document.querySelector("dialog[open]") || { getAttribute() { return null; } }).getAttribute("data-dialog"), notice: !!document.querySelector(".peek") }));
+    check("while an event's choice is open no notice sits dimmed under it", /^evt:/.test(under.dialog || "") && !under.notice, JSON.stringify(under));
+    for (let i = 0; i < 3 && await page.evaluate(() => !!document.querySelector("dialog[open]")); i++) { await page.tap("dialog[open] .d-footer .btn"); await page.waitForTimeout(700); }
+    const after = await page.evaluate(() => { const p = document.querySelector(".peek"); return p ? { lines: p.querySelectorAll(".line").length, more: !!p.querySelector(".peek-more") } : null; });
+    check("and once it is made, the week's lines are shown with the choice's", !!after && (after.lines >= 2 || after.more), JSON.stringify(after));
     check("no errors", errors.length === 0, errors.join(" | "));
     await context.close();
 
@@ -119,7 +140,17 @@ const wide = page => page.evaluate(() => ({ page: document.documentElement.scrol
     check("sideways, a caption in the top bar does not make the page wider than the screen", w.page <= w.screen && !!(await text(page, ".pa-cap")), w.page + " vs " + w.screen);
     const side = await page.evaluate(() => [...document.querySelectorAll('.foot .btn, .topbar .linkbtn, .iconbtn')].filter(e => e.getBoundingClientRect().height < 44).map(e => e.className + " " + Math.round(e.getBoundingClientRect().height)));
     check("and its buttons are a thumb's size too", side.length === 0, side.join(", "));
+    await page.evaluate(() => document.querySelector('[data-ui="end"]').scrollIntoView({ block: "center" })); await page.waitForTimeout(500);
+    check("sideways too, the numbers follow you down the page", await page.evaluate(() => { const s = document.querySelector(".strip"); return s.classList.contains("on") && Math.round(s.getBoundingClientRect().top) === 0; }));
     await context.close();
+    for (const small of [{ width: 640, height: 360 }, { width: 568, height: 320 }]) {
+      ({ context, page, errors } = await open(browser, { viewport: small, save: fixture("end-club") }));
+      await page.waitForSelector('dialog[open][data-dialog="end:club"]', { timeout: 5000 }).catch(() => {});
+      await page.waitForTimeout(1200);
+      const sm = await page.evaluate(() => { const d = document.querySelector("dialog[open]"); if (!d) return null; const c = d.querySelector(".cutbox").getBoundingClientRect(), r = d.getBoundingClientRect(), f = d.querySelector(".d-footer").getBoundingClientRect(); return { crt: [Math.round(c.top), Math.round(c.bottom), Math.round(c.right)], dialog: [Math.round(r.top), Math.round(r.bottom)], footerLeft: Math.round(f.left), vh: window.innerHeight }; });
+      check("a small phone on its side (" + small.width + "x" + small.height + ") shows an ending's whole scene too", !!sm && sm.crt[0] >= sm.dialog[0] && sm.crt[1] <= sm.dialog[1] && sm.dialog[1] <= sm.vh && sm.footerLeft >= sm.crt[2], JSON.stringify(sm));
+      await context.close();
+    }
     ({ context, page, errors } = await open(browser, { viewport: SIDEWAYS, save: fixture("end-club") }));
     await page.waitForSelector('dialog[open][data-dialog="end:club"]', { timeout: 5000 }).catch(() => {});
     await page.waitForTimeout(1500);
@@ -156,6 +187,32 @@ const wide = page => page.evaluate(() => ({ page: document.documentElement.scrol
     await page.waitForTimeout(400);
     const said = await page.evaluate(() => { const t = document.getElementById("tst-toast"); return t && t.classList.contains("show") ? t.textContent : null; });
     check("a stored run that cannot be read starts a new one and says so", (await text(page, ".quarter-head h2")) === "Week 1" && /damaged/.test(said || ""), said);
+    check("no errors", errors.length === 0, errors.join(" | "));
+    await context.close();
+
+    /* ---------- 8. a 320px screen ---------- */
+    ({ context, page, errors } = await open(browser, { viewport: { width: 320, height: 568 }, first: true }));
+    await page.waitForSelector('dialog[open][data-dialog="welcome"]', { timeout: 5000 }).catch(() => {});
+    await page.waitForTimeout(600);
+    const tall = await page.evaluate(() => { const d = document.querySelector("dialog[open]"); return d ? { top: Math.round(d.scrollTop), content: d.scrollHeight, seen: d.clientHeight } : null; });
+    check("a dialog taller than the screen opens at its first line, not scrolled to its button", !!tall && tall.content > tall.seen && tall.top === 0, JSON.stringify(tall));
+    await context.close();
+    ({ context, page, errors } = await open(browser, { viewport: { width: 320, height: 568 } }));
+    const names = await page.evaluate(() => { const ink = document.createRange(); const n = document.querySelector(".brand-name") || document.querySelector(".brand"); ink.selectNodeContents(n); const box = n.getBoundingClientRect(); return { brandRight: Math.round(Math.min(ink.getBoundingClientRect().right, box.right)), rulesLeft: Math.round(document.querySelector('[data-ui="rules"]').getBoundingClientRect().left), page: document.documentElement.scrollWidth, screen: document.documentElement.clientWidth }; });
+    check("at 320px the wordmark does not run under the top bar's buttons, and nothing is wider than the screen", names.brandRight <= names.rulesLeft && names.page <= names.screen, JSON.stringify(names));
+    check("no errors", errors.length === 0, errors.join(" | "));
+    await context.close();
+
+    /* ---------- 9. turned on its side ---------- */
+    ({ context, page, errors } = await open(browser, { viewport: { width: 390, height: 844 }, save: fixture("board-24-deals") }));
+    const upright = await page.evaluate(() => ({ chips: document.querySelectorAll(".chips .chip").length, more: !!document.querySelector(".chip.more") }));
+    await page.setViewportSize({ width: 844, height: 390 }); await page.waitForTimeout(500);
+    const turnedSide = await page.evaluate(() => { const box = document.querySelector(".chips").getBoundingClientRect(); const chips = [...document.querySelectorAll(".chips .chip")]; return { chips: chips.length, outside: chips.filter(c => { const r = c.getBoundingClientRect(); return r.bottom > box.bottom + 1 || r.right > box.right + 1; }).length, more: !!document.querySelector(".chip.more") }; });
+    check("turned on its side, the chips are measured again: none is cut off, and the rest are under a +N", upright.chips >= 5 && !upright.more && turnedSide.outside === 0 && turnedSide.more && turnedSide.chips < upright.chips, JSON.stringify({ upright, turnedSide }));
+    const churn = await page.evaluate(() => new Promise(done => { let n = 0; const mo = new MutationObserver(list => { n += list.length; }); mo.observe(document.querySelector(".foot"), { childList: true, subtree: true, attributes: true, characterData: true }); setTimeout(() => { mo.disconnect(); done(n); }, 600); }));
+    check("and then they are left alone (they used to be redrawn on every frame)", churn === 0, churn + " changes in 600 ms");
+    const kept = await page.evaluate(() => new Promise(done => { const m = document.querySelector(".chip.more"); m.focus(); setTimeout(() => done(document.activeElement === m && m.isConnected), 400); }));
+    check("so the +N chip can keep the focus", kept);
     check("no errors", errors.length === 0, errors.join(" | "));
     await context.close();
   } finally { await browser.close(); }

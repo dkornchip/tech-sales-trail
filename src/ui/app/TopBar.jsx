@@ -25,7 +25,7 @@ const PaLine = () => {
 // Product, workspace, person. The asterisk is HR's.
 export const TopBar = ({ onRules, soundOn, onSound, onSettings, settingsRef, menuOpen, children }) => (
   <header className="topbar">
-    <div className="brand"><span className="mark"><Icon name="compass" /></span>{UI.product}</div>
+    <div className="brand"><span className="mark"><Icon name="compass" /></span><span className="brand-name">{UI.product}</span></div>
     <div className="crumbs"><span className="sep">/</span><span>{UI.company}</span><span className="sep">/</span><strong className="keep">{UI.rep}</strong><span className="keep">{UI.title}</span></div>
     <PaLine />
     <button type="button" className="linkbtn" data-ui="rules" onClick={onRules}>{UI.rules}</button>

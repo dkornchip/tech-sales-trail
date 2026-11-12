@@ -42,25 +42,32 @@ const chips = s => {
 // lines of their own, so there every chip is shown and nothing is folded.
 const Chips = ({ list, onHint }) => {
   const box = React.useRef(null);
-  const sig = list.map(c => c.id + ":" + c.text).join("|");
-  const [fit, setFit] = React.useState({ sig: "", n: list.length });
+  const [width, setWidth] = React.useState(0);                  // the footer's width, as last observed
   const phone = isPhone();
-  const n = phone ? list.length : fit.sig === sig ? fit.n : list.length;   // a new set of chips is measured afresh
+  // what was measured, and for what: this set of chips, at this width
+  const key = list.map(c => c.id + ":" + c.text).join("|") + "@" + width;
+  const [fit, setFit] = React.useState({ key: "", n: list.length });
+  const n = phone ? list.length : fit.key === key ? fit.n : list.length;   // a new set, or a new width, is measured afresh
   React.useLayoutEffect(() => {
-    const el = box.current; if (!el) return;
-    const measure = () => {
-      const kids = Array.from(el.children).filter(k => k.hasAttribute("data-chip"));
-      if (!kids.length || isPhone()) return;
-      const top = kids[0].offsetTop;
-      let ok = kids.findIndex(k => k.offsetTop > top);
-      if (ok < 0) ok = kids.length;
-      setFit(f => (f.sig === sig && f.n <= ok ? f : { sig, n: Math.min(ok, f.sig === sig ? f.n : ok) }));
-    };
-    measure();
-    const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(() => setFit({ sig: "", n: 0 })) : null;
-    if (ro) ro.observe(el);
-    return () => { if (ro) ro.disconnect(); };
-  }, [sig, n]);
+    const el = box.current; if (!el || phone) return;
+    const kids = Array.from(el.children).filter(k => k.hasAttribute("data-chip"));
+    if (!kids.length) return;
+    const top = kids[0].offsetTop;
+    let ok = kids.findIndex(k => k.offsetTop > top);
+    if (ok < 0) ok = kids.length;
+    // fewer fit than are shown (the "+N" chip takes room too): show fewer, and look again. Otherwise it is settled.
+    if (fit.key !== key || ok < fit.n) setFit({ key, n: fit.key === key ? Math.min(ok, fit.n) : ok });
+  }, [key, n, phone]);
+  // One observer for the life of the footer. It reports a width; only a change of width asks for a new measure.
+  // (It used to be rebuilt by every measure, and each new one fired at once and asked for another: the chips were
+  // re-rendered on every frame, and the "+N" chip could not keep the focus.)
+  React.useEffect(() => {
+    const el = box.current && box.current.parentElement;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(entries => { const w = Math.round(entries[entries.length - 1].contentRect.width); setWidth(v => (v === w ? v : w)); });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
   const rest = list.slice(n), names = rest.map(c => c.text).join(" · ");
   const tell = () => onHint({ title: CHIP.more(rest.length), text: names });
   const leave = () => { if (!noHover()) onHint(null); };
@@ -75,7 +82,7 @@ const Chips = ({ list, onHint }) => {
 // Why the Hail Mary can't be thrown right now, or null.
 export const hailBlock = s => blocked(s, { energy: HAIL.energy, slots: 1 }) || (lateDeals(s).length ? null : { why: "none" });
 
-export const Foot = ({ s, onHail, onEndWeek, onHint }) => {
+export const Foot = ({ s, onHail, onEndWeek, onHint, onBlocked }) => {
   const late = lateDeals(s).length;
   const hailBlocked = hailBlock(s);
   const hailHint = () => onHint({ title: UI.hail, text: hailBlocked && hailBlocked.why !== "none" ? HINT.blocked[hailBlocked.why](hailBlocked) : HINT.hail(late), key: "H" });
@@ -86,7 +93,7 @@ export const Foot = ({ s, onHail, onEndWeek, onHint }) => {
   return (
     <div className="foot">
       <Chips list={chips(s)} onHint={onHint} />
-      <button type="button" className="btn" data-ui="hail" aria-disabled={hailBlocked ? "true" : undefined} onClick={() => { if (hailBlocked) { hailHint(); return; } onHail(); if (noHover()) onHint(null); }}
+      <button type="button" className="btn" data-ui="hail" aria-disabled={hailBlocked ? "true" : undefined} onClick={() => { if (hailBlocked) { hailHint(); if (onBlocked && noHover()) onBlocked({ title: UI.hail, text: hailBlocked.why !== "none" ? HINT.blocked[hailBlocked.why](hailBlocked) : HINT.hail(late) }); return; } onHail(); if (noHover()) onHint(null); }}
         onMouseEnter={hailHint} onFocus={hailHint} onMouseLeave={leave} onBlur={leave}><Icon name="dices" />{UI.hail}</button>
       <button type="button" className="btn primary" data-ui="end" aria-disabled={over ? "true" : undefined} onClick={() => { if (over) return; onEndWeek(); if (noHover()) onHint(null); }}
         onMouseEnter={endHint} onFocus={endHint} onMouseLeave={leave} onBlur={leave}>{UI.endWeek}<Icon name="arrow-right" /></button>

@@ -36,7 +36,8 @@ const MEDIA_OK = new Set([
   "(max-width:640px)", "(min-width:641px)", "(max-width:1024px)", "(min-width:1025px)", "(min-width:1500px)",
   "(max-height:600px)", "(max-height:619px)", "(min-height:620px)", "(min-height:900px)",
   "(prefers-reduced-motion:reduce)", "(prefers-reduced-motion:no-preference)",
-  "(pointer:coarse)"   // only together with a stacked-layout condition: a thumb needs 44px
+  "(pointer:coarse)",  // only together with a stacked-layout condition: a thumb needs 44px
+  "(orientation:landscape)"   // only together with max-height:600px: a phone on its side, whatever its width
 ]);
 
 const argv = process.argv.slice(2);

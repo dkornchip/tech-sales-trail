@@ -54,7 +54,10 @@ export const Modal=({open,title,children,actions,onDismiss,dialogId,className,as
         ref.current.showModal();
         // the browser focuses the first control; an action marked `focus` takes it instead
         const want=ref.current.querySelector("[data-focus]");
-        if(want)want.focus();
+        if(want)want.focus({preventScroll:true});
+        // focusing a button at the foot of a dialog taller than the screen scrolls to it: back to the first line
+        ref.current.scrollTop=0;
+        const body=ref.current.querySelector(".d-body"); if(body)body.scrollTop=0;
       }
     }else{
       if(ref.current.open)ref.current.close();

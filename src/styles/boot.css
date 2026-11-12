@@ -19,8 +19,9 @@ html.tst-booting,html.tst-booting body{overflow:hidden}
 .boot-sound.iconbtn{flex:none;color:var(--text-2)}
 .boot-btn.btn{flex:none}
 @keyframes bootOut{to{opacity:0;visibility:hidden}}
-/* a short window (a phone on its side): the terminal gets the height, the wordmark waits for the desk */
-@media (max-height:600px){
+/* a short window that is wider than it is tall (a phone on its side): the terminal gets the height, the wordmark
+   waits for the desk */
+@media (max-height:600px) and (orientation:landscape){
   #boot{padding-top:var(--sp-4);padding-bottom:var(--sp-4)}
   .boot-title{display:none}
   .boot-monitor{width:min(760px,100%,calc((100vh - 96px)*1.75));width:min(760px,100%,calc((100dvh - 96px)*1.75))}

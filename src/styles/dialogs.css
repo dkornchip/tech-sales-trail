@@ -80,10 +80,10 @@ dialog .d-footer .btn.at-start{margin-right:auto}
   .end-fact dd.end-sub{white-space:normal}
 }
 @keyframes endingIn{from{opacity:0;transform:translate(-50%,8px)}to{opacity:1;transform:translate(-50%,0)}}
-/* A short, wide window (a phone on its side): the scene on the left at a size that fits the height, the title and
-   the buttons beside it, and the paperwork scrolling under the scene. (A small phone held upright is short too,
-   but it is narrow: it keeps the phone's layout above.) */
-@media (max-height:600px) and (min-width:641px){
+/* A short window that is wider than it is tall (a phone on its side, of any size): the scene on the left at a size
+   that fits the height, the title and the buttons beside it, and the paperwork scrolling under the scene. (A small
+   phone held upright is short too, but it is taller than it is wide: it keeps the phone's layout above.) */
+@media (max-height:600px) and (orientation:landscape){
   dialog.ending[open]{display:grid;grid-template-columns:minmax(0,1fr) 208px;grid-template-rows:auto minmax(0,1fr);top:50%;transform:translate(-50%,-50%);
     width:min(980px,calc(100vw - 24px));max-width:none;height:calc(100dvh - 24px);overflow:hidden;animation:dialogIn .16s var(--ease) both}
   dialog.ending .d-body{grid-column:1;grid-row:1 / -1;overflow:auto;overscroll-behavior:contain;padding:var(--sp-4)}
