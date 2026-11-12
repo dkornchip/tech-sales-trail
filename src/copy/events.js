@@ -8,33 +8,36 @@ import { CK_QUIP, CK_WARNING } from "./claink.js";
 // actually worked) for the warning, `account` (the deal he took) for the writing lesson.
 export const EVENT_COPY = {
   "evt:competitor": {
-    title: () => "Scheisskorp cut prices by 25%",
-    body: () => "Every late-stage buyer you have just received the same email. Your manager would like your plan within the hour.",
+    title: () => "Competitor panic",
+    body: () => "They cut 25%. Match 20% or hold?",
     options: {
-      match: () => ({ label: "Match them", effect: "+12% close odds and 20% off every deal, this week" }),
-      hold: () => ({ label: "Hold the price", effect: "−8% close odds this week, +4 reputation" })
+      match: () => ({ label: "Match 20%", effect: "More wins, less money: +12% close odds and 20% off every deal, this week" }),
+      hold: () => ({ label: "Hold price", effect: "Fewer wins: −8% close odds this week, +4 reputation" })
     }
   },
   "evt:security": {
-    title: () => "A customer was breached",
-    body: () => "It came in through the product. Legal has drafted two statements and would like you to pick one before the customer does.",
+    title: () => "Security incident",
+    body: () => "A customer got breached. Own it or spin it?",
     options: {
-      own: () => ({ label: "Tell customers first", effect: "+6 reputation, −18 product, −15% close odds for 2 weeks. Each deal that has seen a demo has a 30% chance to leave." }),
-      spin: () => ({ label: "Call it an isolated event", effect: "−8 reputation, −12 product, −8% close odds this week. Each deal that has seen a demo has a 15% chance to leave." })
+      own: () => ({ label: "Own it", effect: "+6 reputation, −18 product, −15% close odds for 2 weeks. Each demoed deal has a 30% chance to walk." }),
+      spin: () => ({ label: "Spin it", effect: "−8 reputation, −12 product, −8% close odds this week. Each demoed deal has a 15% chance to walk." })
     }
   },
   "ck:warning": {
     title: () => "Always on ChatGDP?",
-    body: p => `“${CK_QUIP(p.miracle)} ${p.miracle ? "Enjoy it. " : "That is not writing. "}${CK_WARNING}”`,
+    body: p => `“${CK_QUIP(p.miracle)} ${p.miracle ? "Enjoy it. " : "That’s not writing. "}${CK_WARNING}”`,
     options: {
-      ack: () => "Noted"
+      ack: () => "…Noted, boss"
     }
   },
   "ck:lesson": {
     title: () => "Writing lesson",
-    body: p => `“ChatGDP again. I’ll close ${p.account} myself. Watch how a person writes an email.”`,
+    body: p => `“Always on ChatGDP, huh? I’ll close ${p.account} myself. Watch and work on your writing skills.”`,
     options: {
-      ack: () => "Understood"
+      ack: () => "…Thanks, boss"
     }
   }
 };
+
+// For the copy lint: the two replies open on an ellipsis, so their first word is still the start of the sentence.
+export const lint = { exempt: { "sentence-case": ["EVENT_COPY.ck:warning.options.ack", "EVENT_COPY.ck:lesson.options.ack"] } };

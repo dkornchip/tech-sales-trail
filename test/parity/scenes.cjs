@@ -12,10 +12,10 @@
  *                     swaps the two caption sets every 5.2 s, so this sees both, and the idle-only art)
  *   --only <text>     only the cases whose name contains <text>
  *   --art             compare the pictures only: leave the caption band, the summaries and the caption schedule out,
- *                     and accept the words inside the pictures that v2.0 rewrote on purpose (REWRITTEN below).
- *                     This is the mode for v2.0 and later, whose captions were rewritten; without it the words
- *                     must match the baseline's too (which is how the copy was proved to have moved verbatim
- *                     before it was rewritten).
+ *                     and accept the words inside the pictures listed in REWRITTEN below (none today).
+ *                     This was the mode for v2.0, whose captions were rewritten. v2.0.1 put v1.21's captions back,
+ *                     so the default mode is the one to run: the words must match the baseline's too (a typeset
+ *                     apostrophe is the only difference allowed).
  *   --fx <v>          the value the cosmetic stream is pinned to, in [0, 1) (default 0.5)
  *   --verbose         print every case, not only the failures
  *
@@ -136,9 +136,11 @@ async function render(browser, build, label, cases, o) {
 
 // Words drawn inside the pictures that v2.0 rewrote on purpose (src/copy/scenes.js `text`). --art accepts exactly
 // these, on the scene named, and nothing else.
-const REWRITTEN = [
-  { scene: 'meltdown', was: 'Stop code: SOUL_NOT_FOUND', now: 'Stop code: QUOTA_EXCEPTION_NOT_HANDLED' }
-];
+const REWRITTEN = [];
+
+// The one thing the build may do to the baseline's words: typeset an apostrophe (YOU'RE DONE is drawn YOU’RE DONE).
+// Both sides are read with the plain one, in every mode; the character is the same width, so no frame moves.
+const plain = text => String(text).replace(/\u2019/g, "'");
 
 // Rows 0 to 12 of the grid are the picture; row 13 is the rule and rows 14 to 16 the caption band (ART in the engine's core.js).
 const ART_ROWS = 13;
@@ -169,6 +171,10 @@ function firstDiff(a, b) {
   const problems = [];
   for (let i = 0; i < cases.length; i++) {
     const a = A[i], b = B[i], bad = [];
+    for (const side of [a, b]) {
+      side.summary = plain(side.summary); side.cap = plain(side.cap); side.cards = plain(side.cards);
+      side.frames = side.frames.map(f => Object.assign({}, f, { text: plain(f.text), html: plain(f.html) }));
+    }
     if (a.key !== b.key) bad.push(`plays scene "${b.key}", the baseline plays "${a.key}"`);
     if (a.dur !== b.dur) bad.push(`timeline is ${b.dur} ms, the baseline's is ${a.dur} ms`);
     if (!o.art && a.summary !== b.summary) bad.push(`summary differs\n      A: ${JSON.stringify(a.summary)}\n      B: ${JSON.stringify(b.summary)}`);

@@ -7,17 +7,17 @@ export const MEMO = {
   // the headline; a confetti cannon fizzles after it
   greeting: "Welcome to Shitcorp, Matt! ",
   paragraphs: [
-    "Shitcorp is the next disruptor in SaaS. Our owners expect us to pass Scheisskorp in market capitalization by the end of the decade, and have said so in writing.",
-    "Here, culture is our glue. Your compensation plan is competitive, uncapped in principle, and explained in a separate document that is being finalized."
+    "The next disruptor in SaaS. (Our PE owners say we’re on track to overtake Scheisskorp in market cap by the end of the decade!)",
+    "Here, our culture is our glue. Your fair and killer comp plan rewards builders, not takers. You could become a gorillionaire!"
   ],
   // the job title paragraph: `title` is what the memo promises, `stamp` is what HR stamps over it
   role: {
-    before: "Because you will be closing deals, your title is ",
+    before: "And since you close deals, internally you’ll be known as an ",
     title: "Associate Account Executive",
     stamp: "SDR*",
-    after: ". We think that is a strong title for someone at this stage."
+    after: ". How cool is that, for a young man of your tenure!"
   },
-  footnote: "*For administrative purposes, HR has classified this role as SDR."
+  footnote: "*HR will classify you as an SDR… for… ahem… admin and streamlining purposes."
 };
 
 // For the copy lint: the footnote starts with HR's asterisk.

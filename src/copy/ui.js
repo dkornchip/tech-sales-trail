@@ -112,7 +112,7 @@ export const CHIP = {
   more: k => `${k} more`,
   trip: place => `${place} trip approved`,
   shots: k => n(k, "quad shot"),
-  pip: level => `Performance plan, level ${level}`,
+  pip: level => `PIP level ${level}`,
 };
 
 export const MENU = { title: "Settings", sound: "Sound", voice: "Office announcer", captions: "Captions for the announcer", volume: "Volume", voiceOn: "Announcer on.", save: "Save run", load: "Load saved run", newRun: "New run" };
@@ -128,7 +128,7 @@ export const TOAST = {
 };
 
 // The boot screen's bezel, and names for things that have no visible label (screen readers read these).
-export const BOOT = { label: "Shitcorp OS boot screen", brand: "SHITCORP", hint: "M mutes", clockIn: "Clock in", skip: "Skip", booting: "Booting…" };
+export const BOOT = { label: "Shitcorp OS boot screen", product: "Tech Sales Trail", brand: "SHITCORP", hint: "M mutes", sound: "Sound", soundTitle: "Sound (M)", clockIn: "Clock in", skip: "Skip", booting: "Booting…" };
 export const NAMES = { week: "Your week", desk: "Your deals and activity", sound: "Sound", soundTitle: "Sound (M)", ending: "Ending animation", event: "Event" };
 
 // The page that replaces the game when it cannot be drawn (a save that is not a save).

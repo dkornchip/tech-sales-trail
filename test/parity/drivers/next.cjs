@@ -38,7 +38,7 @@ module.exports = {
   canon: {
     // Save, Load and New run moved into the settings menu, so reaching one costs a click the baseline never made
     // (opening the menu). That one click is taken out of the sound trace for those moves; nothing else is.
-    rewrittenCaptions: true,   // v2.0 rewrote what the scenes type; see lib/runner.cjs (sound)
+    rewrittenCaptions: false,  // v2.0.1: the scenes type v1.21's words again, so their typing ticks are compared too (lib/runner.cjs)
     sound(list, move) {
       if (!/^(newgame|save|load|inject:|\(load\))/.test(String(move))) return list;
       const i = list.indexOf('play:click');

@@ -1,5 +1,25 @@
 # Changelog
 
+## v2.0.1 — the old words, and a boot screen that matches
+
+### Changed: the writing is v1.21's again
+- v2.0 rewrote every line in a dry company voice, and it read worse than what it replaced, most of all when you were fired: HR's announcement no longer said what had happened. The rewrite is withdrawn. Every line that existed in v1.21 says what it said in v1.21: the activity log, the announcer and HR, the ending titles and the line under them, the cutscene captions (and the meltdown's stop code), the event dialogs, the onboarding memo, your manager's lines about clAInk, and the rules sheet's entries.
+- Being fired reads as it did. HR: “Thanks for coming to this meeting. Today is your last day with Shitcorp.” The log: “Hit quota, fired anyway. Politics.” The ending: “Terminated. Your Slack is already gone.” The cutscene: “YOU’RE DONE.”
+- What stays from v2.0 is typesetting, not wording: drawn icons instead of emoji, real plurals instead of “lead(s),” the true minus sign, stat changes as chips after the line, and an event’s choices spelling out what they do.
+- The extra wordings v2.0 gave to repeating lines are gone. A line says the one thing it always said.
+- The notes on the results screen are new in v2.0, so there was nothing to restore. They were rewritten to match: short, and said to you (“Your manager closed Quasar Laundry himself. It counts for him.”).
+- The rules stay honest: 70 to 79% of quota is still described as your manager's call.
+
+### Changed: the boot screen belongs to v2.0
+- The boot screen had kept v1.21's navy frame and glow, floating over a dimmed desk. It is now drawn like everything else: a plain housing around the terminal, on the game's own background with nothing behind it, and the wordmark where the top bar has it, so the name stays put when the screen fades to the desk. The terminal itself, and what it plays, are unchanged.
+- On a phone the terminal is as wide as the screen allows and Clock in is a full-width button under it. In a short window (a phone on its side) the terminal gets the height.
+- The boot screen has a sound button: the M key, for people without a keyboard.
+- On a touch screen, Clock in no longer wears a keyboard focus ring.
+
+### Tests
+- The scene test compares the captions again, not only the pictures: all 1,718 frames, every summary and every caption schedule match v1.21, with a typeset apostrophe as the only difference allowed. The harness compares the scenes' typing sounds again, and runs its seeded sound pass again.
+- The copy lint no longer bans the words v1.21's own lines use.
+
 ## v2.0 — the same quarter, done properly
 
 Everything a player sees, reads or hears was redone. Nothing about how the game plays was changed: the odds, the costs, the events and the endings are v1.21's, and saves from any earlier version load and continue. A test harness plays v1.21 and v2.0 side by side on the same dice and requires the same state, the same number of rolls, the same dialogs and the same legal moves after every move.

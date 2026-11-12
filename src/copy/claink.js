@@ -16,7 +16,7 @@ export const CK_OUTCOMES=[
   (a,n)=>`Summarized ${n(120,260)} calls, then the summaries`,
   (a,n)=>`Enriched ${n(6,12)},000 CRM fields with “Unknown”`,
   (a,n)=>`Built a ${n(38,64)}-slide account plan for ${a()}`,
-  (a,n)=>"Renamed the pipeline stages. Twice.",
+  (a,n)=>"Held a standup about the standup",
   (a,n)=>`Wrote ${a()} a haiku. Unprompted.`,
   (a,n)=>`Scored ${n(400,900)} leads. All “medium.”`,
   (a,n)=>`Researched ${a()}. Found its Wikipedia page.`,
@@ -35,7 +35,7 @@ export const CK_OUTCOMES=[
 export const CK_WASTE=[
   (t,n)=>({who:"Finance",why:`${t} tokens. $0 closed. Please explain, in fewer tokens.`,line:`${t} tokens, $0 closed. “Explain.”`}),
   (t,n)=>({who:"IT Security",why:`Your agent requested admin access to the CEO’s inbox. ${n(900,4000).toLocaleString("en-US")} times.`,line:"It kept asking for the CEO’s inbox."}),
-  (t,n)=>({who:"RevOps",why:"Your agent built a dashboard that tracks its other dashboards. It is now our most-viewed report.",line:"A dashboard of its own dashboards."}),
+  (t,n)=>({who:"RevOps",why:"Your agent built a dashboard that tracks its other dashboards. It’s now our most-viewed report.",line:"A dashboard of its own dashboards."}),
   (t,n)=>({who:"Procurement",why:"Your agent tried to buy a second clAInk seat. For itself. On your card.",line:"It tried to buy itself a seat."}),
   (t,n)=>({who:"HR",why:"Your agent nominated itself for Rep of the Month. It’s currently winning.",line:"It nominated itself Rep of the Month."}),
   (t,n)=>({who:"Facilities",why:"Your agents booked every conference room on the floor “for alignment.”",line:"Every conference room, “for alignment.”"}),
@@ -143,14 +143,14 @@ export const CK_OLD_SAVE={
 // Your manager notices ("Always on ChatGDP?"). The warning is the first time; after that he takes a deal, or has
 // nothing to take. ping: what he says in the workspace. say: what is read out after the run's result.
 // miracle: the run that caught his eye actually worked.
-export const CK_WARNING="Work on your writing, or I start stepping into your deals. This is the warning.";
+export const CK_WARNING="Improve your writing skills, or management will start intervening in your deals. Consider this your warning.";
 export const CK_QUIP=(miracle)=>miracle?"Nice week. ChatGDP do that?":"Always on ChatGDP, huh?";
 export const CK_MGR={
   warnPing:(miracle)=>`${CK_QUIP(miracle)} Work on your writing, or I step in on your deals.`,
   warnSay:`Your manager noticed. ${CK_WARNING}`,
   circlePing:"ChatGDP again? I’ll circle back.",
   circleSay:"Your manager will circle back.",
-  yoinkPing:(account)=>`I’ll close ${account} myself. Work on your writing.`,
+  yoinkPing:(account)=>`I’ll close ${account} myself. Work on your writing skills.`,
   yoinkSay:(account)=>`Your manager took ${account}.`
 };
 
