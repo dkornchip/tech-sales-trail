@@ -210,7 +210,7 @@ export const ClainkStrikes=({n,log,cash,due,ran})=>{
 
 export const ClainkStrikeCard=({st})=>(
   <div className={"claink-strike ck-beat"+(st.n>=CLAINK.STRIKES?" out":"")}>
-    <div className="hd">{CK_STRIKES.cardHead(st.n,CLAINK.STRIKES)}{st.who && <span>{CK_STRIKES.cardBy(st.who)}</span>}</div>
+    <div className="hd"><Icon name="stamp" />{CK_STRIKES.cardHead(st.n,CLAINK.STRIKES)}{st.who && <span>{CK_STRIKES.cardBy(st.who)}</span>}</div>
     <p>{st.why}</p>
     {st.fx && <div className="fx">{st.fx}</div>}
   </div>

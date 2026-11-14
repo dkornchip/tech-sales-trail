@@ -4,6 +4,7 @@
 //   2. Hail Mary: asked the first time in a run (button and H key), not after one has been thrown
 //   3. Quad shot: asked only when the shot is certain to end the run
 //   4. clAInk's offer: the X asks inside the ad; minimizing does not; "Keep" and Escape leave the offer alone
+//   5. the announcer's caption leaves with the run it belonged to (Load, New run)
 // A "no" must leave the run byte for byte as it was. Exits 1 if any check fails.
 // (CommonJS on purpose: Playwright only resolves through require() here.)
 "use strict";
@@ -154,6 +155,26 @@ const menu = async (page, item) => { await click(page, '[data-ui="settings"]'); 
     check("Dismiss: the offer is gone for this run", b.claink.status === "dismissed" && (await page.locator(".claink-ad").count()) === 0, b.claink.status);
     check("and only that changed", b.week === a.week && b.cash === a.cash && b.slots === a.slots && b.energy === a.energy);
     check("no errors (offer)", errors.length === 0, errors.join(" | "));
+    await context.close();
+
+    /* ---------- 5. the announcer's caption leaves with its run ---------- */
+    ({ context, page, errors } = await open(browser));
+    const cap = () => page.evaluate(() => { const c = document.querySelector(".pa-cap .pa-text"); return c ? c.textContent : null; });
+    await menu(page, "save");
+    await menu(page, "newgame"); await page.waitForTimeout(300);
+    const said = await cap();
+    check("a new run is announced, and captioned", typeof said === "string" && said.length > 5, String(said));
+    await menu(page, "load"); await page.waitForTimeout(200);
+    check("loading a run clears the caption that belonged to the other one", (await cap()) === null, String(await cap()));
+    await page.waitForTimeout(3200);                                // the announcer does not repeat itself within three seconds
+    await menu(page, "newgame"); await page.waitForTimeout(300);
+    const again = await cap();
+    await click(page, '[data-act="prospect"]');                    // the run is now in progress
+    await page.waitForTimeout(3200);
+    await menu(page, "newgame"); await click(page, '[data-ui="confirm-yes"]'); await page.waitForTimeout(300);
+    const fresh = await cap();
+    check("a new run replaces the old run's caption with its own line (never two, never a stale one)", typeof again === "string" && typeof fresh === "string" && (await page.locator(".pa-cap").count()) === 1, again + " / " + fresh);
+    check("no errors (captions)", errors.length === 0, errors.join(" | "));
     await context.close();
   } finally { await browser.close(); }
   const failed = rows.filter(r => !r).length;

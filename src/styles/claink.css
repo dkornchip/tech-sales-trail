@@ -148,6 +148,7 @@
 .claink-strike{border-radius:11px;padding:8px 10px;font-size:13px;color:#ffe4e6;background:linear-gradient(180deg,#2a0b14,#160a1c);border:1px solid #9f1239}
 .claink-strike .hd{font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#fda4af;margin-bottom:3px}
 .claink-strike .hd span{font-weight:600;letter-spacing:0;text-transform:none;color:#fecdd3}
+.claink-strike .hd .icon{width:14px;height:14px;margin-right:6px;vertical-align:-2px}
 .claink-strike p{margin:0}
 .claink-strike .fx{margin-top:5px;font-size:13px;font-weight:600;color:#fda4af}
 .claink-strike.out{border-color:#f43f5e;box-shadow:0 0 18px rgba(244,63,94,.22)}

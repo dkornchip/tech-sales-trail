@@ -28,6 +28,8 @@
 .quarter-head{display:flex;align-items:baseline;gap:var(--sp-3)}
 .quarter-head h2{font-size:var(--fs-2);font-weight:600}
 .quarter-head .of{color:var(--text-3);font-size:var(--fs-1)}
+.quarter-head .chapter{flex:none;color:var(--text-3);font-size:var(--fs-1);white-space:nowrap}
+.quarter-head .chapter::before{content:"·";margin-right:var(--sp-3);color:var(--text-3)}
 .slots{margin-left:auto;display:flex;align-items:center;gap:var(--sp-3);font-size:var(--fs-1);color:var(--text-2)}
 .slots .pips{display:flex;gap:3px}
 .slots .pips i{width:14px;height:6px;border-radius:2px;background:var(--text)}
@@ -265,6 +267,8 @@
   .main{padding:var(--sp-3);gap:var(--sp-3)}
   .left{padding:var(--sp-4);gap:var(--sp-4)}
   .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  /* no room beside the week on a phone: the chapter is in the log and the announcer instead */
+  .quarter-head .chapter{display:none}
   /* the long label makes way for the change chip instead of sharing its line */
   .kpi[data-kpi="closed"]:has(.delta) .label{visibility:hidden}
   .stats{gap:var(--sp-5)}

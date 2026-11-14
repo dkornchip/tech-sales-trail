@@ -79,7 +79,10 @@ export function utter(text,key,voice,isRetry,kind){
 // v2.0: every line the announcer gets to say is also handed to the page as a caption (A.onCaption), and when the
 // voice cannot be heard (sound or the announcer is off, the browser has no speech, nothing has unlocked audio yet)
 // the caption is the announcement. Captions keep the spoken lines' pacing: the same cooldowns, one line at a time.
-export var CAP = { last:0, turn:{} };
+export var CAP = { last:0, turn:{}, lastKey:null };
+// Small talk: lines that fill a quiet week. A line that matters is never held back by one of these: it cuts the
+// small talk off (never talks over it) and is said at once, whatever the cooldown says.
+export var AMBIENT = { filler:1 };
 export function caption(key,text){
   if(A.settings.captions === false || !A.onCaption) return;
   try{ A.onCaption({ key:key, text:captionOf(text), who:HR_KEYS[key] ? "hr" : "pa" }); }catch(e){}
@@ -95,19 +98,20 @@ export function say(key,opts){
   if(!heard){
     // caption only. The line is taken in turn, not drawn: a silent page draws nothing the audible one would not.
     if(!bank) return false;
-    if(!opts.force && now - CAP.last < (opts.cooldown || 12000)) return false;
-    CAP.last = now;
+    if(!opts.force && !(AMBIENT[CAP.lastKey] && !AMBIENT[key]) && now - CAP.last < (opts.cooldown || 12000)) return false;
+    CAP.last = now; CAP.lastKey = key;
     var turn = CAP.turn[key] = (CAP.turn[key] || 0) + 1;
     caption(key,bank[(turn-1)%bank.length]);
     return false;
   }
   var text = bank ? bank[Math.floor(fxRandom()*bank.length)] : String(key);
   var ss = root.speechSynthesis;
-  if(!opts.force){
+  var overSmallTalk = AMBIENT[SAY.lastKey] && !AMBIENT[key];
+  if(!opts.force && !overSmallTalk){
     if(now - SAY.last < (opts.cooldown || 12000)) return false;
     if(speechBusy()) return false;
   } else { try{ ss.cancel(); }catch(e){} SAY.current = null; SAY.primer = null; }
-  SAY.last = now; CAP.last = now;
+  SAY.last = now; SAY.lastKey = key; CAP.last = now; CAP.lastKey = key;
   play("pa");
   if(bank) caption(key,text);
   clearTimeout(SAY.timer);

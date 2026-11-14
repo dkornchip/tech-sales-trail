@@ -19,7 +19,17 @@ import { CLAINK_UI_KEY, ClainkDock, clainkUiFor, isNarrowScreen, isShortScreen, 
 import { clearCaption, pushCaption } from "./captions.js";
 import { Ending } from "./Ending.jsx";
 import { AUDIO, noHover, notify, sfx } from "./env.js";
+import { Icon } from "./app/Icon.jsx";
 import { Modal } from "./primitives.jsx";
+
+// The picture beside a choice's title: a price tag for the pricing memo, a shield for the incident, a clipboard for
+// the manager's two visits. (icon:"..." is how the build finds the icons to bundle.)
+const DIALOG_MARK={
+  "evt:competitor":{icon:"tag"},
+  "evt:security":{icon:"shield-alert"},
+  "ck:warning":{icon:"clipboard-list"},
+  "ck:lesson":{icon:"clipboard-list"}
+};
 import { Tour, Welcome, endFirstDay, isFirstDay, useBooting } from "./FirstRun.jsx";
 import { hasStoredRun, readForLoad, readOnOpen, setAside, writeAutosave, writeSave } from "./storage.js";
 
@@ -76,6 +86,8 @@ export function Game({fresh}){
   };
 
   const onNew=()=>{
+    // the old run's announcer stops mid-word and its caption goes with it; the new run then says its own first line
+    clearCaption();
     const a=AUDIO(); if(a){ a.hush(); a.play("newgame"); a.say("newrun",{cooldown:3000}); }
     commit(newGame());
     setEpoch(e=>e+1); // v1.19: fresh clAInk UI state
@@ -91,6 +103,7 @@ export function Game({fresh}){
   // Load swaps the whole run in one step, or not at all: a save that cannot be opened leaves the run on the desk
   // exactly as it is, and says so.
   const openRun=run=>{
+    clearCaption();          // whatever the announcer was saying belonged to the run that is leaving the desk
     commit(run);
     setEpoch(e=>e+1); // v1.19: fresh clAInk UI state
     setAckOpen(isAck(waiting(run)));
@@ -281,6 +294,7 @@ export function Game({fresh}){
         open={!!shown && !booting && !(isAck(shown) && showHelp)}
         title={eventWords ? eventWords.title(eventParams) : NAMES.event}
         dialogId={shown ? shown.id : undefined}
+        mark={shown && DIALOG_MARK[shown.id] ? <Icon name={DIALOG_MARK[shown.id].icon} /> : null}
         actions={eventDef && eventWords ? eventDef.options.map(opt=>{ const w=eventWords.options[opt.id](eventParams); return {
           label:typeof w==="string" ? w : w.label,
           note:typeof w==="string" ? null : w.effect,

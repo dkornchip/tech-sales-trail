@@ -7,6 +7,11 @@ dialog[open]{animation:dialogIn .16s var(--ease) both}
 dialog::backdrop{background:var(--overlay);animation:fadeIn .16s both}
 dialog .d-header{padding:var(--sp-5) var(--sp-6) 0;font-size:var(--fs-3);font-weight:600;letter-spacing:-.01em}
 dialog .d-title{display:block}
+/* a small picture beside the title of a choice (decoration: the title says what the dialog is) */
+dialog .d-header.has-mark{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:var(--sp-4);align-items:center}
+dialog .d-mark{display:grid;place-items:center;width:36px;height:36px;border:1px solid var(--border-strong);border-radius:var(--r-2);background:var(--surface-2);color:var(--text-2)}
+dialog .d-mark .icon{width:18px;height:18px}
+dialog .d-header.has-mark .d-cap{grid-column:1 / -1}
 /* what the announcer said while the dialog was open, as a caption under its title */
 dialog .d-cap{display:flex;align-items:baseline;gap:var(--sp-3);margin-top:var(--sp-3);font-size:var(--fs-1);font-weight:400;letter-spacing:0;color:var(--text-2);animation:fadeIn .25s both}
 dialog .d-body{padding:var(--sp-4) var(--sp-6) var(--sp-5);color:var(--text-2);line-height:1.5}

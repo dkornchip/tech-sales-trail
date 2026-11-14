@@ -123,6 +123,44 @@ test("the announcer never talks over itself: a line inside the cooldown, or whil
   assert.equal(a.captions.length, a.speech.said.length, "a dropped line leaves no caption either");
 });
 
+test("a line that matters is not held back by small talk: filler is cut off, never talked over; filler never cuts in", async () => {
+  const a = await soundEngine(); a.reset();
+  assert.equal(a.T.say("filler", { cooldown: 9000 }), true); a.tick(900);          // small talk is on the air
+  assert.ok(a.speech.said[0].until > a.now(), "filler is being spoken");
+  assert.equal(a.T.say("cash", { cooldown: 6000 }), true, "the cash warning is taken at once, inside the cooldown and while filler speaks");
+  a.tick(900);
+  assert.equal(a.speech.said.length, 2); assert.ok(a.speech.said[0].cut !== null, "the filler was cut off first");
+  assert.ok(LINES.cash.includes(a.speech.said[1].text));
+  assert.equal(overlaps(a.speech.said).length, 0, "never two lines at once");
+  // and the reverse does not hold: filler waits its turn, and a second line that matters respects the first
+  assert.equal(a.T.say("filler", { cooldown: 9000 }), false, "filler never pre-empts");
+  assert.equal(a.T.say("hr", { cooldown: 6000 }), false, "a line that matters does not cut another one off");
+  a.tick(30000);
+  assert.equal(overlaps(a.speech.said).length, 0);
+  assert.equal(a.captions.length, a.speech.said.length, "every line spoken was captioned, and nothing else was");
+  // through the director: a quiet week's filler, then next move's alarm
+  a.reset(); globalThis.__TST_FX = () => 0.1;                                      // the cosmetic roll that makes a quiet week talk
+  a.T.onLogs([line("week.next", { week: 3 })], {}); a.tick(900);
+  const first = a.speech.said.length;
+  a.T.onLogs([line("pay.repoWarn", {})], {}); a.tick(900);
+  if (first === 1 && LINES.filler.includes(a.speech.said[0].text)) {
+    assert.equal(a.speech.said.length, 2, "the cash alarm is announced over the filler");
+    assert.ok(LINES.cash.includes(a.speech.said[1].text)); assert.ok(a.speech.said[0].cut !== null);
+  } else assert.fail("the quiet week did not produce filler: " + JSON.stringify(a.speech.said.map(x => x.text)));
+  assert.equal(overlaps(a.speech.said).length, 0);
+  globalThis.__TST_FX = () => 0.9;
+});
+
+test("with the voice off the same rule holds for captions: the alarm's caption replaces the filler's at once", async () => {
+  const a = await soundEngine(); a.reset(); a.T.setVoice(false);
+  a.T.say("filler", { cooldown: 9000 }); a.T.say("cash", { cooldown: 6000 });
+  assert.equal(a.captions.length, 2); assert.ok(LINES.cash.map(captionOf).includes(a.captions[1].text));
+  a.T.say("filler", { cooldown: 9000 });
+  assert.equal(a.captions.length, 2, "filler still waits out the cooldown");
+  assert.equal(a.speech.said.length, 0, "and nothing was spoken");
+  a.T.setVoice(true);
+});
+
 test("the announcer: a forced line cuts the one before it off first; hush drops a line that was queued", async () => {
   const a = await soundEngine(); a.reset();
   a.T.say("fired", { force: true }); a.tick(800);
