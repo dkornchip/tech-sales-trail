@@ -58,6 +58,23 @@ export const lines = (before, after) => { const top = before.logs.length ? befor
 // A state nobody may change: step() must build a new one. (Modules are strict, so a write to this throws.)
 export const frozen = v => { if (v && typeof v === "object" && !Object.isFrozen(v)) { Object.freeze(v); for (const k of Object.keys(v)) frozen(v[k]); } return v; };
 
+// The dice for one End Week on `state`, so a test can pick what Friday does: the first roll is the Friday close
+// (below 0.15 it happens), then one roll for each event that can happen right now, in the table's order. picks maps
+// an event id to its roll (anything unnamed gets `rest`, which is high enough that nothing comes up); `after` is
+// appended for whatever the chosen events and the rest of the week roll next.
+export async function fridayDice(state, picks = {}, after = [], rest = 0.99) {
+  const eng = await E();
+  const rolls = [picks.close === undefined ? rest : picks.close];
+  for (const ev of eng.events.FRIDAY_EVENTS) if (!ev.can || ev.can(state)) rolls.push(picks[ev.id] === undefined ? rest : picks[ev.id]);
+  return rolls.concat(after);
+}
+// End Week with those dice. Returns step()'s result.
+export async function endWeek(state, picks = {}, after = [], rest = 0.99) {
+  const eng = await E();
+  const dice = await fridayDice(state, picks, after, rest);
+  return withDice(dice, rest, () => eng.run.step(state, END));
+}
+
 // The mechanical part of a state: everything the rules decided, with the words taken out. Rewording a line must not
 // change it. The log is reduced to its tags (what happened, in order); clAInk's report and strike cards to their
 // shape; deal notes and achievement labels are dropped.

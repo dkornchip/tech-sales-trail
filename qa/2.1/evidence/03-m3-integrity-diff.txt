@@ -33,3 +33,11 @@ INTEGRITY DIFF OK: every difference from the v2.0.1 rules is one of the fixes
   saves       ok          79.7 s  SAVES OK in 79.2 s
   sim-smoke    ok          21.5 s  SIM SMOKE OK: all 11 checks passed, 21.4 s [automated heuristics, not human play]
   resilience   ok   RESILIENCE OK: all 57 checks passed (8 consecutive runs after the seeding-guard fix; 1 run in 5 failed before it, in the test's own storage seeding)
+
+--- engine suite (node scripts/unit.mjs engine test/engine) ---
+ENGINE TESTS OK: 91 tests passed in 10 files, 5.3 s
+
+--- mutation check (python3 test/engine/tools/mutation-check.py): 37 planted mistakes in src/game ---
+mutants caught: 35 of 37
+  the two survivors change nothing: (1) the referral +4 reputation moved after the count roll but still before sizing;
+  (2) billClaink's own 'run is over' guard, which End Week already applies before calling it.

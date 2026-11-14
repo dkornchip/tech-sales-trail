@@ -25,7 +25,8 @@ export const readStoredRun=(preferAutosave=true)=>{
 export const sanitizePending=(raw,over)=>{
   if(over || !Array.isArray(raw)) return [];
   const out=[];
-  for(const p of raw.slice(0,4)){
+  for(const p of raw.slice(0,16)){
+    if(out.length>=4) break;
     if(!p || typeof p!=="object" || typeof p.id!=="string" || !Object.prototype.hasOwnProperty.call(EVENTS,p.id)) continue;
     const params=p.params && typeof p.params==="object" && !Array.isArray(p.params) ? p.params : null;
     const clean={};
