@@ -68,7 +68,7 @@ own memo line.
   price and probability are as they were in 2.0.1.
 - The boot screen, the six ASCII endings (picture for picture), keyboard shortcuts, the phone layout, captions,
   mute, reduced motion and offline play.
-- It is still one HTML file (556,515 bytes; 2.0.1 was 518,108).
+- It is still one HTML file (556,534 bytes; 2.0.1 was 518,108).
 
 ## Known limitations
 - **Balance is tuned against bots, not people.** In 1,000 simulated quarters per strategy, a competent balanced

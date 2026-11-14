@@ -6,7 +6,8 @@
   background:var(--paper);color:var(--ink);
   animation:memoDrop .5s var(--ease) both,memoShake .32s 1.62s linear} /* no fill on the shake: it would override the drop */
 .memo.live{cursor:pointer}
-.memo-head{display:flex;justify-content:space-between;gap:var(--sp-3);padding-bottom:var(--sp-3);margin-bottom:var(--sp-4);border-bottom:1px solid var(--paper-edge);
+/* the letterhead: two parts on one line where they fit, the second under the first where they do not (never cut off) */
+.memo-head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:2px var(--sp-3);padding-bottom:var(--sp-3);margin-bottom:var(--sp-4);border-bottom:1px solid var(--paper-edge);
   font-family:var(--mono);font-size:var(--fs-1);color:var(--ink-2)}
 .memo-head span{white-space:nowrap}
 .memo h3{margin:0 0 var(--sp-3);font-size:var(--fs-3);font-weight:600;color:var(--ink)}

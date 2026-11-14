@@ -1,18 +1,35 @@
 # Tech Sales Trail 2.1 — QA report
 
-Release candidate for "Operation Final Coat". Everything in this report was run in this repository on the tree
-that built `Tech_Sales_Trail_2.1.html`; nothing is reported as passed without a log on file. Where something was
-not run, or failed along the way, it says so.
+Report on "Operation Final Coat". Everything in it was run in this repository; nothing is reported as passed
+without a log on file. Where something was not run, or failed along the way, it says so.
 
 | | |
 |---|---|
-| Status | **Promoted after this report was written**: on the owner's instruction `index.html` is now a byte-for-byte copy of the release file, and 2.0.1 is kept at `test/baseline/v2.0.1/index.html`. The rows below describe the tree as tested, before promotion. |
-| Release file | `Tech_Sales_Trail_2.1.html`, 556,515 bytes, sha256 `ee60e05b8e93…541560` |
-| Baseline | `index.html` (2.0.1), 518,108 bytes, sha256 `0272acc61921…293644`: untouched, still the deployed page |
-| Branch | `claude/modest-franklin-5cqmn8` (not merged, not promoted, no pull request) |
-| Final gate run | `npm run verify:release`: **26 of 26 steps passed**, 515 s (`qa/2.1/evidence/10-final-verify-release.txt`) |
+| Status | **Promoted.** On the owner's instruction `index.html` is a byte-for-byte copy of the release file. The 2.1 work was merged to `main` in pull request 14; the promotion, one fix found afterwards and the new README follow in a second pull request. See "After the report was first written", below. |
+| Release file | `Tech_Sales_Trail_2.1.html` = `index.html`, 556,534 bytes, sha256 `29007aaa1ca2…97e683` |
+| Previous release | 2.0.1, kept as shipped at `test/baseline/v2.0.1/index.html`, 518,108 bytes, sha256 `0272acc61921…293644` |
+| Final gate run | `npm run verify:release`: **26 of 26 steps passed**, 474 s, on the file above (`qa/2.1/evidence/14-postfix-verify-release.txt`) |
 | Browser | Chromium (Playwright 1.63). **Firefox: not installed here, not verified.** |
 | Balance | 22 policies × 1,000 seeds per candidate, plus a held-out seed set. Automated heuristics, not human play. |
+
+### After the report was first written
+
+The report was written on the release candidate (556,515 bytes, sha256 `ee60e05b8e93…541560`, gate log
+`qa/2.1/evidence/10-final-verify-release.txt`). Three things happened afterwards, and the numbers in this report
+have been brought up to date with them:
+
+1. **A defect was found and fixed.** Retaking the README's pictures showed that the onboarding memo's letterhead
+   ("INTERNAL MEMORANDUM · PLEASE DO NOT REPLY ALL", the copydeck's longer wording) was cut off by 37 px at the
+   edge of the sheet on every screen wider than a phone. No gate had caught it: none of them opened a new player's
+   first screen and looked for cut-off text. The letterhead now wraps under its first line (`src/styles/memo.css`).
+2. **The gap in the tests was closed.** The first-day test checks that nothing on the memo is cut off, and the
+   screen-size matrix gained a thirteenth state (a new player's first screen) and a check, in every dialog at
+   every size, that no text is cut off sideways. Run against the unfixed build, the new check fails at five of the
+   eight sizes; on the fixed build all 1,120 checks pass. It found nothing else.
+3. **The release file was rebuilt, re-verified and promoted.** `verify:release` passed 26 of 26 again
+   (evidence 14); the matrix and the offline test were run on the promoted `index.html` itself (1,120 of 1,120 and
+   44 of 44, evidence 15); size and load were measured again (evidence 16). The rules, the copy and the balance
+   are untouched by the fix: it is one stylesheet rule.
 
 Contents: 1 what changed · 2 balance · 3 tests · 4 screens and screenshots · 5 saves · 6 copydeck coverage ·
 7 size and load · 8 deviations and judgment calls · 9 not run, known limits, risks · 10 how to reproduce
@@ -251,13 +268,13 @@ policy and candidate are in `qa/2.1/balance/*.json`; the printed tables are in `
 | saves | every fixture, both ways in (page load and the Load button) | 37 fixtures, 73 loads, 1,442 moves compared |
 | release | no hooks in the shipped bundle; a planted hook is inert; page = source | 14 checks; 6 sessions, 900 presses |
 | offline | `file://`, no requests, plays to the end | 44 checks |
-| firstday | onboarding memo and tour | 26 checks |
+| firstday | onboarding memo and tour; nothing on the memo cut off | 27 checks |
 | confirm | the four confirmations and caption clean-up, by real presses | 37 checks |
 | resilience | reloads, damaged saves, simultaneous choice + acknowledgement, storage denied | 80 checks |
 | phone | touch screens 320–390 wide and sideways | 49 checks |
 | keyboard | keyboard-only passes, tab order, Escape, focus | 8 stages, 98 key presses, 0 findings |
 | layout | one screen, nothing covered or clipped, 7 states × 7 desktop sizes + phone | 328 checks |
-| matrix | the brief's eight sizes × twelve states, reduced motion (§4) | 988 checks |
+| matrix | the brief's eight sizes × thirteen states, reduced motion (§4) | 1,120 checks |
 | released | the committed release file is exactly what the source builds | ok |
 
 ### Brief §F, item by item
@@ -278,14 +295,15 @@ policy and candidate are in `qa/2.1/balance/*.json`; the printed tables are in `
   change no behaviour (two independent statements swapped; a guard End Week never reaches; a guard whose factor is
   already zero). `qa/2.1/evidence/09-mutation-check.txt`.
 - **Lint self-test** (`node test/lint-fixtures/selftest.mjs`): 20/20; every lint rule fires on its planted fixture.
-- **The matrix and the offline test were also run on `Tech_Sales_Trail_2.1.html` itself**
-  (`qa/2.1/evidence/11-release-file-matrix-offline.txt`): 988/988 and 44/44.
+- **The matrix and the offline test were also run on the shipped file itself**: on the release candidate
+  (`qa/2.1/evidence/11-release-file-matrix-offline.txt`: 988/988 and 44/44, before the thirteenth state existed)
+  and on the promoted `index.html` (`qa/2.1/evidence/15-promoted-file-matrix-offline.txt`: 1,120/1,120 and 44/44).
 - **Endings reached by play in the browser, in the release build**: President's Club, barely missed, fired (review
   and QBR) and repossessed (by a clAInk bill) in the release test's six scripted sessions; ascension by a real click
   on a certain-death quad shot (`confirm`); meltdown by a real click at 99 stress
   (`qa/2.1/evidence/13-meltdown-by-play.txt`). All six are also loaded from saved runs at every size in the matrix,
   and every way into each ending is forced in the engine tests.
-- Milestone gate logs: `qa/2.1/evidence/00`–`08`.
+- Milestone gate logs: `qa/2.1/evidence/00`–`08`; the release candidate's: `10`; the promoted file's: `14`.
 
 ### What failed along the way (all fixed; listed so the record is complete)
 
@@ -298,6 +316,9 @@ policy and candidate are in `qa/2.1/balance/*.json`; the printed tables are in `
 - An audio test used a seed whose clAInk run ends in week 3; it now uses a seed with a full pilot.
 - Earlier milestones: a 1-in-5 flake in two browser suites (a seeding guard that did not survive a reload) was
   found and fixed in M3.
+- After the release candidate was merged: the onboarding memo's letterhead was cut off on screens wider than a
+  phone (see the top of this report). It passed all 26 gates because none of them looked. Fixed, and now held by
+  two of them.
 
 ---
 
@@ -307,20 +328,21 @@ policy and candidate are in `qa/2.1/balance/*.json`; the printed tables are in `
 **1440×900, 1024×768, 768×1024 (touch), 320×568, 375×667, 390×844 (phones), 667×375 (a phone on its side), and
 1440×900 at 200% zoom** (emulated as 720×450 CSS pixels at device scale 2).
 
-States: the main screen mid-quarter; clAInk's offer open and minimized; a Friday choice (the security incident);
-a clAInk incident (the strike card in the workspace); the handbook; and the six endings with their cards.
+States: a new player's first screen (the onboarding memo); the main screen mid-quarter; clAInk's offer open and
+minimized; a Friday choice (the security incident); a clAInk incident (the strike card in the workspace); the
+handbook; and the six endings with their cards.
 
-Checked at every size and state (988 checks, all pass): no horizontal scroll; End Week, the Hail Mary and the first
+Checked at every size and state (1,120 checks, all pass): no horizontal scroll; End Week, the Hail Mary and the first
 and last action (or every dialog button) can be brought on screen and are not under anything, including clAInk's
 window; clAInk's own controls are on screen and on top; minimized, the workspace leaves End Week clear; focus is
-inside an open dialog; each ending's card arrives with a verdict and numbers and New run is pressable; no request
+inside an open dialog, and no text in it is cut off sideways; each ending's card arrives with a verdict and numbers and New run is pressable; no request
 left the file; no console errors. With reduced motion (1440×900 and 390×844) each ending shows its description
 instead of the animation and the card is there at once.
 
-**Screenshots** (36, JPEG, taken from the release file): `qa/2.1/screenshots/<state>@<size>.jpg` for
-`main`, `ad-open`, `ad-minimized`, `choice`, `incident`, `handbook`, `end-club`, `end-missed`, `end-fired`,
+**Screenshots** (39, JPEG, taken from the promoted file): `qa/2.1/screenshots/<state>@<size>.jpg` for
+`first-day`, `main`, `ad-open`, `ad-minimized`, `choice`, `incident`, `handbook`, `end-club`, `end-missed`, `end-fired`,
 `end-repo`, `end-meltdown`, `end-ascension` at `1440x900`, `768x1024` and `390x844`. The other five sizes were
-checked and photographed but not committed (`node test/e2e/matrix.cjs --shots <dir>` reproduces all 96).
+checked and photographed but not committed (`node test/e2e/matrix.cjs --shots <dir>` reproduces all 104).
 
 **Qualitative review** (owner amendment 6; done by looking at the screenshots, in addition to the assertions):
 
@@ -422,16 +444,17 @@ simulated runs (`copy.test.mjs`).
 
 ## 7. Size and load
 
-| | 2.0.1 `index.html` | 2.1 `Tech_Sales_Trail_2.1.html` |
+| | 2.0.1 | 2.1 `Tech_Sales_Trail_2.1.html` |
 |---|---:|---:|
-| Bytes | 518,108 | 556,515 (+7.4%) |
-| gzip -9 | 201,456 | 214,807 |
+| Bytes | 518,108 | 556,534 (+7.4%) |
+| gzip -9 | 201,456 | 214,814 |
 | DOM nodes on the desk | 628 | 665 |
 | JS heap after load | 10 MB | 10 MB |
-| Open → desk interactive, headless Chromium, `file://`, median of 7 | 247 ms (193–295) | 256 ms (211–309) |
+| Open → desk interactive, headless Chromium, `file://`, median of 7 | 204 ms (164–222) | 202 ms (179–217) |
 
 One file, no network, no new dependency. The simulation harness plays about 107 whole quarters a second on this
-machine. No deeper profiling was done. (`qa/2.1/evidence/12-size-and-load.txt`)
+machine. No deeper profiling was done. (`qa/2.1/evidence/16-size-and-load-postfix.txt`; the release candidate's
+measurement, taken on a busier machine, is in `12-size-and-load.txt`: 247 ms and 256 ms.)
 
 ---
 
@@ -468,8 +491,8 @@ machine. No deeper profiling was done. (`qa/2.1/evidence/12-size-and-load.txt`)
     run: the orchestration tool's approval could not be obtained in this session. The mutation check, the
     integrity diff, the copy-coverage gate and the facts tests were built to cover that ground mechanically. They
     are not a substitute for a second reader.
-17. **README** still describes the deployed 2.0.1 game, with a section on the 2.1 candidate; it should be revised
-    when 2.1 is promoted.
+17. **README**: rewritten for new players at promotion, with every rule it states checked against `src/game`,
+    and its four pictures retaken from 2.1. The developer notes it used to carry are in `docs/DEVELOPMENT.md`.
 
 ---
 
@@ -496,14 +519,16 @@ machine. No deeper profiling was done. (`qa/2.1/evidence/12-size-and-load.txt`)
   become more frequent in simulation (0.001 per Friday before and after), but approval-heavy human play was not
   observed.
 - **Event mix shifted** slightly toward late-listed events (§2) as a consequence of fair ordering.
-- **Promotion**: copying the release file over `index.html` makes 2.1 the public game; players' 2.0.1 runs then
-  open in 2.1 and are saved onward in the 2.1 format.
+- **Promotion**: once the promotion is merged, 2.1 is the public game; players' 2.0.1 runs then open in 2.1 and
+  are saved onward in the 2.1 format.
+- **What else no gate looks at.** The letterhead defect passed 26 gates because none of them looked there. The
+  new "no text cut off" check covers every dialog at every size; text outside dialogs is covered at desktop sizes
+  by the layout gate, and on phones only for the controls the phone and matrix tests name.
 
 **Decisions left open**
-1. Promote 2.1 to `index.html` (and when).
-2. Whether to tune further toward 60–80% survival after human play, and with which lever.
-3. Whether to build the optional items (manager context cues, posters, marketing footnote).
-4. A Firefox / Safari / device pass before public release.
+1. Whether to tune further toward 60–80% survival after human play, and with which lever.
+2. Whether to build the optional items (manager context cues, posters, marketing footnote).
+3. A Firefox / Safari / device pass. (Promotion to `index.html` was decided: done.)
 
 ---
 

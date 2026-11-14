@@ -4,8 +4,9 @@
 //
 // Sizes: 1440x900, 1024x768, 768x1024 (touch), 320x568, 375x667, 390x844 (phones), 667x375 (a phone on its side),
 //        and 1440x900 at 200% zoom (720x450 CSS pixels).
-// States: the main screen mid-quarter; clAInk's offer open and minimized; a Friday choice; a clAInk incident
-//         (the strike card in the workspace); the handbook; and the six endings, each with its card.
+// States: a new player's first screen (the onboarding memo); the main screen mid-quarter; clAInk's offer open and
+//         minimized; a Friday choice; a clAInk incident (the strike card in the workspace); the handbook; and the
+//         six endings, each with its card.
 //
 // At every size, in every state:
 //   no-hscroll      the page is not wider than the screen
@@ -13,6 +14,8 @@
 //                   screen and are not under anything when they are: not clAInk's window, not a caption
 //   dock            clAInk's own minimize / close / run buttons are on screen and on top
 //   focus           with a dialog open, the keyboard focus is inside it
+//   not-cut         with a dialog open, no text in it is cut off sideways by the box it sits in (the ASCII scenes
+//                   are exempt: a scene crops its picture on purpose)
 //   ending          the ending's card arrives with its verdict and its numbers, and New run is pressable
 //   offline         no request left the file; no errors on the console
 // With reduced motion (one desktop and one phone size): an ending shows its description instead of the animation,
@@ -46,6 +49,7 @@ const SIZES = [
 ];
 // save: a run from before v2.1, handed over under the old key (still read). pending: a v2.1 run with a choice waiting.
 const STATES = [
+  { id: "first-day", first: true, dialog: "welcome" },
   { id: "main", save: "midrun-seeded" },
   { id: "ad-open", save: "fresh", ad: "open" },
   { id: "ad-minimized", save: "fresh", ad: "mini" },
@@ -67,14 +71,15 @@ async function openState(browser, size, state, reduced) {
   const context = await browser.newContext({ viewport: { width: size.w, height: size.h }, deviceScaleFactor: size.scale || 1, hasTouch: !!size.touch, isMobile: !!size.phone, reducedMotion: reduced ? "reduce" : "no-preference" });
   const requests = [];
   await context.route("**/*", route => { const u = route.request().url(); if (/^(file|data|blob|about):/.test(u)) return route.continue(); requests.push(u); return route.abort(); });
-  const run = fixture(state.save);
-  const stored = state.pending ? { key: KEYS.autosave, text: envelope(Object.assign({}, run, { pending: state.pending, effects: [], said: {}, lastConference: 0 })) } : { key: KEYS.legacyAutosave, text: JSON.stringify(run) };
-  await context.addInitScript(([key, text]) => {
+  const run = state.save ? fixture(state.save) : null;
+  const stored = !run ? { key: null, text: null } : state.pending ? { key: KEYS.autosave, text: envelope(Object.assign({}, run, { pending: state.pending, effects: [], said: {}, lastConference: 0 })) } : { key: KEYS.legacyAutosave, text: JSON.stringify(run) };
+  // first: a player who has never been here (no onboarding flag, no stored run): the memo is what opens
+  await context.addInitScript(([key, text, first]) => {
     try {
       window.sessionStorage.setItem("tst-booted", "1");
-      if (window.name !== "tst-seeded") { window.name = "tst-seeded"; window.localStorage.setItem("tst-onboarded-v2", "1"); window.localStorage.setItem(key, text); }
+      if (window.name !== "tst-seeded") { window.name = "tst-seeded"; if (!first) window.localStorage.setItem("tst-onboarded-v2", "1"); if (key) window.localStorage.setItem(key, text); }
     } catch (e) {}
-  }, [stored.key, stored.text]);
+  }, [stored.key, stored.text, !!state.first]);
   const page = await context.newPage();
   const errors = [];
   page.on("pageerror", e => errors.push(String(e).slice(0, 160)));
@@ -114,6 +119,7 @@ async function inspect(browser, size, state, reduced) {
   };
   try {
     if (state.open === "rules") { await page.locator('[data-ui="rules"]').first().click(); await page.waitForTimeout(350); }
+    if (state.first) { await page.waitForSelector('dialog[open][data-dialog="welcome"]', { timeout: 5000 }).catch(() => {}); await page.waitForTimeout(reduced ? 300 : 2300); }   // the stamp has landed
     if (state.ad) {
       await page.waitForSelector(".claink-ad", { timeout: 4000 }).catch(() => {});
       const mini = await page.evaluate(() => { const a = document.querySelector(".claink-ad"); return a ? a.classList.contains("is-mini") : null; });
@@ -133,6 +139,21 @@ async function inspect(browser, size, state, reduced) {
       check(`dialog@${tag}: ${want} is open`, !!dlg && dlg.id === want, dlg ? dlg.id : "none");
       if (dlg) {
         check(`focus@${tag}: inside the dialog`, dlg.focusInside);
+        const cut = await page.evaluate(() => {
+          const d = [...document.querySelectorAll("dialog[open]")].pop(), out = [];
+          // the box that would cut an element off: its nearest ancestor that does not let content spill sideways
+          const clipBox = el => { for (let p = el.parentElement; p; p = p.parentElement) { if (p === d || getComputedStyle(p).overflowX !== "visible") return p.getBoundingClientRect(); } return d.getBoundingClientRect(); };
+          for (const el of d.querySelectorAll("*")) {
+            if (el.closest("pre") || el.closest(".sr-only")) continue;
+            if (![...el.childNodes].some(n => n.nodeType === 3 && n.textContent.trim())) continue;
+            const cs = getComputedStyle(el), r = el.getBoundingClientRect();
+            if (!r.width || !r.height || cs.visibility === "hidden" || cs.display === "none") continue;
+            const box = clipBox(el);
+            if (r.right > box.right + 1 || r.left < box.left - 1) out.push(el.textContent.trim().slice(0, 44) + " [" + Math.round(r.right - box.right) + "px]");
+          }
+          return out;
+        });
+        check(`not-cut@${tag}: no text in the dialog is cut off sideways`, cut.length === 0, cut.slice(0, 3).join(" | "));
         for (let i = 0; i < dlg.buttons; i++) {
           const r = await page.evaluate(i => {
             const d = [...document.querySelectorAll("dialog[open]")].pop(), el = d.querySelectorAll(".d-footer .btn")[i];
