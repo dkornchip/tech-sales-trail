@@ -155,7 +155,8 @@ export const clainkCanInstall=(s)=>!!s.claink && s.claink.status==="ad" && !isRu
 export const clainkFrozen=(s)=>getQuarterInfo(s.week).weekInQuarter>=QUARTER_WEEKS;
 export const clainkCanDeploy=(s)=>!!s.claink && s.claink.status==="active" && !s.claink.deployed && !isRunOver(s) && !clainkFrozen(s);
 export const clainkCancelCost=(s)=>CLAINK.CANCEL+((s.claink && s.claink.due)||0);
-export const clainkCanCancel=(s)=>!!s.claink && s.claink.status==="active" && !isRunOver(s) && s.cash-clainkCancelCost(s)>CLAINK.REPO_AT;
+// (not in the freeze: nothing more will be charged there, and the workspace has never offered it in week 13)
+export const clainkCanCancel=(s)=>!!s.claink && s.claink.status==="active" && !isRunOver(s) && !clainkFrozen(s) && s.cash-clainkCancelCost(s)>CLAINK.REPO_AT;
 
 export const buyClaink=(state)=>{
   if(!clainkCanInstall(state))return state;

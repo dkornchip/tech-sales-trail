@@ -40,6 +40,7 @@ M=[
  ("src/game/claink.js","const largest=s.deals.every(d=>d.value<=victim.value);","const largest=true;"),
  ("src/game/claink.js","  if(!c || c.status!==\"active\" || isRunOver(state))return state;\n  const base=","  if(!c || c.status!==\"active\")return state;\n  const base="),
  ("src/game/claink.js","getQuarterInfo(s.week).weekInQuarter<=CLAINK.OFFER_LAST_WEEK && s.cash-CLAINK.INSTALL>CLAINK.REPO_AT;","getQuarterInfo(s.week).weekInQuarter<=CLAINK.OFFER_LAST_WEEK && s.cash-CLAINK.INSTALL>=CLAINK.REPO_AT;"),
+ ("src/game/claink.js","!isRunOver(s) && !clainkFrozen(s) && s.cash-clainkCancelCost(s)>CLAINK.REPO_AT;","!isRunOver(s) && s.cash-clainkCancelCost(s)>CLAINK.REPO_AT;"),
  ("src/game/state.js","    pending:sanitizePending(p.pending,!!ending),","    pending:sanitizePending(p.pending,false),"),
  ("src/game/log.js","const d=Math.round(after[k])-Math.round(before[k]); if(d) out[k]=d;","const d=Math.round(after[k]-before[k]); out[k]=d;"),
  # v2.1 balance tuning (rules.js), the review that reads it, the manager's drift

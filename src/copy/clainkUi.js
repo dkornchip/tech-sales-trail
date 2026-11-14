@@ -19,9 +19,11 @@ export const CK_AD = {
   headline: "What if your pipeline could pipeline itself?",
   sub: "Meet the autonomous revenue orchestration ecosystem. Deploy a team of agents to research accounts, personalize outreach and advance your pipeline while you’re busy doing sales.",
   chips: ["Account intelligence", "Outreach at scale", "Autonomous pipeline"],
-  // the vendor's marketing, and labelled as such: nothing here is a number from your run
+  // the vendor's marketing: nothing here is a number from your run. The by-line is the owner's (it replaced the
+  // copydeck's "fictional enterprise customer"): the customer is on a list nobody would want to be on.
   proof: "“We have fundamentally transformed how we measure productivity.”",
-  proofBy: "VP, Revenue Transformation · fictional enterprise customer",
+  // (two parts: who, and the list. The list is kept in one piece when the line has to break.)
+  proofBy: ["VP, Revenue Transformation · Fortune 500,000 company", "(latest Post-Product, Pre-Revenue Hot List!)"],
   price: ["Outcome-based pricing.", " Pay for outcomes and the compute required to deliver them."],
   badges: ["SOC 2 Type II", "SSO", "Human oversight (optional)"],
   activate: cost => `Begin your transformation · ${usd(cost)}`,

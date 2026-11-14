@@ -8,9 +8,9 @@
 | 7. Modal decisions — av (option IDs unchanged) | 17 | 17 | 0 | 0 |
 | 8. Shitcorp internal handbook — fv (rules must remain factual) | 18 | 15 | 3 | 0 |
 | 9. Public address and audio — uo, nl, Xo | 38 | 37 | 1 | 0 |
-| 10. clAInk editorial pack — complete surface mapping | 76 | 69 | 7 | 0 |
+| 10. clAInk editorial pack — complete surface mapping | 76 | 68 | 8 | 0 |
 | 11. Endings — st, nv, rv, ht | 43 | 42 | 1 | 0 |
-| **Total** | **380** | **359** | **21** | **0** |
+| **Total** | **380** | **358** | **22** | **0** |
 
 Rows noted, with the reason on file:
 
@@ -29,6 +29,7 @@ Rows noted, with the reason on file:
 | 8:clAInk | instruction | The approved sentences are rendered from the live configuration; the last sentence of the row is direction. |
 | 8:Keys | instruction | The Keys section lists the hotkeys the source actually binds (unchanged from 2.0.1), shown only where there is a keyboard. |
 | 9:uo | instruction | Table header. |
+| 10:we.proofBy | owner | Changed on the owner's instruction after the copydeck: the testimonial's by-line is now 'VP, Revenue Transformation · Fortune 500,000 company (latest Post-Product, Pre-Revenue Hot List!)'. |
 | 10:vn | instruction | Strike counters keep their exact counts, thresholds, projected cash range and Collections warning; 'a deal walks' became 'a live deal may walk'. |
 | 10:Xn.tokens | instruction | Token count and skip guidance kept as they were. |
 | 10:Tr.statsRevoked/statsCancelled | instruction | End-card totals kept; the pipeline figure is now labelled 'Claimed influence'. |

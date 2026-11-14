@@ -5,18 +5,18 @@ without a log on file. Where something was not run, or failed along the way, it 
 
 | | |
 |---|---|
-| Status | **Promoted.** On the owner's instruction `index.html` is a byte-for-byte copy of the release file. The 2.1 work was merged to `main` in pull request 14; the promotion, one fix found afterwards and the new README follow in a second pull request. See "After the report was first written", below. |
-| Release file | `Tech_Sales_Trail_2.1.html` = `index.html`, 556,534 bytes, sha256 `29007aaa1ca2…97e683` |
+| Status | **Promoted.** On the owner's instruction `index.html` is a byte-for-byte copy of the release file. The 2.1 work reached `main` in pull request 14, and the promotion, the letterhead fix and the new README in pull request 15. The clAInk work (items 4 to 8 below) was done after that and follows separately. See "After the report was first written", below. |
+| Release file | `Tech_Sales_Trail_2.1.html` = `index.html`, 559,646 bytes, sha256 `5c495f1168f2…6dae0e` |
 | Previous release | 2.0.1, kept as shipped at `test/baseline/v2.0.1/index.html`, 518,108 bytes, sha256 `0272acc61921…293644` |
-| Final gate run | `npm run verify:release`: **26 of 26 steps passed**, 474 s, on the file above (`qa/2.1/evidence/14-postfix-verify-release.txt`) |
+| Final gate run | `npm run verify:release`: **26 of 26 steps passed**, 493 s, on the file above (`qa/2.1/evidence/17-claink-desktop-verify-release.txt`) |
 | Browser | Chromium (Playwright 1.63). **Firefox: not installed here, not verified.** |
 | Balance | 22 policies × 1,000 seeds per candidate, plus a held-out seed set. Automated heuristics, not human play. |
 
 ### After the report was first written
 
 The report was written on the release candidate (556,515 bytes, sha256 `ee60e05b8e93…541560`, gate log
-`qa/2.1/evidence/10-final-verify-release.txt`). Three things happened afterwards, and the numbers in this report
-have been brought up to date with them:
+`qa/2.1/evidence/10-final-verify-release.txt`). This is what happened afterwards, in order. The numbers in this
+report have been brought up to date with all of it.
 
 1. **A defect was found and fixed.** Retaking the README's pictures showed that the onboarding memo's letterhead
    ("INTERNAL MEMORANDUM · PLEASE DO NOT REPLY ALL", the copydeck's longer wording) was cut off by 37 px at the
@@ -26,10 +26,45 @@ have been brought up to date with them:
    screen-size matrix gained a thirteenth state (a new player's first screen) and a check, in every dialog at
    every size, that no text is cut off sideways. Run against the unfixed build, the new check fails at five of the
    eight sizes; on the fixed build all 1,120 checks pass. It found nothing else.
-3. **The release file was rebuilt, re-verified and promoted.** `verify:release` passed 26 of 26 again
-   (evidence 14); the matrix and the offline test were run on the promoted `index.html` itself (1,120 of 1,120 and
-   44 of 44, evidence 15); size and load were measured again (evidence 16). The rules, the copy and the balance
-   are untouched by the fix: it is one stylesheet rule.
+3. **The release file was rebuilt, re-verified and promoted** (556,534 bytes; evidence 14 to 16). That is the build
+   pull request 15 put on `main`.
+4. **The owner asked for clAInk's section to be made right on a desktop screen.** Measured at six desktop sizes
+   (`node test/e2e/tools/claink-desktop.cjs`, evidence 18), four things were wrong, and all four are older than 2.1:
+   - on a wide monitor the ad's "New: … is GA" announcement and its logo ran together on one line, off each other's
+     centre;
+   - on every screen under 1080 px tall the ad was taller than its corner (it needed 547 to 584 px and had 374 to
+     478), so "Begin your transformation", which was pinned, sat on top of whatever had scrolled under it;
+   - the workspace stopped at 46% of the column whatever else was there, and cut a card in half at that edge;
+   - "Cancel seat" opened its question 49 to 73 px below the fold of the workspace: you pressed the link and saw
+     no buttons.
+
+   Fixed in `src/ui/ClainkUi.jsx` and `src/styles/claink.css`. The ad settles on the fullest layout that fits and
+   never scrolls inside its corner; the workspace is given the room the deal list and the log do not need, and
+   fades out at the fold; the cancel question scrolls into sight. On phones and narrow windows, where the page is
+   stacked, the ad leaves nothing out and the only differences are that the logo and the announcement share a
+   level row where both fit (a tablet) and the workspace has 10 px more padding at its foot.
+5. **The first version of that fix was wrong, and no gate said so.** It let clAInk's window take up to 68% of the
+   column whenever its content was long. All 26 gates passed on it. Retaking the README's main picture showed what
+   it did: at 1440×900 the deal list showed four of its deals instead of all of them, and the log one line. The
+   rule was rewritten so that the deal list and the log come first, and a layout check (`dock-fair`) now holds
+   that rule; the first version's behaviour is one of the faults the layout self-test plants, and it is caught.
+   In every crowded state measured, the deal list and the log now show exactly what they showed before the fix,
+   or more (beside the ad and ten deals: 8, 8, 6, 6 deals in sight where there were 6, 7, 5, 5).
+6. **The testimonial's by-line was changed on the owner's instruction** to "VP, Revenue Transformation · Fortune
+   500,000 company (latest Post-Product, Pre-Revenue Hot List!)". It is recorded as a copydeck row changed by the
+   owner (§6: 358 applied, 22 noted).
+7. **A gate failed on the way, and it was right.** The release gate plays whole sessions with the release's own
+   dice and compares, at every press, the moves the page offers with the moves the rules allow. One session
+   reached week 13 with a live clAInk seat, and they disagreed: the workspace shows no "Cancel seat" during the
+   quarter-end freeze (it never has, in any version), but the rules listed cancelling as legal and would have
+   taken the $250. Earlier runs passed because no session happened to be in that state. The rules now refuse the
+   move (`src/game/claink.js`). Nothing a player could do has changed. The published balance runs were played
+   again and are identical field for field on both seed sets, the comparison with the 2.0.1 rules gives the same
+   counts, and the mutation check catches the new rule's mutant (evidence 20). So that this cannot depend on luck
+   again, the release gate now also opens thirteen named states that the dice rarely deal.
+8. **The release file was rebuilt, re-verified and promoted again** (559,646 bytes). `verify:release` passed 26
+   of 26 (evidence 17); the matrix and the offline test were run on the promoted `index.html` itself (1,120 of
+   1,120 and 44 of 44) and size and load were measured again (evidence 19).
 
 Contents: 1 what changed · 2 balance · 3 tests · 4 screens and screenshots · 5 saves · 6 copydeck coverage ·
 7 size and load · 8 deviations and judgment calls · 9 not run, known limits, risks · 10 how to reproduce
@@ -54,7 +89,9 @@ built from, so the work was done there. The anchor column maps each one.
 | B1 pace | `t1`, `n1`, `i1` | `expectedAttainment`, `paceGap` in `rules.js`; `pace` in `selectors.js`; `behindPace`, `midQuarterRisk` in `quarter.js` | One curve for reviews, risk, the dashboard and the manager: [0, .02, .05, .10, .18, .27, .36, .46, .57, .68, .79, .90, 1], 3 points of grace, reviews from week 5, firing from week 6. | `week.test.mjs` (curve, grace, weeks) |
 | B2 firing | `n1` | `pipelineRelief`, `fireCap`, `TUNING` in `rules.js`; `midQuarterRisk` | Gap less pipeline relief (stage weights [.05, .12, .25, .45, .60], ≤ 12 points, fading by (13−week)/8, weeks 5–12 only). Weekly caps .12 / .20 / .35 from weeks 6 / 8 / 10; 2% floor. Manager drift against the curve, ±2 a week. | `week.test.mjs` (relief, caps, drift); mutation check |
 | C clAInk | `b` and the `Ws` incidents | `src/game/claink.js` | No price or probability changed (asserted). Strike cards quote the measured damage; the churn card no longer names an invented customer; ad dismissal asks first. | `claink.test.mjs` (11); `confirm.cjs` §4 |
+| C clAInk, after the merge | (none: found by the release gate) | `clainkCanCancel` in `src/game/claink.js` | The seat cannot be cancelled during the week 13 freeze. The workspace never offered it there; the rules used to accept the move all the same. | `claink.test.mjs` ("cancelling"); the release gate's named states |
 | D interface | `tt`, `pr`, `De`, `ht` | `src/ui/app/Kpis.jsx`, `Foot.jsx`, `Quarter.jsx`, `Deals.jsx`, `Ending.jsx`, `Game.jsx`, `ClainkUi.jsx` | Pace words + "Expected by Friday" + marker; per-effect chips; odds wording; four confirmations; ending card with verdict and distinctions; chapter beside the week; dialog marks. | `layout` (328), `matrix` (988), `confirm` (37), `phone` (49), `keyboard` |
+| D clAInk on a desktop, after the merge (the owner's request) | `we`, the dock's CSS | `dockSpare`, `dockRoom`, `fitAd` in `src/ui/ClainkUi.jsx`; `src/styles/claink.css` | The ad fits its corner and never scrolls under its own button; the workspace takes only the room the deal list and the log do not need, and fades at the fold; the cancel question scrolls into sight; the testimonial's by-line is the owner's. | layout gate: `dock-whole`, `dock-fair`, `dock-question-seen` |
 | E copy | `vv`, `hv`/`mv`, `av`, `fv`, `uo`, `nv`/`rv`/`st`, `ov`/`iv`/`Ws`/`we`/… | `src/copy/*.js` (`LOG`, `render`/`bandOf`, `EVENT_COPY`, `HELP`, `LINES`, `ENDINGS`/`NOTES`/`SCENE_COPY`, `CK_*`) | Every surface rewritten from the copydeck; variant engine with five week bands (1–3, 4–6, 7–9, 10–12, 13), no immediate repeat, a per-tag counter in the run. | `copy-deck` gate (§6), `lint-copy`, `copy-render`, `copy.test.mjs` |
 | E audio | `nl`, `Xo` | `src/engine/audio/voice.js`, `director.js`, `tagmap.js` | A line that matters pre-empts filler (cut off, never overlapped); captions cleared on Load and New run; the "whale" line now announces a whale referral. | `test/audio/behaviour.test.mjs` (15) |
 
@@ -258,7 +295,7 @@ policy and candidate are in `qa/2.1/balance/*.json`; the printed tables are in `
 | lint-css | design tokens only (clAInk's stylesheet excepted) | 0 findings |
 | copy-check | every log tag has words, every word has a tag, no prose in the rules | ok |
 | copy-render | every log line, every variant, every week band | 15,360 renderings, 0 bad, 202 distinct sentences, 96 tags |
-| copy-deck | the copydeck row by row (§6) | 359 applied, 21 noted, 0 open |
+| copy-deck | the copydeck row by row (§6) | 358 applied, 22 noted, 0 open |
 | fonts, notices | bundled fonts and third-party notices are current | ok |
 | engine | `node --test test/engine` | 113 tests, 12 files |
 | audio | behavioural sound tests against a fake speaker | 15 tests |
@@ -266,14 +303,14 @@ policy and candidate are in `qa/2.1/balance/*.json`; the printed tables are in `
 | scenes | every frame of every scene's picture against v1.21 | 24 cases, 1,718 frames identical |
 | fixtures | 25 generated save fixtures are what the baseline writes | ok |
 | saves | every fixture, both ways in (page load and the Load button) | 37 fixtures, 73 loads, 1,442 moves compared |
-| release | no hooks in the shipped bundle; a planted hook is inert; page = source | 14 checks; 6 sessions, 900 presses |
+| release | no hooks in the shipped bundle; a planted hook is inert; page = source, in six sessions (900 presses) and in thirteen named states | 27 checks |
 | offline | `file://`, no requests, plays to the end | 44 checks |
 | firstday | onboarding memo and tour; nothing on the memo cut off | 27 checks |
 | confirm | the four confirmations and caption clean-up, by real presses | 37 checks |
 | resilience | reloads, damaged saves, simultaneous choice + acknowledgement, storage denied | 80 checks |
 | phone | touch screens 320–390 wide and sideways | 49 checks |
-| keyboard | keyboard-only passes, tab order, Escape, focus | 8 stages, 98 key presses, 0 findings |
-| layout | one screen, nothing covered or clipped, 7 states × 7 desktop sizes + phone | 328 checks |
+| keyboard | keyboard-only passes, tab order, Escape, focus | 8 stages, 97 key presses, 0 findings |
+| layout | one screen, nothing covered or clipped; clAInk's ad whole, its window taking only spare room, its question in sight; 10 states × 7 desktop sizes + phone | 552 checks |
 | matrix | the brief's eight sizes × thirteen states, reduced motion (§4) | 1,120 checks |
 | released | the committed release file is exactly what the source builds | ok |
 
@@ -283,27 +320,35 @@ policy and candidate are in `qa/2.1/balance/*.json`; the printed tables are in `
 |---|---|
 | 1 Engine | `test/engine`: actions and every blocked action (12), stage transitions, close arithmetic and the Hail Mary's branches (10), End Week order, salary, rent, aging, funnel bonus, coffee, CRM once a week, reviews, QBR boundaries, politics, six endings (23), every Friday event and both options of each choice (11). Branches are forced with scripted dice in Node; there is no cheat in the release. |
 | 2 Effects | `effects.test.mjs`: simultaneous full-funnel, freeze, competitor and security effects; exact expiries; the ±30 cap; chips equal state. `events.test.mjs`: eligibility, caps, one choice. `choices.test.mjs`, `week.test.mjs`, `rng.test.mjs`: a finished run takes no further move. |
-| 3 clAInk | `claink.test.mjs`: install, decline, dismiss, expiry, eligible and blocked runs, success, failure, the four incidents, first warning and later theft, idle and overage invoices, cancellation (affordable and not), third strike and true-up, repo priority, week 13 freeze, totals. Minimize / expand is UI: `keyboard`, `matrix`, `confirm`. |
+| 3 clAInk | `claink.test.mjs`: install, decline, dismiss, expiry, eligible and blocked runs, success, failure, the four incidents, first warning and later theft, idle and overage invoices, cancellation (affordable and not, and never in the week 13 freeze), third strike and true-up, repo priority, week 13 freeze, totals. Minimize / expand is UI: `keyboard`, `matrix`, `confirm`. |
 | 4 Save | `save.test.mjs`, `saves`, `resilience` §1–§4: new and legacy saves (v1.14 to v2.0.1, manual and autosave), same-seed continuity through storage, mid-choice reload and Load, new run after an ending, storage denied, invalid JSON and invalid state, missing story or cause, no duplicated events or invoices, focus after recovery. |
 | 5 Browser | Chromium only. Sizes, states and screenshots: §4. Console errors and network requests are asserted in `offline`, `matrix`, `confirm`. |
 | 6 Editorial | §6, plus `copy-render` (no `undefined`, `NaN`, `[object Object]`, empty lines), `lint-copy` (lengths, long account names, negative money), `copy.test.mjs` (numbers quoted = rules; log budgets over real runs). |
 
 ### Other evidence
 
-- **Mutation check** (`test/engine/tools/mutation-check.py`): 51 plausible mistakes planted in `src/game`, one at a
-  time, including 14 in the 2.1 tuning and distinction code. The engine suite catches **48**. The 3 survivors
-  change no behaviour (two independent statements swapped; a guard End Week never reaches; a guard whose factor is
-  already zero). `qa/2.1/evidence/09-mutation-check.txt`.
+- **Mutation check** (`test/engine/tools/mutation-check.py`): 52 plausible mistakes planted in `src/game`, one at a
+  time, including 14 in the 2.1 tuning and distinction code and one in the week-13 cancel rule. The engine suite
+  catches **49**. The 3 survivors change no behaviour (two independent statements swapped; a guard End Week never
+  reaches; a guard whose factor is already zero). `qa/2.1/evidence/09-mutation-check.txt` (51 planted, 48 caught)
+  and, run again on the final rules, `20-week-13-cancel.txt`.
 - **Lint self-test** (`node test/lint-fixtures/selftest.mjs`): 20/20; every lint rule fires on its planted fixture.
 - **The matrix and the offline test were also run on the shipped file itself**: on the release candidate
   (`qa/2.1/evidence/11-release-file-matrix-offline.txt`: 988/988 and 44/44, before the thirteenth state existed)
-  and on the promoted `index.html` (`qa/2.1/evidence/15-promoted-file-matrix-offline.txt`: 1,120/1,120 and 44/44).
+  and on the promoted `index.html`, after each promotion (`qa/2.1/evidence/15-promoted-file-matrix-offline.txt`
+  and `19-claink-promoted-file-matrix-offline-size.txt`: 1,120/1,120 and 44/44 both times).
+- **clAInk on desktop screens, measured before and after** (`qa/2.1/evidence/18-claink-desktop-before-after.txt`):
+  every state of its window at six sizes, and the column it shares with the deal list and the log from an empty
+  board to 24 deals. The three layout checks that hold the result fail in 65 places on the interface source as it
+  was (21, 37 and 7), and the layout self-test's sixteen planted faults are all caught.
+- **The week-13 cancel rule** (`qa/2.1/evidence/20-week-13-cancel.txt`): the failing gate run, the fix, the named
+  states failing without it, and the balance runs, the integrity diff and the mutation check run again.
 - **Endings reached by play in the browser, in the release build**: President's Club, barely missed, fired (review
   and QBR) and repossessed (by a clAInk bill) in the release test's six scripted sessions; ascension by a real click
   on a certain-death quad shot (`confirm`); meltdown by a real click at 99 stress
   (`qa/2.1/evidence/13-meltdown-by-play.txt`). All six are also loaded from saved runs at every size in the matrix,
   and every way into each ending is forced in the engine tests.
-- Milestone gate logs: `qa/2.1/evidence/00`–`08`; the release candidate's: `10`; the promoted file's: `14`.
+- Milestone gate logs: `qa/2.1/evidence/00`–`08`; the release candidate's: `10`; the promoted file's: `14`, and `17` after the clAInk work.
 
 ### What failed along the way (all fixed; listed so the record is complete)
 
@@ -319,6 +364,11 @@ policy and candidate are in `qa/2.1/balance/*.json`; the printed tables are in `
 - After the release candidate was merged: the onboarding memo's letterhead was cut off on screens wider than a
   phone (see the top of this report). It passed all 26 gates because none of them looked. Fixed, and now held by
   two of them.
+- During the clAInk work: the first version of the fix squeezed the deal list and the log, and passed all 26
+  gates (item 5 at the top of this report). Found by looking at a picture; fixed; now held by `dock-fair`.
+- During the clAInk work: the release gate failed once (item 7 at the top): a real disagreement between the page
+  and the rules in week 13, older than 2.1, that its random sessions had not reached before. Fixed in the rules,
+  and now held by an engine test and by named states in the gate itself.
 
 ---
 
@@ -344,6 +394,12 @@ instead of the animation and the card is there at once.
 `end-repo`, `end-meltdown`, `end-ascension` at `1440x900`, `768x1024` and `390x844`. The other five sizes were
 checked and photographed but not committed (`node test/e2e/matrix.cjs --shots <dir>` reproduces all 104).
 
+**clAInk on desktop screens, before and after** (15, JPEG): `qa/2.1/screenshots/claink-desktop/`. `before-*` are
+from the release candidate as merged, `after-*` from the promoted file: the ad on an empty board at 1920×1080,
+1440×900, 1366×768 and 1280×720; the ad beside ten deals; the workspace after a run; a full report beside eight
+deals; and the cancel question. `node test/e2e/tools/claink-desktop.cjs <build.html> --shots <dir>` takes all of
+them, at any size, from any build.
+
 **Qualitative review** (owner amendment 6; done by looking at the screenshots, in addition to the assertions):
 
 - The dark two-column desk, the type, the icons and the one-screen fit at 1280×720 are as in 2.0.1. The fourth
@@ -353,6 +409,13 @@ checked and photographed but not committed (`node test/e2e/matrix.cjs --shots <d
 - clAInk is still the only glossy thing on the screen: purple gradient, pill buttons, enthusiastic type. Its new
   copy stays inside its own window; the rest of Shitcorp does not speak that way. The dismissal question is styled
   as part of the ad.
+- clAInk on a desktop, after the fix (looked at in `claink-desktop/` and in the README's main picture): the ad
+  reads as one finished card at every size. On a wide monitor the logo and the announcement sit on one row, level
+  with each other; on a laptop the parts stack and the less important ones are simply absent, with no gap where
+  they were. Nothing overlaps and nothing is cut. The by-line wraps so that the aside in brackets has a line of
+  its own. The workspace ends in a short fade where there is more below, the way the deal list and the log do.
+  Mid-quarter at 1440×900 the column reads top to bottom as six deals, two log lines, and the workspace down to
+  its strike card: the desk is still the main thing on the screen and clAInk is still the loud thing in its corner.
 - The dialog marks are small outline icons in the house style (a price tag, a shield, a clipboard), not
   illustrations; they do not compete with the title.
 - On phones the offer and the strike card are readable without zooming and never cover End Week; the chapter name
@@ -388,7 +451,7 @@ checked and photographed but not committed (`node test/e2e/matrix.cjs --shots <d
 ## 6. Copydeck coverage
 
 `scripts/copy-coverage.mjs` reads the copydeck row by row, cuts each approved text into sentences and looks for
-each sentence among every string the copy modules can render (1,927 strings; placeholders match live values;
+each sentence among every string the copy modules can render (1,928 strings; placeholders match live values;
 typography compared loosely). It proves the words are in the build. It does not prove every path that prints them
 was played: `copy-render`, the engine tests and the browser tests cover the paths they cover, and no claim is made
 that every generated combination was exercised.
@@ -403,9 +466,9 @@ that every generated combination was exercised.
 | 7. Modal decisions — av (option IDs unchanged) | 17 | 17 | 0 | 0 |
 | 8. Shitcorp internal handbook — fv (rules must remain factual) | 18 | 15 | 3 | 0 |
 | 9. Public address and audio — uo, nl, Xo | 38 | 37 | 1 | 0 |
-| 10. clAInk editorial pack — complete surface mapping | 76 | 69 | 7 | 0 |
+| 10. clAInk editorial pack — complete surface mapping | 76 | 68 | 8 | 0 |
 | 11. Endings — st, nv, rv, ht | 43 | 42 | 1 | 0 |
-| **Total** | **380** | **359** | **21** | **0** |
+| **Total** | **380** | **358** | **22** | **0** |
 
 Rows noted, with the reason on file:
 
@@ -424,6 +487,7 @@ Rows noted, with the reason on file:
 | 8:clAInk | instruction | The approved sentences are rendered from the live configuration; the last sentence of the row is direction. |
 | 8:Keys | instruction | The Keys section lists the hotkeys the source actually binds (unchanged from 2.0.1), shown only where there is a keyboard. |
 | 9:uo | instruction | Table header. |
+| 10:we.proofBy | owner | Changed on the owner's instruction after the copydeck: the testimonial's by-line is now 'VP, Revenue Transformation · Fortune 500,000 company (latest Post-Product, Pre-Revenue Hot List!)'. |
 | 10:vn | instruction | Strike counters keep their exact counts, thresholds, projected cash range and Collections warning; 'a deal walks' became 'a live deal may walk'. |
 | 10:Xn.tokens | instruction | Token count and skip guidance kept as they were. |
 | 10:Tr.statsRevoked/statsCancelled | instruction | End-card totals kept; the pipeline figure is now labelled 'Claimed influence'. |
@@ -446,15 +510,16 @@ simulated runs (`copy.test.mjs`).
 
 | | 2.0.1 | 2.1 `Tech_Sales_Trail_2.1.html` |
 |---|---:|---:|
-| Bytes | 518,108 | 556,534 (+7.4%) |
-| gzip -9 | 201,456 | 214,814 |
-| DOM nodes on the desk | 628 | 665 |
+| Bytes | 518,108 | 559,646 (+8.0%) |
+| gzip -9 | 201,456 | 215,718 |
+| DOM nodes on the desk | 628 | 667 |
 | JS heap after load | 10 MB | 10 MB |
-| Open → desk interactive, headless Chromium, `file://`, median of 7 | 204 ms (164–222) | 202 ms (179–217) |
+| Open → desk interactive, headless Chromium, `file://`, median of 7 | 177 ms (167–210) | 172 ms (159–233) |
 
 One file, no network, no new dependency. The simulation harness plays about 107 whole quarters a second on this
-machine. No deeper profiling was done. (`qa/2.1/evidence/16-size-and-load-postfix.txt`; the release candidate's
-measurement, taken on a busier machine, is in `12-size-and-load.txt`: 247 ms and 256 ms.)
+machine. No deeper profiling was done. (`qa/2.1/evidence/19-claink-promoted-file-matrix-offline-size.txt`; both
+files are timed in the same run, and the times move with the machine: the earlier measurements were 204 and 202 ms
+in `16-size-and-load-postfix.txt`, and 247 and 256 ms on a busier machine in `12-size-and-load.txt`.)
 
 ---
 
@@ -486,13 +551,24 @@ measurement, taken on a busier machine, is in `12-size-and-load.txt`: 247 ms and
 13. **Dialog marks** reuse the game's existing icon set (Lucide) instead of new drawings; the strike card gets a
     stamp icon. No new art asset.
 14. **Policy bots were rewritten once** (§2) before the reported runs.
-15. **Copydeck**: 21 rows are not rendered word for word; each has its reason in the table in §6.
+15. **Copydeck**: 22 rows are not rendered word for word; each has its reason in the table in §6.
 16. **Reviews by independent agents** planned for the checkpoint diff, the copy audit and the final diff were not
     run: the orchestration tool's approval could not be obtained in this session. The mutation check, the
     integrity diff, the copy-coverage gate and the facts tests were built to cover that ground mechanically. They
     are not a substitute for a second reader.
 17. **README**: rewritten for new players at promotion, with every rule it states checked against `src/game`,
     and its four pictures retaken from 2.1. The developer notes it used to carry are in `docs/DEVELOPMENT.md`.
+18. **clAInk's ad says less where there is less room.** The copydeck's announcement, feature chips, badges and
+    testimonial are all in the build and all show where they fit: at 1920×1080, and with an empty board at
+    1440×900 and 1536×864. On smaller desktop screens, or beside a busy deal list, the ad leaves out what does not
+    fit (the announcement goes first, the testimonial last) rather than scroll under its own button. On phones and narrow windows nothing is
+    left out. This is my call about a layout the copydeck does not cover.
+19. **The testimonial's by-line** is the owner's wording, not the copydeck's (§6, `10:we.proofBy`).
+20. **clAInk's share of the right column** on a desktop is no longer fixed. The workspace keeps its 46% and is
+    given more, to 68%, only where the deal list (to its own 40%) and the log (to 150 px) do not need the room.
+    The ad, which had 58%, has whatever the deal list leaves it (to 68%), and at least its plainest layout.
+21. **No cancelling in week 13.** The rules now refuse what the workspace never offered (item 7 at the top of this report). This is a
+    change to `src/game` made after the balance runs; they were played again and are identical.
 
 ---
 
@@ -510,6 +586,12 @@ measurement, taken on a busier machine, is in `12-size-and-load.txt`: 247 ms and
 - The harness answers "yes" to confirmations inside one press so that a harness move stays one rules move; the
   "no" paths are covered only by `confirm.cjs`.
 - Copy coverage proves strings exist, not that every path was played.
+- The release gate's sessions are played with real dice, so which states they pass through is luck. Thirteen
+  named states are now opened as well. A state nobody thought to name can still hide a disagreement between the
+  page and the rules until a session happens to reach it.
+- clAInk's window beside the game is checked in ten states at seven desktop sizes and was measured in thirteen
+  at six (evidence 18). Not every one of those pictures was looked at by eye, and other window sizes follow the
+  same arithmetic but were not measured.
 - Three mutants survive (behaviour-neutral).
 
 **Risks for the owner to weigh**
@@ -523,7 +605,10 @@ measurement, taken on a busier machine, is in `12-size-and-load.txt`: 247 ms and
   are saved onward in the 2.1 format.
 - **What else no gate looks at.** The letterhead defect passed 26 gates because none of them looked there. The
   new "no text cut off" check covers every dialog at every size; text outside dialogs is covered at desktop sizes
-  by the layout gate, and on phones only for the controls the phone and matrix tests name.
+  by the layout gate, and on phones only for the controls the phone and matrix tests name. The squeezed deal list
+  (item 5 at the top) passed 26 gates for the same reason, and was found the same way: by looking at a picture.
+  The gates hold what someone has already thought to check. A person looking at the game on their own screens is
+  still the test that finds the rest.
 
 **Decisions left open**
 1. Whether to tune further toward 60–80% survival after human play, and with which lever.
@@ -568,6 +653,10 @@ node scripts/copy-coverage.mjs --verbose
 
 ```bash
 node test/e2e/matrix.cjs Tech_Sales_Trail_2.1.html --shots qa/2.1/screenshots --keep 1440x900,768x1024,390x844 --jpeg
+```
+
+```bash
+node test/e2e/tools/claink-desktop.cjs index.html
 ```
 
 Candidates are run with `--tuning '<json>'` over the shipped defaults, or `--tuning v201` for the 2.0.1 balance

@@ -203,6 +203,13 @@ test("cancelling: $250 and whatever is already due, only when it can be paid; th
   const poor = await craft({ week: 4, cash: -500, claink: active({ due: 760 }) });
   assert.equal(eng.claink.clainkCanCancel(poor), false); assert.equal((await move(poor, ck("cancel"))).refused, "illegal");
   assert.equal((await move({ ...poor, cash: -489 }, ck("cancel"))).state.cash, -1499);
+  // nor in the quarter-end freeze: nothing more will be charged, and the workspace has never offered it in week 13.
+  // (v2.0.1's rules would have taken the fee there; nothing could ask them to. The front door must not either.)
+  const frozen = await craft({ week: 13, cash: 4000, claink: active() });
+  assert.equal(eng.claink.clainkCanCancel(frozen), false); assert.equal((await move(frozen, ck("cancel"))).refused, "illegal");
+  assert.deepEqual(eng.run.legalMoves(frozen).filter(m => m.t === "ck"), [], "week 13: clAInk offers no move at all");
+  assert.equal(eng.claink.cancelClaink(frozen), frozen, "and the rule itself does nothing there");
+  assert.equal(eng.claink.clainkCanCancel(await craft({ week: 12, cash: 4000, claink: active() })), true, "week 12 is not frozen");
   assert.equal((await move(await craft({ week: 4, claink: active() }), ck("hide"))).refused, "illegal", "only a finished seat's card can be put away");
 });
 

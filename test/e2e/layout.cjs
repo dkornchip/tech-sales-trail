@@ -19,8 +19,8 @@
  *   --selftest            break the page on purpose, one check at a time, and require each check to notice
  *   --list                print the check ids, fixtures and viewports and stop
  *
- * Desktop: at 1920x1080, 1920x950, 1536x864, 1366x768, 1280x720, 1280x800 and 1200x800, on seven states
- * (lib/fixtures.cjs: the plain main screen and six worst cases), each loaded fresh at that size:
+ * Desktop: at 1920x1080, 1920x950, 1536x864, 1366x768, 1280x720, 1280x800 and 1200x800, on ten states
+ * (lib/fixtures.cjs: the plain main screen and nine worst cases), each loaded fresh at that size:
  *   page-no-scroll          documentElement.scrollHeight === innerHeight, no horizontal overflow, and no box that
  *                           stands in for the page (<body>, or any box End Week sits in) scrolls instead
  *   controls-in-viewport    the twelve actions and End Week are whole and inside the viewport
@@ -31,6 +31,14 @@
  *                           cannot be scrolled to it). ASCII art is exempt: a scene crops it on purpose
  *   min-font                the smallest rendered font size outside ASCII art (enforced with --min-font)
  *   no-infinite-animation   nothing outside an open dialog is running an animation with infinite iterations
+ *   dock-whole              clAInk's ad, when it is open, shows all of itself: nothing in it is scrolled out of
+ *                           sight inside its dock, and none of its parts sits on top of another
+ *   dock-fair               beside the game the deal list and the log come first. The workspace has its own share
+ *                           of the column (46%) and more, to 68%, exactly as far as they do not need the room;
+ *                           the ad has exactly the room they leave it (more only for its plainest layout).
+ *                           Beside a window that has taken more than its least, neither of them is short
+ *   dock-question-seen      when the workspace asks whether to cancel the seat, the question and its buttons are
+ *                           inside the part of the window that shows
  * Phone, 390x844, on the main-screen states:
  *   mobile-no-hscroll       the page is not wider than the viewport
  *   mobile-end-reachable    End Week can be scrolled into view and is not under anything there
@@ -44,7 +52,7 @@ const { chromium } = require('playwright');
 const { open, step, trouble, buildOf, driverOf, Known, parseList, table, ROUND_MS, MAX_ROUNDS } = require('./lib/harness.cjs');
 const { FIXTURES, VIEWPORTS, PHONE, size } = require('./lib/fixtures.cjs');
 
-const DESKTOP_CHECKS = ['page-no-scroll', 'controls-in-viewport', 'log-not-covered', 'deals-not-covered', 'dialog-in-viewport', 'text-not-clipped', 'min-font', 'no-infinite-animation'];
+const DESKTOP_CHECKS = ['page-no-scroll', 'controls-in-viewport', 'log-not-covered', 'deals-not-covered', 'dialog-in-viewport', 'text-not-clipped', 'min-font', 'no-infinite-animation', 'dock-whole', 'dock-fair', 'dock-question-seen'];
 const PHONE_CHECKS = ['mobile-no-hscroll', 'mobile-end-reachable'];
 
 function parseArgs(argv) {
@@ -229,6 +237,18 @@ const SABOTAGE = [
     js: `() => { window.__drv.el('end').style.fontSize = '5px'; }` },
   { check: 'no-infinite-animation', what: 'End Week is given a pulse that never stops', at: ANY,
     js: `() => { window.__drv.el('end').animate([{ opacity: 1 }, { opacity: 0.6 }], { duration: 900, iterations: Infinity }); }` },
+  { check: 'dock-whole', what: "clAInk's ad is given a 220px dock", at: [['fresh-ad', '1920x1080'], ['fresh-ad', '1280x720'], ['ad-board', '1280x720']],
+    js: `() => { document.querySelector('.claink-ad').style.maxHeight = '220px'; }` },
+  { check: 'dock-fair', what: "clAInk's workspace is allowed 68% of the column beside a full board", at: [['ck-report', '1280x720'], ['board-24', '1280x720'], ['ck-report', '1366x768']],
+    js: `() => { document.querySelector('.claink-console').style.maxHeight = '68%'; }` },
+  { check: 'dock-fair', what: "clAInk's workspace is held to its own share on an early board", at: [['ck-early', '1366x768'], ['ck-early', '1280x720']],
+    js: `() => { document.querySelector('.claink-console').style.maxHeight = '46%'; }` },
+  { check: 'dock-fair', what: "clAInk's ad is held to 58% of the column beside an empty board", at: [['fresh-ad', '1280x720'], ['fresh-ad', '1920x1080']],
+    js: `() => { document.querySelector('.claink-ad').style.maxHeight = '58%'; }` },
+  { check: 'dock-fair', what: "clAInk's ad is allowed 68% of the column beside ten deals", at: [['ad-board', '1366x768'], ['ad-board', '1536x864']],
+    js: `() => { document.querySelector('.claink-ad').style.maxHeight = '68%'; }` },
+  { check: 'dock-question-seen', what: "the workspace is scrolled back to its top while it asks about the seat", at: [['ck-cancel', '1280x720'], ['ck-cancel', '1366x768']],
+    js: `() => { document.querySelector('.claink-console').scrollTop = 0; }` },
   { check: 'mobile-no-hscroll', what: 'a 900px-wide block is added to the page', phone: true, at: [['midrun', PHONE], ['fresh-ad', PHONE], ['board-24', PHONE]],
     js: `() => { const d = document.createElement('div'); d.style.cssText = 'width:900px;height:10px'; document.body.appendChild(d); }` },
   { check: 'mobile-end-reachable', what: 'a fixed sheet is laid over the whole screen', phone: true, at: [['midrun', PHONE], ['fresh-ad', PHONE], ['board-24', PHONE]],

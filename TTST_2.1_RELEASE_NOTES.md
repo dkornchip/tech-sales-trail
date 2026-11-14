@@ -38,6 +38,12 @@ screen is, how safe your save is, and how the company talks.
 - The handbook ("How it works") is rewritten from the live rules, so its numbers cannot drift from the game's.
 - The ending card adds the company's verdict on your quarter and up to three distinctions your run actually earned.
 
+### clAInk on a desktop screen
+- The ad fits its corner. It used to be taller than the space it had on a laptop, with its button pinned on top of the text beneath it, and on a wide monitor its announcement ran into its logo. It now shows as much of the pitch as fits, in full: everything on a large screen with an empty board, less as your deal list grows or the screen shrinks (the announcement goes first, then the feature chips, the badges and the testimonial).
+- The agent workspace takes the room your deal list and your log are not using. On an early board a run's whole report shows, strike card and all; beside a full board it keeps to its usual share and nothing is taken from your deals. What is below the fold fades out instead of being cut off.
+- "Cancel seat" asks its question where you can see it. It used to open below the fold of the workspace.
+- The testimonial now names its source: a Fortune 500,000 company, from the latest Post-Product, Pre-Revenue Hot List.
+
 ### Fewer accidents
 The game now asks before four things that cannot be taken back, and only those: starting a new run in the middle of
 a quarter, the first Hail Mary of a run, a quad shot that is certain to end the run, and dismissing clAInk's offer
@@ -68,7 +74,7 @@ own memo line.
   price and probability are as they were in 2.0.1.
 - The boot screen, the six ASCII endings (picture for picture), keyboard shortcuts, the phone layout, captions,
   mute, reduced motion and offline play.
-- It is still one HTML file (556,534 bytes; 2.0.1 was 518,108).
+- It is still one HTML file (559,365 bytes; 2.0.1 was 518,108).
 
 ## Known limitations
 - **Balance is tuned against bots, not people.** In 1,000 simulated quarters per strategy, a competent balanced

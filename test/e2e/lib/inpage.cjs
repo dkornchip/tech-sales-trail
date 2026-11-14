@@ -223,6 +223,85 @@ module.exports = function e2eInPage() {
       }
       set('no-infinite-animation', Array.from(bad.entries()).map(([k, n]) => `${k}${n > 1 ? ' (x' + n + ')' : ''} never stops`)); }
 
+    // 8. clAInk's ad shows all of itself: none of it is scrolled out of sight inside its dock, and its parts are
+    //    stacked, each starting below the one before it. The logo and the announcement may share a row (they do
+    //    where the ad is wide enough): then they sit beside each other, centred on each other.
+    { const ad = D.querySelector('.claink-ad:not(.is-mini)');
+      if (!ad || !shown(ad)) set('dock-whole', [], 'clAInk\'s ad is not open on this screen');
+      else {
+        const bad = [];
+        if (ad.scrollHeight - ad.clientHeight > EPS) bad.push(`the ad is ${ad.scrollHeight}px tall in a ${ad.clientHeight}px dock: part of it is scrolled out of sight`);
+        const parts = ['.claink-ad-top', '.claink-ad-ask', '.claink-announce', '.claink-logo', '.claink-headline', '.claink-sub', '.claink-chips', '.claink-proof', '.claink-price', '.claink-badges', '.claink-actions', '.claink-fine']
+          .map(sel => ({ sel, el: ad.querySelector(sel) })).filter(p => p.el && shown(p.el)).map(p => ({ sel: p.sel, r: p.el.getBoundingClientRect() }));
+        for (let i = 1; i < parts.length; i++) {
+          const a = parts[i - 1], b = parts[i];
+          if (b.r.top >= a.r.bottom - EPS) continue;                                   // stacked
+          const row = a.sel === '.claink-announce' && b.sel === '.claink-logo';
+          const apart = a.r.right <= b.r.left + EPS || b.r.right <= a.r.left + EPS;
+          const level = Math.abs((a.r.top + a.r.bottom) / 2 - (b.r.top + b.r.bottom) / 2) <= 2;
+          if (row && apart && level) continue;                                         // one row, on purpose
+          bad.push(row ? `the logo and the announcement share a line but are ${apart ? 'not centred on each other' : 'on top of each other'}`
+            : `${b.sel} starts ${px(a.r.bottom - b.r.top)}px above the end of ${a.sel}: one is on top of the other`);
+        }
+        set('dock-whole', bad);
+      }
+    }
+
+    // 9. clAInk's window takes only the room nothing else needs. Beside the game it shares a column of fixed height
+    //    with the deal list and the log, and they come first: the deal list its whole list (to its own limit, 40% of
+    //    the column), the log its minimum (104px) beside the ad, and beside the workspace all it has (to its
+    //    heading, the week and two lines: 150px). What is left, to at most 68% of the column, is the window's.
+    //    The workspace always has its own share (46%), and more exactly as far as there is room to spare.
+    //    The ad has exactly the room to spare, and more only for its plainest layout (every optional part left out),
+    //    and then only what that layout needs. Either way, more squeezes the board and less scrolls a report or
+    //    drops parts of the pitch with room to spare. And what that buys is looked at directly: beside a workspace
+    //    taller than its share, or an ad that still has optional parts, the deal list and the log are not short.
+    { const dock = D.querySelector('.right > .claink-ad:not(.is-mini), .right > .claink-console:not(.is-mini)');
+      const limit = dock && shown(dock) ? getComputedStyle(dock).maxHeight : 'none';
+      if (limit === 'none') set('dock-fair', [], 'clAInk has no open window with a share of a column on this screen');
+      else {
+        const col = dock.parentElement, H = col.clientHeight, deals = col.querySelector('.deals'), log = col.querySelector('.activity'), ad = dock.classList.contains('claink-ad');
+        const whole = sec => sec ? [...sec.children].reduce((h, k) => h + (k.classList.contains('scroll') ? k.scrollHeight : k.offsetHeight), sec.offsetHeight - sec.clientHeight) : 0;
+        const DEALS_MOST = H * 0.40, LOG_LEAST = 104, LOG_KEEP = ad ? LOG_LEAST : 150, share = H * 0.46;
+        const dealsNeed = Math.min(whole(deals), DEALS_MOST), logNeed = Math.max(LOG_LEAST, Math.min(whole(log), LOG_KEEP));
+        const spare = Math.min(H * 0.68, H - dealsNeed - logNeed), fair = ad ? spare : Math.max(share, spare);
+        const allowed = /%$/.test(limit) ? H * parseFloat(limit) / 100 : parseFloat(limit);
+        const needs = `the deal list needs ${px(dealsNeed)}px and the log ${px(logNeed)}px of this ${H}px column`;
+        const extras = ad ? ['.claink-announce', '.claink-chips', '.claink-badges', '.claink-proof'].filter(sel => { const e = dock.querySelector(sel); return e && shown(e); }) : [];
+        const plainest = ad && !extras.length, tall = dock.getBoundingClientRect().height;
+        const bad = [];
+        if (allowed < fair - 2) bad.push(`clAInk's window may be only ${px(allowed)}px tall, and there is ${px(fair)}px for it (${needs})`);
+        if (allowed > fair + 2) {
+          if (!plainest) bad.push(`clAInk's window may be ${px(allowed)}px tall, and ${px(fair)}px is all there is for it (${needs})${ad ? '; it still shows ' + extras.join(', ') : ''}`);
+          else if (allowed > dock.scrollHeight + (dock.offsetHeight - dock.clientHeight) + 2) bad.push(`clAInk's ad may be ${px(allowed)}px tall; its plainest layout needs ${dock.scrollHeight + (dock.offsetHeight - dock.clientHeight)}px and there is ${px(fair)}px to spare (${needs})`);
+        }
+        const cut = sec => { const l = sec && sec.querySelector('.scroll'); return l && l.scrollHeight - l.clientHeight > EPS ? l.scrollHeight - l.clientHeight : 0; };
+        if (ad ? !plainest : tall > share + 2) {
+          const beside = ad ? `beside an ad that still shows ${extras.join(', ')}` : `beside a workspace ${px(tall - share)}px taller than its share`;
+          if (cut(deals) && deals.offsetHeight < DEALS_MOST - 2) bad.push(`${px(cut(deals))}px of the deal list is out of sight in a ${deals.offsetHeight}px box, ${beside}`);
+          if (cut(log) && log.offsetHeight < LOG_KEEP - 2) bad.push(`the log is down to ${log.offsetHeight}px with ${px(cut(log))}px of it out of sight, ${beside}`);
+        }
+        set('dock-fair', bad);
+      }
+    }
+
+    // 10. a question clAInk's workspace has just asked is in sight. "Cancel seat" is at the foot of the workspace and
+    //     its question opens there, which can be below the fold of the dock: the workspace must have scrolled itself
+    //     to it, so the question and both of its buttons are inside the part of the window that shows.
+    { const box = D.querySelector('.claink-console:not(.is-mini) .claink-cancel-box');
+      if (!box || !shown(box)) set('dock-question-seen', [], 'clAInk\'s workspace is not asking anything on this screen');
+      else {
+        const dock = box.closest('.claink-console'), v = padBox(dock), bar = dock.querySelector('.claink-titlebar');
+        const top = bar && getComputedStyle(bar).position === 'sticky' ? bar.getBoundingClientRect().bottom : v.top;
+        const out = r => r.bottom > v.bottom + EPS ? `${px(r.bottom - v.bottom)}px below the fold of clAInk's window` : r.top < top - EPS ? `${px(top - r.top)}px above the top of clAInk's window` : null;
+        const bad = [];
+        const q = out(box.getBoundingClientRect());
+        if (q) bad.push(`the cancel question runs ${q}`);
+        for (const b of box.querySelectorAll('button')) { const o = out(b.getBoundingClientRect()); if (o) bad.push(`${desc(b)} is ${o}`); }
+        set('dock-question-seen', bad);
+      }
+    }
+
     return { checks: out, font, page: { scrollHeight: de.scrollHeight, scrollWidth: de.scrollWidth, innerHeight: vh(), innerWidth: vw(), dialog: dialog ? dialog.id : null } };
   };
 

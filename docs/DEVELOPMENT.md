@@ -73,12 +73,14 @@ It runs these in order and stops at the first that fails.
   what they should, and play on. The fixtures are regenerated from the frozen v1.21 file and must match what is
   committed.
 - **release** (`test/e2e/release.cjs`): the shipped file exposes no test hook, ignores one planted from outside,
-  and replays move for move against `src/game` from the run it saved.
+  and replays move for move against `src/game` from the run it saved. At every press, and in a fixed list of
+  states the dice rarely deal, the moves the page offers are the moves the rules allow.
 - **offline**, **first day**, **confirm**, **resilience**, **phone**, **keyboard**, **layout** (`test/e2e/`): no
   network and the bundled fonts in use; the onboarding memo and tour; the four confirmations by real clicks and key
   presses (a "no" must leave the run exactly as it was); reloads, damaged saves, duplicate names and an ending whose
   cutscene cannot play; a touch screen at phone sizes and on its side; a whole run on the keyboard; one screen at
-  seven desktop sizes and a phone, with nothing covered or cut off.
+  seven desktop sizes and a phone, with nothing covered or cut off, clAInk's ad showing all of itself (on an empty
+  board and beside ten deals), and clAInk's window taking only the room the deal list and the log do not need.
 - **matrix** (`test/e2e/matrix.cjs`): eight screen sizes (1440×900 down to 320×568, a phone on its side, 200% zoom)
   × thirteen states (a new player's first screen, the main screen, clAInk's offer open and minimized, a Friday
   choice, a clAInk incident, the handbook, six endings), from `file://` with the network refused. `--shots <dir>`
