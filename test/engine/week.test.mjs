@@ -13,6 +13,11 @@ async function week(state, picks = {}, after = [], rest = 0.99) {
 }
 const Q = 160000;
 const at = pct => Math.round(Q * pct);
+// The review and drift formulas were written against the v2.0.1 settings (a straight-line pace, no relief, no caps,
+// a manager who expects half of quota). The tests of those formulas still run under them; the tests further down
+// hold what v2.1 ships. Every test starts from the shipped defaults again.
+const classic = async () => { const eng = await E(); eng.rules.setTuning(eng.rules.TUNING_V201); return eng; };
+test.afterEach(async () => { (await E()).rules.setTuning(); });
 
 test("the numbers are the brief's", async () => {
   const eng = await E(), R = eng.rules, quarter = await import("../../src/game/quarter.js");
@@ -111,6 +116,7 @@ test("six or more raw leads with no discovery go stale at 20% each; five or more
 });
 
 test("the manager's opinion follows the number, and an email-only week costs 3 more", async () => {
+  await classic();
   let r = await week(await craft({ week: 2, manager: 50 }));
   assert.equal(r.s.manager, 48, "nothing closed: (0 - 0.5) x 4");
   r = await week(await craft({ week: 2, manager: 50, closedQuarter: Q, closedWon: Q })); assert.equal(r.s.manager, 52);
@@ -127,6 +133,7 @@ test("End Week makes a close attempt of its own only when its first roll is unde
 });
 
 test("no review before week 5, none when on pace or within 3 points, and week 5 never fires", async () => {
+  await classic();
   const risk = t => t.filter(x => x.startsWith("risk.") || x.startsWith("end."));
   let r = await week(await craft({ week: 4 }), {}, [0, 0, 0]);
   assert.deepEqual(risk(r.tags), []); assert.equal(r.used, r.base, "no review roll in week 4");
@@ -153,6 +160,7 @@ test("the warning ladder: 70%, 60%, 50%, with +4, +5, +6 stress, and a clean CRM
 test("from week 6 a review can fire: the chance, its floor and ceiling, the CRM's 6 points, and the cause", async () => {
   // week 6, nothing closed: 6/13 behind. severity = min(0.9, 6/13 x 1.8); chance = 0.03 + severity x 0.45 + 0.06 a warning
   // + 0.04 / 0.08 / 0.10 for a manager under 50 / 35 / 20 + 0.05 for pipeline under 40% of quota
+  await classic();
   const sev = Math.min(0.9, (6 / 13) * 1.8);
   const fire = async (over, roll, more = []) => week(await craft({ week: 6, ...over }), {}, [roll, ...more]);
   // three warnings (no ladder roll), manager 60 (58 after the week's drift), no pipeline
@@ -214,8 +222,95 @@ test("hitting quota with a manager under 25 can still end in a politics firing: 
   let r = await qbr(0.0599); assert.ok(r.s.fired && !r.s.win); assert.equal(r.s.endCause, "politics"); assert.equal(r.tags[r.tags.length - 1], "end.fired.politics");
   r = await qbr(0.06); assert.ok(r.s.win);
   // a manager at 25 or more: no roll
-  const liked = await week(await craft({ week: 13, closedQuarter: 160000, closedWon: 160000, manager: 23 }), {}, [0]);   // 23 + 2 drift = 25
+  const liked = await week(await craft({ week: 13, closedQuarter: 160000, closedWon: 160000, manager: 25 }), {}, [0]);   // exactly on the curve: no drift
   assert.ok(liked.s.win); assert.equal(liked.used, liked.base);
+});
+
+// ---- what v2.1 ships (brief B1, B2): the pace curve, pipeline relief, weekly caps, the manager against the curve ----
+const RAMP = [0, 0.02, 0.05, 0.10, 0.18, 0.27, 0.36, 0.46, 0.57, 0.68, 0.79, 0.90, 1];
+
+test("the shipped tuning is the measured candidate, and the pace curve is the brief's", async () => {
+  const eng = await E(), R = eng.rules;
+  assert.deepEqual(R.TUNING_DEFAULTS, { pace: "ramp", relief: 0.12, reliefRate: 0.25, reliefWeights: [0.05, 0.12, 0.25, 0.45, 0.60], caps: [[6, 0.12], [8, 0.20], [10, 0.35]], fireFloor: 0.02, drift: "pace", driftCap: 2 });
+  assert.deepEqual({ ...R.TUNING }, R.TUNING_DEFAULTS, "the game runs on the defaults");
+  assert.deepEqual(RAMP.map((_, i) => R.expectedAttainment(i + 1)), RAMP);
+  assert.equal(R.expectedAttainment(0), 0); assert.equal(R.expectedAttainment(14), 1, "out of range is held to the quarter");
+  R.setTuning(R.TUNING_V201);
+  for (let w = 1; w <= 13; w++) assert.ok(Math.abs(R.expectedAttainment(w) - w / 13) < 1e-12, "the v2.0.1 line is week/13");
+  // one curve for everything that reads pace: the review, the dashboard and the gap are the same number
+  R.setTuning();
+  const s = await craft({ week: 8, closedQuarter: at(0.30), closedWon: at(0.30) });
+  assert.ok(Math.abs(R.paceGap(s) - (0.46 - 0.30)) < 1e-9); assert.ok(Math.abs(eng.selectors.pace(s).target - 0.46) < 1e-12);
+});
+
+test("reviews measure against the curve: 3 points of grace, none before week 5, no firing before week 6", async () => {
+  const risk = t => t.filter(x => x.startsWith("risk.") || x.startsWith("end."));
+  for (const w of [1, 2, 3, 4]) { const r = await week(await craft({ week: w, manager: 5 }), {}, [0, 0, 0]); assert.deepEqual(risk(r.tags), [], "week " + w); assert.equal(r.used, r.base); }
+  let r = await week(await craft({ week: 6, closedQuarter: at(0.27 - 0.03) + 1, closedWon: at(0.27) }), {}, [0, 0, 0]);
+  assert.deepEqual(risk(r.tags), [], "3 points behind the curve is still on pace"); assert.equal(r.used, r.base);
+  r = await week(await craft({ week: 6, closedQuarter: at(0.27 - 0.031), closedWon: at(0.27) }), {}, [0.99, 0.99]);
+  assert.equal(r.used, r.base + 2, "past the grace: the warning roll and the fire roll");
+  // a run on the old straight line's pace is ahead of the curve all quarter
+  for (const w of [5, 8, 12]) assert.deepEqual(risk((await week(await craft({ week: w, closedQuarter: at(w / 13), closedWon: at(w / 13) }), {}, [0, 0, 0])).tags), []);
+  r = await week(await craft({ week: 5, manager: 5 }), {}, [0, 0, 0]);
+  assert.deepEqual(risk(r.tags), ["risk.audit"]); assert.ok(!r.over, "week 5 warns and cannot fire"); assert.equal(r.used, r.base + 1);
+});
+
+test("pipeline relief: weighted live deals soften the gap in weeks 5 to 12, never past 12 points, never at the QBR", async () => {
+  const eng = await E(), R = eng.rules;
+  const board = [[0, 20000], [1, 20000], [2, 20000], [3, 20000], [4, 20000]];
+  const coverage = (20000 * (0.05 + 0.12 + 0.25 + 0.45 + 0.60)) / Q;                      // 0.18375
+  const want = w => Math.min(0.12, coverage * 0.25) * Math.max(0, (13 - w) / 8);
+  for (const w of [5, 6, 9, 12]) assert.ok(Math.abs(R.pipelineRelief(await craft({ week: w, deals: board })) - want(w)) < 1e-12, "week " + w);
+  for (const w of [1, 4, 13]) assert.equal(R.pipelineRelief(await craft({ week: w, deals: board })), 0, "no relief in week " + w);
+  assert.equal(R.pipelineRelief(await craft({ week: 6 })), 0, "no deals, no relief");
+  const fat = Array.from({ length: 12 }, () => [4, 60000]);
+  assert.ok(Math.abs(R.pipelineRelief(await craft({ week: 5, deals: fat })) - 0.12) < 1e-12, "held to 12 points (and (13 - 5) / 8 = 1)");
+  assert.ok(Math.abs(R.pipelineRelief(await craft({ week: 9, deals: fat })) - 0.06) < 1e-12, "fading: half of it by week 9");
+  // it changes the chance and nothing else: closed revenue, pipeline and attainment are what they were
+  const s = await craft({ week: 6, deals: fat }), before = JSON.stringify([s.closedQuarter, s.closedWon, s.pipeline]);
+  R.pipelineRelief(s); assert.equal(JSON.stringify([s.closedQuarter, s.closedWon, s.pipeline]), before);
+  // and in the review: week 7, nothing closed (36 points behind), three warnings, a liked manager, a healthy board
+  const relief = Math.min(0.12, ((4 * 30000 * 0.60) / Q) * 0.25) * (6 / 8);
+  const sev = g => Math.min(0.9, g * 1.8), chance = g => 0.03 + sev(g) * 0.45 + 3 * 0.06;
+  const live = { week: 7, perfWarnings: 3, manager: 90, deals: [[4, 30000], [4, 30000], [4, 30000], [4, 30000]], used: { discovery: true, prospect: true, demo: true } };
+  R.setTuning({ caps: null });                                                              // the cap is tested below; here it would hide the difference
+  const withRelief = chance(0.36 - relief), without = chance(0.36);
+  assert.ok(withRelief < without - 0.01, "the relief is worth more than a point here");
+  assert.ok((await week(await craft(live), {}, [withRelief - 0.0001])).over); assert.ok(!(await week(await craft(live), {}, [withRelief + 0.0001, 0.99])).over);
+  R.setTuning({ caps: null, relief: 0 });
+  assert.ok((await week(await craft(live), {}, [withRelief + 0.0001])).over, "with the relief off, the same roll fires");
+});
+
+test("weekly firing caps: 12% in weeks 6 and 7, 20% in 8 and 9, 35% in 10 to 12, and the 2% floor under them", async () => {
+  const eng = await E(), R = eng.rules;
+  assert.deepEqual([5, 6, 7, 8, 9, 10, 11, 12].map(R.fireCap), [1, 0.12, 0.12, 0.20, 0.20, 0.35, 0.35, 0.35]);
+  // the worst case on file: nothing closed, three warnings, a manager at 10, no pipeline (uncapped: 0.70)
+  for (const [w, cap] of [[6, 0.12], [7, 0.12], [8, 0.20], [9, 0.20], [10, 0.35], [12, 0.35]]) {
+    const worst = { week: w, perfWarnings: 3, manager: 10 };
+    assert.ok((await week(await craft(worst), {}, [cap - 0.0001])).over, `week ${w}: a roll under ${cap} fires`);
+    assert.ok(!(await week(await craft(worst), {}, [cap, 0.99])).over, `week ${w}: a roll of ${cap} does not`);
+  }
+  // the floor: barely behind, liked, pipeline healthy, a clean CRM: never safer than 2%
+  const mild = { week: 6, manager: 90, hygieneShield: true, closedQuarter: at(0.27 - 0.04), closedWon: at(0.27), deals: [[0, at(0.5)]], used: { discovery: true, prospect: true, demo: true } };
+  assert.ok((await week(await craft(mild), {}, [0.0199])).over); assert.ok(!(await week(await craft(mild), {}, [0.02])).over);
+  // a cap is a ceiling on a review, not a new roll: an on-pace week still draws nothing
+  const r = await week(await craft({ week: 10, closedQuarter: at(0.68), closedWon: at(0.68) }), {}, [0, 0]);
+  assert.equal(r.used, r.base);
+});
+
+test("the manager follows the curve: (attainment - expected) x 4, at most 2 a week either way", async () => {
+  let r = await week(await craft({ week: 2, manager: 50 }));
+  assert.ok(Math.abs(r.s.manager - (50 - 0.02 * 4)) < 1e-9, "week 2, nothing closed: 2 points behind the curve");
+  r = await week(await craft({ week: 1, manager: 50 })); assert.equal(r.s.manager, 50, "week 1 expects nothing");
+  r = await week(await craft({ week: 10, manager: 50 })); assert.equal(r.s.manager, 48, "68 points behind: held to -2");
+  r = await week(await craft({ week: 3, manager: 50, closedQuarter: Q, closedWon: Q })); assert.equal(r.s.manager, 52, "far ahead: held to +2");
+  r = await week(await craft({ week: 8, manager: 50, closedQuarter: at(0.46), closedWon: at(0.46) })); assert.ok(Math.abs(r.s.manager - 50) < 1e-9, "on the curve: no drift");
+  r = await week(await craft({ week: 8, manager: 50, closedQuarter: at(0.56), closedWon: at(0.56) })); assert.ok(Math.abs(r.s.manager - 50.4) < 1e-9, "10 points ahead: +0.4");
+  // no approval farm: thirteen weeks far ahead is worth 26 points at the very most
+  r = await week(await craft({ week: 5, manager: 99, closedQuarter: Q, closedWon: Q })); assert.equal(r.s.manager, 100);
+  // the email-only penalty still applies on top
+  r = await week(await craft({ week: 8, manager: 50, closedQuarter: at(0.46), closedWon: at(0.46), used: { cadence: true } })); assert.ok(Math.abs(r.s.manager - 47) < 1e-9);
 });
 
 test("week 13 has no behind-pace review, and a finished run takes no further move", async () => {

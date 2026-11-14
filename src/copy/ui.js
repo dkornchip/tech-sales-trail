@@ -21,12 +21,14 @@ export const UI = {
   skills: "Skills",
   deals: "Deals",
   activity: "Activity",
-  dealsMeta: (count, pipeline) => (count ? `${count} open · ${usd(pipeline)} in pipeline` : "None yet"),
+  dealsMeta: (count, pipeline) => (count ? `${count} open · ${usd(pipeline)} in pipeline` : "No open deals"),
   dealCols: ["Account", "Stage", "Mood", "Value", "Odds"],
   oddsUnit: "odds",                   // after a deal's odds where the column has no heading (a phone)
-  oddsSr: "odds of signing ",          // read out before a deal's odds; the column heading is only visual
-  noDeals: "No deals. The phone is on your desk.",
-  noActivity: "Nothing yet. Quota is waiting.",
+  oddsSr: "Signing chance, conditional on a close attempt: ",   // read out before a deal's odds; the column heading is only visual
+  oddsTip: "Signing chance, conditional on a close attempt",    // the Odds column's tooltip
+  oddsEarly: "Not ready to sign. Odds apply from Proposal.",     // the tooltip on a deal that is not yet at Proposal
+  noDeals: "No open deals. Your phone remains operational.",
+  noActivity: "No activity yet. Quota has been assigned.",
   endWeek: "End week",
   hail: "Hail Mary",
   weekDivider: w => `Week ${w}`,
@@ -43,16 +45,18 @@ export const KPI = {
   energyFriday: gain => `+${gain} on Friday`,
   stressEases: by => `Eases ${by} on Friday`,
   stressCrash: by => `Crash: +${by} on Friday`,
-  stressDanger: "Danger zone",
+  stressDanger: "Dangerous stress level",
   rentThisWeek: () => "Rent is due Friday",
   rentLater: w => `Rent due in week\u00A0${w}`,          // a no-break space: the number stays with "week"
   rentDone: "Rent is paid up",
-  collections: "Collections at −$1,500",
+  collections: at => `Collections at ${usd(at)} cash`,
   ofQuota: share => pc(share),
   onPace: "On pace",
-  ahead: pts => `${n(pts, "point")} ahead`,
-  behind: pts => `${n(pts, "point")} behind\u00A0pace`,
-  reviewsSoon: w => `Reviews from week\u00A0${w}`,
+  ahead: pts => `${n(pts, "percentage point")} ahead of\u00A0pace`,
+  behind: pts => `${n(pts, "percentage point")} behind\u00A0pace`,
+  reviewsSoon: w => `Performance reviews from week\u00A0${w}`,
+  expected: share => `Expected by Friday: ${pc(share)} of quota`,
+  expectedMark: share => `Expected by Friday: ${pc(share)}`,       // the marker on the quota meter, for screen readers and the tooltip
 };
 
 export const STAT = { manager: "Manager", reputation: "Reputation", product: "Product", prospect: "Prospecting", discovery: "Discovery", demo: "Demo", negotiate: "Negotiation" };
@@ -75,41 +79,52 @@ export const ACTION = {
   politics: { title: "Internal politics", cost: energy }
 };
 
+// The hint bar: what a button would do with the numbers as they stand. Factual first. Every number here is handed
+// in by the interface from the rules (src/game/selectors.js), so a hint cannot promise what the button will not do.
+// An action that would find nothing to work on says so, and says that it would still cost what it costs.
+const fifths = p => { const k = Math.round(p * 5); return Math.abs(p * 5 - k) < 1e-9 && k > 0 && k < 5 ? `${["", "One time", "Two times", "Three times", "Four times"][k]} in five` : `${pc(p)} of the time`; };
 export const HINT = {
-  prospect: () => "Cold calls. 1 to 4 new leads, now and then a fifth.",
-  cadence: () => "0 to 3 warmer leads. Your manager notices a week of emails with no calls.",
-  network: () => "1 or 2 introductions, usually small. About one in thirty is a whale.",
-  discovery: (c, p) => (c ? `${n(c, "lead")} waiting. Each has a ${pc(p)} chance to qualify.` : "No leads to qualify. It would still cost the energy."),
-  demo: (c, p) => (c ? `${n(c, "qualified deal")} waiting. Each has a ${pc(p)} chance to move on.` : "Nobody is qualified for a demo. It would still cost the energy."),
-  propose: (c, p) => (c ? `${n(c, "demoed deal")} waiting. Each has a ${pc(p)} chance to take a proposal.` : "Nobody has seen a demo. It would still cost the energy."),
-  close: c => (c ? `${n(c, "deal")} ready for a signature. The odds are on each row. A miss can lose the deal.` : "Nothing is at proposal yet. It would still cost the energy."),
-  conference: c => `3 to 8 warm leads, some of them large. Takes ${n(c.slots, "slot")} and ${usd(c.cash)}, and adds 5 stress.`,
-  crm: (pruned, gain, nuke) => `Clears ${n(pruned, "dead lead")}: +${gain} manager.` + (nuke ? ` ${pc(nuke)} chance he closes out a live deal while he is in there.` : ""),
-  recharge: r => `+${r.energy[0]} to +${r.energy[1]} energy` + (r.relief[1] > 0 ? `, −${r.relief[0]} to −${r.relief[1]} stress.` : ". No stress relief: coffee ate the calm.") + " A very good nap gets a trip approved.",
-  coffee: (shot) => `Shot ${shot.n}: +${shot.energy} energy and +${shot.stress} stress now, +${shot.crash} more on Friday.` + (shot.risk >= 1 ? " This one takes stress to 100." : shot.risk > 0 ? ` ${pc(shot.risk)} chance your heart objects.` : ""),
-  politics: () => "+8 manager, +3 product, −4 reputation, +2 stress. People notice who you have lunch with.",
-  hail: c => (c ? `One push on ${n(c, "late-stage deal")}. Four times in five, each deal left then has a 55% chance to walk.` : "Needs a deal at proposal or closing."),
-  endWeek: f => `Friday: salary +${usd(f.salary)}` + (f.rent ? `, rent −${usd(f.rent)}` : "") + `, energy +${f.energy}, stress ${f.stress < 0 ? "−" + -f.stress : "+" + f.stress}.`,
+  prospect: () => "Cold calls. Usually 1–4 new leads; occasionally a fifth. Costs time and energy.",
+  cadence: () => "0–3 warmer leads. A week of emails without calls costs manager approval.",
+  // whale: the chance each introduction is a whale
+  network: (c, whale) => `1–2 introductions, usually small. Each has roughly a ${pc(whale)} chance of being a whale.`,
+  discovery: (c, p) => (c ? `${n(c, "lead")} waiting. Each has a ${pc(p)} chance to qualify. Trains discovery.` : "No eligible deals. You would still spend a slot and energy."),
+  demo: (c, p) => (c ? `${n(c, "qualified deal")} waiting. Each has a ${pc(p)} chance to advance. Trains demos.` : "No eligible deals. You would still spend a slot and energy."),
+  propose: (c, p) => (c ? `${n(c, "demoed deal")} waiting. Each has a ${pc(p)} chance to reach Proposal.` : "No eligible deals. You would still spend a slot and energy."),
+  close: c => (c ? `${n(c, "eligible deal")}; each has its own signing odds. Failed attempts may lose deals.` : "No deals are ready to sign. You would still spend a slot and energy."),
+  // buzz: the chance it also lifts signing odds; lift: by how much (a fraction), this week only
+  conference: (c, stress, buzz, lift) => `3–8 warm leads; some are large. ${n(c.slots, "slot")}, ${c.energy} energy, ${usd(c.cash)}, +${stress} stress. ${pc(buzz)} chance of +${Math.round(lift * 100)} pp signing odds this week.`,
+  crm: (pruned, gain, nuke) => `Removes ${n(pruned, "dead lead")}: +${gain} manager. Once per week.` + (nuke ? ` Your manager may remove a live deal while he’s in the CRM (${pc(nuke)}).` : ""),
+  recharge: r => `+${r.energy[0]}–${r.energy[1]} energy` + (r.relief[1] > 0 ? `, −${r.relief[0]}–${r.relief[1]} stress` : ", no stress relief") + ". Once per week. Coffee reduces relief. A rare great nap approves a trip.",
+  coffee: (shot) => `Shot ${shot.n}: +${shot.energy} energy, +${shot.stress} stress now, +${shot.crash} more on Friday.` + (shot.risk >= 1 ? " This shot reaches 100 stress and ends the run." : shot.risk > 0 ? ` ${pc(shot.risk)} chance it ends the run.` : " Later shots give less and risk more."),
+  politics: () => "Lunch with leadership. +8 manager · +3 product · −4 reputation · +2 stress.",
+  // blast: the chance nobody walks; walk: the chance each late deal left walks otherwise
+  hail: (c, blast, walk) => (c ? `One close attempt on ${n(c, "late-stage deal")}. ${fifths(1 - blast)}, each one left then has a ${pc(walk)} chance to walk.` : "No late-stage deals to rescue."),
+  endWeek: f => `Friday: salary +${usd(f.salary)}` + (f.rent ? `, rent −${usd(f.rent)}` : "") + `, energy +${f.energy}, stress ${f.stress < 0 ? "−" + -f.stress : "+" + f.stress}. Friday events and collections may change this.`,
   blocked: {
     over: () => "The quarter is over.",
     slots: b => (b.need > 1 ? `Needs ${b.need} slots. You have ${b.have}.` : "No slots left this week."),
     energy: b => `Needs ${b.need} energy. You have ${b.have}.`,
     once: () => "Already done this week.",
+    rested: () => "You have already used this week’s recharge.",
+    waiting: () => "Something needs your answer first.",
   },
   idle: {
     over: () => "",
-    noSlots: () => "Out of slots. End the week.",
-    close: c => `${n(c, "deal")} ${c === 1 ? "is" : "are"} waiting for a signature.`,
-    propose: c => `${n(c, "demoed deal")} ${c === 1 ? "needs" : "need"} a proposal.`,
-    demo: c => `${n(c, "qualified deal")} ${c === 1 ? "needs" : "need"} a demo.`,
-    discovery: c => `${n(c, "lead")} ${c === 1 ? "needs" : "need"} qualifying.`,
-    start: () => "No deals yet. A prospect blitz is where they come from.",
+    noSlots: () => "No slots left. End the week.",
+    close: c => `${n(c, "deal")} ready for a close attempt.`,
+    propose: c => `${n(c, "demoed deal")} ready for a proposal.`,
+    demo: c => `${n(c, "qualified deal")} ready for a demo.`,
+    discovery: c => `${n(c, "lead")} ready for discovery.`,
+    start: () => "No leads. Prospect or ask for referrals.",
   },
 };
 
+// The status chips. weeks: how many playable weeks an effect has left, this one included.
+const left = weeks => (weeks > 1 ? `${weeks} weeks left` : "this week");
 export const CHIP = {
-  closeOdds: (delta, weeks) => `Close odds ${delta > 0 ? "+" : "−"}${Math.abs(Math.round(delta * 100))}% ${weeks > 1 ? `for ${weeks} weeks` : "this week"}`,
-  discount: rate => `Discounting ${pc(rate)} this week`,
+  closeOdds: (delta, weeks) => `Close odds ${delta > 0 ? "+" : "−"}${Math.abs(Math.round(delta * 100))} pp · ${left(weeks)}`,
+  discount: (rate, weeks) => `Discount ${pc(rate)} · ${left(weeks || 1)}`,
   rested: "Rested",
   more: k => `${k} more`,
   trip: place => `${place} trip approved`,
@@ -131,7 +146,20 @@ export const TOAST = {
 };
 
 // The boot screen's bezel, and names for things that have no visible label (screen readers read these).
-export const BOOT = { label: "Shitcorp OS boot screen", product: "Tech Sales Trail", brand: "SHITCORP", hint: "M mutes", sound: "Sound", soundTitle: "Sound (M)", clockIn: "Clock in", skip: "Skip", booting: "Booting…" };
+export const BOOT = { label: "Shitcorp OS boot screen", product: "Tech Sales Trail", brand: "SHITCORP", hint: "M mutes", sound: "Sound", soundTitle: "Sound (M)", clockIn: "Clock in", skip: "Skip", booting: "Loading corporate objectives…" };
+
+// Confirmations: asked only before something that cannot be taken back. The prompts are the approved ones; the
+// buttons say what they do.
+export const CONFIRM = {
+  newRun: { title: "New run", body: "Start over? This quarter’s unsaved progress will be lost.", yes: "Start over", no: "Keep playing" },
+  dismissAd: { body: "Dismiss the offer for this run? Minimizing keeps it available.", yes: "Dismiss", no: "Keep" },
+  hail: { title: "Hail Mary", body: "This may save the week or destroy the pipeline. Continue?", yes: "Throw it", no: "Not yet" },
+  coffee: { title: "Quad shot", body: "This shot reaches 100 stress and ends the run.", yes: "Drink it anyway", no: "Put it down" }
+};
+
+// The chapters of the quarter: the name shown beside the week (where there is room), by the week it starts in.
+export const CHAPTERS = [[1, "The Honeymoon"], [4, "Alignment"], [7, "The Reckoning"], [10, "The Siege"], [13, "Judgment Day"]];
+export const chapterOf = week => { let name = CHAPTERS[0][1]; for (const [from, title] of CHAPTERS) if (week >= from) name = title; return name; };
 export const NAMES = { week: "Your week", desk: "Your deals and activity", sound: "Sound", soundTitle: "Sound (M)", ending: "Ending animation", event: "Event" };
 
 // The page that replaces the game when it cannot be drawn (a save that is not a save).
@@ -157,9 +185,14 @@ export const MOOD = { skeptical: "skeptical", neutral: "neutral", curious: "curi
 // (BOOT.brand is the badge on the monitor's bezel, in the company's capitals.)
 // (BOOT.brand is the badge on the housing, in the company's capitals; UI.peekMore names the Activity panel.)
 export const lint = { exempt: { "sentence-case": ["BOOT.brand", "UI.peekMore"] }, params: {
+  "HINT.network": [{ args: [0, 0.03] }],
+  "HINT.conference": [{ args: [{ energy: 40, slots: 2, cash: 800 }, 5, 0.3, 0.08] }],
+  "HINT.hail": [{ args: [2, 0.2, 0.55] }, { args: [0, 0.2, 0.55] }, { args: [1, 0.25, 0.5] }],
+  "KPI.collections": [{ args: [-1500] }],
+  "CHIP.closeOdds": [{ args: [0.12, 1] }, { args: [-0.15, 2] }],
+  "CHIP.discount": [{ args: [0.2, 1] }],
   "HINT.recharge": [{ energy: [35, 52], relief: [12, 18] }, { energy: [35, 52], relief: [0, 0] }],
   "ACTION.coffee.cost": [{ args: [{ energy: 0, slots: 1, cash: 6 }, 12, 13] }],
   "ACTION.coffee.risk": [{ args: [{ energy: 0, slots: 1, cash: 6 }, 0.18] }],
-  "ACTION.conference.cost": [{ energy: 40, slots: 2, cash: 800 }],
-  "HINT.conference": [{ energy: 40, slots: 2, cash: 800 }]
+  "ACTION.conference.cost": [{ energy: 40, slots: 2, cash: 800 }]
 } };

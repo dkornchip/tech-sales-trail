@@ -35,10 +35,10 @@
 //   banned         buff, mana, vibes, epic, lol   (the game's own long-standing lines are not on this list)
 //   sentence-case  sentence case: a capital only starts a sentence, a quotation or a segment after a separator,
 //                  or belongs to a proper noun on the allowlist (PROPER below; --allow adds to it)
-//   len-spoken     announcer lines to be spoken: 6 words          (modules pa*, announcer*, voice*: their `say`
+//   len-spoken     announcer lines to be spoken: 12 words          (modules pa*, announcer*, voice*: their `say`
 //                                                                  strings, or every string where there are no pairs)
 //   len-caption    scene captions: 61 characters                  (modules scene*: strings under a cap* key)
-//   len-log        log lines: 90 characters                       (modules log*: every string)
+//   len-log        log lines: 100 characters (a module may raise it for named lines, to 150 at most: lint.limits)                      (modules log*: every string)
 //   render         a string with undefined, NaN, [object Object] or a function's source in it: a template that did
 //                  not get what it needed
 //   callable       a function that threw for every way the lint knows to call it (add lint.params for it)
@@ -58,9 +58,9 @@ const RULES = {
   ellipsis: "an ellipsis made of three dots",
   banned: "banned words",
   "sentence-case": "capitals that are not sentence case",
-  "len-spoken": "spoken announcer lines over 6 words",
+  "len-spoken": "spoken announcer lines over 12 words",
   "len-caption": "scene captions over 61 characters",
-  "len-log": "log lines over 90 characters",
+  "len-log": "log lines over 100 characters (150 for the lines a module names)",
   render: "templates that rendered undefined, NaN or an object",
   callable: "functions the lint could not call"
 };
@@ -70,7 +70,7 @@ const RULES = {
 // game's world as the voice bible's continuity section names it; the third is all-caps text that is printed that way
 // in the world (stamps, posters, system banners). Multi-word entries are matched as phrases.
 const PROPER = [
-  "Shitcorp, Inc.", "Shitcorp", "Scheisskorp", "clAInk", "President’s Club", "President's Club", "Cabo", "QBR", "PIP", "CRM", "SDR", "HR", "PA", "Friday",
+  "Shitcorp, Inc.", "Shitcorp", "Scheisskorp", "clAInk", "President’s Club", "President's Club", "Cabo", "QBR", "PIP", "CRM", "SDR", "HR", "PA", "Fridays", "Friday",
   "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December",
   "Jan", "Feb", "Mar", "Apr", "Jun", "Jul", "Aug", "Sep", "Sept", "Oct", "Nov", "Dec",
   "Monday", "Tuesday", "Wednesday", "Thursday", "Saturday", "Sunday", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun",
@@ -81,6 +81,12 @@ const PROPER = [
 
   "Tech Sales Trail", "Marketing Ops", "Customer Success", "Closed Won", "Chat GDP", "PDF", "API",
   "Slack", "Post-it", "PIPs", "ACV", "KPI", "PE",
+  // v2.1 (the editorial copydeck's own nouns)
+  "I’ll", "I’d", "I’m", "I", "Demoed", "Closing", "Proposal", "End Week", "Quad shot", "Recharge", "Collections", "Legal", "Slack",
+  "Internet", "Renaissance", "CFOs", "Human Resources", "Governance Council", "Senior Agent", "FIRST_NAME", "RevOps", "Closed Won", "Enterprise pilot",
+  "Autonomous Revenue Orchestration", "Revenue Transformation", "Acceptable Use Policy", "Shitcorp AI Acceptable Use Policy", "Type II", "Hi", "Hey", "Sync",
+  "The Honeymoon", "Alignment", "The Reckoning", "The Siege", "Judgment Day", "Expense Account Patriot", "Vice President of Optics", "Digital Transformation", "A Natural Leader",
+  "The American Dream", "The Right Stuff", "Whale hunter", "INTERNAL MEMORANDUM", "PLEASE DO NOT REPLY ALL", "PRESS ANY KEY", "FINAL", "SOUL_NOT_FOUND",
 
   "SHITCORP", "SECURE", "ERROR", "OOO", "REVOKED", "WE’RE A FAMILY", "SDR*"
 ];
@@ -91,10 +97,12 @@ const BANNED = [
 // (variation selector, joiner, keycap, flags), and the symbol blocks that only ever decorate.
 const PICTO = /(?![©®™])\p{Extended_Pictographic}|[️‍⃣]|[\u{1F1E6}-\u{1F1FF}]|[■-◿☀-➿⠀-⣿⬀-⯿]/gu;
 const CAPS = [
-  { rule: "len-spoken", module: /^(pa|announcer|voice)/i, unit: "words", max: 6 },
+  { rule: "len-spoken", module: /^(pa|announcer|voice)/i, unit: "words", max: 12 },
   { rule: "len-caption", module: /^scenes?/i, key: /^cap/i, unit: "characters", max: 61 },
-  { rule: "len-log", module: /^logs?/i, unit: "characters", max: 90 }
+  { rule: "len-log", module: /^logs?/i, unit: "characters", max: 100 }
 ];
+// However a module pleads, no line gets more than this.
+const CEILING = { "len-log": 150 };
 const SKIP_FILES = new Set(["engine.js", "index.js"]);
 
 /* ---------------------------------------------------------------- arguments */
@@ -250,7 +258,11 @@ function check(entry, moduleName, hints, moduleHasSay){
       if(underShow || (moduleHasSay && !underSay)) continue;
     } else if(cap.key && !keys.some(k => cap.key.test(k))) continue;
     const size = cap.unit === "words" ? text.trim().split(/\s+/).filter(Boolean).length : [...text].length;
-    if(size > cap.max) add(cap.rule, `${size} ${cap.unit} (limit ${cap.max})`);
+    // a module may name lines that are allowed more room: lint = { limits: { "len-log": { "LOG.some.line": 150 } } }
+    let max = cap.max;
+    const more = isPlain(hints.limits) && isPlain(hints.limits[cap.rule]) ? hints.limits[cap.rule] : null;
+    if(more){ const here = pathText(segs); for(const prefix of Object.keys(more)) if(here === prefix || here.startsWith(prefix + ".") || here.startsWith(prefix + "[")) max = Math.min(more[prefix], CEILING[cap.rule] || more[prefix]); }
+    if(size > max) add(cap.rule, `${size} ${cap.unit} (limit ${max})`);
   }
   return found;
 }

@@ -33,8 +33,8 @@ export const SCENE_COPY = {
   /* PRESIDENT'S CLUB: jet lands on the beach, jacket descends, fireworks */
   club: {
     title: "PRESIDENT’S CLUB",
-    a: ["Jacket secured.","You did the thing."],
-    b: ["Pipeline: obliterated.","Commission rains."],
+    a: ["Jacket secured.","Revenue verified."],
+    b: ["Next quarter:","Higher quota."],
     card: "CLUB",
     summary: "A jet lands on the beach, the jacket descends, fireworks rain commission."
   },
@@ -42,8 +42,8 @@ export const SCENE_COPY = {
   /* FIRED: access denied, walk of shame, elevator goes down */
   fired: {
     title: "YOU’RE DONE",
-    a: ["Badge: deactivated.","HR took the dongles."],
-    b: ["“Different direction.”","(Not you.)"],
+    a: ["Badge deactivated.","Please return equipment."],
+    b: ["New org chart.","Your quota lives on."],
     card: "FIRED",
     summary: "Badge denied, box carried past staring coworkers, elevator down.",
     text: {
@@ -64,7 +64,7 @@ export const SCENE_COPY = {
   ascension: {
     title: "ASCENSION",
     a: function(m){ return [m.shots > 1 ? "Shot #"+m.shots+"." : "One shot too many.","Orbit achieved."]; },
-    b: ["OOO. Forever.","Badge in low orbit."],
+    b: ["Out of office.","Beyond the office."],
     card: "ASCENSION",
     summary: "The desk ignites and you ride a column of espresso fire through the ceiling into orbit. A crater and a Post-it remain.",
     text: {
@@ -100,8 +100,8 @@ export const SCENE_COPY = {
   /* BARELY MISSED: the bar stalls, then a long walk under a personal rain cloud */
   missed: {
     title: "BARELY MISSED",
-    a: ["70–99% to quota.","Badge kept. Ego not."],
-    b: ["Manager shrugs.","HR forgets your name."],
+    a: ["Quota missed.","Badge still works."],
+    b: ["QBR adjourned.","Back on Monday."],
     card: "MISSED",
     summary: "The quota bar stalls short, then a rain cloud follows you home.",
     text: {
@@ -117,8 +117,8 @@ export const SCENE_COPY = {
   /* REPO: the tow truck takes the jacket */
   repo: {
     title: "REPOSSESSED",
-    a: ["Financed the drip.","Not the payments."],
-    b: ["Collections took the flex.","HR keeps the photo."],
+    a: ["Jacket financed.","Payments missed."],
+    b: ["Collections:","Asset recovered."],
     card: "REPO",
     summary: "A tow truck hauls off the President’s Club jacket.",
     summaryBy: { claink: "A tow truck hauls off the jacket. clAInk billed it as an outcome." },
@@ -137,7 +137,7 @@ export const SCENE_COPY = {
       os: "SHITCORP OS v4.3",
       loading: "Loading quota",
       error: "ERROR: quota exceeds pipeline.",
-      week: function(week){ return "Week "+week+"/13. Clocking in."; }
+      week: function(week){ return "Week "+week+"/13. Welcome to the office."; }
     }
   },
   // standby screen shown before the first click (it shares the boot screen's logo)

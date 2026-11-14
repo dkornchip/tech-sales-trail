@@ -2,6 +2,11 @@
 // Each one mirrors a rule elsewhere in src/game; none of them draws from the dice or changes state.
 import { QUARTER_WEEKS } from "./constants.js";
 import { isRunOver } from "./log.js";
+import { CLAINK } from "./claink.js";
+import { EFFECT } from "./effects.js";
+import { QBR } from "./quarter.js";
+import { CASH, COST, FIRING_FROM, HAIL, TUNING } from "./rules.js";
+import { STRESS_DANGER } from "./stress.js";
 import { FRIDAY, PACE_GRACE, PAY, PROPOSE_ODDS, RENT_WEEKS, REVIEWS_FROM, closeOdds, crmGain, crmNukeOdds, demoOdds, expectedAttainment, isDeadLead, paceGap, qualifyOdds } from "./rules.js";
 export { RENT_WEEKS, REVIEWS_FROM };
 export { effectChips, convMod, discountRate } from "./effects.js";
@@ -77,6 +82,40 @@ export const runFacts = s => {
     trip: s.trip || null,
     signed: st ? st.signed : null, top: st ? st.top : null, took: st ? st.took : null,
     shots: k("shots"), hails: k("hails"), lunches: k("lunches"), cadences: k("cadences"), lost: k("lost"),
-    strikes: ck.strikes || 0, revoked: ck.status === "revoked", billed: ck.billed || 0
+    strikes: ck.strikes || 0, revoked: ck.status === "revoked", billed: ck.billed || 0,
+    // what only a story begun under v2.1 can vouch for (null: unknown, and then nothing is said about it)
+    conferences: st && st.v === 2 ? st.n.conferences || 0 : null,
+    tookLargest: st && st.v === 2 ? !!st.tookLargest : null,
+    reversed: st && st.v === 2 ? !!st.reversed : null,
+    manager: s.manager, whale: Array.isArray(s.achievements) && s.achievements.some(a => a && a.key === "whale"),
+    ckSeat: ["active", "cancelled", "revoked"].includes(ck.status), ckEarned: Number.isFinite(ck.earned) ? ck.earned : null
   };
 };
+
+// The distinctions an ending card may show: only what the run can prove, at most three, in the order the card
+// offers them (what the ending itself earned, then the risks taken, then the rest). ending: club, missed, fired,
+// repo, meltdown or ascension. They are remarks on the card; nothing is unlocked and no ending changes.
+export const DISTINCTION_MAX = 3;
+export const distinctionsOf = (s, ending) => {
+  const f = runFacts(s), out = [];
+  if (ending === "repo" && s.quota > 0 && s.closedWon >= s.quota) out.push("americanDream");
+  if (ending === "ascension") out.push("rightStuff");
+  if (f.whale) out.push("whale");
+  // the pilot cost more than the commission its genuine sales paid (both totals known)
+  if (f.ckSeat && f.ckEarned !== null && f.billed > f.ckEarned) out.push("digital");
+  if (f.tookLargest === true) out.push("leader");
+  if (f.manager === 100 && s.quota > 0 && s.closedWon < s.quota) out.push("optics");
+  if (f.conferences !== null && f.conferences >= 3) out.push("patriot");
+  return out.slice(0, DISTINCTION_MAX);
+};
+
+// Every number the handbook quotes, from the rules that use it (src/copy/help.js turns these into sentences).
+export const handbookFacts = s => ({
+  quota: s.quota, weeks: QUARTER_WEEKS, slots: s.maxSlots, conferenceSlots: COST.conference.slots,
+  qbr: { club: QBR.club, safe: QBR.safe, floor: QBR.floor }, reviewsFrom: REVIEWS_FROM, firingFrom: FIRING_FROM, relief: TUNING.relief > 0,
+  salary: PAY.salary, commission: PAY.commission, rent: PAY.rent, rentWeeks: RENT_WEEKS, repoAt: CASH.repoAt,
+  fullFunnel: EFFECT.fullFunnel.conv, neglect: EFFECT.neglect.conv, hailBlast: HAIL.blast, hailWalk: HAIL.walk,
+  fridayEnergy: FRIDAY.energy, rechargeEnergy: [RECHARGE_ENERGY, rechargeMax(RECHARGE_ENERGY)], rechargeRelief: [rechargeRelief(0), rechargeMax(rechargeRelief(0))],
+  stressDanger: STRESS_DANGER, crash: CRASH_PER_SHOT,
+  offerWeek: CLAINK.OFFER_LAST_WEEK, seat: CLAINK.INSTALL, miracle: CLAINK.MIRACLE_P, strikes: CLAINK.STRIKES, trueUpLo: CLAINK.TRUEUP_OVER[0], trueUpHi: CLAINK.TRUEUP_OVER[1], cancelFee: CLAINK.CANCEL
+});

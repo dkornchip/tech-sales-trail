@@ -61,8 +61,12 @@ export const closeOdds = (s, d, negotiate = s.skills.negotiate) => {
 // The Hail Mary: one time in five it is a "last chance" blast (no deal walks); the other four it leans on every late
 // deal, and each one that did not sign then has this chance to walk.
 export const HAIL = { blast: 0.2, walk: 0.55 };
-// A conference: the chance it also lifts this week's signing odds (the lift itself is EFFECT.conference).
+// A conference: the chance it also lifts this week's signing odds (the lift itself is EFFECT.conference), and what
+// two days of lanyards do to your stress.
 export const CONFERENCE_BUZZ = 0.30;
+export const CONFERENCE_STRESS = 5;
+// Referrals: the chance each introduction is a whale.
+export const REFERRAL = { whale: 0.03 };
 
 // CRM cleanup: which leads count as dead, what clearing them is worth to your manager, and the chance he closes
 // out a live deal while he is in there (it depends on his mood before the cleanup).
@@ -87,15 +91,17 @@ const PACE = {
 // a candidate can be measured against the same seeds as the rules it would replace (test/sim). Nothing in the game
 // changes them while it runs: setTuning is for the simulations and the tests.
 export const TUNING_DEFAULTS = {
-  pace: "linear",            // which curve above
-  relief: 0,                 // 0: off. Else the most a healthy pipeline can take off the behind-pace gap (0.12)
+  pace: "ramp",              // which curve above ("linear" is the v2.0.1 one: week/13)
+  relief: 0.12,              // the most a healthy pipeline can take off the behind-pace gap (0: off)
   reliefRate: 0.25,          // how much of the weighted pipeline coverage counts as relief
   reliefWeights: [0.05, 0.12, 0.25, 0.45, 0.60],   // what a live deal at each stage is worth toward coverage
-  caps: null,                // null: off. Else the most a review may fire at: [[fromWeek, cap], ...] ([[6, .12], [8, .20], [10, .35]])
+  caps: [[6, 0.12], [8, 0.20], [10, 0.35]],        // the most a review may fire at, as [fromWeek, cap] (null: no cap)
   fireFloor: 0.02,           // a behind-pace review is never safer than this
-  drift: "half",             // "half": the manager drifts by (attainment - 0.5) * 4 a week. "pace": by attainment against the curve
+  drift: "pace",             // "pace": the manager drifts by attainment against the curve. "half": by (attainment - 0.5) * 4, as in v2.0.1
   driftCap: 2                // "pace" only: the most the manager drifts in a week, either way
 };
+// The rules as they were up to v2.0.1, for the tools that measure against them (test/sim, test/engine/tools).
+export const TUNING_V201 = { pace: "linear", relief: 0, caps: null, drift: "half" };
 export const TUNING = { ...TUNING_DEFAULTS };
 export const setTuning = over => { Object.assign(TUNING, TUNING_DEFAULTS, over || {}); return TUNING; };
 

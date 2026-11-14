@@ -152,7 +152,7 @@ export const ClainkAd=({s,mini,onToggle,onInstall,onDismiss})=>{
                 </div>
               </>}
         </div>
-        <p className="claink-fine">{CK_AD.fine(CLAINK.OFFER_LAST_WEEK)}</p>
+        <p className="claink-fine">{CK_AD.fine(CLAINK.OFFER_LAST_WEEK,Math.round(1/CLAINK.MIRACLE_P))}</p>
       </div>
     </aside>
   );

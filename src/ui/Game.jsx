@@ -5,10 +5,8 @@ import { HELP, HELP_MEMO, HELP_OK, HELP_TITLE } from "../copy/help.js";
 import { EVENTS } from "../game/events.js";
 import { causeOf } from "../game/legacy.js";
 import { step, waiting } from "../game/run.js";
-import { CLAINK } from "../game/claink.js";
+import { handbookFacts } from "../game/selectors.js";
 import { newGame } from "../game/state.js";
-import { CRASH_PER_SHOT, RECHARGE_ENERGY, RECHARGE_LUCK, TRIP_AT } from "../game/stress.js";
-import { pct } from "../game/util.js";
 import { MENU, NAMES, RECOVERY, TOAST } from "../copy/ui.js";
 import { describe } from "./app/ActionGrid.jsx";
 import { Board } from "./app/Board.jsx";
@@ -183,9 +181,9 @@ export function Game({fresh}){
       const id=type==="burnout" ? (cause==="caffeine" ? "ascension" : "meltdown") : type;
       const words=ENDINGS[id], p={closed:s.closedWon,cash:s.cash,cause};
       const title=words.title(p);
-      const body=words.body(p);
+      const body=words.body(p), note=words.note ? words.note(p) : null;
       const meta={pct:s.quota>0 ? s.closedWon/s.quota : 0, cause, shots:s.coffeesThisWeek||0};
-      setOver({id,title,body,type,meta});
+      setOver({id,title,body,note,type,meta});
     }else{
       setOver(null);
     }
@@ -206,9 +204,8 @@ export function Game({fresh}){
   const eventDef=shown ? EVENTS[shown.id] : null;
   const eventWords=shown ? EVENT_COPY[shown.id] : null;
   const eventParams=(shown && shown.params)||{};
-  // the numbers the Rules quote, straight from the game
-  const helpNumbers={quota:s.quota, rechargeEnergy:RECHARGE_ENERGY, luckPct:pct(RECHARGE_LUCK), tripPct:pct(TRIP_AT), crash:CRASH_PER_SHOT,
-    seat:CLAINK.INSTALL, strikes:CLAINK.STRIKES, trueUpLo:CLAINK.TRUEUP_OVER[0], trueUpHi:CLAINK.TRUEUP_OVER[1], offerWeek:CLAINK.OFFER_LAST_WEEK};
+  // the numbers the handbook quotes, straight from the rules
+  const helpNumbers=handbookFacts(s);
 
   return(
     <>

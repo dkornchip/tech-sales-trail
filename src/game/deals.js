@@ -2,7 +2,7 @@ import { ACCOUNT_NAMES, ACHIEVEMENTS, DEAL_NOTES } from "../copy/names.js";
 import { MOODS } from "./constants.js";
 import { discountRate } from "./effects.js";
 import { log } from "./log.js";
-import { CASH, PAY, closeOdds } from "./rules.js";
+import { CASH, PAY, REFERRAL, closeOdds } from "./rules.js";
 import { choice, clamp, idGen, pct, randi } from "./util.js";
 import { rnd } from "./rng.js";
 
@@ -69,7 +69,7 @@ export const makeReferral=(state)=>{
     tier="peanut";
   }else if(roll<0.90){
     base=randi(9000,26000);
-  }else if(roll<0.97){
+  }else if(roll<1-REFERRAL.whale){
     base=randi(26000,70000);
     tier="big";
   }else{

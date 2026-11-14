@@ -12,7 +12,7 @@
  *                     swaps the two caption sets every 5.2 s, so this sees both, and the idle-only art)
  *   --only <text>     only the cases whose name contains <text>
  *   --art             compare the pictures only: leave the caption band, the summaries and the caption schedule out,
- *                     and accept the words inside the pictures listed in REWRITTEN below (none today).
+ *                     and accept the words inside the pictures listed in REWRITTEN below (v2.1: the boot screen's last line).
  *                     This was the mode for v2.0, whose captions were rewritten. v2.0.1 put v1.21's captions back,
  *                     so the default mode is the one to run: the words must match the baseline's too (a typeset
  *                     apostrophe is the only difference allowed).
@@ -136,7 +136,21 @@ async function render(browser, build, label, cases, o) {
 
 // Words drawn inside the pictures that v2.0 rewrote on purpose (src/copy/scenes.js `text`). --art accepts exactly
 // these, on the scene named, and nothing else.
-const REWRITTEN = [];
+// v2.1 (copydeck §2): the boot screen's last line. It is typed out a character at a time, so an entry may be
+// `typed`: the row then holds the start of the line (and perhaps the typing cursor), for some week of the quarter.
+const REWRITTEN = [
+  { scene: 'boot', typed: true, was: w => `Week ${w}/13. Clocking in.`, now: w => `Week ${w}/13. Welcome to the office.` }
+];
+const typedRow = row => row.replace(/[\u258c\u2588_]/g, '').trim();
+const typedMatch = (w, ra, rb) => {
+  const pa = typedRow(ra), pb = typedRow(rb);
+  for (let k = 1; k <= 13; k++) {
+    const was = w.was(k), now = w.now(k);
+    // both sides type at the same speed: the same number of characters, until the shorter line is complete
+    if (was.startsWith(pa) && now.startsWith(pb) && (pa.length === pb.length || pa === was) && pb.length >= pa.length) return true;
+  }
+  return false;
+};
 
 // The one thing the build may do to the baseline's words: typeset an apostrophe (YOU'RE DONE is drawn YOU’RE DONE).
 // Both sides are read with the plain one, in every mode; the character is the same width, so no frame moves.
@@ -185,7 +199,8 @@ function firstDiff(a, b) {
     const cut = text => (rows === Infinity ? text : text.split('\n').slice(0, rows).join('\n'));
     // --art also knows the words inside the pictures that v2.0 rewrote on purpose (REWRITTEN below): a row that
     // holds one of them in the baseline and its replacement in the build is not a difference
-    const excused = (ra, rb) => o.art && REWRITTEN.some(w => w.scene === a.key && ra.indexOf(w.was) >= 0 && rb.indexOf(w.now) >= 0 && ra.replace(w.was, '').trim() === rb.replace(w.now, '').trim());
+    const excused = (ra, rb) => o.art && REWRITTEN.some(w => w.scene === a.key && (w.typed ? typedMatch(w, ra, rb)
+      : ra.indexOf(w.was) >= 0 && rb.indexOf(w.now) >= 0 && ra.replace(w.was, '').trim() === rb.replace(w.now, '').trim()));
     const sameRows = (ta, tb, check) => {
       const la = cut(ta).split('\n'), lb = cut(tb).split('\n');
       if (la.length !== lb.length) return { row: Math.min(la.length, lb.length), a: '(row count ' + la.length + ')', b: '(row count ' + lb.length + ')' };

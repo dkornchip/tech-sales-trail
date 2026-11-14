@@ -79,6 +79,14 @@ const cleanLogs=(raw)=>{
   return out;
 };
 
+// How often each log line has been written: tag -> count. Only tags that look like tags, only whole numbers.
+const cleanSaid=(raw)=>{
+  const out={};
+  if(!raw || typeof raw!=="object" || Array.isArray(raw)) return out;
+  for(const k of Object.keys(raw).slice(0,200)) if(/^[a-z][\w.]{0,39}$/i.test(k) && Number.isFinite(raw[k]) && raw[k]>0) out[k]=Math.min(1e6,Math.floor(raw[k]));
+  return out;
+};
+
 // Single merge path for restored runs: the autosave on page load, and the Load button. `parsed` is the run as it
 // was stored (any version); what comes back is a run this version can play, or at least one every screen can draw.
 export const mergeSaved=(parsed)=>{
@@ -133,6 +141,7 @@ export const mergeSaved=(parsed)=>{
     effects:Array.isArray(p.effects) ? sanitizeEffects(p.effects,week) : legacyEffects(p.modifiers,week),
     pending:sanitizePending(p.pending,!!ending),
     lastConference:int(p.lastConference,0,week,0),
+    said:cleanSaid(p.said),
     achievements,
     perfWarnings:int(p.perfWarnings,0,3,0),
     coffeesThisWeek:int(p.coffeesThisWeek,0,99,0),
@@ -188,6 +197,7 @@ export const newGame=(opts)=>({
   effects:[],          // what is bending the signing odds, and until when (effects.js)
   pending:[],          // choices waiting for an answer, first in line first (events.js); nothing else moves until then
   lastConference:0,    // the week of the last conference this run, or 0
+  said:{},             // how often each log line has been written this run (which wording comes next: copy/engine.js)
   achievements:[],
   perfWarnings:0,
   coffeesThisWeek:0,

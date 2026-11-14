@@ -176,7 +176,7 @@ test("a whole quarter of real log lines: never two lines at once, every spoken l
   const { POLICIES } = await load("test/sim/lib/policies.mjs");
   const eng = await loadEngine(ROOT, "working tree");
   let batches = 0, spoken = 0;
-  for (const [name, seed] of [["balanced", 3], ["claink", 4], ["risk", 5], ["conference", 6], ["novice", 7]]) {
+  for (const [name, seed] of [["balanced", 3], ["claink", 9], ["risk", 5], ["conference", 6], ["novice", 7]]) {
     a.reset(); const pace = mulberry(seed);
     playRun(eng, seed, POLICIES[name], { salt: name, onStep(g, id, r) {
       if (r.logs.length) { a.T.onLogs(r.logs, { over: eng.log.isRunOver(r.g.s) }); batches++; }

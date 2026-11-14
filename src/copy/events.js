@@ -1,43 +1,50 @@
-import { CK_QUIP, CK_WARNING } from "./claink.js";
+import { EFFECT } from "../game/effects.js";
 
 // What each event dialog says, keyed by the event's id (the same ids as EVENTS in src/game/events.js, which holds
 // what the buttons do). Every piece is a function of the event's params, even when it takes none:
 //   title(p), body(p), and for each option, by its id: its label, or { label, effect } where effect is what
 //   choosing it does, shown under the label so nobody has to guess.
+// The effect lines are factual and are built from the rules' own numbers (EFFECT in src/game/effects.js, and the
+// walk chances the rules export), so a retune cannot leave them behind. The joke is in the title and the body.
 // The two End Week choices take no params. clAInk's manager events do: `miracle` (the run that caught his eye
-// actually worked) for the warning, `account` (the deal he took) for the writing lesson.
+// actually worked) for the warning, `account` (the deal he took) for the coaching session.
+const pts = v => `${v > 0 ? "+" : "−"}${Math.abs(Math.round(v * 100))}`;
+const pc = v => `${Math.round(v * 100)}%`;
+const weeks = k => (k === 1 ? "this week" : `for ${k} weeks`);
+// the chance each deal at Demoed or later walks (src/game/events.js, SECURITY_WALK; the facts test holds them equal)
+export const WALK = { own: 0.30, spin: 0.15 };
+
 export const EVENT_COPY = {
   "evt:competitor": {
-    title: () => "Competitor panic",
-    body: () => "They cut 25%. Match 20% or hold?",
+    title: () => "Pricing alignment initiative",
+    body: () => "Scheisskorp has cut prices by 25%. Management reminds you that customers buy value, then forwards a discount authorization form.",
     options: {
-      match: () => ({ label: "Match 20%", effect: "More wins, less money: +12% close odds and 20% off every deal, this week" }),
-      hold: () => ({ label: "Hold price", effect: "Fewer wins: −8% close odds this week, +4 reputation" })
+      match: () => ({ label: `Match with ${pc(EFFECT.competitorMatch.disc)} discount`, effect: `${pts(EFFECT.competitorMatch.conv)} percentage points signing odds; ${pc(EFFECT.competitorMatch.disc)} off eligible sales ${weeks(EFFECT.competitorMatch.weeks)}.` }),
+      hold: () => ({ label: "Defend our value", effect: `${pts(EFFECT.competitorHold.conv)} percentage points signing odds ${weeks(EFFECT.competitorHold.weeks)}; +4 reputation.` })
     }
   },
   "evt:security": {
-    title: () => "Security incident",
-    body: () => "A customer got breached. Own it or spin it?",
+    title: () => "Customer incident — internal statement",
+    body: () => "A customer has been breached. Legal has drafted two descriptions of the same event. Choose the one you intend to send.",
     options: {
-      own: () => ({ label: "Own it", effect: "+6 reputation, −18 product, −15% close odds for 2 weeks. Each demoed deal has a 30% chance to walk." }),
-      spin: () => ({ label: "Spin it", effect: "−8 reputation, −12 product, −8% close odds this week. Each demoed deal has a 15% chance to walk." })
+      own: () => ({ label: "Disclose the incident", effect: `+6 reputation, −18 product, ${pts(EFFECT.securityOwn.conv)} pp odds ${weeks(EFFECT.securityOwn.weeks)}; each deal at Demoed or later has a ${pc(WALK.own)} chance to walk.` }),
+      spin: () => ({ label: "Issue a carefully worded statement", effect: `−8 reputation, −12 product, ${pts(EFFECT.securitySpin.conv)} pp odds ${weeks(EFFECT.securitySpin.weeks)}; each deal at Demoed or later has a ${pc(WALK.spin)} chance to walk.` })
     }
   },
   "ck:warning": {
-    title: () => "Always on ChatGDP?",
-    body: p => `“${CK_QUIP(p.miracle)} ${p.miracle ? "Enjoy it. " : "That’s not writing. "}${CK_WARNING}”`,
+    title: () => "Writing development opportunity",
+    body: p => (p.miracle
+      ? "“Nice week. ChatGDP do that? Enjoy it. I’d like you to develop your own written communication skills before I start intervening in your deals.”"
+      : "“Always on ChatGDP, huh? That’s not writing. Improve your written communication skills, or I’ll start intervening in your deals.”"),
     options: {
-      ack: () => "…Noted, boss"
+      ack: () => "Noted, boss."
     }
   },
   "ck:lesson": {
-    title: () => "Writing lesson",
-    body: p => `“Always on ChatGDP, huh? I’ll close ${p.account} myself. Watch and work on your writing skills.”`,
+    title: () => "Practical coaching session",
+    body: p => `“I’ll take ${p.account} from here. Watch how I handle the account. We’ll work on your writing next time.”`,
     options: {
-      ack: () => "…Thanks, boss"
+      ack: () => "Thanks, boss."
     }
   }
 };
-
-// For the copy lint: the two replies open on an ellipsis, so their first word is still the start of the sentence.
-export const lint = { exempt: { "sentence-case": ["EVENT_COPY.ck:warning.options.ack", "EVENT_COPY.ck:lesson.options.ack"] } };

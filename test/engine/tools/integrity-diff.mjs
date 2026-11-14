@@ -37,6 +37,9 @@ const names = which === "all" ? Object.keys(POLICIES) : which === "core" ? Objec
 
 const OLD = await loadEngine(path.join(ROOT, "test/baseline/checkpoint-engine"), "v2.0.1 rules");
 const NEW = await loadEngine(ROOT, "working tree");
+// The balance tuning v2.1 ships (src/game/rules.js, TUNING_DEFAULTS) is a deliberate change of rules, measured on
+// its own (test/sim). This tool is about everything else: it runs the working tree with the v2.0.1 settings.
+NEW.rules.setTuning(NEW.rules.TUNING_V201);
 
 // The scan the rules used up to v2.0.1, over the same event table.
 NEW.events.setEventRoller((state, EVENTS, maxFires) => {
@@ -71,20 +74,22 @@ function view(E, g) {
     conv: isNew ? r4(NEW.effects.convMod(s)) : r4(s.modifiers.conversion || 0),
     disc: isNew ? r4(NEW.effects.discountRate(s)) : r4(s.modifiers.discount || 0),
     waiting: d ? d.id : "",
-    core: s.rng.core, fl: s.rng.fl
+    core: s.rng.core
+    // not rng.fl: that is clAInk's joke stream (which outcomes, who files a strike, token counts). No rule reads it,
+    // and v2.1's rewritten reports draw a different number of joke numbers. It is counted below, not compared.
   };
 }
 const diffKeys = (a, b) => Object.keys(a).filter(k => a[k] !== b[k]);
 const ODDS = ["conv", "disc"];
 
 const tally = { identical: 0, qbr: 0, effects: 0, other: 0 }, kinds = {}, examples = { effects: [], other: [] };
-let runs = 0, moves = 0;
+let runs = 0, moves = 0, jokes = 0;
 const t0 = Date.now();
 for (const name of names) {
   for (let seed = FROM; seed < FROM + SEEDS; seed++) {
     let a = start(OLD, seed), b = start(NEW, seed);
     const ctx = { rng: mulberry(fnv("diff:" + name + ":" + seed)), mem: {} };
-    let verdict = "identical";
+    let verdict = "identical", joked = false;
     for (let k = 0; k < 400 && !isOver(OLD, a); k++) {
       const legal = legalMoves(OLD, a);
       let id = POLICIES[name](viewOf(OLD, a, legal), ctx);
@@ -94,6 +99,7 @@ for (const name of names) {
       const refused = NEW.run.refusal(b.s, toMove(NEW, b, id));
       if (refused) { verdict = "other"; if (examples.other.length < SHOW) examples.other.push(`${name}#${seed} move ${k} ${id}: legal before, refused now (${refused})`); break; }
       a = play(OLD, a, id).g; b = play(NEW, b, id).g; moves++;
+      if (a.s.rng.fl !== b.s.rng.fl) joked = true;
       const va = view(OLD, a), vb = view(NEW, b), keys = diffKeys(va, vb);
       if (!keys.length) continue;
       // A run that has just ended, the same way and with the same books, in both. What differs then is bookkeeping
@@ -120,7 +126,7 @@ for (const name of names) {
       if (examples.other.length < SHOW) examples.other.push(`${name}#${seed} move ${k} ${id} (week ${before.week}): ${keys.map(x => `${x}: ${String(va[x]).slice(0, 60)} -> ${String(vb[x]).slice(0, 60)}`).join("; ")}`);
       break;
     }
-    tally[verdict]++; runs++;
+    tally[verdict]++; runs++; if (joked) jokes++;
   }
 }
 const pct = n => (100 * n / runs).toFixed(1) + "%";
@@ -130,6 +136,7 @@ console.log(`  only the last Friday differs     ${String(tally.qbr).padStart(6)}
 console.log(`  odds effects differ first        ${String(tally.effects).padStart(6)}  ${pct(tally.effects)}   (the shared number and timer, fixed)`);
 for (const [k, n] of Object.entries(kinds).sort((x, y) => y[1] - x[1])) console.log(`      ${String(n).padStart(6)}  ${k}`);
 console.log(`  anything else                    ${String(tally.other).padStart(6)}  ${pct(tally.other)}`);
+console.log(`  (the joke stream moved in        ${String(jokes).padStart(6)}  ${pct(jokes)}   of those runs: clAInk's rewritten reports draw different joke numbers; no rule reads that stream)`);
 for (const e of examples.effects) console.log("  e.g. " + e);
 for (const e of examples.other) console.log("  OTHER " + e);
 console.log(tally.other ? "\nINTEGRITY DIFF FAILED: the rules differ somewhere nobody decided they should" : "\nINTEGRITY DIFF OK: every difference from the v2.0.1 rules is one of the fixes");

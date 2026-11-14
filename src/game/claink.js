@@ -307,7 +307,7 @@ export const clainkStrikeRun=(state,rInc,rKind)=>{
     strikeLog:[...cc.strikeLog,{n:strikes,who:r.who,line:r.line}].slice(-CLAINK.STRIKES),
     last:{...cc.last,strike:{n:strikes,who:r.who,why:r.why,fx:r.fx||"",hurt},
       announce:CK_RUN.strikeAnnounce(cc.last.announce,strikes,CLAINK.STRIKES,r.who,r.line)}};
-  s=log(s,hurt?"ck.strike.hurt":"ck.strike",{n:strikes,of:CLAINK.STRIKES,who:r.who,line:r.line},hurt?"bad":"warn");
+  s=log(s,hurt?"ck.strike.hurt":"ck.strike",{n:strikes,of:CLAINK.STRIKES,who:r.who,line:r.line,...(hurt?{incident:rKind}:{})},hurt?"bad":"warn");
   return hurt ? ckRepo(state,s) : s;
 };
 

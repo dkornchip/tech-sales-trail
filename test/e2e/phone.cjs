@@ -80,7 +80,7 @@ const wide = page => page.evaluate(() => ({ page: document.documentElement.scrol
     await tap(page, '[data-ui="hail"]');                       // a new run has nothing to throw a Hail Mary at
     await page.waitForTimeout(500);
     const why = await text(page, ".hint");
-    check("a tap on a blocked button leaves its reason in the hint bar", /Hail Mary/.test(why || "") && /proposal|closing/.test(why || ""), why);
+    check("a tap on a blocked button leaves its reason in the hint bar", /Hail Mary/.test(why || "") && /late-stage/.test(why || ""), why);
     const dim = await page.evaluate(() => { const b = document.querySelector('[data-ui="hail"]'), e = document.querySelector('[data-ui="rules"]'); return { hail: getComputedStyle(b).color, text: getComputedStyle(document.querySelector(".quarter-head h2")).color }; });
     check("and a blocked button is drawn dimmer than the text", dim.hail !== dim.text, JSON.stringify(dim));
     const before = (await page.evaluate(readRun)).energy;
@@ -174,7 +174,7 @@ const wide = page => page.evaluate(() => ({ page: document.documentElement.scrol
     await page.waitForTimeout(2200);
     await page.evaluate(() => { const d = document.querySelector("dialog[open]"); if (d) d.scrollTo(0, d.scrollHeight); }); await page.waitForTimeout(200);
     const memo = await page.evaluate(() => { const d = document.querySelector("dialog[open]"); if (!d) return null; const lines = [...d.querySelectorAll(".welcome-lines li")].map(e => e.getBoundingClientRect()), btn = d.querySelector(".d-footer .btn").getBoundingClientRect(), r = d.getBoundingClientRect(); return { lines: lines.length, above: lines.every(l => l.bottom <= btn.top + 1), seen: lines.every(l => l.top >= r.top && l.bottom <= r.bottom), button: btn.bottom <= r.bottom + 1 }; });
-    check("the memo's button comes after the three lines that state the job, and all of them can be read", !!memo && memo.lines === 3 && memo.above && memo.seen && memo.button, JSON.stringify(memo));
+    check("the memo's button comes after the three lines that state the job and the chapter's line, and all of them can be read", !!memo && memo.lines === 4 && memo.above && memo.seen && memo.button, JSON.stringify(memo));
     check("no errors", errors.length === 0, errors.join(" | "));
     await context.close();
 

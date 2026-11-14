@@ -106,7 +106,12 @@ test("every legacy fixture (v1.14 to v2.0.1, 38 of them) opens as the run it was
       assert.deepEqual(now.skills, was.skills, f.id + " skills"); assert.deepEqual(now.used, was.used, f.id + " used");
       assert.deepEqual(now.deals.map(d => [d.id, d.account, d.value, d.stage, d.mood, d.age]), was.deals.map(d => [d.id, d.account, d.value, d.stage, d.mood, d.age]), f.id + " deals");
       assert.deepEqual(now.logs.map(e => [e.id, e.msg, e.kind, e.tag]), was.logs.map(e => [e.id, e.msg, e.kind, e.tag]), f.id + ": the log reads as it was written");
-      assert.deepEqual({ ...now.claink, earned: 0 }, { ...was.claink, earned: 0 }, f.id + " clAInk");
+      // clAInk: everything but the words v2.1 supplies for what an old save did not keep (copy/claink.js, CK_OLD_SAVE
+      // and the revocation card), which the copydeck rewrote. Words the save itself carries are kept as written.
+      const unworded = v => JSON.parse(JSON.stringify(v, (k, x) => (["why", "line", "fx"].includes(k) && typeof x === "string" ? "(words)" : x)));
+      assert.deepEqual(unworded({ ...now.claink, earned: 0 }), unworded({ ...was.claink, earned: 0 }), f.id + " clAInk");
+      const kept = parsed.claink && Array.isArray(parsed.claink.strikes) ? parsed.claink.strikes : [];
+      kept.forEach((k, i) => { if (k && typeof k.line === "string" && k.line) assert.equal(now.claink.strikes[i].line, k.line, f.id + ": a stored strike line is kept"); });
       assert.deepEqual(now.story, was.story && { ...was.story }, f.id + " story");
       assert.equal(now.endCause, was.endCause, f.id + " cause");
       // the old shared bonus becomes one dated effect worth the same, for as long as it had left

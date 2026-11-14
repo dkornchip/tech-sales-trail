@@ -10,16 +10,17 @@
 //
 // The seven core strategies:
 //   novice      plays top-down, one deal at a time, no hygiene, rests too late, panics at the end
-//   balanced    weighs every funnel action by what it is expected to add, per point of energy; rests on time;
-//               cleans the CRM when reviews bite; keeps the manager on side
-//   referral    balanced, but every lead is a referral
-//   caller      balanced, but every lead is a cold call
-//   conference  balanced, but its leads are bought: a conference whenever the cash is there, and otherwise it works
-//               what it has (it only picks up the phone when there is nothing left to work)
-//   risk        balanced's funnel on quad shots and Hail Marys
+//   balanced    a planner: builds a pipeline early, then each slot works the batch that is worth most per point of
+//               energy (the actions move every waiting deal at once, so batches matter); rests on time; cleans the
+//               CRM once the warnings have started; keeps the manager on side; leads from calls and referrals
+//   referral    the same planner, every lead a referral
+//   caller      the same planner, every lead a cold call (email when the phone has been used)
+//   conference  the same planner, leads bought at conferences whenever the cash is there
+//   risk        the same planner on quad shots and Hail Marys, with no time for hygiene
 //   claink      balanced, with a clAInk seat from week 1, run every week, cancelled at two strikes (the third
 //               revokes the seat and Finance takes the cash)
-// and a set of probes (a stronger planner, spam one button, do nothing, farm the manager, aim for each ending).
+// and a set of probes (a planner with no hygiene at all, a slot-by-slot plodder, spam one button, do nothing, farm
+// the manager, aim for each ending).
 
 const can = (v, m) => v.legal.includes(m);
 const first = (v, moves) => moves.find(m => m && v.legal.includes(m)) || null;
@@ -108,10 +109,66 @@ const worker = (lead, extra = {}) => (v, ctx) => {
   return rest(v) || shield || empty || bestFunnel(v) || manageUp(v) || lead(v) || hygiene(v) || anyProgress(v) || carefulShot(v) || rest(v, { energyBelow: 70, stressAbove: 45 }) || "end";
 };
 
-const balanced = worker(leads.mixed);
-const referral = worker(leads.referral);
-const caller = worker(leads.caller);
-const conference = worker(leads.conference);
+// ---- the planner ----
+// What a player who has understood the funnel does. Every funnel action moves ALL the deals waiting at its stage, so
+// the thing to maximise is the value of the batch moved per point of energy; and a batch needs a pipeline, so the
+// first weeks go on building one. P:
+//   lead(v)      where a new lead comes from (a move, or null when this player has no way to get one right now)
+//   target/stop  keep finding leads until there are `target` open deals, up to week `stop`
+//   minOpen      below this many open deals, leads come before anything else
+//   crmAt        clean the CRM in a review week behind pace once this many warnings are on file (null: never)
+//   shots        quad shots allowed in a week, and the stress it will not go past (shotStress)
+//   hail         throw a Hail Mary when there are at least this many late deals and nothing better to do with 10 energy
+//   first(v)     a move to make before anything else (clAInk), or null
+const PLAN = { target: 14, stop: 8, minOpen: 6, leadOver: 250, floor: 60, wClose: 1.0, w2: 0.45, w1: 0.28, w0: 0.16, restBelow: 30, restStress: 65, crmAt: 2, mgrFloor: 40, shots: 1, shotStress: 60, hail: 0 };
+const planner = (over = {}) => {
+  const P = { ...PLAN, ...over };
+  return (v, ctx) => {
+    if (v.dialog) return answer(v, P.answers || sensible);
+    if (P.first) { const m = P.first(v, ctx); if (m) return m; }
+    if (v.slots <= 0) return "end";
+    const cost = v.cost, weeksLeft = 13 - v.week, s = v.s;
+    if (!v.rested && can(v, "act:recharge") && (v.energy < P.restBelow || v.stress >= P.restStress)) return "act:recharge";
+    if (P.crmAt !== null && v.reviewed && v.behind && v.warnings >= P.crmAt && can(v, "act:crm")) return "act:crm";
+    if (v.mgr < P.mgrFloor && can(v, "act:politics")) return "act:politics";
+    const wantLeads = v.week <= P.stop && v.open < P.target;
+    const at = k => s.deals.filter(d => d.stage === k), worth = ds => sum(ds, d => d.value);
+    const opts = [];
+    const late = s.deals.filter(d => d.stage >= 3);
+    if (can(v, "act:close") && late.length) opts.push(["act:close", late.reduce((t, d, i) => t + d.value * v.odds[i], 0) * P.wClose / cost.close.energy]);
+    if (can(v, "act:propose") && v.c[2]) opts.push(["act:propose", worth(at(2)) * v.chance.propose * P.w2 / cost.propose.energy]);
+    if (can(v, "act:demo") && v.c[1] && weeksLeft >= 1) opts.push(["act:demo", worth(at(1)) * v.chance.demo * P.w1 / cost.demo.energy]);
+    if (can(v, "act:discovery") && v.c[0] && weeksLeft >= 2) opts.push(["act:discovery", worth(at(0)) * v.chance.qualify * P.w0 / cost.discovery.energy]);
+    opts.sort((a, b) => b[1] - a[1]);
+    if (wantLeads && (v.open < P.minOpen || !opts.length || opts[0][1] < P.leadOver)) { const l = P.lead(v); if (l) return l; }
+    if (P.hail && v.late >= P.hail && can(v, "hail") && v.energy < cost.close.energy) return "hail";
+    if (opts.length && opts[0][1] > P.floor) return opts[0][0];
+    if (wantLeads) { const l = P.lead(v); if (l) return l; }
+    if (P.shots && can(v, "act:coffee") && v.shots < P.shots && v.energy < 22 && v.slots >= 2 && (P.shots > 1 ? v.shot.risk < 0.3 && v.stress + v.shot.stress < P.shotStress : v.stress + v.shot.stress + v.shot.crash < P.shotStress)) return "act:coffee";
+    if (!v.rested && can(v, "act:recharge") && v.energy < 80) return "act:recharge";
+    if (P.crmAt !== null && can(v, "act:crm") && v.dead >= 3) return "act:crm";
+    return "end";
+  };
+};
+const from = {
+  mixed: v => first(v, v.used.prospect ? ["act:network", "act:prospect"] : ["act:prospect", "act:network"]),
+  referral: v => first(v, ["act:network"]),
+  caller: v => first(v, v.used.prospect ? ["act:cadence", "act:prospect"] : ["act:prospect", "act:cadence"]),
+  // a conference whenever the cash is there (with rent kept back); otherwise the phone, but only for an empty desk
+  conference: v => {
+    const c = v.cost.conference, buffer = v.rentDue ? 900 : 300;
+    if (can(v, "act:conference") && v.cash - c.cash >= buffer) return "act:conference";
+    return v.open < 4 ? first(v, ["act:prospect", "act:cadence", "act:network"]) : null;
+  }
+};
+const balanced = planner({ lead: from.mixed });
+const referral = planner({ lead: from.referral });
+const caller = planner({ lead: from.caller });
+const conference = planner({ lead: from.conference, target: 16 });
+// the same plan with no hygiene at all: what the rules ask of a player who never touches the CRM
+const expert = planner({ lead: from.mixed, crmAt: null, mgrFloor: 0 });
+// the slot-by-slot plodder (the first bot these simulations had): competent moves, no plan for the pipeline
+const steady = worker(leads.mixed);
 
 // A clAInk seat from week 1. `careful` cancels at two strikes (the third revokes the seat and Finance takes the
 // cash). `budget` reads the price list before pressing: the seat is bought, and the agent run, only in a week whose
@@ -125,9 +182,9 @@ const clainkFirst = ({ careful, budget }) => v => {
   if (can(v, "ck:hide")) return "ck:hide";
   return null;
 };
-const claink = worker(leads.mixed, { first: clainkFirst({ careful: true, budget: false }) });
-const clainkWeekly = worker(leads.mixed, { first: clainkFirst({ careful: false, budget: false }) });
-const clainkBudget = worker(leads.mixed, { first: clainkFirst({ careful: true, budget: true }) });
+const claink = planner({ lead: from.mixed, first: clainkFirst({ careful: true, budget: false }) });
+const clainkWeekly = planner({ lead: from.mixed, first: clainkFirst({ careful: false, budget: false }) });
+const clainkBudget = planner({ lead: from.mixed, first: clainkFirst({ careful: true, budget: true }) });
 
 // The beginner: top-down, one deal at a time, no hygiene, rests when it is already too late.
 const novice = (v, ctx) => {
@@ -147,29 +204,9 @@ const novice = (v, ctx) => {
   return first(v, [v.c[0] ? "act:discovery" : null, v.c[1] ? "act:demo" : null, v.c[2] ? "act:propose" : null, v.late ? "act:close" : null]) || "end";
 };
 
-// Balanced's funnel, run hot: a second and third shot for another action, a Hail Mary for a cheap signature,
-// rest only when the heart complains.
-const risk = v => {
-  if (v.dialog) return answer(v, { competitor: () => "match", security: () => "spin" });
-  if (v.slots <= 0) return "end";
-  if (!v.rested && can(v, "act:recharge") && (v.stress >= 70 || v.energy < 16)) return "act:recharge";
-  if (v.late >= 2 && v.week >= 5 && can(v, "hail")) return "hail";
-  const move = (v.open < 4 && v.week <= 9 ? leads.mixed(v) : null) || bestFunnel(v, { closeBias: 1.3, floor: 6 }) || leads.mixed(v) || anyProgress(v);
-  if (move) return move;
-  if (can(v, "act:coffee") && v.shots < 3 && v.shot.risk < 0.3 && v.stress + v.shot.stress < 78) return "act:coffee";
-  return "end";
-};
-
-// A stronger planner than `balanced`: referrals first for the reputation they build, the manager kept above the
-// thresholds a review reads, a close held until it is worth the risk. A ceiling probe, not a human.
-const expert = (v, ctx) => {
-  if (v.dialog) return answer(v, sensible);
-  if (v.slots <= 0) return "end";
-  const shield = v.reviewed && v.behind ? hygiene(v) : null;
-  const early = v.week <= 3 && v.open < 12 ? first(v, ["act:network", "act:prospect"]) : null;
-  return rest(v) || shield || (v.open < 5 ? early : null) || bestFunnel(v, { floor: 14 }) || manageUp(v, v.week >= 4 ? 50 : 40) || early || leads.mixed(v)
-    || hygiene(v) || anyProgress(v) || carefulShot(v) || rest(v, { energyBelow: 75, stressAbove: 40 }) || "end";
-};
+// The plan, run hot: up to three shots a week for another action, a Hail Mary when the energy for a proper close is
+// gone, the cheap answer to every choice, rest only when the heart complains, and no time for the CRM.
+const risk = planner({ lead: from.mixed, shots: 3, shotStress: 78, hail: 2, restBelow: 16, restStress: 72, crmAt: null, answers: { competitor: () => "match", security: () => "spin" } });
 
 // ---- probes ----
 const spam = move => v => (v.dialog ? v.legal[0] : can(v, move) ? move : "end");
@@ -198,7 +235,7 @@ const broke = v => (v.dialog ? v.legal[0] : first(v, ["ck:buy", "ck:deploy", "ac
 
 export const CORE = { novice, balanced, referral, caller, conference, risk, claink };
 export const PROBES = {
-  expert, "claink-weekly": clainkWeekly, "claink-budget": clainkBudget, idle, "spam-prospect": spam("act:prospect"), "spam-network": spam("act:network"), "spam-cadence": spam("act:cadence"),
+  expert, steady, "claink-weekly": clainkWeekly, "claink-budget": clainkBudget, idle, "spam-prospect": spam("act:prospect"), "spam-network": spam("act:network"), "spam-cadence": spam("act:cadence"),
   "spam-politics": spam("act:politics"), "mgr-farm": mgrFarm, "hail-only": hailOnly, emailer, ascend, burn, broke
 };
 export const POLICIES = { ...CORE, ...PROBES };

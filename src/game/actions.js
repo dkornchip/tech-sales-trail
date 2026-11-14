@@ -2,7 +2,7 @@ import { TRIPS } from "../copy/names.js";
 import { checkRepo, cost, killDeals, makeDeal, makeReferral, tryCloseSome, withDeals } from "./deals.js";
 import { addEffect } from "./effects.js";
 import { log, snap } from "./log.js";
-import { CONFERENCE_BUZZ, COST, HAIL, PROPOSE_ODDS, crmGain, crmNukeOdds, demoOdds, isDeadLead, qualifyOdds } from "./rules.js";
+import { CONFERENCE_BUZZ, CONFERENCE_STRESS, COST, HAIL, PROPOSE_ODDS, crmGain, crmNukeOdds, demoOdds, isDeadLead, qualifyOdds } from "./rules.js";
 import { RECHARGE_ENERGY, RECHARGE_LUCK, TRIP_AT, checkBurnout, coffeeEnergy, coffeeRisk, coffeeStress, rechargeRelief } from "./stress.js";
 import { choice, clamp, pct, randi } from "./util.js";
 import { rnd } from "./rng.js";
@@ -224,7 +224,7 @@ export const actConference=(s)=>{
   const adds=Array.from({length:n},()=>makeDeal(s,{warm:true,big:rnd()<0.4}));
   ns.deals=withDeals(ns.deals,adds);
   ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
-  ns.stress=clamp(ns.stress+5,0,100);
+  ns.stress=clamp(ns.stress+CONFERENCE_STRESS,0,100);
   // sometimes a hallway conversation goes somewhere: better signing odds for the rest of this week
   const buzz=rnd()<CONFERENCE_BUZZ;
   if(buzz) ns=addEffect(ns,"conference");

@@ -1,5 +1,7 @@
 import React from "react";
 import { PROPOSE_CHANCE, blocked, crmPreview, demoChance, lateDeals, nextShot, qualifyChance, rechargeRange, stageCount } from "../../game/selectors.js";
+import { EFFECT } from "../../game/effects.js";
+import { CONFERENCE_BUZZ, CONFERENCE_STRESS, REFERRAL } from "../../game/rules.js";
 import { ACTION, HINT } from "../../copy/ui.js";
 import { ACTIONS } from "./actionList.js";
 import { noHover } from "../env.js";
@@ -19,9 +21,11 @@ export const describe = (a, s) => {
   else if (a.id === "crm") { const c = crmPreview(s); hint = HINT.crm(c.pruned, c.gain, c.nuke); }
   else if (a.id === "recharge") hint = HINT.recharge(rechargeRange(s));
   else if (a.id === "coffee") { const shot = nextShot(s); hint = HINT.coffee(shot); cost = shot.risk > 0 ? copy.risk(a, shot.risk) : copy.cost(a, shot.stress, shot.crash); }
+  else if (a.id === "network") hint = HINT.network(a, REFERRAL.whale);
+  else if (a.id === "conference") hint = HINT.conference(a, CONFERENCE_STRESS, CONFERENCE_BUZZ, EFFECT.conference.conv);
   else hint = HINT[a.id](a);
   if (used && copy.used) cost = copy.used;
-  return { title: copy.title, cost, count, block, hint: block ? HINT.blocked[block.why](block) : hint, risky: a.id === "coffee" && nextShot(s).risk > 0 };
+  return { title: copy.title, cost, count, block, hint: block ? (block.why === "once" && a.id === "recharge" ? HINT.blocked.rested() : HINT.blocked[block.why](block)) : hint, risky: a.id === "coffee" && nextShot(s).risk > 0 };
 };
 
 export const ActionGrid = ({ s, onAct, onHint, onBlocked }) => (

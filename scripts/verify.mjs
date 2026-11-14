@@ -21,7 +21,8 @@
 //   engine       the rules, in Node: the dice, invariants after every move, golden seeded replays  (test/engine)
 //   audio        what the sound engine decides: routing, batching, one voice at a time, captions, mute  (test/audio)
 //   sim-smoke    the frozen balance baseline is intact and the simulation kit still measures  (test/sim/smoke.mjs)
-//   scenes       every scene, frame by frame and caption by caption, is v1.21's (test/parity/scenes.cjs)
+//   scenes       every scene's picture, frame by frame, is v1.21's (test/parity/scenes.cjs --art). The captions
+//                were rewritten for v2.1 (copydeck §11): their words are held by the copy lint and the deck fixture
 //   fixtures     the save fixtures are what v1.21 writes   (test/saves/generate.cjs --check)
 //   saves        every save fixture, both ways in: it loads, shows what the manifest says, and plays on  (test/saves/run.cjs --a self)
 //   release      the shipped file has no test hook and replays move for move against src/game  (test/e2e/release.cjs)
@@ -99,7 +100,7 @@ const STEPS = {
   "lint-css": { what: "stylesheet rules", cmd: ["scripts/lint-css.mjs", "--strict"] },
   "copy-check": { what: "copy is wired", cmd: ["test/copy/check.cjs"] },
   "copy-render": { what: "every line renders", cmd: ["test/copy/render.mjs"] },
-  scenes: { what: "the scenes and their captions", cmd: ["test/parity/scenes.cjs", "--b", target], needs: target },
+  scenes: { what: "the scenes, frame by frame (pictures; v2.1 rewrote the captions)", cmd: ["test/parity/scenes.cjs", "--art", "--b", target], needs: target },
   fonts: { what: "bundled fonts", cmd: ["scripts/fonts.mjs", "--check"] },
   notices: { what: "licence notices", cmd: ["scripts/notices.mjs", "--check"] },
   fixtures: { what: "save fixtures are the baseline's", cmd: ["test/saves/generate.cjs", "--check"] },

@@ -23,7 +23,7 @@ export var TAG_SOUND = {
   /* closing and deals */
   "close.nobody":["thud",3], "close.none":["nope",3], "close.lost":["lost",4],
   "deal.ghost":["ghost",2], "deal.lost":["lost",4],
-  "ach.unlocked":["achievement",4,"whale"],
+  "ach.unlocked":["achievement",4],
   /* random events */
   "evt.marketing":["leads",2,"sqlStorm"], "evt.competitor.match":["discount",2], "evt.competitor.hold":["thud",2],
   "evt.seFumble":["fumble",2], "evt.seSave":["magic",2], "evt.security.own":["warn",2], "evt.security.spin":["warn",2],
@@ -68,7 +68,8 @@ export function modalSay(id){ return has(MODAL_SAY,id) ? MODAL_SAY[id] : null; }
 // {sfx, prio, say} for a tag and its params, or null. A fresh object every call: the director adds to it.
 export function ruleFor(tag,params){
   if(has(CLOSE_TAGS,tag)) return {sfx:"cash", prio:4, close:true};
-  if(tag === "act.network") return {sfx:params && params.size === "whale" ? "sonar" : "ping", prio:3};
+  // referrals: a whale among them pings like sonar, and the announcer says so
+  if(tag === "act.network"){ var whale = !!params && params.size === "whale"; return whale ? {sfx:"sonar", prio:4, say:"whale"} : {sfx:"ping", prio:3}; }
   if(!has(TAG_SOUND,tag)) return null;
   var r = TAG_SOUND[tag];
   return {sfx:r[0], prio:r[1], say:r[2]};
