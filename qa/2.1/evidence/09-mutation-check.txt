@@ -1,0 +1,8 @@
+SKIP (pattern not unique/found): src/game/state.js     pending:sanitizePending(parsed.pending,isRunOv
+mutants caught: 47 of 51
+  SURVIVED: ('src/game/actions.js', 'ns.reputation=clamp(ns.reputation+4,0,100);\n\n  const n=randi(1,2);')
+  SURVIVED: ('src/game/claink.js', '  if(!c || c.status!=="active" || isRunOver(state))return state;\n  con')
+  SURVIVED: ('src/game/rules.js', 'if (w < REVIEWS_FROM || w >= QUARTER_WEEKS || !(s.quota > 0)) return 0')
+
+re-run of the entry whose pattern had gone stale (state.js, a finished run keeps no waiting choice): CAUGHT -> 48 of 51 caught, 3 survived
+survivors (3), all behaviour-neutral: (1) actions.js: two independent statements swapped; (2) claink.js: the Friday invoice's own run-over guard (End Week never reaches it on a finished run); (3) rules.js: pipelineRelief's week-13 guard (the fade factor is already zero in week 13)

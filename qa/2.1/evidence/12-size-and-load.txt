@@ -1,0 +1,4 @@
+index.html dom nodes 628 js heap MB 10
+index.html bytes 518108 gzip 201456 ms to first interactive desk (median of 7, headless Chromium, file://): 247 range 193-295
+Tech_Sales_Trail_2.1.html dom nodes 665 js heap MB 10
+Tech_Sales_Trail_2.1.html bytes 556515 gzip 214807 ms to first interactive desk (median of 7, headless Chromium, file://): 256 range 211-309

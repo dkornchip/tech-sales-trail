@@ -1,0 +1,63 @@
+Tech Sales Trail 2.1: the screen-size matrix and the offline test, run on the release file itself (Tech_Sales_Trail_2.1.html, file://)
+
+matrix: /home/user/tech-sales-trail/Tech_Sales_Trail_2.1.html  (8 sizes x 12 states, file://, network refused)
+  ok    1440x900             110 checks
+  ok    1024x768             110 checks
+  ok    768x1024             110 checks
+  ok    320x568              110 checks
+  ok    375x667              110 checks
+  ok    390x844              110 checks
+  ok    667x375-landscape    110 checks
+  ok    1440x900-zoom200     110 checks
+  ok    reduced motion       108 checks
+
+MATRIX OK: all 988 checks passed at 8 sizes, 164.0 s
+
+  ok    the document opens in standards mode as UTF-8  (http: CSS1Compat UTF-8)
+  ok    the head carries a description and a theme colour
+  ok    the favicon is an inline SVG that decodes
+  ok    the page declares only the two bundled families  (TST Sans 100 900: loaded, TST Mono 400: loaded, TST Mono 700: loaded)
+  ok    "TST Sans" was loaded by the page itself
+  ok    "TST Mono" 400 was loaded by the page itself (the boot screen draws in it)
+  ok    document.fonts loads every bundled face  (400 16px "TST Sans" loaded; 800 16px "TST Sans" loaded; 400 16px "TST Mono" loaded; 700 16px "TST Mono" loaded)
+  ok    "TST Mono" has its own advance, unlike every generic fallback  (TST Mono 60.000px a character at 100px; monospace 60.205)
+  ok    "TST Sans" has its own advance, unlike every generic fallback  (TST Sans 3033.8px; sans-serif 2882.1px)
+  ok    text in a scene screen is set in TST Mono  (2100.0 vs 2100.0)
+  ok    body text is set in TST Sans  (3033.8 vs 3033.8)
+  ok    the boot screen is up
+  ok    the scene engine measured its glyph ratio against TST Mono  (cached 0.6, TST Mono 0.6, generic monospace 0.6021)
+  ok    the scene grid keeps the line-height the engine assumes (1.14) and fits its screen  (line-height 1.1400, 64 columns 710.4px in 712px, 16.99 rows at 18.5px)
+  ok    every piece of text on the boot screen uses a bundled family  (202 elements)
+  ok    the boot screen can be clicked through  (started true, removed true, game live true)
+  ok    one action can be played  ("Prospect blitz": energy 95 -> 65, log 0 -> 1 lines)
+  ok    every piece of text on the main screen uses a bundled family  (218 elements)
+  ok    no font face failed  (TST Sans 100 900: loaded, TST Mono 400: loaded, TST Mono 700: loaded)
+  ok    zero requests other than the document  (1 request)
+  ok    zero console errors
+  ok    zero page errors
+
+file:// URL, network blocked: /home/user/tech-sales-trail/Tech_Sales_Trail_2.1.html
+  ok    the document opens in standards mode as UTF-8  (file: CSS1Compat UTF-8)
+  ok    the head carries a description and a theme colour
+  ok    the favicon is an inline SVG that decodes
+  ok    the page declares only the two bundled families  (TST Sans 100 900: loaded, TST Mono 400: loaded, TST Mono 700: loaded)
+  ok    "TST Sans" was loaded by the page itself
+  ok    "TST Mono" 400 was loaded by the page itself (the boot screen draws in it)
+  ok    document.fonts loads every bundled face  (400 16px "TST Sans" loaded; 800 16px "TST Sans" loaded; 400 16px "TST Mono" loaded; 700 16px "TST Mono" loaded)
+  ok    "TST Mono" has its own advance, unlike every generic fallback  (TST Mono 60.000px a character at 100px; monospace 60.205)
+  ok    "TST Sans" has its own advance, unlike every generic fallback  (TST Sans 3033.8px; sans-serif 2882.1px)
+  ok    text in a scene screen is set in TST Mono  (2100.0 vs 2100.0)
+  ok    body text is set in TST Sans  (3033.8 vs 3033.8)
+  ok    the boot screen is up
+  ok    the scene engine measured its glyph ratio against TST Mono  (cached 0.6, TST Mono 0.6, generic monospace 0.6021)
+  ok    the scene grid keeps the line-height the engine assumes (1.14) and fits its screen  (line-height 1.1400, 64 columns 710.4px in 712px, 16.99 rows at 18.5px)
+  ok    every piece of text on the boot screen uses a bundled family  (202 elements)
+  ok    the boot screen can be clicked through  (started true, removed true, game live true)
+  ok    one action can be played  ("Prospect blitz": energy 95 -> 65, log 0 -> 1 lines)
+  ok    every piece of text on the main screen uses a bundled family  (210 elements)
+  ok    no font face failed  (TST Sans 100 900: loaded, TST Mono 400: loaded, TST Mono 700: loaded)
+  ok    zero requests other than the document  (1 request)
+  ok    zero console errors
+  ok    zero page errors
+
+all 44 checks passed  (Tech_Sales_Trail_2.1.html, 543 KB)

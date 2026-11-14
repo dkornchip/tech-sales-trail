@@ -177,6 +177,22 @@ Saves from earlier versions load and continue.
 
 ---
 
+## Coming in v2.1: "Operation Final Coat" (release candidate)
+
+`Tech_Sales_Trail_2.1.html` in this repository is the 2.1 candidate: download it and open it. The link above and
+`index.html` still serve v2.0.1 (which the rest of this page describes) until 2.1 is promoted.
+
+2.1 is a polish pass, not a new game: a fairer quarter (pace follows a real quarter's curve, early reviews look at
+your pipeline, the QBR says one thing), a screen that tells the truth about your numbers, saves that cannot be lost
+to a bad file, confirmations before the four things that cannot be undone, and every line rewritten in the voice of
+a company that believes it is exceptional. Same quota, same thirteen weeks, same actions, same six endings.
+
+- Player notes: [TTST_2.1_RELEASE_NOTES.md](TTST_2.1_RELEASE_NOTES.md)
+- What was changed, measured and tested: [TTST_2.1_QA_REPORT.md](TTST_2.1_QA_REPORT.md)
+- The brief and the copydeck it was built from: [docs/2.1](docs/2.1)
+
+---
+
 ## What's new in v2.0 (and v2.0.1)
 
 Everything a player sees or reads was redone, and nothing about how the game plays was changed. A test harness plays v1.21 and v2.0 side by side on the same dice and requires the same state after every move: 54,000 moves and 319,000 dice rolls, identical.
@@ -224,9 +240,12 @@ The checks drive a real browser with [Playwright](https://playwright.dev), which
 - **engine** (`test/engine/`, Node): the dice (same seed and moves, same run; a run saved and read back carries on exactly; nothing rolls outside a move), invariants after every move of random and scripted play, and golden replays of seeded runs.
 - **audio** (`test/audio/`, Node): what the sound engine decides, against a fake speaker: which log line makes which sound, what a batch plays, that the announcer never talks over itself, captions, mute.
 - **sim-smoke** (`test/sim/`): the simulation kit plays whole quarters with policy bots on the frozen balance baseline (`test/baseline/checkpoint-engine`) and on the working tree. `npm run sim -- --seeds 1000` prints the balance tables. The bots are heuristics; they are not playtests.
-- **scenes**: every frame of every ASCII scene, and every caption under it, is exactly v1.21's (apostrophes are typeset; nothing else differs).
+- **copy-deck** (`scripts/copy-coverage.mjs`): every row of the editorial copydeck (`docs/2.1`) is rendered by the build, or has a reason on file (`docs/2.1/copy-coverage-notes.json`).
+- **scenes**: every frame of every ASCII scene's picture is exactly v1.21's. (v2.1 rewrote the captions under them; the copy lint and the copydeck gate hold those.)
 - **saves** (`test/saves/`): saves from every state and ending of v1.21, and older, load, show what they should, and play on. The fixtures are regenerated from the frozen v1.21 file and must match what is committed.
 - **release** (`test/e2e/release.cjs`): the shipped file exposes no test hook, ignores one planted from outside, and replays move for move against `src/game` from the run it saved.
+- **confirm** (`test/e2e/confirm.cjs`): the four confirmations, by real clicks and key presses on the release build; a "no" must leave the run exactly as it was.
+- **matrix** (`test/e2e/matrix.cjs`): eight screen sizes (1440×900 down to 320×568, a phone on its side, 200% zoom) × twelve states (the offer, a choice, an incident, the handbook, six endings), from `file://` with the network refused; `--shots <dir>` saves the pictures.
 - **offline**, **first day**, **resilience**, **phone**, **keyboard**, **layout** (`test/e2e/`): no network and the bundled fonts in use; the onboarding flow; reloads, damaged saves, duplicate names and an ending whose cutscene cannot play; a touch screen at phone sizes and on its side (hints by tap, the status strip, the log, captions, endings); a whole run on the keyboard; one screen at seven desktop sizes and a phone, with nothing covered or cut off.
 
 `npm run test:selftest` turns the tests on themselves: each one is given a planted fault and must report it.

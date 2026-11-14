@@ -1,5 +1,43 @@
 # Changelog
 
+## v2.1 — "Operation Final Coat" (release candidate, not yet promoted)
+
+The candidate is `Tech_Sales_Trail_2.1.html`. `index.html` is still v2.0.1 and is what the public link serves until
+the owner promotes 2.1. Player-facing notes: `TTST_2.1_RELEASE_NOTES.md`. What was changed, measured and tested:
+`TTST_2.1_QA_REPORT.md`, with the evidence under `qa/2.1/`.
+
+### Rules
+- **The dice belong to the run.** Every mechanical roll comes from a seeded stream saved with the run; clAInk's jokes use a second stream no rule reads. Same seed and same moves give the same quarter. Test hooks exist only in test builds; a release has none.
+- **One front door.** `src/game/run.js` (`step`, `legalMoves`) is the only way a run changes. The interface, the tests and the balance simulations all use it.
+- **Effects keep their own clocks.** Every bonus or penalty on the signing odds is a dated entry (`src/game/effects.js`) instead of one shared number and one shared timer. The total is held to 30 points either way.
+- **Choices are part of the run.** A waiting choice blocks every other move, is answered exactly once and survives a reload. A Friday choice and a word from clAInk's manager can no longer overwrite each other.
+- **Friday events are dealt fairly.** Only events that can happen are rolled; an event with nothing to act on takes no slot; the order in the list no longer decides who gets the two slots. Chances unchanged.
+- **One QBR resolution.** Under 70% is fired, with no roll and no "dodged" line first. Percentages are floored. The politics firing is told apart from a performance one.
+- **Truthful numbers.** Log lines, chips and strike cards show what actually happened to each meter.
+
+### Balance (measured, then adopted)
+- Pace follows a curve (2% by week 2, 18% by week 5, 46% by week 8, 79% by week 11) instead of a thirteenth a week, and reviews, the dashboard and the manager all read it.
+- A healthy pipeline softens early reviews (never at the QBR, never as revenue). A mid-quarter review fires at no more than 12% (weeks 6–7), 20% (8–9), 35% (10–12), and never under 2%.
+- The manager's opinion follows the curve, at most 2 points a week either way.
+- 1,000 simulated quarters per strategy, same seeds before and after, validated on held-out seeds: a balanced heuristic survives 55% of quarters (was 34%) and reaches President's Club in 43% (was 29%). The goal for survival was 60–80%; the gap is reported, not forced. These are bots, not people.
+
+### Saves
+- A versioned envelope under new keys; older saves (v1.14 to v2.0.1) open, and their keys are read and never written, so the v2.0.1 page keeps its run.
+- A save is rebuilt field by field against a whitelist. One that cannot be opened is never played, overwritten or lost: a dialog offers a new run and any other valid save, and sets the bad one aside. A damaged manual Load leaves the current run alone.
+
+### Writing, interface, sound
+- Every line rewritten from the approved editorial copydeck (359 of 380 rows word for word; the rest have a reason on file). Routine lines have variants by week band and never repeat twice running.
+- "Expected by Friday" under the quota meter, each effect on its own chip, the odds column labelled for what it is, a handbook written from the live rules.
+- The ending card adds the company's verdict and up to three distinctions the run can prove.
+- Confirmations before the four things that cannot be undone: a new run mid-quarter, the first Hail Mary of a run, a quad shot that is certain to end the run, dismissing clAInk's offer.
+- The announcer: a line that matters cuts off small talk instead of being dropped; captions are cleared on Load and New run.
+- The six ASCII endings and the boot screen are the same pictures, frame for frame.
+
+### Tests
+- `npm run verify:release`: 26 gates. New since v2.0.1: engine tests in Node with scripted dice (113), behavioural audio tests (15), simulation smoke, a release-bundle check (no hooks; the page replays against the source), copydeck coverage, confirmations by real presses (37), and the screen-size matrix (eight sizes × twelve states, 988 checks).
+- Move-for-move parity with the frozen v1.21 file passed one last time before any rule changed, and was then retired: the rule fixes end it on purpose. An integrity diff shows every difference from the v2.0.1 rules is one of the fixes.
+- Chromium only. Firefox is not verified.
+
 ## v2.0.1 — the old words, and a boot screen that matches
 
 ### Changed: the writing is v1.21's again

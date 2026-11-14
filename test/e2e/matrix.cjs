@@ -1,5 +1,5 @@
 // The screen-size matrix: every state a player meets, at every size the brief names, in the shipped file.
-//   node test/e2e/matrix.cjs [path/to/index.html] [--shots <dir>] [--keep <WxH,..>] [--only <state,..>]
+//   node test/e2e/matrix.cjs [path/to/index.html] [--shots <dir>] [--keep <WxH,..>] [--only <state,..>] [--jpeg]
 //   (default: dist/index.html, the release build, opened from file:// with every network request refused)
 //
 // Sizes: 1440x900, 1024x768, 768x1024 (touch), 320x568, 375x667, 390x844 (phones), 667x375 (a phone on its side),
@@ -28,6 +28,7 @@ const { envelope, KEYS } = require("./lib/store.cjs");
 
 const argv = process.argv.slice(2);
 const take = flag => { const i = argv.indexOf(flag); if (i < 0) return null; return argv.splice(i, 2)[1]; };
+const jpeg = argv.includes("--jpeg") && !!argv.splice(argv.indexOf("--jpeg"), 1);     // screenshots as .jpg (smaller, for the record kept in the repository)
 const shotsDir = take("--shots"), keep = (take("--keep") || "").split(",").filter(Boolean), only = (take("--only") || "").split(",").filter(Boolean);
 const target = path.resolve(argv[0] || "dist/index.html");
 const FIXTURES = path.join(__dirname, "../saves/fixtures/generated");
@@ -101,6 +102,16 @@ const fine = r => r.found && r.inside && r.top;
 async function inspect(browser, size, state, reduced) {
   const tag = `${state.id}@${size.id}${reduced ? "@reduced" : ""}`;
   const { context, page, errors, requests } = await openState(browser, size, state, reduced);
+  // The picture of this state, with the thing the state is about on screen (sel), taken once.
+  let shot = false;
+  const shoot = async sel => {
+    if (shot || !shotsDir || reduced || (keep.length && !keep.includes(size.id))) return;
+    shot = true;
+    fs.mkdirSync(shotsDir, { recursive: true });
+    await page.evaluate(sel => { const el = sel && document.querySelector(sel); if (el) el.scrollIntoView({ block: "center", inline: "nearest" }); else window.scrollTo(0, 0); }, sel || null);
+    await page.waitForTimeout(200);
+    await page.screenshot(jpeg ? { path: path.join(shotsDir, `${state.id}@${size.id}.jpg`), type: "jpeg", quality: 82 } : { path: path.join(shotsDir, `${state.id}@${size.id}.png`) });
+  };
   try {
     if (state.open === "rules") { await page.locator('[data-ui="rules"]').first().click(); await page.waitForTimeout(350); }
     if (state.ad) {
@@ -143,12 +154,14 @@ async function inspect(browser, size, state, reduced) {
       const r = await pressable(page, sel, ".claink-ad");
       check(`dock@${tag}: ${name}`, fine(r), JSON.stringify(r));
     }
+    if (state.ad) await shoot(".claink-ad");
     if (state.dock === "report") {
       const has = await page.evaluate(() => ({ console: !!document.querySelector(".claink-console"), mini: !!document.querySelector(".claink-console.is-mini") }));
       check(`dock@${tag}: the workspace is there`, has.console);
       if (has.mini) { await page.locator(".claink-min").first().click(); await page.waitForTimeout(400); }
       const card = await page.evaluate(() => { const c = document.querySelector(".claink-strike"); if (!c) return null; c.scrollIntoView({ block: "nearest" }); const r = c.getBoundingClientRect(); return { w: Math.round(r.width), fx: !!c.querySelector(".fx"), text: c.innerText.replace(/\s+/g, " ").slice(0, 80), over: c.scrollWidth > c.clientWidth + 1 }; });
       check(`dock@${tag}: the strike card is shown, with what it cost, and is not cut off`, !!card && card.w > 120 && !card.over, JSON.stringify(card));
+      await shoot(".claink-strike");
       const r = await pressable(page, ".claink-min", ".claink-console");
       check(`dock@${tag}: the workspace can be minimized`, fine(r), JSON.stringify(r));
       // minimized, it leaves End Week alone
@@ -169,12 +182,7 @@ async function inspect(browser, size, state, reduced) {
     }
     check(`offline@${tag}: no request left the file`, requests.length === 0, requests.slice(0, 3).join(" "));
     check(`offline@${tag}: no errors`, errors.length === 0, errors.slice(0, 2).join(" | "));
-    if (shotsDir && !reduced && (!keep.length || keep.includes(size.id))) {
-      fs.mkdirSync(shotsDir, { recursive: true });
-      if (!state.dialog && !state.ending) await page.evaluate(() => window.scrollTo(0, 0));
-      await page.waitForTimeout(150);
-      await page.screenshot({ path: path.join(shotsDir, `${state.id}@${size.id}.png`) });
-    }
+    await shoot(null);
   } finally { await context.close(); }
 }
 

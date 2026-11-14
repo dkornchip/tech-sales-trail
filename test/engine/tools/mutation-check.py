@@ -40,8 +40,24 @@ M=[
  ("src/game/claink.js","const largest=s.deals.every(d=>d.value<=victim.value);","const largest=true;"),
  ("src/game/claink.js","  if(!c || c.status!==\"active\" || isRunOver(state))return state;\n  const base=","  if(!c || c.status!==\"active\")return state;\n  const base="),
  ("src/game/claink.js","getQuarterInfo(s.week).weekInQuarter<=CLAINK.OFFER_LAST_WEEK && s.cash-CLAINK.INSTALL>CLAINK.REPO_AT;","getQuarterInfo(s.week).weekInQuarter<=CLAINK.OFFER_LAST_WEEK && s.cash-CLAINK.INSTALL>=CLAINK.REPO_AT;"),
- ("src/game/state.js","    pending:sanitizePending(parsed.pending,isRunOver(parsed)),","    pending:sanitizePending(parsed.pending,false),"),
+ ("src/game/state.js","    pending:sanitizePending(p.pending,!!ending),","    pending:sanitizePending(p.pending,false),"),
  ("src/game/log.js","const d=Math.round(after[k])-Math.round(before[k]); if(d) out[k]=d;","const d=Math.round(after[k]-before[k]); out[k]=d;"),
+ # v2.1 balance tuning (rules.js), the review that reads it, the manager's drift
+ ("src/game/rules.js","  ramp: [0, 0.02, 0.05, 0.10, 0.18, 0.27, 0.36,","  ramp: [0, 0.02, 0.05, 0.10, 0.18, 0.28, 0.36,"),
+ ("src/game/rules.js","* Math.max(0, (QUARTER_WEEKS - w) / 8);","* Math.max(0, (QUARTER_WEEKS - w) / 6);"),
+ ("src/game/rules.js","return Math.min(TUNING.relief, coverage * TUNING.reliefRate)","return (coverage * TUNING.reliefRate)"),
+ ("src/game/rules.js","if (w < REVIEWS_FROM || w >= QUARTER_WEEKS || !(s.quota > 0)) return 0;","if (w < REVIEWS_FROM || w > QUARTER_WEEKS || !(s.quota > 0)) return 0;"),
+ ("src/game/rules.js","if (week >= from) cap = c;","if (week > from) cap = c;"),
+ ("src/game/quarter.js","const behind=Math.max(0,paceGap(ns)-pipelineRelief(ns));","const behind=Math.max(0,paceGap(ns));"),
+ ("src/game/quarter.js","Math.min(0.70,fireCap(weekInQuarter))","0.70"),
+ ("src/game/week.js","clamp((perfToDate-expectedAttainment(weekInQuarter))*4,-TUNING.driftCap,TUNING.driftCap)","(perfToDate-expectedAttainment(weekInQuarter))*4"),
+ # the ending card's distinctions, and what the story records for them
+ ("src/game/selectors.js","f.billed > f.ckEarned","f.billed >= f.ckEarned"),
+ ("src/game/selectors.js","f.conferences >= 3","f.conferences >= 2"),
+ ("src/game/selectors.js","f.manager === 100 &&","f.manager >= 99 &&"),
+ ("src/game/selectors.js","s.closedWon >= s.quota) out.push(\"americanDream\")","s.closedWon > 0) out.push(\"americanDream\")"),
+ ("src/game/claink.js","incident:r.kind","incident:rKind"),
+ ("src/game/story.js","p.incident === \"churn\"","p.incident"),
 ]
 caught=0; missed=[]
 for i,(f,a,b) in enumerate(M):
