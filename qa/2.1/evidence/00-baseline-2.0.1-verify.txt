@@ -1,0 +1,66 @@
+Tech Sales Trail 2.0.1 baseline: node scripts/verify.mjs --release on untouched source
+commit aca3040bd41560ccb80e2c20e9fb7fca60153653, index.html sha256 0272acc61921043ebf30c6b2881aea8286fe839992aff587343381dc4c293644, 518108 bytes
+node v22.23.4, playwright 1.63.0, chromium only (no Firefox installed)
+run finished 2026-11-14T07:22Z
+
+  step         result    time      
+  build        ok           0.2 s  dist/index.html 506 KB raw, 197 KB gzip
+  lint-rng     ok           0.4 s  LINT-RNG OK: 81 files under src (16 may read Math.random), 0 offenders
+  lint-copy    ok           0.1 s  LINT-COPY OK: 0 violations
+  lint-css     ok           0.1 s  LINT-CSS OK: 0 findings
+  copy-check   ok           0.9 s  COPY CHECK OK
+  copy-render  ok           0.1 s  15680 renderings, 0 bad; 149 distinct sentences across 98 tags
+  fonts        ok           1.1 s  src/assets/fonts is up to date
+  notices      ok           0.0 s  THIRD-PARTY-NOTICES.md is up to date
+  parity       ok         115.2 s  PARITY OK in 114.8 s
+  scenes       ok           9.7 s  SCENES OK
+  fixtures     ok          42.3 s  25 generated fixtures are exactly what the baseline writes.
+  saves        ok         133.3 s  SAVES OK in 132.8 s
+  offline      ok           4.3 s  all 44 checks passed (dist/index.html, 506 KB)
+  firstday     ok          13.5 s  FIRST DAY OK: all 26 checks passed
+  resilience   ok          19.8 s  RESILIENCE OK: all 34 checks passed
+  phone        ok          36.9 s  PHONE OK: all 45 checks passed
+  keyboard     ok           3.2 s  KEYBOARD OK: dist/index.html, 8/8 stages, 98 key presses (84 of them Tab or Shift+Tab), 0 known findings, 0 unexpected, 0 stale entries
+  layout       ok          26.2 s  LAYOUT OK: dist/index.html, 7 fixtures x 7 viewports + phone: 328 ok, 0 known failures, 0 unexpected failures, 0 stale entries, 25.7 s
+  sound        ok         253.2 s  PARITY OK in 252.8 s
+  released     ok           0.2 s  index.html is up to date (506 KB raw, 197 KB gzip)
+
+VERIFY OK: 20/20 steps passed, 660.9 s   (layout: 0 known-failure patterns, listed in scripts/verify.mjs)
+
+--- parity (quick set) ---
+  ok   dismisser#2                  260 steps  11634 ms
+  ok   miser#2                      260 steps   9305 ms
+  ok   politician#2                 260 steps   8759 ms
+  ok   neglecter#2                  260 steps   7481 ms
+
+PASS  A = baseline v1.21   B = dist/index.html (sha256 0272acc61921)   fx seeded   motion mix
+  25/25 sessions, 5299 steps compared, 31066 mechanical draws compared, 257 scripted scenarios (69 threshold probes), 114.8 s
+  draws before the first reset: A 2, B 2   (B: http://tst.test/b/index.html:33:32150 <- at http://tst.test/ ; http://tst.test/b/index.html:34:1261 <- at http://tst.test/b)
+  Google Fonts requests answered with an empty body: A 46, B 0.  Pinned clAInk flavor stream read 409 times in A, 409 in B.
+  census floors: all met
+
+PARITY OK in 114.8 s
+
+--- saves ---
+  ok   legacy-corrupt-json / Load button           31 moves   2848 ms
+
+PASS  A = baseline v1.21   B = dist/index.html (sha256 0272acc61921)
+  38 fixtures, 75/75 loads (38 on page load, 37 through the Load button), 1503 moves compared after loading, 132.8 s
+
+SAVES OK in 132.8 s
+
+--- sound ---
+  ok   coffee#2                     260 steps  16973 ms
+  ok   canceller#2                  260 steps  10857 ms
+  ok   dismisser#2                  260 steps  14697 ms
+  ok   miser#2                      260 steps  12722 ms
+  ok   politician#2                 260 steps  10480 ms
+  ok   neglecter#2                  260 steps   9193 ms
+
+PASS  A = baseline v1.21 (adapted: memo-cues-silenced)   B = dist/index.html (sha256 0272acc61921)   fx 0.99   motion mix   sound traces compared
+  25/25 sessions, 5299 steps compared, 31066 mechanical draws compared, 257 scripted scenarios (69 threshold probes), 124.0 s
+  draws before the first reset: A 2, B 2   (B: http://tst.test/b/index.html:33:32150 <- at http://tst.test/ ; http://tst.test/b/index.html:34:1261 <- at http://tst.test/b)
+  Google Fonts requests answered with an empty body: A 46, B 0.  Pinned clAInk flavor stream read 409 times in A, 409 in B.
+  census floors: all met
+
+PARITY OK in 252.8 s

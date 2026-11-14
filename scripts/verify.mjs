@@ -3,8 +3,14 @@
 //
 //   node scripts/verify.mjs [--target <build.html>] [--only step,...] [--driver <name>] [--workers <n>] [--release] [--verbose]
 //
+// Two builds are verified. The RELEASE build (dist/index.html) is what ships: it carries no test hook, so it is
+// checked by the steps that need none. The TEST build (dist-test/index.html) is the same source with the hooks
+// compiled in (scripted dice, a pinned cosmetic stream, the engine handles the harness reads); every step that
+// has to script the game runs on it.
+//
 // Runs these in order and stops at the first that fails:
 //   build        scripts/build.mjs into dist/              (skipped with --target: that file is verified instead)
+//   build-test   scripts/build.mjs --test into dist-test/  (skipped with --target)
 //   lint-rng     Math.random only where the rules roll     (scripts/lint-rng.mjs)
 //   lint-copy    the house style on every string           (scripts/lint-copy.mjs --strict)
 //   lint-css     colours and sizes only from the tokens    (scripts/lint-css.mjs --strict)
@@ -57,17 +63,20 @@ const has = flag => { const i = argv.indexOf(flag); if(i < 0) return false; argv
 const targetArg = take("--target"), onlyArg = take("--only"), driver = take("--driver"), workers = take("--workers") || "2";
 const verbose = has("--verbose"), release = has("--release");
 if(argv.length){ console.error("usage: node scripts/verify.mjs [--target <build.html>] [--only step,...] [--driver <name>] [--workers <n>] [--release] [--verbose]"); process.exit(2); }
-const target = targetArg ? path.resolve(targetArg) : path.join(ROOT, "dist", "index.html");
+// target: the build the scripted steps drive (the test build). shipped: the build the hook-free steps check.
+const target = targetArg ? path.resolve(targetArg) : path.join(ROOT, "dist-test", "index.html");
+const shipped = targetArg ? path.resolve(targetArg) : path.join(ROOT, "dist", "index.html");
 const rel = p => path.relative(ROOT, p) || ".";
 const drv = flag => [flag, driver || "next"];
 
 const STEPS = {
-  build: { what: "build to dist/", cmd: ["scripts/build.mjs"], skip: targetArg ? `--target ${rel(target)}` : null },
+  build: { what: "release build to dist/", cmd: ["scripts/build.mjs"], skip: targetArg ? `--target ${rel(target)}` : null },
+  "build-test": { what: "test build to dist-test/", cmd: ["scripts/build.mjs", "--test"], skip: targetArg ? `--target ${rel(target)}` : null },
   "lint-rng": { what: "dice only in the rules", cmd: ["scripts/lint-rng.mjs"] },
   parity: { what: "mechanics parity, quick set", cmd: ["test/parity/run.cjs", "--b", target, "--workers", workers, ...drv("--b-driver")] },
   saves: { what: "save compatibility", cmd: ["test/saves/run.cjs", "--b", target, "--workers", workers, ...drv("--b-driver")] },
-  offline: { what: "no network, bundled fonts", cmd: ["test/e2e/offline.cjs", target] },
-  firstday: { what: "a new player's first day", cmd: ["test/e2e/firstday.cjs", target] },
+  offline: { what: "no network, bundled fonts", cmd: ["test/e2e/offline.cjs", shipped] },
+  firstday: { what: "a new player's first day", cmd: ["test/e2e/firstday.cjs", shipped] },
   resilience: { what: "reloads, damaged saves, names, ids", cmd: ["test/e2e/resilience.cjs", target] },
   phone: { what: "a phone: touch, small screens, sideways", cmd: ["test/e2e/phone.cjs", target] },
   layout: { what: "layout on one screen", cmd: ["test/e2e/layout.cjs", target, "--workers", workers, "--min-font", String(LAYOUT_MIN_FONT), "--expect-fail", LAYOUT_KNOWN.join(","), ...drv("--driver")] },
@@ -85,7 +94,7 @@ const STEPS = {
   sound: { what: "sound parity, both pinned passes", cmd: ["test/parity/run.cjs", "--b", target, "--workers", workers, "--sound", ...drv("--b-driver")] },
   released: { what: "./index.html is current", cmd: ["scripts/build.mjs", "--check"] }
 };
-const DEFAULT = ["build", "lint-rng", "lint-copy", "lint-css", "copy-check", "copy-render", "fonts", "notices", "parity", "scenes", "fixtures", "saves", "offline", "firstday", "resilience", "phone", "keyboard", "layout"];
+const DEFAULT = ["build", "build-test", "lint-rng", "lint-copy", "lint-css", "copy-check", "copy-render", "fonts", "notices", "parity", "scenes", "fixtures", "saves", "offline", "firstday", "resilience", "phone", "keyboard", "layout"];
 const order = onlyArg ? onlyArg.split(",").map(s => s.trim()).filter(Boolean) : release ? DEFAULT.concat("sound", "released") : DEFAULT;
 for(const s of order) if(!STEPS[s]){ console.error(`verify: unknown step ${s}. steps: ${Object.keys(STEPS).join(", ")}`); process.exit(2); }
 
@@ -115,13 +124,13 @@ function run(name){
 
 const results = [];
 const t0 = Date.now();
-console.log(`verify: ${rel(target)}${driver ? "   driver " + driver : ""}   (${order.join(", ")})`);
+console.log(`verify: ${rel(shipped)}${shipped === target ? "" : " (release) and " + rel(target) + " (test hooks)"}${driver ? "   driver " + driver : ""}   (${order.join(", ")})`);
 let failed = null;
 for(const name of order){
   const step = STEPS[name];
   if(step.skip){ results.push({ name, status: "skipped", ms: 0, note: step.skip }); console.log(`  --    ${name.padEnd(11)} skipped (${step.skip})`); continue; }
   if(failed){ results.push({ name, status: "not run", ms: 0, note: `stopped at ${failed.name}` }); continue; }
-  if(name !== "build" && !fs.existsSync(target)){ console.error(`verify: ${rel(target)} does not exist`); process.exit(2); }
+  if(name !== "build" && name !== "build-test" && !fs.existsSync(target)){ console.error(`verify: ${rel(target)} does not exist`); process.exit(2); }
   if(verbose) console.log(`\n----- ${name}: node ${step.cmd.map(a => (a.includes(" ") || a.length > 60 ? JSON.stringify(a) : a)).join(" ")}`);
   const r = await run(name);
   const ok = r.code === 0;

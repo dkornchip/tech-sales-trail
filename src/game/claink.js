@@ -47,7 +47,8 @@ export const CLAINK={
   OUTCOMES:[2,5],                     // outcomes billed by a run that closes nothing
   TOKENS_PER_DOLLAR:4000              // flavor only: how many tokens a dollar of invoice "was"
 };
-if(typeof window!=="undefined") window.TST_CLAINK=CLAINK; // debug/test hook: UI tests script outcomes through CLAINK.rng
+// test hook, in test builds only: the harness scripts outcomes through CLAINK.rng and pins CLAINK.flavor
+if((typeof __TST_TEST__==="undefined" || __TST_TEST__) && typeof window!=="undefined") window.TST_CLAINK=CLAINK;
 export const CLAINK_STATUSES=["ad","dismissed","expired","active","cancelled","revoked"];
 export const CLAINK_KINDS=["onboarded","miracle","strike","revoked","cancelled"];
 export const ckUnit=(f)=>{ const v=Number(f()); return Number.isFinite(v) ? Math.min(0.999999,Math.max(0,v)) : 0; };
