@@ -110,8 +110,10 @@ const argv = process.argv.slice(2);
 const take = flag => { const i = argv.indexOf(flag); if(i < 0) return null; if(i + 1 >= argv.length){ console.error(`${flag} needs a value`); process.exit(2); } return argv.splice(i, 2)[1]; };
 const has = flag => { const i = argv.indexOf(flag); if(i < 0) return false; argv.splice(i, 1); return true; };
 const jsonFile = take("--json"), onlyArg = take("--only"), maxArg = take("--max"), allowArg = take("--allow");
+const stringsFile = take("--strings");       // write every distinct string the lint rendered: [{module, path, text}] (scripts/copy-coverage.mjs reads it)
+const rendered = [];
 const strict = has("--strict");
-if(argv.some(a => a.startsWith("--"))){ console.error("usage: node scripts/lint-copy.mjs [copy-dir] [--strict] [--only rule,...] [--max n] [--allow word,...] [--json <file>]"); process.exit(2); }
+if(argv.some(a => a.startsWith("--"))){ console.error("usage: node scripts/lint-copy.mjs [copy-dir] [--strict] [--only rule,...] [--max n] [--allow word,...] [--json <file>] [--strings <file>]"); process.exit(2); }
 const only = onlyArg ? onlyArg.split(",").map(s => s.trim()).filter(Boolean) : null;
 for(const r of only || []) if(!RULES[r]){ console.error(`lint-copy: unknown rule ${r}. rules: ${Object.keys(RULES).join(", ")}`); process.exit(2); }
 const maxShown = maxArg === null ? 8 : Number(maxArg);
@@ -302,6 +304,7 @@ for(const file of files){
     if(seen.has(k)) continue;
     seen.add(k);
     strings++;
+    if(stringsFile) rendered.push({ module: file, path: pathText(e.segs), text: e.text });
     for(const f of check(e, name, hints, moduleHasSay)){
       const here = pathText(e.segs);
       if(isPlain(hints.exempt) && Array.isArray(hints.exempt[f.rule]) && hints.exempt[f.rule].some(prefix => here === prefix || here.startsWith(prefix + ".") || here.startsWith(prefix + "["))) continue;
@@ -331,5 +334,6 @@ for(const r of Object.keys(RULES)){
 }
 const total = shown.length;
 console.log(`\n${total ? (strict ? "LINT-COPY FAILED" : "LINT-COPY REPORT") : "LINT-COPY OK"}: ${total} violation${total === 1 ? "" : "s"}${total && !strict ? " (not enforced; --strict makes them an error)" : ""}${broken.length ? `, ${broken.length} module(s) could not be imported` : ""}`);
+if(stringsFile) fs.writeFileSync(stringsFile, JSON.stringify(rendered));
 if(jsonFile) fs.writeFileSync(jsonFile, JSON.stringify({ ok: !total && !broken.length, modules, entries, strings, counts: Object.fromEntries(Object.keys(RULES).map(r => [r, violations.filter(v => v.rule === r).length])), violations, broken, skipped }, null, 1));
 process.exit(broken.length ? 2 : strict && (total || !modules) ? (modules ? 1 : 2) : 0);

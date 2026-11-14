@@ -15,6 +15,7 @@ const pts = v => `${v > 0 ? "+" : "−⁠"}${Math.abs(Math.round(v * 100))}`;
 const WORDS = ["no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen"];
 const word = k => WORDS[k] || String(k);
 const cap = t => t.charAt(0).toUpperCase() + t.slice(1);
+const nth = k => ["zeroth", "first", "second", "third", "fourth", "fifth"][k] || `number ${k}`;
 // "four times in five" for 0.8; a plain percentage for anything that is not a neat fifth
 const often = p => { const k = Math.round(p * 5); return Math.abs(p * 5 - k) < 1e-9 && k > 0 && k < 5 ? `${word(k)} ${k === 1 ? "time" : "times"} in five` : `${pc(p)} of the time`; };
 const list = ws => (ws.length > 1 ? ws.slice(0, -1).join(", ") + " and " + ws[ws.length - 1] : String(ws[0]));
@@ -31,8 +32,8 @@ export const HELP = [
     { term: "Cash.", body: v => ` ${usd(v.salary)} salary on Friday; ${pc(v.commission)} commission on closed sales; rent ${usd(v.rent)} weeks ${list(v.rentWeeks)}. Collections take the jacket when cash reaches ${usd(v.repoAt)} or lower.` }
   ] },
   { title: "The funnel", rows: [
-    { term: "Pipeline.", body: () => ` Total value of live deals. Move leads through discovery, demo, proposal and a signing attempt. Proposal and Closing deals are eligible for signing; mood, stats and modifiers affect odds. Late-stage deals can walk.` },
-    { term: "Full-funnel week.", body: v => ` Work at least three of four categories (lead generation, discovery, demo, proposal or close) for ${pts(v.fullFunnel)} pp signing odds next week. One or none while holding pipeline gives ${pts(v.neglect)} pp next week.` },
+    { term: "Pipeline.", body: () => ` Total value of live deals. Move leads through discovery, demo, proposal and a signing attempt. Proposal/Closing deals are eligible for signing; mood, stats and modifiers affect odds. Late-stage deals can walk.` },
+    { term: "Full-funnel week.", body: v => ` Work at least three of four categories (lead generation, discovery, demo, proposal/close) for ${pts(v.fullFunnel)} pp signing odds next week. One or none while holding pipeline gives ${pts(v.neglect)} pp next week.` },
     { term: "Skills.", body: () => ` Improve matching action and contribute to close odds where applicable. Some unsuccessful actions still develop skill.` },
     { term: "Reputation.", body: () => ` Influences deal sizes and close odds.` },
     { term: "Product.", body: () => ` Affects demo and close success. Outages and incidents can lower it.` },
@@ -47,7 +48,7 @@ export const HELP = [
   { title: "The office", rows: [
     { term: "Manager.", body: () => ` Approval influences close odds and firing. Email-only weeks cost approval.` },
     { term: "CRM cleanup.", body: () => ` Once a week, prune dead leads and gain manager approval; pause warning escalation and reduce dismissal risk for this week’s review. Your manager may delete a live deal.` },
-    { term: "clAInk.", body: v => ` Optional in-game AI pilot, offered through week ${v.offerWeek}. Dismissing the offer removes it for this run. Pay ${usd(v.seat)} upfront, deploy once per eligible week with zero slots and zero energy, pay usage on Friday. A ${pc(v.miracle)} chance of genuine revenue per run; every $0 run earns a strike. Idle weeks still bill. Strike ${v.strikes} revokes the seat, may cost a live deal, and charges a true-up of all your cash plus ${range(usd(v.trueUpLo), usd(v.trueUpHi))}. Cancel early for ${usd(v.cancelFee)} plus any due charges if affordable. Week ${v.weeks} is frozen. Your manager may intervene.` }
+    { term: "clAInk.", body: v => ` Optional in-game AI pilot, offered through week ${v.offerWeek}. Dismissing the offer removes it for this run. Pay ${usd(v.seat)} upfront, deploy once per eligible week with zero slots/energy, pay usage on Friday. A ${pc(v.miracle)} chance of genuine revenue per run; every $0 run earns a strike. Idle weeks still bill. ${cap(nth(v.strikes))} strike revokes the seat, may cost a live deal, and charges a true-up based on cash plus ${range(usd(v.trueUpLo), usd(v.trueUpHi))}. Cancel early for ${usd(v.cancelFee)} plus any due charges if affordable. Week ${v.weeks} is frozen. Your manager may intervene.` }
   ] },
   // keys: shown only where there is a keyboard to press them on
   { title: "Keyboard", keys: true, rows: [

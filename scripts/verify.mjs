@@ -16,6 +16,8 @@
 //   lint-css     colours and sizes only from the tokens    (scripts/lint-css.mjs --strict)
 //   copy-check   every log tag, dialog and line is wired   (test/copy/check.cjs)
 //   copy-render  every log line renders, every wording     (test/copy/render.mjs)
+//   copy-deck    every row of the editorial copydeck is rendered by the build, or has a reason on file
+//                (scripts/copy-coverage.mjs --strict; docs/2.1/copy-coverage-notes.json)
 //   fonts        the bundled fonts are what the packages give, and cover what the scenes draw (scripts/fonts.mjs --check)
 //   notices      THIRD-PARTY-NOTICES.md is current         (scripts/notices.mjs --check)
 //   engine       the rules, in Node: the dice, invariants after every move, golden seeded replays  (test/engine)
@@ -100,6 +102,7 @@ const STEPS = {
   "lint-css": { what: "stylesheet rules", cmd: ["scripts/lint-css.mjs", "--strict"] },
   "copy-check": { what: "copy is wired", cmd: ["test/copy/check.cjs"] },
   "copy-render": { what: "every line renders", cmd: ["test/copy/render.mjs"] },
+  "copy-deck": { what: "the copydeck, row by row", cmd: ["scripts/copy-coverage.mjs", "--strict"] },
   scenes: { what: "the scenes, frame by frame (pictures; v2.1 rewrote the captions)", cmd: ["test/parity/scenes.cjs", "--art", "--b", target], needs: target },
   fonts: { what: "bundled fonts", cmd: ["scripts/fonts.mjs", "--check"] },
   notices: { what: "licence notices", cmd: ["scripts/notices.mjs", "--check"] },
@@ -107,7 +110,7 @@ const STEPS = {
   // with --release: the committed release file is exactly what the source builds
   released: { what: "the release file is current", cmd: ["scripts/build.mjs", "--check"] }
 };
-const DEFAULT = ["build", "build-test", "lint-rng", "lint-copy", "lint-css", "copy-check", "copy-render", "fonts", "notices", "engine", "audio", "sim-smoke", "scenes", "fixtures", "saves", "release", "offline", "firstday", "resilience", "phone", "keyboard", "layout"];
+const DEFAULT = ["build", "build-test", "lint-rng", "lint-copy", "lint-css", "copy-check", "copy-render", "copy-deck", "fonts", "notices", "engine", "audio", "sim-smoke", "scenes", "fixtures", "saves", "release", "offline", "firstday", "resilience", "phone", "keyboard", "layout"];
 const order = onlyArg ? onlyArg.split(",").map(s => s.trim()).filter(Boolean) : release ? DEFAULT.concat("released") : DEFAULT;
 for(const s of order) if(!STEPS[s]){ console.error(`verify: unknown step ${s}. steps: ${Object.keys(STEPS).join(", ")}`); process.exit(2); }
 

@@ -99,7 +99,7 @@ export const HINT = {
   coffee: (shot) => `Shot ${shot.n}: +${shot.energy} energy, +${shot.stress} stress now, +${shot.crash} more on Friday.` + (shot.risk >= 1 ? " This shot reaches 100 stress and ends the run." : shot.risk > 0 ? ` ${pc(shot.risk)} chance it ends the run.` : " Later shots give less and risk more."),
   politics: () => "Lunch with leadership. +8 manager · +3 product · −4 reputation · +2 stress.",
   // blast: the chance nobody walks; walk: the chance each late deal left walks otherwise
-  hail: (c, blast, walk) => (c ? `One close attempt on ${n(c, "late-stage deal")}. ${fifths(1 - blast)}, each one left then has a ${pc(walk)} chance to walk.` : "No late-stage deals to rescue."),
+  hail: (c, blast, walk) => (c ? `One close attempt against all proposal/closing deals. ${fifths(1 - blast)}, each remaining late deal then has a ${pc(walk)} chance to walk.` : "No late-stage deals to rescue."),
   endWeek: f => `Friday: salary +${usd(f.salary)}` + (f.rent ? `, rent −${usd(f.rent)}` : "") + `, energy +${f.energy}, stress ${f.stress < 0 ? "−" + -f.stress : "+" + f.stress}. Friday events and collections may change this.`,
   blocked: {
     over: () => "The quarter is over.",
@@ -186,6 +186,8 @@ export const MOOD = { skeptical: "skeptical", neutral: "neutral", curious: "curi
 // (BOOT.brand is the badge on the housing, in the company's capitals; UI.peekMore names the Activity panel.)
 export const lint = { exempt: { "sentence-case": ["BOOT.brand", "UI.peekMore"] }, params: {
   "HINT.network": [{ args: [0, 0.03] }],
+  "HINT.discovery": [{ args: [0, 0.6] }, { args: [1, 0.6] }, { args: [3, 0.6] }], "HINT.demo": [{ args: [0, 0.5] }, { args: [1, 0.5] }, { args: [3, 0.5] }],
+  "HINT.propose": [{ args: [0, 0.55] }, { args: [1, 0.55] }, { args: [3, 0.55] }], "HINT.close": [{ args: [0] }, { args: [1] }, { args: [4] }],
   "HINT.conference": [{ args: [{ energy: 40, slots: 2, cash: 800 }, 5, 0.3, 0.08] }],
   "HINT.hail": [{ args: [2, 0.2, 0.55] }, { args: [0, 0.2, 0.55] }, { args: [1, 0.25, 0.5] }],
   "KPI.collections": [{ args: [-1500] }],

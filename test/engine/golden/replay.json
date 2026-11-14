@@ -377,7 +377,7 @@
   "cash": 32145,
   "moves": 78,
   "mech": "7e488c5e3472408fd1b1",
-  "full": "a3966b01db7199a59add"
+  "full": "86a83bcac9d0ab5d4bd7"
  },
  "claink#13": {
   "ending": "repo",
@@ -387,7 +387,7 @@
   "cash": -1917,
   "moves": 16,
   "mech": "8ca0960259e8f1b1cb98",
-  "full": "57743b0bb0fbcf9fe6e1"
+  "full": "75cbbd6afaf71ce1a412"
  },
  "claink#14": {
   "ending": "fired",
@@ -397,7 +397,7 @@
   "cash": 9250,
   "moves": 65,
   "mech": "db751d29383c452774a8",
-  "full": "43f8a61ac0a0405339a5"
+  "full": "352fb5eacbabd970bd50"
  },
  "claink#15": {
   "ending": "missed",
@@ -417,7 +417,7 @@
   "cash": 5774,
   "moves": 45,
   "mech": "b0f6ad490ed336c648a4",
-  "full": "fe89168422bb3bf5ba36"
+  "full": "ad17c901bb61cf9f7234"
  },
  "expert#21": {
   "ending": "fired",
@@ -446,8 +446,8 @@
   "closed": 8237,
   "cash": 859,
   "moves": 42,
-  "mech": "8e8084fd712c43dc9ceb",
-  "full": "3e195bdeb723e18737e5"
+  "mech": "55e7ef01867a454603fc",
+  "full": "362bb94038b143acf253"
  },
  "claink-weekly#22": {
   "ending": "repo",
@@ -457,7 +457,7 @@
   "cash": -1843,
   "moves": 17,
   "mech": "56392086e4af21f06a68",
-  "full": "951b3962d30ab1f7695d"
+  "full": "4f681010e0e58d879ff3"
  },
  "claink-budget#21": {
   "ending": "missed",
@@ -577,6 +577,6 @@
   "cash": -1506,
   "moves": 7,
   "mech": "163b184f4ce3fef45e2e",
-  "full": "f13f265dcd79fe2f69c0"
+  "full": "70db90aa924bf986a39c"
  }
 }

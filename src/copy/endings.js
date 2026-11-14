@@ -141,5 +141,5 @@ export const NOTE_ORDER = {
 export const lint = { skip: ["NOTE_ORDER"], params: {
   "ENDINGS.repo.body": [{ cash: -1620, cause: "repo" }, { cash: -1740, cause: "claink" }],
   "ENDINGS.fired.note": [{ cause: "review" }, { cause: "qbr" }, { cause: "politics" }, { cause: "org" }],
-  "DISTINCTIONS.2.sub": [{ args: [65000] }]
+  "DISTINCTIONS[2].sub": [{ args: [65000] }]
 }, exempt: { "sentence-case": ["DISTINCTIONS"] } };
