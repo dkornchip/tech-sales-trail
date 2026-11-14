@@ -6,6 +6,7 @@ not run, or failed along the way, it says so.
 
 | | |
 |---|---|
+| Status | **Promoted after this report was written**: on the owner's instruction `index.html` is now a byte-for-byte copy of the release file, and 2.0.1 is kept at `test/baseline/v2.0.1/index.html`. The rows below describe the tree as tested, before promotion. |
 | Release file | `Tech_Sales_Trail_2.1.html`, 556,515 bytes, sha256 `ee60e05b8e93…541560` |
 | Baseline | `index.html` (2.0.1), 518,108 bytes, sha256 `0272acc61921…293644`: untouched, still the deployed page |
 | Branch | `claude/modest-franklin-5cqmn8` (not merged, not promoted, no pull request) |

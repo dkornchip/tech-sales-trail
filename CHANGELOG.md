@@ -1,10 +1,10 @@
 # Changelog
 
-## v2.1 — "Operation Final Coat" (release candidate, not yet promoted)
+## v2.1 — "Operation Final Coat"
 
-The candidate is `Tech_Sales_Trail_2.1.html`. `index.html` is still v2.0.1 and is what the public link serves until
-the owner promotes 2.1. Player-facing notes: `TTST_2.1_RELEASE_NOTES.md`. What was changed, measured and tested:
-`TTST_2.1_QA_REPORT.md`, with the evidence under `qa/2.1/`.
+`index.html` is v2.1: a byte-for-byte copy of `Tech_Sales_Trail_2.1.html`, promoted on the owner's instruction.
+v2.0.1 is kept as shipped at `test/baseline/v2.0.1/index.html`. Player-facing notes: `TTST_2.1_RELEASE_NOTES.md`.
+What was changed, measured and tested: `TTST_2.1_QA_REPORT.md`, with the evidence under `qa/2.1/`.
 
 ### Rules
 - **The dice belong to the run.** Every mechanical roll comes from a seeded stream saved with the run; clAInk's jokes use a second stream no rule reads. Same seed and same moves give the same quarter. Test hooks exist only in test builds; a release has none.

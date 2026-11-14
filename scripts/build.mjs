@@ -11,8 +11,8 @@
 // release build defines __TST_TEST__ as false and the bundler drops those branches; the build then checks that no
 // hook name is left in the file. (In Node, where nothing defines it, the hooks are on: that is how the engine tests
 // script the dice.)
-// ./index.html is not written by this script any more: it is the v2.0.1 release, kept as it shipped until the
-// owner promotes a newer one.
+// ./index.html is not written by this script: it is the promoted release (a copy of a Tech_Sales_Trail_<version>.html
+// that the owner approved), and changes only when the owner promotes a newer one.
 // For a preview page (never a release), three variables swap the inputs:
 //   TST_ENTRY=<script entry>  TST_CSS=<style entry>  TST_TEMPLATE=<html template>
 // The fonts are inlined from src/assets/fonts, which is committed (regenerate it with: npm run fonts).

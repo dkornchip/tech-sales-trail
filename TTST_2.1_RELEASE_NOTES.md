@@ -1,8 +1,8 @@
 # Tech Sales Trail 2.1 — "Operation Final Coat"
 
-Release candidate. One file, `Tech_Sales_Trail_2.1.html`: open it in a browser and play. No install, no server, no
-network. The 2.0.1 game at `index.html` is untouched and is still what the public link serves; 2.1 replaces it only
-when the owner says so.
+One file: open `index.html` (or its identical copy `Tech_Sales_Trail_2.1.html`) in a browser and play. No install,
+no server, no network. 2.1 was promoted to `index.html`, the file the public link serves, on the owner's
+instruction; the 2.0.1 file is kept as shipped at `test/baseline/v2.0.1/index.html`.
 
 2.1 is a polish pass. The job, the quota ($160,000), the thirteen weeks, the twelve actions, the Hail Mary, clAInk,
 the six endings and their ASCII scenes are all still here. What changed is how fair the quarter is, how truthful the

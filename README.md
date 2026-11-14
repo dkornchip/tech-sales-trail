@@ -177,10 +177,11 @@ Saves from earlier versions load and continue.
 
 ---
 
-## Coming in v2.1: "Operation Final Coat" (release candidate)
+## What's new in v2.1: "Operation Final Coat"
 
-`Tech_Sales_Trail_2.1.html` in this repository is the 2.1 candidate: download it and open it. The link above and
-`index.html` still serve v2.0.1 (which the rest of this page describes) until 2.1 is promoted.
+`index.html` is now v2.1 (the same file as `Tech_Sales_Trail_2.1.html`). The v2.0.1 release is kept, as shipped, at
+`test/baseline/v2.0.1/index.html`. Parts of this page further up still describe v2.0.1's rules where 2.1 changed
+them (pace is now a curve, not a thirteenth of quota a week); the release notes are the current word.
 
 2.1 is a polish pass, not a new game: a fairer quarter (pace follows a real quarter's curve, early reviews look at
 your pipeline, the QBR says one thing), a screen that tells the truth about your numbers, saves that cannot be lost
@@ -211,7 +212,7 @@ The full history is in [CHANGELOG.md](CHANGELOG.md).
 
 ## For developers
 
-`index.html` at the root of the repository is the v2.0.1 release, kept exactly as shipped. The source is in `src/` and the build puts everything (React, the game, the styles, two fonts, the icons) into one file. A release is written as `Tech_Sales_Trail_<major.minor>.html`; promoting one to `index.html` (the file GitHub Pages serves) is the owner's call and is not something the build does.
+`index.html` at the root of the repository is the promoted release (v2.1, a copy of `Tech_Sales_Trail_2.1.html`); v2.0.1 is kept as shipped under `test/baseline/v2.0.1/`. The source is in `src/` and the build puts everything (React, the game, the styles, two fonts, the icons) into one file. A release is written as `Tech_Sales_Trail_<major.minor>.html`; promoting one to `index.html` (the file GitHub Pages serves) is the owner's call and is not something the build does.
 
 ```
 npm install          # esbuild, React, the fonts, the icons
