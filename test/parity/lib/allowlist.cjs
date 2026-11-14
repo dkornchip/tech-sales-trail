@@ -11,7 +11,11 @@
 const ADDITIVE_KEYS = [
   // v2.0: what the run is remembered for (src/game/story.js). Written as log lines are written, read only by the
   // ending screen; no rule reads it and nothing draws for it.
-  'story'
+  'story',
+  // v2.1: the run's own dice (src/game/rng.js): a seed and two stream positions. Under the harness the mechanical
+  // rolls come from the harness's stream (window.__TST_RNG), so the positions never move; what is compared is the
+  // number of rolls and the state they produce.
+  'rng'
 ];
 
 // 2. Benign legal-move differences: moves the baseline offers and a newer build may withhold. Each rule has a

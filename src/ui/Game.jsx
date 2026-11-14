@@ -2,15 +2,14 @@ import React from "react";
 import { ENDINGS } from "../copy/endings.js";
 import { EVENT_COPY } from "../copy/events.js";
 import { HELP, HELP_MEMO, HELP_OK, HELP_TITLE } from "../copy/help.js";
-import { hailMary } from "../game/actions.js";
 import { EVENTS } from "../game/events.js";
 import { legacyCause } from "../game/legacy.js";
-import { endWeek as runEndWeek } from "../game/week.js";
+import { step } from "../game/run.js";
 import { CLAINK } from "../game/claink.js";
 import { AUTOSAVE_KEY, SAVE_KEY } from "../game/constants.js";
 import { isRunOver } from "../game/log.js";
 import { mergeSaved, newGame, readStoredRun } from "../game/state.js";
-import { CRASH_PER_SHOT, RECHARGE_ENERGY, RECHARGE_LUCK, TRIP_AT, checkBurnout } from "../game/stress.js";
+import { CRASH_PER_SHOT, RECHARGE_ENERGY, RECHARGE_LUCK, TRIP_AT } from "../game/stress.js";
 import { pct } from "../game/util.js";
 import { MENU, NAMES, TOAST } from "../copy/ui.js";
 import { describe } from "./app/ActionGrid.jsx";
@@ -88,13 +87,16 @@ export function Game({fresh}){
   useEffect(()=>{ if(!claUi.chosen)return; try{ localStorage.setItem(CLAINK_UI_KEY,JSON.stringify({mini:claUi.mini,adMini:claUi.adMini})); }catch{} },[claUi]);
   const expandAd=()=>setClaUi(u=>u.adMini===null ? u : {...u,adMini:null}); // v1.21: a new run's ad starts fresh (expanded; the pill on a short screen)
 
-  // New run, Save and Load live in the settings menu. They read the live state through a ref.
+  // The run as it stands, for anything that acts on it: the ref is written in the same breath as the state, so a
+  // second press that lands before the next render still sees what the first one did.
   const sRef=useRef(s);
-  (React.useLayoutEffect||useEffect)(()=>{ sRef.current=s; },[s]);
+  const commit=ns=>{ sRef.current=ns; setS(ns); };
+  // Every change to a run is a move through the rules' front door (game/run.js). Returns what the move did.
+  const dispatch=move=>{ const r=step(sRef.current,move); if(r.state!==sRef.current) commit(r.state); return r; };
 
   const onNew=()=>{
     const a=AUDIO(); if(a){ a.hush(); a.play("newgame"); a.say("newrun",{cooldown:3000}); }
-    setS(newGame());
+    commit(newGame());
     setEpoch(e=>e+1); // v1.19: fresh clAInk UI state
     expandAd();
     setPending(null); // an event that fired on the final week must not leak into the next run
@@ -121,13 +123,13 @@ export function Game({fresh}){
       const a=AUDIO(); if(a){ a.hush(); a.play("load"); }
       const run=mergeSaved(JSON.parse(v));
       if(!isRun(run)) throw new Error("the saved run is not a run");
-      setS(run);
+      commit(run);
       setEpoch(e=>e+1); // v1.19: fresh clAInk UI state
       setPending(null);
       setOver(null);
     }catch{
       notify(TOAST.damaged);
-      setS(newGame());
+      commit(newGame());
       setEpoch(e=>e+1); // v1.19: fresh clAInk UI state
       setPending(null);
       setOver(null);
@@ -178,10 +180,11 @@ export function Game({fresh}){
   useEffect(()=>{ holdEvent(pending,s); },[pending]);
 
   const endWeek=()=>{
-    const r=runEndWeek(s,setPending);
-    if(!r)return;
-    if(r.over)setPending(null);
-    setS(r.state);
+    const was=sRef.current;
+    const r=dispatch({t:"end"});
+    if(r.state===was)return;                                      // the run was already over
+    if(r.events.length) setPending(r.events[r.events.length-1]);  // an event that needs a choice
+    if(r.over)setPending(null);                                   // ...never stacks on an ending
   };
 
   useEffect(()=>{
@@ -210,9 +213,8 @@ export function Game({fresh}){
   // v1.14: heartbeat under the music when stress runs hot
   useEffect(()=>{ const a=AUDIO(); if(a) a.setStress(over ? 0 : s.stress); },[s.stress,over]);
 
-  const tryOpportunisticClose=()=>{ if(hailBlock(s))return; const ns=hailMary(s); if(ns) setS(ns); };
-  // every action result passes through the burnout check
-  const act=a=>{ if(describe(a,s).block)return; const ns=a.run(s); if(ns) setS(checkBurnout(ns)); };
+  const tryOpportunisticClose=()=>{ if(hailBlock(sRef.current))return; dispatch({t:"hail"}); };
+  const act=a=>{ if(describe(a,sRef.current).block)return; dispatch({t:"act",id:a.id}); };
   useShortcuts({ onActKey:act, onEndWeek:()=>endWeek(), onHail:tryOpportunisticClose, onRules:openRules });
 
   // v1.20: the Writing Lesson (ev: {id, params} from clainkManager, plus where it came from) arrives after the run's
@@ -251,7 +253,7 @@ export function Game({fresh}){
           </TopBar>
         }
         dock={first!==null && first!=="memo-again" ? null /* the vendor waits until onboarding is over */
-          : <ClainkDock key={s.runId+":"+epoch} s={s} setS={setS} ui={clainkUiFor(claUi,shortScreen,narrowScreen)} setUi={setClaUiByYou} onEvent={offerLesson} />} />
+          : <ClainkDock key={s.runId+":"+epoch} s={s} dispatch={dispatch} ui={clainkUiFor(claUi,shortScreen,narrowScreen)} setUi={setClaUiByYou} onEvent={offerLesson} />} />
 
       <Modal
         open={showHelp}
@@ -296,8 +298,7 @@ export function Game({fresh}){
           note:typeof w==="string" ? null : w.effect,
           className:opt.className||"ghost",
           onClick:()=>{
-            let ns=checkBurnout(opt.apply(s));
-            setS(ns);
+            dispatch({t:"choose",event:pending.id,option:opt.id});
             setPending(null);
           }
         }; }) : []}

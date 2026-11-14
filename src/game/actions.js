@@ -4,6 +4,7 @@ import { log } from "./log.js";
 import { COST, PROPOSE_ODDS, crmGain, crmNukeOdds, demoOdds, isDeadLead, qualifyOdds } from "./rules.js";
 import { RECHARGE_ENERGY, RECHARGE_LUCK, TRIP_AT, checkBurnout, coffeeEnergy, coffeeRisk, coffeeStress, rechargeRelief } from "./stress.js";
 import { choice, clamp, pct, randi } from "./util.js";
+import { rnd } from "./rng.js";
 
 // What each action does to the run. Every function takes the current state and returns the next one, or null when
 // the action can't be taken (no slot, no energy, already used this week). The caller applies the burnout check.
@@ -11,7 +12,7 @@ export const actProspect=(s)=>{
   // Phones cost more energy now.
   let[ns,ok]=cost(s,COST.prospect);
   if(!ok)return null;
-  const n=randi(1,4)+(Math.random()<(s.skills.prospect/100)*0.4?1:0);
+  const n=randi(1,4)+(rnd()<(s.skills.prospect/100)*0.4?1:0);
   const adds=Array.from({length:n},()=>makeDeal(s,{warm:false}));
   ns.used.prospect=true;
   ns.meetings=(ns.meetings||0)+randi(0,n);
@@ -42,7 +43,7 @@ export const actDiscovery=(s)=>{
   ns.used.discovery=true;
   let advanced=0;
   ns.deals=ns.deals.map(d=>{
-    if(d.stage===0 && Math.random()<qualifyOdds(ns)){
+    if(d.stage===0 && rnd()<qualifyOdds(ns)){
       advanced++;
       return {...d,stage:1,mood:d.mood==="skeptical"?"neutral":d.mood};
     }
@@ -60,7 +61,7 @@ export const actDemo=(s)=>{
   ns.used.demo=true;
   let advanced=0;
   ns.deals=ns.deals.map(d=>{
-    if(d.stage===1 && Math.random()<demoOdds(ns)){
+    if(d.stage===1 && rnd()<demoOdds(ns)){
       advanced++;
       return {...d,stage:2,mood:d.mood==="neutral"?"curious":d.mood};
     }
@@ -78,7 +79,7 @@ export const actPropose=(s)=>{
   ns.used.propose=true;
   let advanced=0;
   ns.deals=ns.deals.map(d=>{
-    if(d.stage===2 && Math.random()<PROPOSE_ODDS){
+    if(d.stage===2 && rnd()<PROPOSE_ODDS){
       advanced++;
       return {...d,stage:3,mood:d.mood==="curious"?"happy":d.mood};
     }
@@ -127,7 +128,7 @@ export const actRecharge=(s)=>{
   if(!ok)return reason==="once" ? log(s,"act.recharge.already",null,"warn") : null;
   ns.used.recharge=true;
   // v1.15: caffeine in the system blunts the reset. v1.17: a lucky nap adds 0-25% to both, one roll per use.
-  const luck=Math.random()*RECHARGE_LUCK;
+  const luck=rnd()*RECHARGE_LUCK;
   const gain=RECHARGE_ENERGY+Math.round(RECHARGE_ENERGY*luck);
   const base=rechargeRelief(ns.coffeesThisWeek||0);
   const relief=base+Math.round(base*luck);
@@ -150,7 +151,7 @@ export const actCoffee=(s)=>{
   ns.cash-=COST.coffee.cash;
   ns.stress=clamp(ns.stress+st,0,100);
   // a shot that maxes stress counts as the heart giving out too
-  if(ns.stress>=100 || (risk>0 && Math.random()<risk)){
+  if(ns.stress>=100 || (risk>0 && rnd()<risk)){
     ns.burnedOut=true;
     ns.endCause="caffeine";
     return log(ns,"end.ascension",{shot:k},"bad");
@@ -175,7 +176,7 @@ export const actCrm=(s)=>{
   ns.hygieneShield=true;
   let nuked=null;
   const pool=ns.deals.filter(d=>d.stage===1||d.stage===2);
-  if(pool.length && Math.random()<nukeChance){
+  if(pool.length && rnd()<nukeChance){
     const warm=d=>(d.mood==="happy"||d.mood==="curious")?1:0;
     nuked=[...pool].sort((a,b)=>warm(b)-warm(a)||b.value-a.value)[0];
     ns.deals=ns.deals.filter(d=>d.id!==nuked.id);
@@ -203,11 +204,11 @@ export const actConference=(s)=>{
   if(!ok)return null;
   ns.cash-=COST.conference.cash;
   const n=randi(3,8);
-  const adds=Array.from({length:n},()=>makeDeal(s,{warm:true,big:Math.random()<0.4}));
+  const adds=Array.from({length:n},()=>makeDeal(s,{warm:true,big:rnd()<0.4}));
   ns.deals=withDeals(ns.deals,adds);
   ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
   ns.stress=clamp(ns.stress+5,0,100);
-  if(Math.random()<0.30){
+  if(rnd()<0.30){
     ns.modifiers={
       conversion:(ns.modifiers.conversion||0)+0.08,
       discount:ns.modifiers.discount||0,
@@ -226,7 +227,7 @@ export const hailMary=(s)=>{
   }
   let[ns,ok]=cost(s,COST.hail);
   if(!ok)return null;
-  const miracle=Math.random()<0.2;
+  const miracle=rnd()<0.2;
   const beforeClosed=ns.closedWon;
 
   ns=log(

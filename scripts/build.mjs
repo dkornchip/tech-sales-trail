@@ -220,6 +220,7 @@ function assemble({ js, css, packages, sources }){
   // A release carries no test hook: no seed override, no scripted dice, no pinned cosmetic stream, no engine handle.
   const hook = /__TST_[A-Z]\w*|TST_CLAINK|TST_DEV/.exec(page);
   if(!hooks && hook) fail("the release build still carries a test hook: " + hook[0] + " (guard it with __TST_TEST__)");
+  if(test && !PREVIEW && !/__TST_RNG/.test(page)) fail("the test build has no dice hook (__TST_RNG): the harness could not script it");
   // the encoding declaration has to sit inside the first 1024 bytes, notices included
   const charset = html.indexOf('<meta charset="utf-8"');
   if(charset < 0 || Buffer.byteLength(html.slice(0, charset)) + 24 > 1024) fail('<meta charset="utf-8"> must end within the first 1024 bytes; shorten the notices');

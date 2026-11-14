@@ -1,0 +1,53 @@
+Checkpoint P: the seeded PRNG and the single dispatch, with no change of behaviour
+node scripts/verify.mjs on the working tree that became the checkpoint commit (see git log: 'checkpoint P')
+release build dist/index.html sha256 156776ff1449210931e5ab11aa1cada3bf90b4c3ef41f96b02a6fd4b7d893f7e (519646 bytes, no test hooks)
+test build    dist-test/index.html sha256 040a8530e1a1bc99fad489c1c23cc19617b2727152bcaf8494225a1fea8ed184 (519955 bytes)
+run finished 2026-11-14T07:36Z
+
+  step         result    time      
+  build        ok           0.2 s  dist/index.html 507 KB raw, 197 KB gzip
+  build-test   ok           0.2 s  dist-test/index.html 508 KB raw, 198 KB gzip
+  lint-rng     ok           0.5 s  LINT-RNG OK: 83 files under src (18 may read Math.random), 0 offenders
+  lint-copy    ok           0.1 s  LINT-COPY OK: 0 violations
+  lint-css     ok           0.1 s  LINT-CSS OK: 0 findings
+  copy-check   ok           0.9 s  COPY CHECK OK
+  copy-render  ok           0.1 s  15680 renderings, 0 bad; 149 distinct sentences across 98 tags
+  fonts        ok           1.1 s  src/assets/fonts is up to date
+  notices      ok           0.0 s  THIRD-PARTY-NOTICES.md is up to date
+  parity       ok         120.4 s  PARITY OK in 120.0 s
+  scenes       ok           9.8 s  SCENES OK
+  fixtures     ok          42.8 s  25 generated fixtures are exactly what the baseline writes.
+  saves        ok         140.2 s  SAVES OK in 139.7 s
+  offline      ok           4.1 s  all 44 checks passed (dist/index.html, 507 KB)
+  firstday     ok          13.4 s  FIRST DAY OK: all 26 checks passed
+  resilience   ok          20.1 s  RESILIENCE OK: all 34 checks passed
+  phone        ok          37.1 s  PHONE OK: all 45 checks passed
+  keyboard     ok           3.1 s  KEYBOARD OK: dist-test/index.html, 8/8 stages, 98 key presses (84 of them Tab or Shift+Tab), 0 known findings, 0 unexpected, 0 stale entries
+  layout       ok          24.9 s  LAYOUT OK: dist-test/index.html, 7 fixtures x 7 viewports + phone: 328 ok, 0 known failures, 0 unexpected failures, 0 stale entries, 24.4 s
+
+VERIFY OK: 19/19 steps passed, 419.1 s   (layout: 0 known-failure patterns, listed in scripts/verify.mjs)
+
+--- parity (quick set): the test build against the frozen v1.21 file ---
+  ok   neglecter#2                  260 steps   7952 ms
+
+PASS  A = baseline v1.21   B = dist-test/index.html (sha256 040a8530e1a1)   fx seeded   motion mix
+  25/25 sessions, 5299 steps compared, 31066 mechanical draws compared, 257 scripted scenarios (69 threshold probes), 120.0 s
+  draws before the first reset: A 2, B 2   (B: http://tst.test/b/index.html:33:32150 <- at http://tst.test/ ; http://tst.test/b/index.html:34:1261 <- at http://tst.test/b)
+  Google Fonts requests answered with an empty body: A 46, B 0.  Pinned clAInk flavor stream read 409 times in A, 409 in B.
+  census floors: all met
+
+PARITY OK in 120.0 s
+
+--- saves ---
+
+PASS  A = baseline v1.21   B = dist-test/index.html (sha256 040a8530e1a1)
+  38 fixtures, 75/75 loads (38 on page load, 37 through the Load button), 1503 moves compared after loading, 139.7 s
+
+SAVES OK in 139.7 s
+
+--- Node differential: the v2.0.1 rules (git archive aca3040) against the working tree, same dice ---
+node test/engine/tools/differential.mjs --old <v2.0.1 src> --seeds 1200 --from 1000
+DIFFERENTIAL OK: 10800 runs (1200 seeds x 9 policies), 341826 moves, 2311578 rolls compared, 163.8 s
+  endings reached: caffeine 661, claink 1029, club 58, missed 45, org 633, politics 1, qbr 85, repo 728, review 6299, stress 1261
+node test/engine/tools/differential.mjs --old <v2.0.1 src> --seeds 40
+DIFFERENTIAL OK: 360 runs (40 seeds x 9 policies), 11603 moves, 77968 rolls compared, 5.4 s

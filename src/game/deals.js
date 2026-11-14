@@ -3,6 +3,7 @@ import { MOODS } from "./constants.js";
 import { log } from "./log.js";
 import { PAY, closeOdds } from "./rules.js";
 import { choice, clamp, idGen, pct, randi } from "./util.js";
+import { rnd } from "./rng.js";
 
 // Clone nested sub-objects that actions mutate, to avoid accidental state mutation bugs.
 export const cloneForSpend=(state)=>({
@@ -36,8 +37,8 @@ export const makeDeal=(state,{warm=false,big=false}={})=>{
   const base=big?randi(22000,58000):randi(5000,24000);
   const repMult=0.7+0.6*(state.reputation/100);
   const mood=warm
-    ?(Math.random()<0.6?"curious":"neutral")
-    :(Math.random()<0.25?"skeptical":"neutral");
+    ?(rnd()<0.6?"curious":"neutral")
+    :(rnd()<0.25?"skeptical":"neutral");
   return{
     id:idGen(),
     account:choice(ACCOUNT_NAMES),
@@ -72,7 +73,7 @@ export const withDeals=(deals,adds)=>{
 // High-variance referrals: mostly peanuts, rare whales. Returns {deal, tier}: tier is "peanut", "big", "whale" or ""
 // (the ordinary middle), so nothing has to read the size back out of the note on the deal card.
 export const makeReferral=(state)=>{
-  const roll=Math.random();
+  const roll=rnd();
   let base=0, tier="";
   if(roll<0.70){
     base=randi(2000,11000);
@@ -119,8 +120,8 @@ export const ageAndGhost=(state)=>{
   const kept=[];
   const ghosts=[];
   for(const d of s.deals){
-    const tooOld=d.age>6 && d.stage<2 && Math.random()<0.25;
-    const ghosted=d.mood==="skeptical" && Math.random()<0.15;
+    const tooOld=d.age>6 && d.stage<2 && rnd()<0.25;
+    const ghosted=d.mood==="skeptical" && rnd()<0.15;
     if(tooOld||ghosted)ghosts.push(d);
     else kept.push({...d,age:d.age+1});
   }
@@ -137,7 +138,7 @@ export const killDeals=(state,predicate,dropProb)=>{
   let lost=0,lostVal=0;
   const kept=[];
   for(const d of s.deals){
-    if(predicate(d) && Math.random()<dropProb){
+    if(predicate(d) && rnd()<dropProb){
       lost++;
       lostVal+=d.value;
     }else kept.push(d);
@@ -165,7 +166,7 @@ export const tryCloseSome=(state,src="negotiations")=>{
   for(const d of s.deals){
     if(d.stage<3){nextDeals.push(d);continue;}
     const chance=closeOdds(s,d);
-    const roll=Math.random();
+    const roll=rnd();
     if(roll<chance){
       const rate=s.modifiers.discount||0;
       const net=Math.round(d.value*(1-rate));
@@ -175,7 +176,7 @@ export const tryCloseSome=(state,src="negotiations")=>{
       if(!top || net>top.value) top={account:d.account,value:net};
     }else{
       const loseProb=d.stage>=4?0.22:0.14;
-      if(Math.random()<loseProb){
+      if(rnd()<loseProb){
         lost++;
         lostVal+=d.value;
       }else{

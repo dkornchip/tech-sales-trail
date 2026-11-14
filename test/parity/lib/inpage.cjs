@@ -48,6 +48,9 @@ module.exports = function parityInPage(cfg) {
     return stream();
   };
   Math.random = random;
+  // A build whose rules roll a seeded stream of their own (v2.1: src/game/rng.js) takes its mechanical rolls from
+  // this hook instead, in its test build: the same function, so the same stream, the same count and the same queue.
+  W.__TST_RNG = random;
   W.__rngReset = seed => { stream = mulberry(seed); draws = 0; fromQueue = 0; W.__rngQueue = []; armed = true; };
   W.__rngDraws = () => draws;
 

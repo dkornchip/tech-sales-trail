@@ -3,6 +3,7 @@ import { QUARTER_WEEKS } from "./constants.js";
 import { checkRepo } from "./deals.js";
 import { log } from "./log.js";
 import { clamp, getQuarterInfo, pct } from "./util.js";
+import { rnd } from "./rng.js";
 
 export const evaluateQuarter=(state)=>{
   let s={...state};
@@ -43,7 +44,7 @@ export const evaluateQuarter=(state)=>{
     if(mgr<35)fireChance+=0.20;
     if(coverage<0.8)fireChance+=0.10;
     fireChance=clamp(fireChance,0.15,0.95);
-    const roll=Math.random();
+    const roll=rnd();
     if(roll<fireChance){
       s.fired=true;
       s.endCause="qbr";
@@ -61,13 +62,13 @@ export const evaluateQuarter=(state)=>{
     }
   }
 
-  if(!s.fired && perfQ>=1 && mgr<25 && Math.random()<0.06){
+  if(!s.fired && perfQ>=1 && mgr<25 && rnd()<0.06){
     s.fired=true;
     s.endCause="politics";
     lines.push(["end.fired.politics"]);
   }
 
-  if(!s.fired && s.manager<30 && s.pipeline>0 && Math.random()<0.35){
+  if(!s.fired && s.manager<30 && s.pipeline>0 && rnd()<0.35){
     const sorted=[...s.deals].sort((a,b)=>b.value-a.value);
     const cut=sorted.slice(0,Math.min(2,sorted.length));
     const cutIds=new Set(cut.map(d=>d.id));
@@ -80,7 +81,7 @@ export const evaluateQuarter=(state)=>{
     lines.push(["qbr.reassigned",{n:cut.length,value:total}]);
   }
 
-  if(!s.fired && s.manager>75 && perfQ<1 && Math.random()<0.5){
+  if(!s.fired && s.manager>75 && perfQ<1 && rnd()<0.5){
     if(s.pip){
       s.pip=false;
       s.pipLevel=0;
@@ -152,17 +153,17 @@ export const midQuarterRisk=(state, weekInQuarter)=>{
 
   if(shielded){
     // clean CRM: nothing for the manager to escalate this week
-  }else if(ns.perfWarnings===0 && Math.random()<0.7){
+  }else if(ns.perfWarnings===0 && rnd()<0.7){
     ns=log(ns,"risk.audit",null,"warn");
     ns.stress=clamp(ns.stress+4,0,100);
     ns.perfWarnings=1;
     warnedThisWeek=true;
-  }else if(ns.perfWarnings===1 && Math.random()<0.6){
+  }else if(ns.perfWarnings===1 && rnd()<0.6){
     ns=log(ns,"risk.hygiene",null,"warn");
     ns.stress=clamp(ns.stress+5,0,100);
     ns.perfWarnings=2;
     warnedThisWeek=true;
-  }else if(ns.perfWarnings===2 && Math.random()<0.5){
+  }else if(ns.perfWarnings===2 && rnd()<0.5){
     ns=log(ns,"risk.hr",null,"warn");
     ns.stress=clamp(ns.stress+6,0,100);
     ns.perfWarnings=3;
@@ -183,7 +184,7 @@ export const midQuarterRisk=(state, weekInQuarter)=>{
   fireChance=clamp(fireChance,0.02,0.70);
 
   if(weekInQuarter>=6){
-    const roll=Math.random();
+    const roll=rnd();
     if(roll<fireChance){
       ns.fired=true;
       ns.endCause=ns.perfWarnings>0 ? "review" : "org";
@@ -191,7 +192,7 @@ export const midQuarterRisk=(state, weekInQuarter)=>{
         ? "end.fired.review"
         : "end.fired.org";
       ns=log(ns,tag,null,"bad");
-    }else if(!warnedThisWeek && ns.perfWarnings>0 && Math.random()<0.4){
+    }else if(!warnedThisWeek && ns.perfWarnings>0 && rnd()<0.4){
       ns=log(ns,"risk.recurring",null,"warn");
     }
   }

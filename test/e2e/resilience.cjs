@@ -40,7 +40,8 @@ async function open(browser, storage, fixedTime, init, phone) {
 }
 const save = page => page.evaluate(k => { try { return JSON.parse(window.localStorage.getItem(k)); } catch (e) { return null; } }, AUTOSAVE);
 const dialog = page => page.evaluate(() => { const d = document.querySelector("dialog[open]"); return d ? d.getAttribute("data-dialog") : null; });
-const dice = (page, v) => page.evaluate(x => { Math.random = () => x; }, v);
+// the rules roll window.__TST_RNG in a test build (src/game/rng.js); Math.random is left for the cosmetic stream
+const dice = (page, v) => page.evaluate(x => { window.__TST_RNG = () => x; Math.random = () => x; }, v);
 
 (async () => {
   if (!fs.existsSync(target)) { console.error("resilience: no such file: " + target); process.exit(2); }

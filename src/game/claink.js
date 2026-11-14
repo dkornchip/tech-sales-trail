@@ -5,6 +5,7 @@ import { QUARTER_WEEKS } from "./constants.js";
 import { checkRepo } from "./deals.js";
 import { LEGACY_INCIDENT_WHO } from "./legacy.js";
 import { isRunOver, log } from "./log.js";
+import { flavor, rnd } from "./rng.js";
 import { clamp, fmtTok, getQuarterInfo, pct } from "./util.js";
 
 // ---------- v1.20: clAInk, an enterprise agentic platform on pilot at Shitcorp ----------
@@ -13,14 +14,13 @@ import { clamp, fmtTok, getQuarterInfo, pct } from "./util.js";
 // Governance Council files a strike; 38% of strikes 1 and 2 come with real damage. Strike 3 revokes the seat and Finance
 // runs the token true-up. Any use can catch the manager's eye (25%): the first time he only remarks, after that he
 // yoinks deals. v1.20 rewrote the story, not the odds: every number below is v1.19's, tuned with the Monte Carlo sim.
-// Mechanical draws come from CLAINK.rng (the sim swaps in its own stream), so a run that never installs draws exactly
-// the same Math.random calls as v1.18. The jokes (which outcomes, who files the strike, token counts) come from
-// CLAINK.flavor, a separate stream, so a punchline can never move a mechanical draw. The words themselves (reports,
+// Mechanical draws come from CLAINK.rng, which is the run's mechanical stream (a test build can swap in its own), so
+// a run that never installs draws exactly what v1.18 drew. The jokes (which outcomes, who files the strike, token
+// counts) come from CLAINK.flavor, the run's flavor stream, so a punchline can never move a mechanical draw. The words themselves (reports,
 // strike cards, what the manager says) are in src/copy/claink.js; this file hands them numbers and names.
-export const ckMulberry=(seed)=>{ let a=seed>>>0; return()=>{ a=(a+0x6D2B79F5)>>>0; let t=a; t=Math.imul(t^(t>>>15),t|1); t^=t+Math.imul(t^(t>>>7),t|61); return((t^(t>>>14))>>>0)/4294967296; }; };
 export const CLAINK={
-  rng:()=>Math.random(),
-  flavor:ckMulberry(Date.now()^0x5eed1e55),
+  rng:rnd,                            // mechanical rolls: the run's own stream (rng.js)
+  flavor:flavor,                      // the jokes: the run's flavor stream, which no rule ever reads
   INSTALL:500, CANCEL:250, REPO_AT:-1500,
   OFFER_LAST_WEEK:3,                  // "Pilot pricing ends Week 3": the activation deadline (v1.21: was week 10). End Week of
                                       // week 3 expires an unanswered ad, and the offer never comes back for the rest of the run

@@ -1,10 +1,9 @@
 import React from "react";
 import { isMoreLine } from "../copy/claink.js";
 import { CK_AD, CK_END, CK_REPORT, CK_STRIKES, CK_WORKSPACE } from "../copy/clainkUi.js";
-import { CLAINK, buyClaink, cancelClaink, clainkCanCancel, clainkCanDeploy, clainkCanInstall, clainkCancelCost, clainkFrozen, deployClaink, dismissClaink, hideClainkCard } from "../game/claink.js";
+import { CLAINK, clainkCanCancel, clainkCanDeploy, clainkCanInstall, clainkCancelCost, clainkFrozen } from "../game/claink.js";
 import { QUARTER_WEEKS } from "../game/constants.js";
 import { isRunOver } from "../game/log.js";
-import { checkBurnout } from "../game/stress.js";
 import { getQuarterInfo } from "../game/util.js";
 import { Icon } from "./app/Icon.jsx";
 import { AUDIO, reducedNow } from "./env.js";
@@ -417,7 +416,8 @@ export const ClainkConsole=({s,ui,setUi,focusOnMount,onDeploy,onCancel,onHide,on
 };
 
 // picks what clAInk shows: the ad, the workspace, an end card, or nothing (closed ad, expired offer, closed end card)
-export const ClainkDock=({s,setS,ui,setUi,onEvent})=>{
+// dispatch: the page's one way to change a run (a move through game/run.js)
+export const ClainkDock=({s,dispatch,ui,setUi,onEvent})=>{
   const c=s.claink;
   const prev=useRef(c ? c.status : null);
   const justInstalled=prev.current==="ad" && !!c && c.status==="active";
@@ -427,24 +427,23 @@ export const ClainkDock=({s,setS,ui,setUi,onEvent})=>{
   // the workspace's own cleanup could hand it over into the next run
   useEffect(()=>()=>{ lesson.current=null; },[]);
   if(!c)return null;
-  const commit=fn=>setS(p=>checkBurnout(fn(p)));
+  const ck=op=>dispatch({t:"ck",op});
   if(c.status==="ad"){
     if(isRunOver(s) || getQuarterInfo(s.week).weekInQuarter>CLAINK.OFFER_LAST_WEEK)return null;
     // toggle from what you see, not from the stored preference (a short screen shows the pill before you chose)
     const adMini=!!ui.adMini;
     return <ClainkAd s={s} mini={adMini} onToggle={()=>setUi(u=>({...u,adMini:!adMini}))}
-      onInstall={()=>commit(buyClaink)} onDismiss={e=>{ commit(dismissClaink); focusEndWeek(e); }}/>;
+      onInstall={()=>ck("buy")} onDismiss={e=>{ ck("dismiss"); focusEndWeek(e); }}/>;
   }
   if(c.status==="active" || ((c.status==="cancelled" || c.status==="revoked") && !c.hidden)){
     return <ClainkConsole s={s} ui={ui} setUi={setUi} focusOnMount={justInstalled}
       onDeploy={()=>{
-        const r=deployClaink(s), L=r.state.claink && r.state.claink.last;
-        lesson.current=r.event ? {...r.event,week:r.state.week,runId:r.state.runId,run:r.state.claink.deploys,announce:(L && L.announce)||""} : null;
-        setS(checkBurnout(r.state));
+        const r=ck("deploy"), ev=r.events[0], L=r.state.claink && r.state.claink.last;
+        lesson.current=ev ? {...ev,week:r.state.week,runId:r.state.runId,run:r.state.claink.deploys,announce:(L && L.announce)||""} : null;
       }}
       onRevealDone={()=>{ const ev=lesson.current; lesson.current=null; if(ev) onEvent(ev); }}
-      onCancel={()=>commit(cancelClaink)}
-      onHide={e=>{ commit(hideClainkCard); focusEndWeek(e); }}/>;
+      onCancel={()=>ck("cancel")}
+      onHide={e=>{ ck("hide"); focusEndWeek(e); }}/>;
   }
   return null;
 };

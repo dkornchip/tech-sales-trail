@@ -1,6 +1,7 @@
 import { killDeals, makeDeal, withDeals } from "./deals.js";
 import { log } from "./log.js";
 import { clamp, randi } from "./util.js";
+import { rnd } from "./rng.js";
 
 // The events that stop the game and wait for an answer, as data. An open dialog is just {id, params}: the id names an
 // entry here (what each button does) and one in src/copy/events.js (what the dialog says). Each option's apply()
@@ -77,7 +78,7 @@ export const randomEvents=(state,queueEvent,maxFires=2)=>{
   const fire=(prob,fn,{modal=false}={})=>{
     if(firedCount>=maxFires)return;
     if(modal && modalQueued)return;
-    if(Math.random()<prob){
+    if(rnd()<prob){
       s=fn(s);
       firedCount++;
       if(modal)modalQueued=true;
@@ -147,7 +148,7 @@ export const randomEvents=(state,queueEvent,maxFires=2)=>{
 
   fire(0.10,st=>{
     const n=randi(1,3);
-    const adds=Array.from({length:n},()=>makeDeal(st,{warm:true,big:Math.random()<0.5}));
+    const adds=Array.from({length:n},()=>makeDeal(st,{warm:true,big:rnd()<0.5}));
     st.deals=withDeals(st.deals,adds);
     st.pipeline=st.deals.reduce((sum,d)=>sum+d.value,0);
     st.reputation=clamp(st.reputation+4,0,100);
@@ -189,13 +190,13 @@ export const randomEvents=(state,queueEvent,maxFires=2)=>{
 
   fire(0.09,st=>{
     if(st.manager<75)return st;
-    if(st.pip && Math.random()<0.6){
+    if(st.pip && rnd()<0.6){
       st.pip=false;
       st.pipLevel=0;
       return log(st,"evt.pipShred");
     }
     const n=randi(1,3);
-    const adds=Array.from({length:n},()=>makeDeal(st,{warm:true,big:Math.random()<0.5}));
+    const adds=Array.from({length:n},()=>makeDeal(st,{warm:true,big:rnd()<0.5}));
     st.deals=withDeals(st.deals,adds);
     st.pipeline=st.deals.reduce((sum,d)=>sum+d.value,0);
     return log(st,"evt.favors",{n});

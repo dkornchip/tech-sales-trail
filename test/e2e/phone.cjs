@@ -101,7 +101,7 @@ const wide = page => page.evaluate(() => ({ page: document.documentElement.scrol
     check("scrolled down to End week, the strip is at the top of the screen", strip.on && strip.top === 0 && strip.sw <= strip.cw, JSON.stringify(strip));
     const cash = (now.cash < 0 ? "−$" : "$") + Math.abs(now.cash).toLocaleString("en-US");
     check("and carries the week, energy, stress and cash as they are", strip.text.indexOf("Week " + now.week) === 0 && strip.text.indexOf(" " + now.energy + " ") > 0 && strip.text.indexOf(" " + now.stress + " ") > 0 && strip.text.endsWith(" " + cash), strip.text + " / " + JSON.stringify(now));
-    await page.evaluate(() => { Math.random = () => 0.95; });   // a quiet Friday: no event dialog
+    await page.evaluate(() => { window.__TST_RNG = () => 0.95; });   // a quiet Friday: no event dialog
     // End week at the top of the screen, so the log's first lines are on it when the button is pressed
     await page.evaluate(() => document.querySelector('[data-ui="end"]').scrollIntoView({ block: "start" })); await page.waitForTimeout(300);
     await page.locator('[data-ui="end"]').tap(); await page.waitForTimeout(1200);
@@ -110,7 +110,7 @@ const wide = page => page.evaluate(() => ({ page: document.documentElement.scrol
     const friday = await text(page, ".peek");
     check("and what Friday did is shown, wherever End week was on the screen when it was pressed", !!friday && friday.length > 3, friday);
     // a week that ends in a choice: nothing is shown under the dialog, and the week's lines are shown once it is made
-    await page.evaluate(() => { Math.random = () => 0.1; });
+    await page.evaluate(() => { window.__TST_RNG = () => 0.1; });
     await page.waitForTimeout(5200);                           // the last notice has gone
     await tap(page, '[data-ui="end"]'); await page.waitForTimeout(900);
     const under = await page.evaluate(() => ({ dialog: (document.querySelector("dialog[open]") || { getAttribute() { return null; } }).getAttribute("data-dialog"), notice: !!document.querySelector(".peek") }));

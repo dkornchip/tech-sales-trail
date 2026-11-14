@@ -7,6 +7,7 @@ import { isRunOver, log } from "./log.js";
 import { behindPace, countStage, evaluateQuarter, midQuarterRisk, salaryAndBills } from "./quarter.js";
 import { CRASH_PER_SHOT, DANGER_RATE, STRESS_DANGER, checkBurnout } from "./stress.js";
 import { clamp, getQuarterInfo } from "./util.js";
+import { rnd } from "./rng.js";
 
 // One End Week, start to finish. Takes the current state and returns {state, over}: the state after the week,
 // and whether the run ended during it (the caller then drops any event queued this week, so it can't stack on the
@@ -17,7 +18,7 @@ export const endWeek=(s,queueEvent)=>{
   let ns={...s};
 
   // End-of-week closes still happen with current modifiers.
-  if(Math.random()<0.15){
+  if(rnd()<0.15){
     ns=tryCloseSome(ns,"friday");
   }
 
@@ -62,7 +63,7 @@ export const endWeek=(s,queueEvent)=>{
   if(!u.discovery && countStage(ns.deals,0)>=6){
     let lost=0;
     ns.deals=ns.deals.filter(d=>{
-      if(d.stage===0 && Math.random()<0.20){lost++;return false;}
+      if(d.stage===0 && rnd()<0.20){lost++;return false;}
       return true;
     });
     if(lost>0){
@@ -74,7 +75,7 @@ export const endWeek=(s,queueEvent)=>{
   if(!u.demo && countStage(ns.deals,1)>=5){
     let reg=0;
     ns.deals=ns.deals.map(d=>{
-      if(d.stage===1 && Math.random()<0.18){
+      if(d.stage===1 && rnd()<0.18){
         reg++;
         return {...d,stage:0,mood:"skeptical"};
       }
@@ -99,7 +100,7 @@ export const endWeek=(s,queueEvent)=>{
 
   // v1.15: burnout lands before reviews. Danger zone rolls every weekend.
   ns=checkBurnout(ns);
-  if(!isRunOver(ns) && ns.stress>=STRESS_DANGER && Math.random()<(ns.stress-75)*DANGER_RATE){
+  if(!isRunOver(ns) && ns.stress>=STRESS_DANGER && rnd()<(ns.stress-75)*DANGER_RATE){
     ns.burnedOut=true;
     ns.endCause="stress";
     ns=log(ns,"end.meltdown.weekend",null,"bad");
