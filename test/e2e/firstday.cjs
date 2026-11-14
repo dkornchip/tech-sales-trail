@@ -24,8 +24,8 @@ const look = page => page.evaluate(([flag]) => {
     ad: !!document.querySelector(".claink-ad"),
     ring: !!document.querySelector(".coach-ring"),
     flag: window.localStorage.getItem(flag),
-    week: (() => { try { return JSON.parse(window.localStorage.getItem("tst-autosave-v4-3")).week; } catch (e) { return null; } })(),
-    logs: (() => { try { return JSON.parse(window.localStorage.getItem("tst-autosave-v4-3")).logs.length; } catch (e) { return null; } })()
+    week: (() => { try { return JSON.parse(window.localStorage.getItem("tst-autosave-v5")).state.week; } catch (e) { return null; } })(),
+    logs: (() => { try { return JSON.parse(window.localStorage.getItem("tst-autosave-v5")).state.logs.length; } catch (e) { return null; } })()
   };
 }, [FLAG]);
 

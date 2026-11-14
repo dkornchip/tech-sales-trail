@@ -49,7 +49,7 @@ async function bundle(){
     jsx: "transform",
     metafile: true,
     // --dev bundles React's development build, so its warnings (duplicate keys, updates during render) reach the console
-    define: { "process.env.NODE_ENV": dev ? '"development"' : '"production"', "__TST_TEST__": hooks ? "true" : "false" }
+    define: { "process.env.NODE_ENV": dev ? '"development"' : '"production"', "__TST_TEST__": hooks ? "true" : "false", "__BUILD_VERSION__": JSON.stringify(readJSON("package.json").version) }
   });
   const css = await esbuild.build({
     ...common,

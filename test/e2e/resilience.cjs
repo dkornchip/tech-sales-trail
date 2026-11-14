@@ -5,7 +5,9 @@
 //      repeat it or walk past it (an End Week choice, a word from clAInk's manager, and both at once)
 //   2. two open deals never share an account name, even when the dice pick the same name every time
 //   3. ids handed out after a reload never repeat one in the save
-//   4. a save that parses but is not a save gets a plain page with a way out, not a blank one
+//   4. a stored run that cannot be opened (damaged, or from a newer version) is never played, overwritten or lost:
+//      a dialog offers what can be done; a damaged manual save leaves the current run alone; a save that was waiting
+//      on a choice still is; markup in a save is shown as text; a browser that refuses storage is still playable
 //   5. an ending whose cutscene cannot play still opens, says what happened and shows the paperwork
 //   6. a dialog's close event that arrives late does not dismiss a dialog that has been opened since
 //   7. on a phone, where the log is a scroll away, what an action did is shown where you are
@@ -17,7 +19,8 @@ const path = require("path");
 const { pathToFileURL } = require("url");
 
 const target = path.resolve(process.argv[2] || "dist-test/index.html");
-const AUTOSAVE = "tst-autosave-v4-3", PENDING = "tst-pending-v2", FLAG = "tst-onboarded-v2";
+const { KEYS, readRun, envelope } = require("./lib/store.cjs");
+const AUTOSAVE = KEYS.legacyAutosave, PENDING = KEYS.legacyPending, FLAG = "tst-onboarded-v2";   // crafted runs go in under the v2.0 keys, which are still read
 const rows = [];
 const check = (name, ok, detail) => { rows.push(!!ok); console.log("  " + (ok ? "ok  " : "FAIL") + "  " + name + (detail ? "  (" + detail + ")" : "")); return !!ok; };
 
@@ -42,7 +45,7 @@ async function open(browser, storage, fixedTime, init, phone) {
   await page.waitForTimeout(300);
   return { context, page, errors };
 }
-const save = page => page.evaluate(k => { try { return JSON.parse(window.localStorage.getItem(k)); } catch (e) { return null; } }, AUTOSAVE);
+const save = page => page.evaluate(readRun);
 const dialog = page => page.evaluate(() => { const d = document.querySelector("dialog[open]"); return d ? d.getAttribute("data-dialog") : null; });
 // the rules roll window.__TST_RNG in a test build (src/game/rng.js); Math.random is left for the cosmetic stream
 const dice = (page, v) => page.evaluate(x => { window.__TST_RNG = () => x; Math.random = () => x; }, v);
@@ -172,33 +175,107 @@ const dice = (page, v) => page.evaluate(x => { window.__TST_RNG = () => x; Math.
     check("ids handed out after a reload do not repeat ids in the save", new Set(ids).size === ids.length && ids.length >= 4, ids.length + " ids, " + new Set(ids).size + " distinct");
     await context.close();
 
-    /* ---------- 4. a save that is not a save ---------- */
+    /* ---------- 4. stored runs that cannot be opened, and a browser that will not store ---------- */
+    const recovery = page => page.evaluate(() => { const d = document.querySelector('dialog[open][data-dialog="recovery"]'); return d ? { text: d.querySelector(".d-body").textContent, buttons: [...d.querySelectorAll(".d-footer .btn")].map(b => b.textContent) } : null; });
+    const stored = (page, k) => page.evaluate(key => window.localStorage.getItem(key), k);
+    const toast = page => page.evaluate(() => { const t = document.getElementById("tst-toast"); return t && t.classList.contains("show") ? t.textContent : ""; });
     const broken = JSON.stringify({ week: 3, deals: "nope", logs: 7, skills: null });
+
+    // (a) a run from an earlier version that is not a run: nothing is played, nothing is written, the choice is yours
     ({ context, page, errors } = await open(browser, { [AUTOSAVE]: broken }));
     await page.waitForTimeout(300);
-    const crash = await page.evaluate(() => { const c = document.querySelector(".crash"); return c ? { text: c.textContent, button: !!c.querySelector('[data-ui="crash-new"]') } : null; });
-    check("a damaged save gets a page that says so, not a blank one", !!crash && crash.button && /could not be opened/.test(crash.text), crash ? crash.text.slice(0, 80) : "no .crash element");
-    if (crash) {
-      await page.click('[data-ui="crash-new"]');
-      await page.waitForSelector('[data-act="prospect"]', { timeout: 5000 }).catch(() => {});
-      const ok = await page.evaluate(([k]) => ({ desk: !!document.querySelector('[data-act="prospect"]'), aside: window.localStorage.getItem(k + "-set-aside") }), [AUTOSAVE]);
-      s = await save(page);
-      check("New run starts a fresh quarter", ok.desk && s && s.week === 1 && Array.isArray(s.deals), "week " + (s && s.week));
-      check("and the damaged save is set aside, not destroyed", ok.aside === broken);
-    }
+    let rec = await recovery(page);
+    check("a stored run that is not a run opens a dialog that says so, not a blank page and not \"Week NaN\"", !!rec && /could not be opened|damaged/.test(rec.text), rec ? rec.text.slice(0, 90) : "no recovery dialog");
+    check("it offers only what can be done: with no other saved run, a new run", !!rec && rec.buttons.length === 1, rec ? rec.buttons.join(" | ") : "");
+    check("nothing is saved while it waits", await stored(page, KEYS.autosave) === null);
+    await page.click('[data-ui="recover-new"]'); await page.waitForTimeout(400);
+    s = await save(page);
+    check("Start a new run starts a fresh quarter, and saving resumes", await dialog(page) === null && s && s.week === 1 && await stored(page, KEYS.autosave) !== null, "week " + (s && s.week));
+    check("the earlier version's run is left exactly where it was", await stored(page, AUTOSAVE) === broken);
+    check("no errors", errors.length === 0, errors.join(" | "));
     await context.close();
 
-    // the manual save damaged as well: New run must not bring the same page straight back, and Load must not trap you
-    ({ context, page, errors } = await open(browser, { [AUTOSAVE]: broken, "tst-save-v4-3": broken }));
+    // (b) this version's autosave is damaged, and there is a good manual save: it is offered, and the damaged one is kept aside
+    ({ context, page, errors } = await open(browser, { [KEYS.autosave]: "{not json", [KEYS.legacySave]: mid }));
     await page.waitForTimeout(300);
-    await page.click('[data-ui="crash-new"]').catch(() => {});
-    await page.waitForSelector('[data-act="prospect"]', { timeout: 5000 }).catch(() => {});
-    check("with both saves damaged, New run still reaches the desk", await page.evaluate(() => !!document.querySelector('[data-act="prospect"]') && !document.querySelector(".crash")));
-    // (since v2.0.1 a saved run that parses but is not a run is refused when it is loaded, the way one that does
-    // not parse always was: the player is told, and is at a desk, never on a blank page or the recovery page)
+    rec = await recovery(page);
+    check("with a good saved run beside a damaged autosave, that run is offered by name and week", !!rec && rec.buttons.length === 2 && /saved run/.test(rec.buttons[1]) && rec.buttons[1].includes("week " + midRun.week), rec ? rec.buttons.join(" | ") : "no dialog");
+    await page.click('[data-ui^="recover-save"]'); await page.waitForTimeout(400);
+    s = await save(page);
+    check("opening it puts that run on the desk", await dialog(page) === null && s && s.week === midRun.week && s.runId === midRun.runId && s.deals.length === midRun.deals.length, "week " + (s && s.week));
+    check("the damaged autosave was kept aside before anything took its place", await stored(page, KEYS.setAside) === "{not json");
+    check("and the manual save is untouched", await stored(page, KEYS.legacySave) === mid);
+    await context.close();
+
+    // (c) a run saved by a later version is never guessed at, and never thrown away
+    const future = JSON.stringify({ app: "tech-sales-trail", schemaVersion: 6, state: { week: 4, shape: "unknown" } });
+    ({ context, page, errors } = await open(browser, { [KEYS.autosave]: future }));
+    await page.waitForTimeout(300);
+    rec = await recovery(page);
+    check("a run from a newer version is not opened, and the dialog says why", !!rec && /newer version/.test(rec.text), rec ? rec.text.slice(0, 90) : "no dialog");
+    check("it is still there, untouched, while the dialog waits", await stored(page, KEYS.autosave) === future);
+    await page.click('[data-ui="recover-new"]'); await page.waitForTimeout(400);
+    check("a new run sets it aside whole", await stored(page, KEYS.setAside) === future && (await save(page)).week === 1);
+    await context.close();
+
+    // (d) a damaged manual save: Load says so and leaves the run on the desk exactly as it is
+    ({ context, page, errors } = await open(browser, { [AUTOSAVE]: mid, [KEYS.legacySave]: broken }));
+    await dice(page, 0.5);
+    await page.click('[data-act="politics"]'); await page.waitForTimeout(300);
+    const mine = await save(page);
     await page.click('[data-ui="settings"]'); await page.click('[data-ui="load"]'); await page.waitForTimeout(400);
-    const afterLoad = await page.evaluate(() => { const t = document.getElementById("tst-toast"); return { crash: !!document.querySelector(".crash"), desk: !!document.querySelector('[data-act="prospect"]'), week: (document.querySelector(".quarter-head h2") || {}).textContent, said: t && t.classList.contains("show") ? t.textContent : "" }; });
-    check("loading the damaged manual save says so and leaves you at a desk", afterLoad.desk && !afterLoad.crash && /damaged/.test(afterLoad.said) && afterLoad.week === "Week 1", JSON.stringify(afterLoad));
+    const afterLoad = await save(page);
+    check("loading a damaged save says it could not be opened", /could not be opened/.test(await toast(page)), await toast(page));
+    check("and the run on the desk is exactly as it was", JSON.stringify(afterLoad) === JSON.stringify(mine) && await dialog(page) === null && afterLoad.week === midRun.week);
+    check("the damaged save is left where it was", await stored(page, KEYS.legacySave) === broken);
+    // a good manual save made now is its own slot: it loads back exactly, and the autosave is not it
+    await page.click('[data-ui="settings"]'); await page.click('[data-ui="save"]'); await page.waitForTimeout(300);
+    const savedRaw = await stored(page, KEYS.save);
+    await page.click('[data-ui="end"]'); await page.waitForTimeout(500);          // at 0.5 nothing comes up on Friday
+    check("Save writes the manual slot, and playing on does not change it", !!savedRaw && await stored(page, KEYS.save) === savedRaw && await stored(page, KEYS.autosave) !== savedRaw);
+    await page.click('[data-ui="settings"]'); await page.click('[data-ui="load"]'); await page.waitForTimeout(400);
+    const reloaded = await save(page);
+    check("Load brings back exactly the run that was saved, dice and all", JSON.stringify({ ...reloaded, logs: reloaded.logs.length }) === JSON.stringify({ ...mine, logs: mine.logs.length }) && JSON.stringify(reloaded.rng) === JSON.stringify(mine.rng), `slots ${reloaded.slots} vs ${mine.slots}`);
+    check("no errors", errors.length === 0, errors.join(" | "));
+    await context.close();
+
+    // (e) a run saved while a choice was waiting brings the choice back with it, through Load as well
+    const waitingRun = envelope(Object.assign({}, midRun, { pending: [{ id: "evt:security" }], effects: [], lastConference: 0, rng: { v: 1, seed: 7, core: 123456, fl: 654321 } }));
+    const other = fs.readFileSync(path.join(__dirname, "../saves/fixtures/generated/fresh.json"), "utf8").trim();
+    ({ context, page, errors } = await open(browser, { [AUTOSAVE]: other, [KEYS.save]: waitingRun }));
+    check("the page opens on the autosave, not on the manual save", (await save(page)).week === 1 && await dialog(page) === null);
+    await page.click('[data-ui="settings"]'); await page.click('[data-ui="load"]'); await page.waitForTimeout(500);
+    s = await save(page);
+    check("a saved run that was waiting on a choice still is, after Load", await dialog(page) === "evt:security" && s.pending.length === 1 && s.week === midRun.week, "dialog " + await dialog(page));
+    check("and it carries its own dice", JSON.stringify(s.rng) === JSON.stringify({ v: 1, seed: 7, core: 123456, fl: 654321 }));
+    await context.close();
+
+    // (f) what a save says is shown as text, never run as markup
+    const hostile = Object.assign({}, midRun, { deals: midRun.deals.map((d, i) => (i === 0 ? Object.assign({}, d, { account: '<img src=x onerror="window.__pwned=1">' }) : d)),
+      logs: [{ id: "zz-1", t: "09:00", kind: "info", msg: '<script>window.__pwned=2</script><b>bold</b>', tag: "act.politics" }].concat(midRun.logs), trip: '<svg onload="window.__pwned=3">' });
+    ({ context, page, errors } = await open(browser, { [AUTOSAVE]: JSON.stringify(hostile) }));
+    await page.waitForTimeout(400);
+    const shown = await page.evaluate(() => ({ pwned: window.__pwned, imgs: document.querySelectorAll("#root img, #root script, #root svg[onload]").length, text: document.querySelector("#root").textContent }));
+    check("markup in a save is shown as the text it is", shown.pwned === undefined && shown.imgs === 0 && shown.text.includes("<img src=x") && shown.text.includes("<b>bold</b>"), JSON.stringify({ pwned: shown.pwned, imgs: shown.imgs }));
+    check("no errors", errors.length === 0, errors.join(" | "));
+    await context.close();
+
+    // (g) a browser that refuses storage: the game is played anyway, and says once, plainly, that it cannot save
+    ({ context, page, errors } = await open(browser, null, null, () => {
+      // (the tab's own flags still go through, so the test starts at the desk; every write of a run is refused)
+      const real = Storage.prototype.setItem;
+      Storage.prototype.setItem = function (k, v) { if (this === window.localStorage && /^tst-(autosave|save|set-aside|probe)/.test(String(k))) throw new DOMException("denied", "QuotaExceededError"); return real.call(this, k, v); };
+    }));
+    await page.waitForTimeout(600);
+    const denied = await toast(page);
+    check("with storage refused, the page says it cannot save", /Could not save/.test(denied), denied);
+    await dice(page, 0.5);
+    await page.click('[data-act="prospect"]'); await page.waitForTimeout(300);
+    const played = await page.evaluate(() => document.querySelectorAll(".deals tbody tr, .deals .deal").length);
+    check("and the game is still played", played > 0 && await page.evaluate(() => !document.querySelector(".crash")), played + " deals on the board");
+    await page.click('[data-ui="settings"]'); await page.click('[data-ui="save"]'); await page.waitForTimeout(300);
+    check("Save says the same, instead of pretending", /Could not save/.test(await toast(page)), await toast(page));
+    check("no errors", errors.length === 0, errors.join(" | "));
     await context.close();
 
     /* ---------- 5. an ending without its cutscene ---------- */

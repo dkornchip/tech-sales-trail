@@ -1,0 +1,36 @@
+Tech Sales Trail 2.1 — M4: saves (envelope, strict validation, recovery)
+Date: 2026-11-14T11:53Z
+
+node scripts/verify.mjs (two invocations on the same tree: all steps, then the last six after a test-side fix to offline.cjs)
+  step         result    time      
+  build        ok           0.2 s  dist/index.html 519 KB raw, 202 KB gzip
+  build-test   ok           0.2 s  dist-test/index.html 520 KB raw, 202 KB gzip
+  lint-rng     ok           0.5 s  LINT-RNG OK: 86 files under src (1 may read Math.random), 0 offenders
+  lint-copy    ok           0.2 s  LINT-COPY OK: 0 violations
+  lint-css     ok           0.1 s  LINT-CSS OK: 0 findings
+  copy-check   ok           0.9 s  COPY CHECK OK
+  copy-render  ok           0.1 s  15360 renderings, 0 bad; 147 distinct sentences across 96 tags
+  fonts        ok           1.5 s  src/assets/fonts is up to date
+  notices      ok           0.1 s  THIRD-PARTY-NOTICES.md is up to date
+  engine       ok           6.0 s  ENGINE TESTS OK: 98 tests passed in 11 files, 5.9 s
+  audio        ok           0.4 s  AUDIO TESTS OK: 13 tests passed in 1 files, 0.3 s
+  sim-smoke    ok          23.5 s  SIM SMOKE OK: all 11 checks passed, 23.4 s [automated heuristics, not human play]
+  scenes       ok          12.0 s  SCENES OK
+  fixtures     ok          52.1 s  25 generated fixtures are exactly what the baseline writes.
+  saves        ok          76.9 s  SAVES OK in 76.3 s
+  release      ok          40.7 s  RELEASE OK: all 14 checks passed
+  offline     ok           4.1 s  all 44 checks passed (dist/index.html, 519 KB)
+  firstday    ok          13.1 s  FIRST DAY OK: all 26 checks passed
+  resilience  ok          37.3 s  RESILIENCE OK: all 80 checks passed
+  phone       ok          37.9 s  PHONE OK: all 49 checks passed
+  keyboard    ok           3.3 s  KEYBOARD OK: dist-test/index.html, 8/8 stages, 98 key presses (84 of them Tab or Shift+Tab), 0 known findings, 0 unexpected, 0 stale entries
+  layout      ok          28.4 s  LAYOUT OK: dist-test/index.html, 7 fixtures x 7 viewports + phone: 328 ok, 0 known failures, 0 unexpected failures, 0 stale entries, 27.8 s
+
+VERIFY OK: 6/6 steps passed, 124.1 s   (layout: 0 known-failure patterns, listed in scripts/verify.mjs)
+
+--- saves gate ---
+PASS  A = dist-test/index.html   B = dist-test/index.html (sha256 ddf01625a5c2)
+  37 fixtures, 73/73 loads (37 on page load, 36 through the Load button), 1442 moves compared after loading, 76.3 s
+
+SAVES OK in 76.3 s
+  skip legacy-corrupt-json: v2.1 does not load a save it cannot read: it leaves it where it is and says so (a dialog on page load, a notice through Load). test/e2e/resilience.cjs, section 4, holds both.

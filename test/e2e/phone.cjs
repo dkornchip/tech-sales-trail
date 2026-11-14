@@ -7,7 +7,7 @@
 //   4. the log is a log, the deals are labelled, the announcer's caption covers no control
 //   5. sideways: a caption does not widen the page; an ending shows its whole scene and then its paperwork
 //   6. the onboarding memo's button comes after the job's three lines
-//   7. a stored run that is not a run goes to the recovery page; one that cannot be read says so
+//   7. a stored run that cannot be opened is not played: a dialog says so, fits the phone, and leaves it where it was
 //   8. a 320px screen: the wordmark makes way for the top bar's buttons; a tall dialog opens at its first line
 //   9. turned on its side: the chips are measured again, and settle (they used to be redrawn on every frame)
 // Every screen here is a touch screen (no hover, a coarse pointer). Exits 1 if any check fails.
@@ -19,7 +19,8 @@ const path = require("path");
 const { pathToFileURL } = require("url");
 
 const target = path.resolve(process.argv[2] || "dist-test/index.html");
-const AUTOSAVE = "tst-autosave-v4-3", FLAG = "tst-onboarded-v2";
+const AUTOSAVE = "tst-autosave-v4-3", FLAG = "tst-onboarded-v2";      // a crafted run is handed over under the v2.0 key, which is still read
+const { readRun } = require("./lib/store.cjs");
 const FIXTURES = path.join(__dirname, "../saves/fixtures/generated");
 const rows = [];
 const check = (name, ok, detail) => { rows.push(!!ok); console.log("  " + (ok ? "ok  " : "FAIL") + "  " + name + (detail ? "  (" + detail + ")" : "")); return !!ok; };
@@ -82,7 +83,7 @@ const wide = page => page.evaluate(() => ({ page: document.documentElement.scrol
     check("a tap on a blocked button leaves its reason in the hint bar", /Hail Mary/.test(why || "") && /proposal|closing/.test(why || ""), why);
     const dim = await page.evaluate(() => { const b = document.querySelector('[data-ui="hail"]'), e = document.querySelector('[data-ui="rules"]'); return { hail: getComputedStyle(b).color, text: getComputedStyle(document.querySelector(".quarter-head h2")).color }; });
     check("and a blocked button is drawn dimmer than the text", dim.hail !== dim.text, JSON.stringify(dim));
-    const before = await page.evaluate(k => JSON.parse(window.localStorage.getItem(k) || "{}").energy, AUTOSAVE);
+    const before = (await page.evaluate(readRun)).energy;
     await tap(page, '[data-act="conference"]'); await tap(page, '[data-act="prospect"]'); await tap(page, '[data-act="prospect"]');
     await tap(page, '[data-act="prospect"]');                  // by now there is not the energy for it
     await page.waitForTimeout(400);
@@ -95,7 +96,7 @@ const wide = page => page.evaluate(() => ({ page: document.documentElement.scrol
     check("and when the hint bar is off the screen, the reason is shown in a notice that is on it", !where.hint && where.notice && /Prospect blitz/.test(where.text) && /energy/.test(where.text), JSON.stringify(where));
 
     /* ---------- 3. the numbers follow you ---------- */
-    const state = () => page.evaluate(k => { const s = JSON.parse(window.localStorage.getItem(k)); return { week: s.week, energy: Math.round(s.energy), stress: Math.round(s.stress), cash: Math.round(s.cash) }; }, AUTOSAVE);
+    const state = async () => { const s = await page.evaluate(readRun); return { week: s.week, energy: Math.round(s.energy), stress: Math.round(s.stress), cash: Math.round(s.cash) }; };
     await page.evaluate(() => window.scrollTo(0, 0)); await page.waitForTimeout(300);
     check("at the top of the page the strip is away", !(await page.evaluate(() => !!document.querySelector(".strip.on"))));
     await page.evaluate(() => document.querySelector('[data-ui="end"]').scrollIntoView({ block: "center" })); await page.waitForTimeout(500);
@@ -178,18 +179,18 @@ const wide = page => page.evaluate(() => ({ page: document.documentElement.scrol
     await context.close();
 
     /* ---------- 7. a stored run that is not a run ---------- */
-    ({ context, page, errors } = await open(browser, { viewport: PHONE, save: '{"week":"x"}' }));
-    await page.waitForTimeout(300);
-    const crash = await box(page, ".crash");
-    check('a stored run whose week is not a number goes to the recovery page (it used to play as "Week NaN")', !!crash && !(await text(page, ".quarter-head h2")), JSON.stringify(crash && { left: Math.round(crash.left), right: Math.round(crash.right) }));
-    check("whose card keeps a gutter on a phone", !!crash && crash.left >= 12 && crash.right <= PHONE.width - 12);
-    if (crash) { await page.tap(".crash button"); await page.waitForTimeout(500); }
-    check("and New run starts a quarter from it", (await text(page, ".quarter-head h2")) === "Week 1", await text(page, ".quarter-head h2"));
-    await context.close();
-    ({ context, page, errors } = await open(browser, { viewport: PHONE, save: "{not json" }));
-    await page.waitForTimeout(400);
-    const said = await page.evaluate(() => { const t = document.getElementById("tst-toast"); return t && t.classList.contains("show") ? t.textContent : null; });
-    check("a stored run that cannot be read starts a new one and says so", (await text(page, ".quarter-head h2")) === "Week 1" && /damaged/.test(said || ""), said);
+    for (const [what, raw] of [["whose week is not a number", '{"week":"x"}'], ["that cannot be read", "{not json"]]) {
+      ({ context, page, errors } = await open(browser, { viewport: PHONE, save: raw }));
+      await page.waitForTimeout(300);
+      const dlg = await box(page, 'dialog[open][data-dialog="recovery"]');
+      const words = await text(page, 'dialog[open][data-dialog="recovery"]');
+      check(`a stored run ${what} is not played: a dialog says it could not be opened`, !!dlg && /could not be opened/.test(words || ""), (words || "").slice(0, 80));
+      check("the dialog fits a phone, with a gutter", !!dlg && dlg.left >= 8 && dlg.right <= PHONE.width - 8 && dlg.bottom <= PHONE.height, JSON.stringify(dlg && { left: Math.round(dlg.left), right: Math.round(dlg.right), bottom: Math.round(dlg.bottom) }));
+      if (dlg) { await page.tap('dialog[open] [data-ui="recover-new"]'); await page.waitForTimeout(500); }
+      check("and Start a new run starts a quarter", (await text(page, ".quarter-head h2")) === "Week 1" && !(await box(page, "dialog[open]")), await text(page, ".quarter-head h2"));
+      check("the stored run is still where it was", await page.evaluate(([k, v]) => window.localStorage.getItem(k) === v, [AUTOSAVE, raw]));
+      if (what !== "that cannot be read") await context.close();
+    }
     check("no errors", errors.length === 0, errors.join(" | "));
     await context.close();
 

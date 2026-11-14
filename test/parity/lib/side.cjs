@@ -53,7 +53,7 @@ class Side {
       reducedMotion: this.motion === 'reduce' ? 'reduce' : 'no-preference'
     }, this.contextOptions || {}));
     await route(this.context, this.build, this.url, this.net);
-    const cfg = { seed: this.seed >>> 0, fx: this.fx, epoch: EPOCH, autosaveKey: AUTOSAVE_KEY, calm: this.calm !== false };
+    const cfg = { seed: this.seed >>> 0, fx: this.fx, epoch: EPOCH, autosaveKey: this.driver.autosaveKey || AUTOSAVE_KEY, calm: this.calm !== false };
     await this.context.addInitScript(`(${inPage.toString()})(${JSON.stringify(cfg)});`);
     await this.context.addInitScript(`window.__drv = (${this.driver.inPage.toString()})();`);
     for (const src of this.initScripts || []) await this.context.addInitScript(src);

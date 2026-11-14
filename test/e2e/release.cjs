@@ -34,7 +34,7 @@ const check = (name, ok, detail) => { rows.push(!!ok); console.log("  " + (ok ? 
 
 const AUDIO_MEMBERS = ["ambient", "cancelSay", "hush", "onCaption", "onChange", "onLogs", "onModal", "play", "say", "setCaptions", "setOn", "setStress", "setVoice", "setVolume", "settings", "stopAmbient", "unlock"];
 const SCENE_MEMBERS = ["COLS", "ROWS", "play", "reduced", "summaryFor"];
-const AUTOSAVE = "tst-autosave-v4-3";
+const { readRun } = require("./lib/store.cjs");
 
 // What a press in the page is, as a move of the rules (test/sim/lib/harness.mjs). null: the press only changes what
 // is on screen (opens the policy, folds the workspace), and the run must be exactly as it was.
@@ -100,7 +100,7 @@ async function plain(browser, init) {
     for (let i = 0; i < 2; i++) {
       ({ context, page, errors } = await plain(browser, plant));
       await page.click('[data-act="prospect"]'); await page.waitForTimeout(250);
-      const s = await page.evaluate(k => JSON.parse(window.localStorage.getItem(k)), AUTOSAVE);
+      const s = await page.evaluate(readRun);
       seeds.push(s && s.rng ? s.rng.seed : null);
       // a scripted roll leaves the run's own stream where it was (src/game/rng.js); a release rolls its own, so it moved
       if (i === 0) check("a planted roll is not rolled: prospecting rolled the run's own dice", !!s && !!s.rng && s.rng.core !== E.rng.newRng(s.rng.seed).core && s.deals.length >= 1, s && s.rng ? `seed ${s.rng.seed}, ${s.deals.length} deals` : "no save");

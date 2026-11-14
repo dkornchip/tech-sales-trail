@@ -43,15 +43,16 @@ async function open(browser, { seed = 7, returning = true, width = 1440, height 
   await page.waitForTimeout(700);
   return { context, page };
 }
-const state = page => page.evaluate(k => JSON.parse(window.localStorage.getItem(k)), AUTOSAVE);
+const { readRun } = require("../test/e2e/lib/store.cjs");
+const state = page => page.evaluate(readRun);
 // Press a control and wait until the game has taken it in (the autosave changes), so the next decision is made on
 // the new state however busy the machine is. Returns false if the control is missing or disabled.
 const press = async (page, sel) => {
   const el = page.locator(sel).first();
   if (!(await el.count()) || await el.getAttribute("aria-disabled") === "true" || !(await el.isEnabled())) return false;
-  const before = await page.evaluate(k => window.localStorage.getItem(k), AUTOSAVE);
+  const before = await page.evaluate(k => window.localStorage.getItem(k), "tst-autosave-v5");
   await el.click();
-  await page.waitForFunction(([k, was]) => window.localStorage.getItem(k) !== was, [AUTOSAVE, before], { timeout: 1500 }).catch(() => {});
+  await page.waitForFunction(([k, was]) => window.localStorage.getItem(k) !== was, ["tst-autosave-v5", before], { timeout: 1500 }).catch(() => {});
   await page.waitForTimeout(60);
   return true;
 };

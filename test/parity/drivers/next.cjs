@@ -14,6 +14,7 @@ const TRIPS = ['Japan', 'Whistler', 'Cancun', 'Thailand', 'Dubai'];   // game.js
 
 module.exports = {
   name: 'next',
+  autosaveKey: 'tst-autosave-v5',      // the key whose text changes when the run is saved (lib/inpage.cjs watches it)
 
   // Rules from lib/allowlist.cjs under which this build may offer FEWER moves than the baseline.
   benign: ['recharge-when-rested'],
@@ -75,7 +76,9 @@ module.exports = {
    * Returns the object the harness keeps as window.__drv.
    */
   inPage: function () {
-    const AUTOSAVE = 'tst-autosave-v4-3', SAVE = 'tst-save-v4-3';   // game.jsx:16-17
+    // v2.1 stores a run as an envelope under its own keys (src/game/save.js). The harness reads the run out of it;
+    // what it writes (a crafted or a fixture save) goes under the v2.0 keys, which the game still reads.
+    const AUTOSAVE_NOW = 'tst-autosave-v5', AUTOSAVE = 'tst-autosave-v4-3', SAVE = 'tst-save-v4-3';
     // The harness plays as someone who has been here before: v2.0 gives a brand-new browser a first day (the
     // onboarding memo and a tour, src/ui/FirstRun.jsx), which the baseline does not have. test/e2e/firstday.cjs
     // covers that flow on its own. This runs before any of the page's scripts, on every load.
@@ -225,7 +228,11 @@ module.exports = {
         el.click();
       },
 
-      readState() { const raw = localStorage.getItem(AUTOSAVE); return raw ? JSON.parse(raw) : null; },
+      readState() {
+        const now = localStorage.getItem(AUTOSAVE_NOW);
+        if (now) { const e = JSON.parse(now); return Object.assign({}, e.state, { pending: e.pendingEvents, rng: e.rngState }); }
+        const raw = localStorage.getItem(AUTOSAVE); return raw ? JSON.parse(raw) : null;
+      },
       // where: "manual" is what the Load button prefers (game.jsx:54-65); "autosave" is what a page load resumes.
       writeSave(where, json) { localStorage.setItem(where === 'manual' ? SAVE : AUTOSAVE, json); },
 

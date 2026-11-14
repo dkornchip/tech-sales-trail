@@ -6,12 +6,10 @@ import { EVENTS } from "../game/events.js";
 import { causeOf } from "../game/legacy.js";
 import { step, waiting } from "../game/run.js";
 import { CLAINK } from "../game/claink.js";
-import { AUTOSAVE_KEY, SAVE_KEY } from "../game/constants.js";
-import { isRunOver } from "../game/log.js";
-import { mergeSaved, newGame, readStoredRun } from "../game/state.js";
+import { newGame } from "../game/state.js";
 import { CRASH_PER_SHOT, RECHARGE_ENERGY, RECHARGE_LUCK, TRIP_AT } from "../game/stress.js";
 import { pct } from "../game/util.js";
-import { MENU, NAMES, TOAST } from "../copy/ui.js";
+import { MENU, NAMES, RECOVERY, TOAST } from "../copy/ui.js";
 import { describe } from "./app/ActionGrid.jsx";
 import { Board } from "./app/Board.jsx";
 import { hailBlock } from "./app/Foot.jsx";
@@ -24,52 +22,26 @@ import { Ending } from "./Ending.jsx";
 import { AUDIO, noHover, notify, sfx } from "./env.js";
 import { Modal } from "./primitives.jsx";
 import { Tour, Welcome, endFirstDay, isFirstDay, useBooting } from "./FirstRun.jsx";
+import { hasStoredRun, readForLoad, readOnOpen, setAside, writeAutosave, writeSave } from "./storage.js";
 
 const { useState, useEffect, useRef } = React;
 
 // A choice that is waiting for an answer is part of the run (its `pending` list, game/run.js), so it is saved with
-// it and nothing can walk away from it: not a reload, not a Load, not a second press.
-//
-// v2.0 kept an End Week choice beside the autosave instead, under this key, with the run and week it belonged to.
-// A run saved by v2.0 that was waiting on one still gets it: it is read here, once, when that run is opened, and
-// only for that same run and week. The key is never written or removed (the v2.0 page may still be in use).
-const LEGACY_PENDING_KEY="tst-pending-v2";
-// stored: the run as it was read from storage, before it was merged. One that already lists its own choices (even
-// an empty list) was saved by v2.1, and is never asked twice.
-const withLegacyChoice=(s,stored)=>{
-  if(isRunOver(s) || (stored && Array.isArray(stored.pending)) || (Array.isArray(s.pending) && s.pending.length))return s;
-  try{
-    const p=JSON.parse(localStorage.getItem(LEGACY_PENDING_KEY)||"null");
-    if(!p || typeof p.id!=="string" || p.id.indexOf("evt:")!==0 || !Object.prototype.hasOwnProperty.call(EVENTS,p.id))return s;
-    if(p.runId!==s.runId || p.week!==s.week)return s;
-    return {...s,pending:[{id:p.id}]};
-  }catch{ return s; }
-};
+// it and nothing can walk away from it: not a reload, not a Load, not a second press. (A run stored by v2.0, which
+// kept such a choice beside its autosave, gets it back when it is read: game/save.js.)
 const isAck=p=>!!p && p.id.indexOf("ck:")===0;
 
-// What every screen assumes about a run: its counters are numbers and its lists are lists.
-const isRun=r=>!!r && ["week","energy","stress","cash","slots","maxSlots","quota"].every(k=>Number.isFinite(r[k])) && r.week>=1 && Array.isArray(r.deals) && Array.isArray(r.logs);
-
-// fresh: start a new run without reading storage (the way out of the damaged-save page, ui/main.jsx)
+// fresh: start a new run without reading storage (the way out of the crash page, ui/main.jsx)
 export function Game({fresh}){
-  // A stored run that cannot be read at all is replaced by a new one, and the player is told. One that parses but
-  // is not a run (a week that is not a number, deals that are not a list) goes to the recovery page (ui/main.jsx)
-  // instead of being played as "Week NaN".
-  const unreadable=useRef(false);
-  const createInitial=()=>{
-    const base=newGame();
-    if(fresh) return base;
-    let raw=null;
-    try{ raw=readStoredRun(true); }catch{ return base; }
-    if(!raw)return base;
-    let run,stored;
-    try{ stored=JSON.parse(raw); run=mergeSaved(stored); }catch{ unreadable.current=true; return base; }
-    if(!isRun(run)) throw new Error("the stored run is not a run");
-    return withLegacyChoice(run,stored);
-  };
+  // What storage holds is read once, before the first render (ui/storage.js). A run that opens is played. One that
+  // does not (damaged, or written by a later version) is left exactly where it is: a new run is put on the desk
+  // behind a dialog that says so and offers what can actually be done, and nothing is saved until the player has chosen.
+  const boot=useRef(null);
+  if(boot.current===null) boot.current=fresh ? {state:null,problem:null,others:[]} : readOnOpen();
+  const createInitial=()=>boot.current.state || newGame();
+  const[recovery,setRecovery]=useState(()=>(boot.current.problem ? {problem:boot.current.problem,others:boot.current.others} : null));
 
   const[s,setS]=useState(createInitial);
-  useEffect(()=>{ if(unreadable.current){ unreadable.current=false; notify(TOAST.damaged); } },[]);
   // The choice the run is waiting on: {id, params} (EVENTS in game/events.js), or null. An End Week choice is shown
   // at once. An acknowledgement of clAInk's manager (a "ck:" choice) waits for the run's report to have its say:
   // it is shown when the report finishes (or is skipped), when anything else is attempted, and at once in a run
@@ -80,7 +52,7 @@ export function Game({fresh}){
   const[showHelp,setShowHelp]=useState(false);
   // The first day (ui/FirstRun.jsx): "memo" (the opening), then 0, 1, 2 (the tour's stops), then null for good.
   // "memo-again" is the memo reopened from the rules. A browser with a saved run never gets a first day.
-  const[first,setFirst]=useState(()=>{ const hasRun=fresh || !!readStoredRun(true); if(hasRun) endFirstDay(); return isFirstDay(hasRun) ? "memo" : null; });
+  const[first,setFirst]=useState(()=>{ const hasRun=fresh || hasStoredRun(); if(hasRun) endFirstDay(); return isFirstDay(hasRun) ? "memo" : null; });
   const booting=useBooting();
   const[helpOpens,setHelpOpens]=useState(0); // keys the onboarding memo so its gag replays each time it is reopened
   const[claUi,setClaUi]=useState(readClainkUi); // clAInk's panel: minimized or not (a UI preference, not run state)
@@ -112,39 +84,31 @@ export function Game({fresh}){
     setAckOpen(false);
     setOver(null);
   };
+  // The manual save is its own slot: written only here, read only by Load.
   const onSave=()=>{
-    try{
-      localStorage.setItem(SAVE_KEY,JSON.stringify(sRef.current));
-      sfx("save");
-      notify(TOAST.saved);
-    }catch{
-      sfx("nope");
-      notify(TOAST.saveBlocked);
-    }
+    if(writeSave(sRef.current)){ sfx("save"); notify(TOAST.saved); }
+    else{ sfx("nope"); notify(TOAST.saveBlocked); }
+  };
+  // Load swaps the whole run in one step, or not at all: a save that cannot be opened leaves the run on the desk
+  // exactly as it is, and says so.
+  const openRun=run=>{
+    commit(run);
+    setEpoch(e=>e+1); // v1.19: fresh clAInk UI state
+    setAckOpen(isAck(waiting(run)));
+    setOver(null);
   };
   const onLoad=()=>{
-    const v=readStoredRun(false);
-    if(!v){
-      sfx("nope");
-      notify(TOAST.noSave);
-      return;
-    }
-    try{
-      const a=AUDIO(); if(a){ a.hush(); a.play("load"); }
-      const stored=JSON.parse(v);
-      const run=withLegacyChoice(mergeSaved(stored),stored);
-      if(!isRun(run)) throw new Error("the saved run is not a run");
-      commit(run);
-      setEpoch(e=>e+1); // v1.19: fresh clAInk UI state
-      setAckOpen(isAck(waiting(run)));
-      setOver(null);
-    }catch{
-      notify(TOAST.damaged);
-      commit(newGame());
-      setEpoch(e=>e+1); // v1.19: fresh clAInk UI state
-      setAckOpen(false);
-      setOver(null);
-    }
+    const found=readForLoad();
+    if(found.status==="none"){ sfx("nope"); notify(TOAST.noSave); return; }
+    if(found.status!=="ok"){ sfx("nope"); notify(found.status==="newer" ? TOAST.newer : TOAST.damaged); return; }
+    const a=AUDIO(); if(a){ a.hush(); a.play("load"); }
+    openRun(found.state);
+  };
+  // The way out of the dialog for a stored run that would not open. Whatever is chosen, that run is kept aside first.
+  const recover=other=>{
+    setAside(recovery.problem);
+    if(other) openRun(other.state);
+    setRecovery(null);
   };
 
   // Sound settings belong to the audio engine; the top bar and the settings menu mirror them.
@@ -162,11 +126,13 @@ export function Game({fresh}){
   const closeMenu=refocus=>{ setMenuOpen(false); if(refocus && menuBtn.current) try{ menuBtn.current.focus(); }catch{} };
   const openRules=()=>setShowHelp(true);
 
+  // The autosave: the whole run, in one piece, after every change. It waits while the recovery dialog is open (the
+  // run that could not be opened is still under that key). A browser that refuses storage is told about once.
+  const storageWarned=useRef(false);
   useEffect(()=>{
-    try{
-      localStorage.setItem(AUTOSAVE_KEY,JSON.stringify(s));
-    }catch{}
-  },[s]);
+    if(recovery)return;
+    if(!writeAutosave(s) && !storageWarned.current){ storageWarned.current=true; notify(TOAST.saveBlocked); }
+  },[s,recovery]);
 
   // v1.14: every new log line maps to a sound (and sometimes a PA line). Reads state only.
   const lastLogRef=useRef(s.logs.length?s.logs[0].id:null);
@@ -304,6 +270,18 @@ export function Game({fresh}){
         }; }) : []}
       >
         <p className="tiny">{eventWords ? eventWords.body(eventParams) : null}</p>
+      </Modal>
+
+      <Modal
+        open={!!recovery && !booting}
+        title={RECOVERY.title}
+        dialogId="recovery"
+        actions={recovery ? [
+          {label:RECOVERY.newRun,className:"primary",ui:"recover-new",onClick:()=>recover(null)},
+          ...recovery.others.map((o,i)=>({label:RECOVERY.open(o.slot,o.state.week,o.legacy),className:"ghost",ui:"recover-"+o.slot+"-"+i,onClick:()=>recover(o)}))
+        ] : []}
+      >
+        <p className="tiny">{recovery ? RECOVERY.body(recovery.problem.status,recovery.others.length) : null}</p>
       </Modal>
 
       <Ending over={over} s={s} onNew={onNew} />

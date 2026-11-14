@@ -114,7 +114,11 @@ async function runSaves(opts) {
   const say = opts.log || (() => {});
   const manifest = loadManifest();
   const pickFixture = f => !opts.only || (Array.isArray(opts.only) ? opts.only.includes(f.id) : f.id.indexOf(opts.only) >= 0);
-  const fixtures = manifest.fixtures.filter(pickFixture);
+  // skipNow (manifest): a fixture whose contract with v1.21 the current build deliberately no longer keeps, with
+  // the reason and where it is tested instead. It is left out of the build-against-itself run and named in the output.
+  const skipped = opts.a === 'self' ? manifest.fixtures.filter(f => f.skipNow && pickFixture(f)) : [];
+  for (const f of skipped) say(`  skip ${f.id}: ${f.skipNow}`);
+  const fixtures = manifest.fixtures.filter(pickFixture).filter(f => !skipped.includes(f));
   if (!fixtures.length) throw new Error(`no fixture matches ${JSON.stringify(opts.only)}`);
   const buildB = loadBuild(opts.b || { kind: 'file', file: path.resolve(__dirname, '..', '..', 'index.html') });
   const buildA = opts.a === 'self' ? buildB : loadBuild({ kind: 'baseline' });

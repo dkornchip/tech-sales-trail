@@ -122,9 +122,10 @@ export const MENU = { title: "Settings", sound: "Sound", voice: "Office announce
 // One-line confirmations (the toast at the bottom of the screen).
 export const TOAST = {
   saved: "Run saved.",
-  saveBlocked: "Could not save. This browser is blocking storage.",
+  saveBlocked: "Could not save. Browser storage is unavailable.",
   noSave: "No saved run found.",
-  damaged: "That save was damaged. A new run has started.",
+  damaged: "This saved run could not be opened. Your current run is unchanged.",
+  newer: "This saved run is from a newer version of the game. Your current run is unchanged.",
   soundOn: "Sound on",
   soundOff: "Sound off"
 };
@@ -134,6 +135,15 @@ export const BOOT = { label: "Shitcorp OS boot screen", product: "Tech Sales Tra
 export const NAMES = { week: "Your week", desk: "Your deals and activity", sound: "Sound", soundTitle: "Sound (M)", ending: "Ending animation", event: "Event" };
 
 // The page that replaces the game when it cannot be drawn (a save that is not a save).
+// The dialog for a stored run that would not open. It offers only what can actually be done: a new run, and each
+// other stored run that does open. slot: "autosave" or "save"; legacy: stored by an earlier version of the game.
+export const RECOVERY = {
+  title: "This saved run could not be opened",
+  body: (status, others) => `${status === "newer" ? "It was saved by a newer version of the game." : "The run stored in this browser is damaged."} ${others ? "Start a new run or return to a valid saved run." : "Start a new run."} It will be kept aside, not deleted.`,
+  newRun: "Start a new run",
+  open: (slot, week, legacy) => `Open ${slot === "save" ? "your saved run" : "the autosave"} · week ${week}${legacy ? " (earlier version)" : ""}`
+};
+
 export const CRASH = {
   title: "This run could not be opened",
   body: "The run saved in this browser is damaged. A new run sets it aside and starts the quarter over.",
