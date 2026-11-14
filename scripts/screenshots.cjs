@@ -19,7 +19,6 @@ const args = process.argv.slice(2);
 const outAt = args.indexOf("--out");
 const out = path.resolve(outAt >= 0 ? args[outAt + 1] : "test-results/screenshots");
 const target = path.resolve(args.find((a, i) => !a.startsWith("--") && i !== outAt + 1) || "dist-test/index.html");
-const AUTOSAVE = "tst-autosave-v4-3";
 
 // Runs in the page before any of its scripts: the run's seed, a seeded Math.random for the cosmetic stream, and
 // (unless it is the first-day shot) a player who has been here before.
@@ -43,7 +42,7 @@ async function open(browser, { seed = 7, returning = true, width = 1440, height 
   await page.waitForTimeout(700);
   return { context, page };
 }
-const { readRun } = require("../test/e2e/lib/store.cjs");
+const { readRun, envelope, KEYS } = require("../test/e2e/lib/store.cjs");
 const state = page => page.evaluate(readRun);
 // Press a control and wait until the game has taken it in (the autosave changes), so the next decision is made on
 // the new state however busy the machine is. Returns false if the control is missing or disabled.
@@ -84,23 +83,28 @@ async function week(page) {
        (some get Matt fired, some leave the board empty), so seeds are tried in order until one does. */
     let context, page, seed = 11;
     const over = s => !!(s.fired || s.burnedOut || s.win || s.missed || s.repo);
-    for (; seed < 60; seed++) {
+    for (; seed < 100; seed++) {
       ({ context, page } = await open(browser, { seed }));
       await press(page, ".claink-cta"); await press(page, ".claink-confirm");
       let s = await state(page);
       for (let w = 0; w < 5 && !over(s); w++) { await week(page); s = await state(page); }
       if (!over(s)) {
-        await press(page, '[data-act="discovery"]'); await press(page, '[data-act="demo"]');
+        // a little of this week's work, keeping enough energy for a close attempt: the picture's hint bar is
+        // about Close deals, and it should say what the button would do, not why it cannot
+        if (s.energy < 50) { await press(page, '[data-act="recharge"]'); s = await state(page); }
+        if (s.energy >= 50) await press(page, '[data-act="discovery"]');
+        s = await state(page);
+        if (s.energy >= 56) await press(page, '[data-act="demo"]');
         await press(page, ".claink-deploy");
         await page.waitForTimeout(5000);                  // the report plays out beat by beat
         await answer(page);
         s = await state(page);
       }
-      const good = !over(s) && s.deals.length >= 6 && s.deals.length <= 12 && s.closedWon > 15000 && s.claink.status === "active" && s.claink.strikes === 1 && s.deals.some(d => d.stage >= 3);
+      const good = !over(s) && s.deals.length >= 6 && s.deals.length <= 12 && s.closedWon > 15000 && s.claink.status === "active" && s.claink.strikes === 1 && s.deals.some(d => d.stage >= 3) && s.energy >= 28;
       if (good) break;
       await context.close(); context = null;
     }
-    if (!context) throw new Error("no seed between 11 and 59 gave a mid-quarter run worth a picture");
+    if (!context) throw new Error("no seed between 11 and 99 gave a mid-quarter run worth a picture");
     console.log("main: seed " + seed);
     await page.hover('[data-act="close"]');
     await page.waitForTimeout(400);
@@ -117,7 +121,8 @@ async function week(page) {
     const won = Object.assign({}, mid, { week: 13, closedWon: 171300, closedQuarter: 171300, manager: 72, stress: 31, slots: 5, cash: 6240, trip: "Whistler",
       story: Object.assign({ signed: 0, top: null, took: null, n: {} }, mid.story, { signed: Math.max(9, (mid.story && mid.story.signed) || 0), top: (mid.story && mid.story.top) || { account: "Quasar Laundry", value: 48200 } }) });
     ({ context, page } = await open(browser, { seed: 5 }));
-    await page.evaluate(([k, v]) => window.localStorage.setItem(k, v), [AUTOSAVE, JSON.stringify(won)]);
+    // handed over as the page's own autosave (the envelope v2.1 writes), so it is the run the reload opens
+    await page.evaluate(([k, v]) => window.localStorage.setItem(k, v), [KEYS.autosave, envelope(won)]);
     await page.reload(); await page.evaluate(() => document.fonts.ready);
     await page.waitForSelector('[data-ui="end"]', { timeout: 15000 });
     await page.waitForTimeout(600);

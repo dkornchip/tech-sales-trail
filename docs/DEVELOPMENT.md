@@ -1,0 +1,116 @@
+# Developing Tech Sales Trail
+
+How the game is built, where things live, and what `npm run verify` checks. For what the game is and how to play
+it, see the [README](../README.md).
+
+## The short version
+
+```
+npm install              # esbuild, React, the fonts, the icons
+npm run build            # src/ -> dist/index.html, the release build: no test hooks in it
+npm run build:test       # src/ -> dist-test/index.html, the same game with the hooks the tests script it through
+npm run verify           # both builds, then every check below
+npm run release          # src/ -> ./Tech_Sales_Trail_<major.minor>.html
+npm run verify:release   # verify, and that the committed release file is exactly what the source builds
+```
+
+The checks drive a real browser with [Playwright](https://playwright.dev), which is not in `package.json`.
+Install it once beside the project: `npm install --no-save playwright && npx playwright install chromium`.
+
+## Releases and `index.html`
+
+The build puts everything (React, the game, the styles, two fonts, the icons) into one HTML file that makes no
+network requests.
+
+- A release is written as `Tech_Sales_Trail_<major.minor>.html` by `npm run release`.
+- `index.html` at the root is the file GitHub Pages serves. It is a byte-for-byte copy of the release the owner
+  has promoted (today: `Tech_Sales_Trail_2.1.html`). The build never writes it; promoting a release is the owner's
+  call.
+- Earlier releases are kept as shipped under `test/baseline/` (`v2.0.1`, and `v1.21`, which the scene and save
+  tests still compare against).
+
+## Where things live
+
+| Where | What |
+|---|---|
+| `src/game/` | The rules, as pure functions of the run's state. `run.js` is the front door: `step(state, move)` is the only way a run changes, for the interface and for the tests alike. `rng.js` is the run's own seeded dice, saved with the run. `rules.js` holds every cost, chance and balance setting once; the interface and the handbook read the same numbers. |
+| `src/copy/` | Every word the player reads. `engine.js` chooses between a line's wordings without touching the game's dice. |
+| `src/ui/` | The interface (React). `src/styles/tokens.css` is the only file that names a colour or a size. |
+| `src/engine/` | The ASCII scene engine and the synthesized sound. |
+| `scripts/` | The build, the lints, `verify.mjs`, `copy-coverage.mjs`, and `screenshots.cjs` (plays the game and takes the README's pictures). |
+| `test/` | See below. |
+| `docs/2.1/` | The brief and the editorial copydeck v2.1 was built from, and the notes on the copydeck rows that are not rendered word for word. |
+| `qa/2.1/` | The evidence behind `TTST_2.1_QA_REPORT.md`: gate logs, balance data, screenshots. |
+
+The rule for changes: **jokes never touch dice.** Anything cosmetic draws from its own stream (`src/fxrng.js`);
+every roll of the rules comes from the run's seeded stream, inside a move.
+
+## What `npm run verify` checks
+
+It runs these in order and stops at the first that fails.
+
+- **lints**: `Math.random` only in the cosmetic stream and test hooks only behind the build flag (`lint:rng`);
+  house style, and length budgets for log lines and announcer lines, on every string (`lint:copy`); colours and
+  sizes only from the tokens (`lint:css`); every log line, dialog and announcement is wired and renders in every
+  wording.
+- **copy-deck** (`scripts/copy-coverage.mjs`): every row of the editorial copydeck (`docs/2.1`) is rendered by the
+  build, or has a reason on file (`docs/2.1/copy-coverage-notes.json`).
+- **fonts and notices**: the bundled fonts are what the pinned packages generate and cover every character the
+  scenes draw; `THIRD-PARTY-NOTICES.md` is current.
+- **engine** (`test/engine/`, Node): every rule with scripted dice (actions, closes, the Hail Mary, End Week,
+  reviews, the QBR at each boundary, Friday events, effects, clAInk, saves), the dice themselves (same seed and
+  moves, same run; a run saved and read back carries on exactly; nothing rolls outside a move), invariants after
+  every move of random and scripted play, and golden replays of seeded runs.
+- **audio** (`test/audio/`, Node): what the sound engine decides, against a fake speaker: which log line makes
+  which sound, what a batch plays, that the announcer never talks over itself, that a line that matters cuts off
+  filler, captions, mute.
+- **sim-smoke** (`test/sim/`): the simulation kit plays whole quarters with policy bots on the frozen balance
+  baseline (`test/baseline/checkpoint-engine`) and on the working tree. `npm run sim -- --seeds 1000` prints the
+  balance tables. The bots are heuristics; they are not playtests.
+- **scenes**: every frame of every ASCII scene's picture is exactly v1.21's. (v2.1 rewrote the captions under them;
+  the copy lint and the copydeck gate hold those.)
+- **fixtures** and **saves** (`test/saves/`): saves from every state and ending of v1.21, and older, load, show
+  what they should, and play on. The fixtures are regenerated from the frozen v1.21 file and must match what is
+  committed.
+- **release** (`test/e2e/release.cjs`): the shipped file exposes no test hook, ignores one planted from outside,
+  and replays move for move against `src/game` from the run it saved.
+- **offline**, **first day**, **confirm**, **resilience**, **phone**, **keyboard**, **layout** (`test/e2e/`): no
+  network and the bundled fonts in use; the onboarding memo and tour; the four confirmations by real clicks and key
+  presses (a "no" must leave the run exactly as it was); reloads, damaged saves, duplicate names and an ending whose
+  cutscene cannot play; a touch screen at phone sizes and on its side; a whole run on the keyboard; one screen at
+  seven desktop sizes and a phone, with nothing covered or cut off.
+- **matrix** (`test/e2e/matrix.cjs`): eight screen sizes (1440×900 down to 320×568, a phone on its side, 200% zoom)
+  × thirteen states (a new player's first screen, the main screen, clAInk's offer open and minimized, a Friday
+  choice, a clAInk incident, the handbook, six endings), from `file://` with the network refused. `--shots <dir>`
+  saves the pictures.
+- **released** (with `verify:release`): the committed release file is exactly what the source builds.
+
+`npm run test:selftest` turns the tests on themselves: each one is given a planted fault and must report it.
+`python3 test/engine/tools/mutation-check.py` plants small mistakes in the rules, one at a time, and reports any
+the engine tests fail to catch.
+
+## Tools for changing the rules
+
+- `node test/sim/run.mjs --policies all --seeds 1000` plays 1,000 quarters per policy on the working tree;
+  `--engine baseline` plays the frozen 2.0.1 rules on the same seeds; `--tuning '<json>'` tries a balance candidate
+  over the shipped defaults (`TUNING_DEFAULTS` in `src/game/rules.js`).
+- `node test/engine/tools/integrity-diff.mjs` plays the frozen 2.0.1 rules and the working tree side by side and
+  sorts every difference into the 2.1 fixes that explain it, or "anything else".
+- Up to v2.0.1 the build was also held move for move, and sound for sound, to the frozen v1.21 file
+  (`test/parity/run.cjs`). v2.1 changes rules on purpose, so that comparison ended at the last commit where it held;
+  the evidence is in `qa/2.1/evidence/`. The harness stays, because the scene, save and browser tests are built on
+  it; `npm run parity:selftest` still proves it catches planted bugs.
+
+## The README's pictures
+
+`node scripts/screenshots.cjs` plays the test build from fixed seeds and writes four PNGs to
+`test-results/screenshots/` (the main screen, clAInk's workspace, the President's Club ending, the first day). The
+README uses WebP copies in `screenshots/`:
+
+```
+python3 -c "
+from PIL import Image
+for n in ['main', 'claink', 'ending', 'first-day']:
+    Image.open(f'test-results/screenshots/{n}.png').convert('RGB').save(f'screenshots/{n}.webp', 'WEBP', quality=82, method=6)
+"
+```

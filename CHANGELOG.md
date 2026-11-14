@@ -33,8 +33,12 @@ What was changed, measured and tested: `TTST_2.1_QA_REPORT.md`, with the evidenc
 - The announcer: a line that matters cuts off small talk instead of being dropped; captions are cleared on Load and New run.
 - The six ASCII endings and the boot screen are the same pictures, frame for frame.
 
+### Fixed before promotion
+- The onboarding memo's letterhead ("INTERNAL MEMORANDUM · PLEASE DO NOT REPLY ALL") was cut off at the edge of the sheet on desktop screens. It now wraps under the first line. Found while retaking the README's pictures; the first-day test and the screen-size matrix (which now opens a new player's first screen at every size, and checks that no dialog cuts its text off sideways) hold it.
+- The README is rewritten for new players and describes the 2.1 rules; the developer notes moved to `docs/DEVELOPMENT.md`; the README's four pictures are retaken from 2.1.
+
 ### Tests
-- `npm run verify:release`: 26 gates. New since v2.0.1: engine tests in Node with scripted dice (113), behavioural audio tests (15), simulation smoke, a release-bundle check (no hooks; the page replays against the source), copydeck coverage, confirmations by real presses (37), and the screen-size matrix (eight sizes × twelve states, 988 checks).
+- `npm run verify:release`: 26 gates. New since v2.0.1: engine tests in Node with scripted dice (113), behavioural audio tests (15), simulation smoke, a release-bundle check (no hooks; the page replays against the source), copydeck coverage, confirmations by real presses (37), and the screen-size matrix (eight sizes × thirteen states, 1,120 checks).
 - Move-for-move parity with the frozen v1.21 file passed one last time before any rule changed, and was then retired: the rule fixes end it on purpose. An integrity diff shows every difference from the v2.0.1 rules is one of the fixes.
 - Chromium only. Firefox is not verified.
 
