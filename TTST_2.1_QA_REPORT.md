@@ -279,6 +279,11 @@ policy and candidate are in `qa/2.1/balance/*.json`; the printed tables are in `
 - **Lint self-test** (`node test/lint-fixtures/selftest.mjs`): 20/20; every lint rule fires on its planted fixture.
 - **The matrix and the offline test were also run on `Tech_Sales_Trail_2.1.html` itself**
   (`qa/2.1/evidence/11-release-file-matrix-offline.txt`): 988/988 and 44/44.
+- **Endings reached by play in the browser, in the release build**: President's Club, barely missed, fired (review
+  and QBR) and repossessed (by a clAInk bill) in the release test's six scripted sessions; ascension by a real click
+  on a certain-death quad shot (`confirm`); meltdown by a real click at 99 stress
+  (`qa/2.1/evidence/13-meltdown-by-play.txt`). All six are also loaded from saved runs at every size in the matrix,
+  and every way into each ending is forced in the engine tests.
 - Milestone gate logs: `qa/2.1/evidence/00`–`08`.
 
 ### What failed along the way (all fixed; listed so the record is complete)
