@@ -1,5 +1,6 @@
 // The game on a phone: what a thumb, a small screen and no hover need.
-//   node test/e2e/phone.cjs [path/to/index.html]      (default: dist/index.html)
+//   node test/e2e/phone.cjs [path/to/index.html]      (default: dist-test/index.html, the test build:
+//   the dice are scripted through its hook, which a release build does not have)
 //   1. a 360px screen: nothing wider than the screen, a top bar on one line, whole button names, 44px targets
 //   2. a hint stays up after a tap, and a blocked button says why
 //   3. the numbers follow you down the page; the page returns to the top when the week turns
@@ -17,7 +18,7 @@ const fs = require("fs");
 const path = require("path");
 const { pathToFileURL } = require("url");
 
-const target = path.resolve(process.argv[2] || "dist/index.html");
+const target = path.resolve(process.argv[2] || "dist-test/index.html");
 const AUTOSAVE = "tst-autosave-v4-3", FLAG = "tst-onboarded-v2";
 const FIXTURES = path.join(__dirname, "../saves/fixtures/generated");
 const rows = [];
@@ -53,6 +54,7 @@ const wide = page => page.evaluate(() => ({ page: document.documentElement.scrol
 
 (async () => {
   if (!fs.existsSync(target)) { console.error("phone: no such file: " + target); process.exit(2); }
+  if (!/__TST_RNG/.test(fs.readFileSync(target, "utf8"))) { console.error("phone: " + target + " has no dice hook (it is a release build). Build the test build first: npm run build:test"); process.exit(2); }
   console.log("phone: " + target);
   const browser = await chromium.launch();
   try {

@@ -47,7 +47,8 @@ export const mergeSaved=(parsed)=>{
 
 
 
-export const newGame=()=>({
+// opts.seed: the run's dice, for a test or a simulation that wants a named run. The interface never passes one.
+export const newGame=(opts)=>({
   week:1,
   maxQuarters:MAX_QUARTERS,
   quartersSurvived:0,
@@ -88,7 +89,7 @@ export const newGame=()=>({
   endCause:null,
   story:newStory(),
   runId:idGen(),
-  rng:newRng(),
+  rng:newRng(opts && Number.isFinite(opts.seed) ? opts.seed : undefined),
   used:{
     prospect:false,
     cadence:false,

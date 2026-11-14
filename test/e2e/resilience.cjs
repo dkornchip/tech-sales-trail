@@ -1,5 +1,6 @@
 // Small promises the game keeps when things go sideways.
-//   node test/e2e/resilience.cjs [path/to/index.html]      (default: dist/index.html)
+//   node test/e2e/resilience.cjs [path/to/index.html]      (default: dist-test/index.html, the test build:
+//   the dice are scripted through its hook, which a release build does not have)
 //   1. an End Week choice that was on screen when the page closed is still waiting when it opens again
 //   2. two open deals never share an account name, even when the dice pick the same name every time
 //   3. ids handed out after a reload never repeat one in the save
@@ -14,7 +15,7 @@ const fs = require("fs");
 const path = require("path");
 const { pathToFileURL } = require("url");
 
-const target = path.resolve(process.argv[2] || "dist/index.html");
+const target = path.resolve(process.argv[2] || "dist-test/index.html");
 const AUTOSAVE = "tst-autosave-v4-3", PENDING = "tst-pending-v2", FLAG = "tst-onboarded-v2";
 const rows = [];
 const check = (name, ok, detail) => { rows.push(!!ok); console.log("  " + (ok ? "ok  " : "FAIL") + "  " + name + (detail ? "  (" + detail + ")" : "")); return !!ok; };
@@ -45,6 +46,7 @@ const dice = (page, v) => page.evaluate(x => { window.__TST_RNG = () => x; Math.
 
 (async () => {
   if (!fs.existsSync(target)) { console.error("resilience: no such file: " + target); process.exit(2); }
+  if (!/__TST_RNG/.test(fs.readFileSync(target, "utf8"))) { console.error("resilience: " + target + " has no dice hook (it is a release build). Build the test build first: npm run build:test"); process.exit(2); }
   console.log("resilience: " + target);
   const browser = await chromium.launch();
   try {
@@ -192,6 +194,10 @@ const dice = (page, v) => page.evaluate(x => { window.__TST_RNG = () => x; Math.
     await page.click('[data-act="prospect"]'); await page.waitForTimeout(300);
     n1 = await notice(page);
     check("on a desktop, where the log is on screen, there is no notice", n1 === null, JSON.stringify(n1));
+    // every roll of the rules is made inside a move (src/game/run.js): the page counts the ones that are not
+    await page.click('[data-ui="end"]'); await page.waitForTimeout(600);
+    const strays = await page.evaluate(() => (typeof window.__TST_STRAYS === "function" ? window.__TST_STRAYS() : -1));
+    check("no roll was made outside a move", strays === 0, strays + " stray rolls");
     await context.close();
   } finally { await browser.close(); }
   const bad = rows.filter(ok => !ok).length;

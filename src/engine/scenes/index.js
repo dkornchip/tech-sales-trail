@@ -21,4 +21,7 @@ export function renderText(type,tms,meta){
   return {text:g.toText(), html:g.toHTML(), screen:ctx.screen||""};
 }
 
-root.TST_SCENES = { play:play, renderText:renderText, SCENES:SCENES, COLS:COLS, ROWS:ROWS, reduced:reduced, fit:fit, summaryFor:summaryFor };
+var API = { play:play, reduced:reduced, summaryFor:summaryFor, COLS:COLS, ROWS:ROWS };
+// What only the tests read. A release build leaves this out.
+if(typeof __TST_TEST__ === "undefined" || __TST_TEST__){ API.renderText = renderText; API.SCENES = SCENES; API.fit = fit; }
+root.TST_SCENES = API;

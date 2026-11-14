@@ -1,0 +1,76 @@
+Tech Sales Trail 2.1 — M2: regression base and gate swap
+Date: 2026-11-14T08:26Z   Node v22.23.4   Playwright 1.63.0 (Chromium only; Firefox is not installed here)
+
+node scripts/verify.mjs   (the new gate set; v1.21 parity and sound parity retired at checkpoint P, see 01-checkpoint-P-verify.txt)
+
+  step         result    time      
+  build        ok           0.2 s  dist/index.html 507 KB raw, 197 KB gzip
+  build-test   ok           0.2 s  dist-test/index.html 508 KB raw, 198 KB gzip
+  lint-rng     ok           0.5 s  LINT-RNG OK: 83 files under src (1 may read Math.random), 0 offenders
+  lint-copy    ok           0.1 s  LINT-COPY OK: 0 violations
+  lint-css     ok           0.1 s  LINT-CSS OK: 0 findings
+  copy-check   ok           1.1 s  COPY CHECK OK
+  copy-render  ok           0.1 s  15680 renderings, 0 bad; 149 distinct sentences across 98 tags
+  fonts        ok           1.2 s  src/assets/fonts is up to date
+  notices      ok           0.1 s  THIRD-PARTY-NOTICES.md is up to date
+  engine       ok           4.2 s  ENGINE TESTS OK: 11 tests passed in 3 files, 4.2 s
+  audio        ok           0.4 s  AUDIO TESTS OK: 13 tests passed in 1 files, 0.4 s
+  sim-smoke    ok          20.9 s  SIM SMOKE OK: all 11 checks passed, 20.8 s [automated heuristics, not human play]
+  scenes       ok          10.0 s  SCENES OK
+  fixtures     ok          44.8 s  25 generated fixtures are exactly what the baseline writes.
+  saves        ok          70.2 s  SAVES OK in 69.8 s
+  release      ok          37.0 s  RELEASE OK: all 14 checks passed
+  offline      ok           3.9 s  all 44 checks passed (dist/index.html, 507 KB)
+  firstday     ok          13.1 s  FIRST DAY OK: all 26 checks passed
+  resilience   ok          20.2 s  RESILIENCE OK: all 35 checks passed
+  phone        ok          37.0 s  PHONE OK: all 45 checks passed
+  keyboard     ok           3.1 s  KEYBOARD OK: dist-test/index.html, 8/8 stages, 98 key presses (84 of them Tab or Shift+Tab), 0 known findings, 0 unexpected, 0 stale entries
+  layout       ok          26.9 s  LAYOUT OK: dist-test/index.html, 7 fixtures x 7 viewports + phone: 328 ok, 0 known failures, 0 unexpected failures, 0 stale entries, 26.4 s
+
+VERIFY OK: 22/22 steps passed, 295.5 s   (layout: 0 known-failure patterns, listed in scripts/verify.mjs)
+
+--- engine (node --test test/engine) ---
+ENGINE TESTS OK: 11 tests passed in 3 files, 5.5 s
+--- audio (node --test test/audio) ---
+AUDIO TESTS OK: 13 tests passed in 1 files, 0.5 s
+
+--- release (test/e2e/release.cjs dist/index.html) ---
+release: /home/user/tech-sales-trail/dist/index.html
+  ok    the file names no test hook
+  ok    the page's only globals of the game's are the sound engine, the scenes and the toast  (TST_AUDIO, TST_SCENES, TST_TOAST)
+  ok    the sound engine shows what the interface uses and nothing of its insides  (extra: ; missing: )
+  ok    the scenes show what the interface uses  (COLS, ROWS, play, reduced, summaryFor)
+  ok    no errors
+  ok    a planted roll is not rolled: prospecting rolled the run's own dice  (seed 641279418, 4 deals)
+  ok    a planted seed is not the run's seed, and two runs do not share one  (641279418, 1473129905)
+  ok    session 1 (chaos): 150 presses, the page and the source agree after every one, through to end:fired, end:fired, end:fired, end:fired, end:fired, end:meltdown
+  ok    session 2 (balanced): 150 presses, the page and the source agree after every one, through to end:fired, end:club
+  ok    session 3 (claink-weekly): 150 presses, the page and the source agree after every one, through to end:fired, end:fired
+  ok    session 4 (risk): 150 presses, the page and the source agree after every one, through to end:fired, end:fired, end:fired
+  ok    session 5 (referral): 150 presses, the page and the source agree after every one, through to end:fired, end:fired
+  ok    session 6 (claink): 150 presses, the page and the source agree after every one, through to end:fired, end:fired
+  ok    the sessions were worth playing  (900 presses, 883 saved runs compared, 883 offers compared, endings: fired/review, fired/review, fired/review, fired/review, fired/org, meltdown/stress, fired/org, club/club, fired/org, fired/org, fired/review, fired/review, fired/review, fired/org, fired/org, fired/org, fired/org)
+
+RELEASE OK: all 14 checks passed
+
+--- saves (test/saves/run.cjs --a self) ---
+
+PASS  A = dist-test/index.html   B = dist-test/index.html (sha256 32c2d933ff0d)
+  38 fixtures, 75/75 loads (38 on page load, 37 through the Load button), 1503 moves compared after loading, 69.8 s
+
+SAVES OK in 69.8 s
+
+--- sim-smoke ---
+  ok    the frozen baseline is intact  (30 files)
+  ok    baseline: 21 policies x 40 seeds, every run reaches an ending  (0 unfinished, 0 stuck)
+  ok    baseline: no policy asks for a move that is not legal  (0 illegal requests)
+  ok    baseline: the same seeds give the same runs twice
+  ok    baseline: the 7 core policies are different players  (closest pair caller / conference: action mix 0.028 apart, lead sources 0.238 apart, clAInk use 0.00 apart (floors 0.05, 0.2, 0.5); 1.2x the floor)
+  ok    baseline: between them the policies reach at least five of the six endings  (ascension, club, fired, meltdown, missed, repo)
+  ok    working tree: 21 policies x 40 seeds, every run reaches an ending  (0 unfinished, 0 stuck)
+  ok    working tree: no policy asks for a move that is not legal  (0 illegal requests)
+  ok    working tree: the same seeds give the same runs twice
+  ok    working tree: the 7 core policies are different players  (closest pair caller / conference: action mix 0.028 apart, lead sources 0.238 apart, clAInk use 0.00 apart (floors 0.05, 0.2, 0.5); 1.2x the floor)
+  ok    working tree: between them the policies reach at least five of the six endings  (ascension, club, fired, meltdown, missed, repo)
+
+SIM SMOKE OK: all 11 checks passed, 20.8 s   [automated heuristics, not human play]

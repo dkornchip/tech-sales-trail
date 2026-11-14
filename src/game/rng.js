@@ -20,7 +20,8 @@ const output = a => { let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + 
 const mix = (seed, salt) => Math.floor(output(advance((seed ^ salt) >>> 0)) * 4294967296) >>> 0;
 
 let core = 0, fl = 0, open = false;
-let strays = 0;               // draws made outside a step: none in a healthy build (tests assert it)
+let strays = 0;               // draws made outside a step: none in a healthy build (test/engine/rng.test.mjs and the
+                              // browser suites assert it, through strayDraws() and the test build's __TST_STRAYS)
 
 // A seed nobody chose: from the platform's own generator, or the clock where there is none. Never Math.random.
 export const freshSeed = () => {
@@ -59,10 +60,11 @@ export const rolling = (state, fn) => {
 
 const stray = () => { strays++; return output(advance(freshSeed())); };
 export const strayDraws = () => strays;
+if ((typeof __TST_TEST__ === "undefined" || __TST_TEST__) && typeof window !== "undefined") window.__TST_STRAYS = strayDraws;
 
 // One mechanical roll in [0, 1).
 export const rnd = () => {
-  if (typeof __TST_TEST__ === "undefined" || __TST_TEST__) { const f = globalThis.__TST_RNG; if (typeof f === "function") return f(); }
+  if (typeof __TST_TEST__ === "undefined" || __TST_TEST__) { const f = globalThis.__TST_RNG; if (typeof f === "function") { if (!open) strays++; return f(); } }
   if (!open) return stray();
   core = advance(core);
   return output(core);

@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // Takes the screenshots the README shows, from the built game, by playing it.
-//   node scripts/screenshots.cjs [path/to/index.html] [--out dir]      (defaults: dist/index.html, test-results/screenshots)
-// The run is played with a seeded Math.random, so the same build gives the same pictures:
+//   node scripts/screenshots.cjs [path/to/index.html] [--out dir]      (defaults: dist-test/index.html, test-results/screenshots)
+// The run is played on the TEST build (npm run build:test), whose dice can be seeded (window.__TST_SEED, read by
+// src/game/rng.js; a release build has no such hook and looks the same). The same build gives the same pictures:
 //   main.png      mid-quarter, with clAInk's workspace reporting on a run
 //   claink.png    the agent workspace on its own, after that run
 //   ending.png    the President's Club ending, once the scene has played and the paperwork is out
@@ -17,12 +18,13 @@ const { pathToFileURL } = require("url");
 const args = process.argv.slice(2);
 const outAt = args.indexOf("--out");
 const out = path.resolve(outAt >= 0 ? args[outAt + 1] : "test-results/screenshots");
-const target = path.resolve(args.find((a, i) => !a.startsWith("--") && i !== outAt + 1) || "dist/index.html");
+const target = path.resolve(args.find((a, i) => !a.startsWith("--") && i !== outAt + 1) || "dist-test/index.html");
 const AUTOSAVE = "tst-autosave-v4-3";
 
-// Runs in the page before any of its scripts: a seeded Math.random, and (unless it is the first-day shot) a player
-// who has been here before.
+// Runs in the page before any of its scripts: the run's seed, a seeded Math.random for the cosmetic stream, and
+// (unless it is the first-day shot) a player who has been here before.
 const seedPage = ([seed, returning]) => {
+  window.__TST_SEED = seed >>> 0;
   let a = seed >>> 0;
   Math.random = () => { a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
   try { if (returning) window.localStorage.setItem("tst-onboarded-v2", "1"); } catch (e) {}
@@ -72,7 +74,8 @@ async function week(page) {
 }
 
 (async () => {
-  if (!fs.existsSync(target)) { console.error("screenshots: no such file: " + target + " (run npm run build first)"); process.exit(2); }
+  if (!fs.existsSync(target)) { console.error("screenshots: no such file: " + target + " (run npm run build:test first)"); process.exit(2); }
+  if (!/__TST_SEED/.test(fs.readFileSync(target, "utf8"))) { console.error("screenshots: " + target + " cannot be seeded (it is a release build); use the test build: npm run build:test"); process.exit(2); }
   fs.mkdirSync(out, { recursive: true });
   const browser = await chromium.launch();
   try {

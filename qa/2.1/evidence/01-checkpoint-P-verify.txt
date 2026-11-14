@@ -51,3 +51,23 @@ DIFFERENTIAL OK: 10800 runs (1200 seeds x 9 policies), 341826 moves, 2311578 rol
   endings reached: caffeine 661, claink 1029, club 58, missed 45, org 633, politics 1, qbr 85, repo 728, review 6299, stress 1261
 node test/engine/tools/differential.mjs --old <v2.0.1 src> --seeds 40
 DIFFERENTIAL OK: 360 runs (40 seeds x 9 policies), 11603 moves, 77968 rolls compared, 5.4 s
+
+--- parity, the full run set (npm run parity:full at the checkpoint build) ---
+PASS  A = baseline v1.21   B = dist-test/index.html (sha256 040a8530e1a1)   fx seeded   motion mix
+  140/140 sessions, 54158 steps compared, 319780 mechanical draws compared, 257 scripted scenarios (69 threshold probes), 1160.0 s
+PARITY OK in 1160.0 s
+
+--- sound parity, both pinned passes (verify --only sound at the checkpoint build) ---
+  sound  ok         287.3 s  PARITY OK in 286.9 s
+
+--- adversarial review of the checkpoint diff (three independent reviewers, every finding re-verified) ---
+13 findings, all minor, 6 distinct, none a behaviour change in the game. All were about tooling left pointing at
+the old arrangement, and are fixed in the next commit:
+  scripts/screenshots.cjs seeded Math.random, which the rules no longer read (now seeds the run through the test build)
+  test/e2e/resilience.cjs and phone.cjs defaulted to the release build, where their dice script does nothing (now the
+    test build, and they refuse a build without the hook)
+  scripts/lint-rng.mjs still allowed Math.random in src/game (now only src/fxrng.js; test hooks must sit behind the flag)
+  the stray-roll counter could not fire under a scripted stream and nothing read it (now counted first, asserted in
+    test/engine/rng.test.mjs and in the browser)
+  scripts/verify.mjs checked only that the test build existed (now each step names the build it needs)
+  the "released" step and the README still described ./index.html as the build's release file

@@ -11,25 +11,35 @@
 // Runs these in order and stops at the first that fails:
 //   build        scripts/build.mjs into dist/              (skipped with --target: that file is verified instead)
 //   build-test   scripts/build.mjs --test into dist-test/  (skipped with --target)
-//   lint-rng     Math.random only where the rules roll     (scripts/lint-rng.mjs)
+//   lint-rng     Math.random only in the cosmetic stream; test hooks only behind the build flag (scripts/lint-rng.mjs)
 //   lint-copy    the house style on every string           (scripts/lint-copy.mjs --strict)
 //   lint-css     colours and sizes only from the tokens    (scripts/lint-css.mjs --strict)
 //   copy-check   every log tag, dialog and line is wired   (test/copy/check.cjs)
 //   copy-render  every log line renders, every wording     (test/copy/render.mjs)
 //   fonts        the bundled fonts are what the packages give, and cover what the scenes draw (scripts/fonts.mjs --check)
 //   notices      THIRD-PARTY-NOTICES.md is current         (scripts/notices.mjs --check)
-//   parity       the quick mechanics-parity run set        (test/parity/run.cjs)
+//   engine       the rules, in Node: the dice, invariants after every move, golden seeded replays  (test/engine)
+//   audio        what the sound engine decides: routing, batching, one voice at a time, captions, mute  (test/audio)
+//   sim-smoke    the frozen balance baseline is intact and the simulation kit still measures  (test/sim/smoke.mjs)
 //   scenes       every scene, frame by frame and caption by caption, is v1.21's (test/parity/scenes.cjs)
 //   fixtures     the save fixtures are what v1.21 writes   (test/saves/generate.cjs --check)
-//   saves        every save fixture, both ways in          (test/saves/run.cjs)
+//   saves        every save fixture, both ways in: it loads, shows what the manifest says, and plays on  (test/saves/run.cjs --a self)
+//   release      the shipped file has no test hook and replays move for move against src/game  (test/e2e/release.cjs)
 //   offline      no network, bundled fonts                 (test/e2e/offline.cjs)
 //   firstday     the onboarding memo and the tour          (test/e2e/firstday.cjs)
 //   resilience   a held choice, names, ids, damaged saves  (test/e2e/resilience.cjs)
 //   phone        a touch screen: hints, the strip, the log, captions, sideways endings  (test/e2e/phone.cjs)
 //   keyboard     a whole run with the keyboard only        (test/e2e/keyboard.cjs)
 //   layout       one screen, nothing covered or cut off    (test/e2e/layout.cjs)
-//   sound        with --release only: the same sounds fire as in v1.21, move by move (test/parity/run.cjs --sound)
-//   released     with --release only: the committed ./index.html is exactly what the source builds (scripts/build.mjs --check)
+//   released     with --release only: the committed release file (./Tech_Sales_Trail_<major.minor>.html) is exactly
+//                what the source builds (scripts/build.mjs --check)
+//
+// What is NOT here any more, and why. Up to v2.0.1 the build was held, move for move and sound for sound, to the
+// frozen v1.21 file (test/parity/run.cjs: the "parity" and "sound" steps). v2.1 changes rules on purpose, so that
+// comparison ended at the last commit where it held ("checkpoint P", qa/2.1/evidence/01-checkpoint-P-verify.txt):
+// there the seeded dice and the single dispatch were proven to change nothing. From then on the rules are held by
+// the engine tests and golden replays, the sounds by the audio tests, and the bundle by the release step. The
+// parity harness itself stays: the scenes, the save fixtures and the browser tests are built on it.
 // and prints a one-screen summary with timings. Each step's full output is kept in test-results/verify/<step>.log;
 // --verbose also streams it.
 //
@@ -73,29 +83,31 @@ const STEPS = {
   build: { what: "release build to dist/", cmd: ["scripts/build.mjs"], skip: targetArg ? `--target ${rel(target)}` : null },
   "build-test": { what: "test build to dist-test/", cmd: ["scripts/build.mjs", "--test"], skip: targetArg ? `--target ${rel(target)}` : null },
   "lint-rng": { what: "dice only in the rules", cmd: ["scripts/lint-rng.mjs"] },
-  parity: { what: "mechanics parity, quick set", cmd: ["test/parity/run.cjs", "--b", target, "--workers", workers, ...drv("--b-driver")] },
-  saves: { what: "save compatibility", cmd: ["test/saves/run.cjs", "--b", target, "--workers", workers, ...drv("--b-driver")] },
-  offline: { what: "no network, bundled fonts", cmd: ["test/e2e/offline.cjs", shipped] },
-  firstday: { what: "a new player's first day", cmd: ["test/e2e/firstday.cjs", shipped] },
-  resilience: { what: "reloads, damaged saves, names, ids", cmd: ["test/e2e/resilience.cjs", target] },
-  phone: { what: "a phone: touch, small screens, sideways", cmd: ["test/e2e/phone.cjs", target] },
-  layout: { what: "layout on one screen", cmd: ["test/e2e/layout.cjs", target, "--workers", workers, "--min-font", String(LAYOUT_MIN_FONT), "--expect-fail", LAYOUT_KNOWN.join(","), ...drv("--driver")] },
-  keyboard: { what: "keyboard only", cmd: ["test/e2e/keyboard.cjs", target, "--expect-fail", KEYBOARD_KNOWN.join(","), ...drv("--driver")] },
+  engine: { what: "the rules, in Node", cmd: ["scripts/unit.mjs", "engine", "test/engine"] },
+  audio: { what: "what the sound engine decides", cmd: ["scripts/unit.mjs", "audio", "test/audio"] },
+  "sim-smoke": { what: "the simulation kit and its baseline", cmd: ["test/sim/smoke.mjs"] },
+  saves: { what: "save compatibility", cmd: ["test/saves/run.cjs", "--a", "self", "--b", target, "--workers", workers, ...drv("--b-driver")], needs: target },
+  release: { what: "no hooks; the bundle is the source", cmd: ["test/e2e/release.cjs", shipped], needs: shipped },
+  offline: { what: "no network, bundled fonts", cmd: ["test/e2e/offline.cjs", shipped], needs: shipped },
+  firstday: { what: "a new player's first day", cmd: ["test/e2e/firstday.cjs", shipped], needs: shipped },
+  resilience: { what: "reloads, damaged saves, names, ids", cmd: ["test/e2e/resilience.cjs", target], needs: target },
+  phone: { what: "a phone: touch, small screens, sideways", cmd: ["test/e2e/phone.cjs", target], needs: target },
+  layout: { what: "layout on one screen", cmd: ["test/e2e/layout.cjs", target, "--workers", workers, "--min-font", String(LAYOUT_MIN_FONT), "--expect-fail", LAYOUT_KNOWN.join(","), ...drv("--driver")], needs: target },
+  keyboard: { what: "keyboard only", cmd: ["test/e2e/keyboard.cjs", target, "--expect-fail", KEYBOARD_KNOWN.join(","), ...drv("--driver")], needs: target },
   // about the source, not the built file
   "lint-copy": { what: "house style", cmd: ["scripts/lint-copy.mjs", "--strict"] },
   "lint-css": { what: "stylesheet rules", cmd: ["scripts/lint-css.mjs", "--strict"] },
   "copy-check": { what: "copy is wired", cmd: ["test/copy/check.cjs"] },
   "copy-render": { what: "every line renders", cmd: ["test/copy/render.mjs"] },
-  scenes: { what: "the scenes and their captions", cmd: ["test/parity/scenes.cjs", "--b", target] },
+  scenes: { what: "the scenes and their captions", cmd: ["test/parity/scenes.cjs", "--b", target], needs: target },
   fonts: { what: "bundled fonts", cmd: ["scripts/fonts.mjs", "--check"] },
   notices: { what: "licence notices", cmd: ["scripts/notices.mjs", "--check"] },
   fixtures: { what: "save fixtures are the baseline's", cmd: ["test/saves/generate.cjs", "--check"] },
-  // with --release: which sounds fire, move by move, and that the committed ./index.html is exactly what the source builds
-  sound: { what: "sound parity, both pinned passes", cmd: ["test/parity/run.cjs", "--b", target, "--workers", workers, "--sound", ...drv("--b-driver")] },
-  released: { what: "./index.html is current", cmd: ["scripts/build.mjs", "--check"] }
+  // with --release: the committed release file is exactly what the source builds
+  released: { what: "the release file is current", cmd: ["scripts/build.mjs", "--check"] }
 };
-const DEFAULT = ["build", "build-test", "lint-rng", "lint-copy", "lint-css", "copy-check", "copy-render", "fonts", "notices", "parity", "scenes", "fixtures", "saves", "offline", "firstday", "resilience", "phone", "keyboard", "layout"];
-const order = onlyArg ? onlyArg.split(",").map(s => s.trim()).filter(Boolean) : release ? DEFAULT.concat("sound", "released") : DEFAULT;
+const DEFAULT = ["build", "build-test", "lint-rng", "lint-copy", "lint-css", "copy-check", "copy-render", "fonts", "notices", "engine", "audio", "sim-smoke", "scenes", "fixtures", "saves", "release", "offline", "firstday", "resilience", "phone", "keyboard", "layout"];
+const order = onlyArg ? onlyArg.split(",").map(s => s.trim()).filter(Boolean) : release ? DEFAULT.concat("released") : DEFAULT;
 for(const s of order) if(!STEPS[s]){ console.error(`verify: unknown step ${s}. steps: ${Object.keys(STEPS).join(", ")}`); process.exit(2); }
 
 /* ---------------------------------------------------------------- run */
@@ -130,7 +142,7 @@ for(const name of order){
   const step = STEPS[name];
   if(step.skip){ results.push({ name, status: "skipped", ms: 0, note: step.skip }); console.log(`  --    ${name.padEnd(11)} skipped (${step.skip})`); continue; }
   if(failed){ results.push({ name, status: "not run", ms: 0, note: `stopped at ${failed.name}` }); continue; }
-  if(name !== "build" && name !== "build-test" && !fs.existsSync(target)){ console.error(`verify: ${rel(target)} does not exist`); process.exit(2); }
+  if(step.needs && !fs.existsSync(step.needs)){ console.error(`verify: ${name} needs ${rel(step.needs)}, which does not exist (run the ${step.needs === shipped && shipped !== target ? "build" : "build-test"} step first)`); process.exit(2); }
   if(verbose) console.log(`\n----- ${name}: node ${step.cmd.map(a => (a.includes(" ") || a.length > 60 ? JSON.stringify(a) : a)).join(" ")}`);
   const r = await run(name);
   const ok = r.code === 0;

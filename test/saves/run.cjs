@@ -5,6 +5,13 @@
  *
  *   node test/saves/run.cjs --b <build.html> [options]
  *
+ *   --a self            A is build B too. v2.1 changes rules on purpose, so after a save has loaded it no longer
+ *                       plays move for move as v1.21 would; what is still checked for every fixture and way in is
+ *                       that it loads without an error, shows the dialog and the clAInk window the manifest names,
+ *                       meets the manifest's state expectations, and can be played on (the build against itself:
+ *                       two pages given the same save and the same presses end in the same place). What a legacy
+ *                       save turns into, field by field, is the engine tests' business (test/engine).
+
  *   --b <path>          the build under test (default ./index.html). "--b baseline": the baseline against itself,
  *                       which must always pass
  *   --b-driver <name>   driver for build B (default next; test/parity/drivers/interface.cjs)
@@ -48,7 +55,8 @@ function parseArgs(argv) {
   const need = (i, flag) => { if (i >= argv.length) { console.error(`${flag} needs a value`); process.exit(2); } return argv[i]; };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
-    if (a === '--b') { const v = need(++i, a); o.b = v === 'baseline' ? { kind: 'baseline' } : { kind: 'file', file: path.resolve(v) }; }
+    if (a === '--a') { const v = need(++i, a); if (v !== 'self') { console.error('--a takes only "self"'); process.exit(2); } o.a = 'self'; }
+    else if (a === '--b') { const v = need(++i, a); o.b = v === 'baseline' ? { kind: 'baseline' } : { kind: 'file', file: path.resolve(v) }; }
     else if (a === '--b-driver') o.bDriver = need(++i, a);
     else if (a === '--only') o.only = need(++i, a);
     else if (a === '--moves') o.moves = Number(need(++i, a));
@@ -108,12 +116,12 @@ async function runSaves(opts) {
   const pickFixture = f => !opts.only || (Array.isArray(opts.only) ? opts.only.includes(f.id) : f.id.indexOf(opts.only) >= 0);
   const fixtures = manifest.fixtures.filter(pickFixture);
   if (!fixtures.length) throw new Error(`no fixture matches ${JSON.stringify(opts.only)}`);
-  const buildA = loadBuild({ kind: 'baseline' });
   const buildB = loadBuild(opts.b || { kind: 'file', file: path.resolve(__dirname, '..', '..', 'index.html') });
+  const buildA = opts.a === 'self' ? buildB : loadBuild({ kind: 'baseline' });
   // the baseline's driver must know the dock; B's too, or "the right dock state is showing" would be vacuous
-  const driverA = requireE2E(loadDriver('v121'));
   const driverB = requireE2E(loadDriver(opts.bDriver || (opts.b && opts.b.kind === 'baseline' ? 'v121' : 'next')));
-  const env = { buildA, buildB, driverA, driverB, sound: false };
+  const driverA = opts.a === 'self' ? driverB : requireE2E(loadDriver('v121'));
+  const env = { buildA, buildB, driverA, driverB, sound: false, self: opts.a === 'self' };
   const sessions = [];
   fixtures.forEach((f, n) => { for (const s of sessionsFor(f, opts.moves === undefined ? 30 : opts.moves, n)) sessions.push(s); });
 
@@ -168,7 +176,7 @@ if (require.main === module) (async () => {
     if (!m) { console.error(`unknown mutant ${o.mutant}. mutants: ${MUTANTS.map(x => x.name).join(', ')}`); process.exit(2); }
     o.b = { kind: 'baseline', mutant: m };
   }
-  console.log('save compatibility: every fixture, loaded on page load and through the Load button, baseline vs build');
+  console.log('save compatibility: every fixture, loaded on page load and through the Load button, ' + (o.a === 'self' ? 'the build against itself and the manifest' : 'baseline vs build'));
   const r = await runSaves(Object.assign({}, o, { log: line => console.log(line) }));
   for (const f of r.failures) { console.log(''); console.log(formatFailure(f).replace(/^PARITY FAILURE/, 'SAVE FAILURE')); }
   const bad = r.rows.filter(x => !x.ok);
