@@ -1,6 +1,7 @@
 import React from "react";
 import { isMoreLine } from "../copy/claink.js";
 import { CK_AD, CK_END, CK_REPORT, CK_STRIKES, CK_WORKSPACE } from "../copy/clainkUi.js";
+import { CONFIRM } from "../copy/ui.js";
 import { CLAINK, clainkCanCancel, clainkCanDeploy, clainkCanInstall, clainkCancelCost, clainkFrozen } from "../game/claink.js";
 import { QUARTER_WEEKS } from "../game/constants.js";
 import { isRunOver } from "../game/log.js";
@@ -92,6 +93,10 @@ export const ClainkLogo=({small})=>(
 export const ClainkAd=({s,mini,onToggle,onInstall,onDismiss})=>{
   const ref=useRef(null), ctaRef=useRef(null), notNowRef=useRef(null), toggleRef=useRef(null);
   const[step,setStep]=useState(0); // 0: CTA, 1: the AI use policy + confirm
+  // The X turns clAInk off for the rest of the run, which cannot be undone: it asks first, inside the ad.
+  // (Minimizing is the other button, and loses nothing.)
+  const[asking,setAsking]=useState(false);
+  const keepRef=useRef(null), closeRef=useRef(null);
   const focusNext=useRef(null);
   const policyIdRef=useRef(null);
   if(policyIdRef.current===null) policyIdRef.current="claink-policy-"+(++clainkMarkSeq);
@@ -103,7 +108,7 @@ export const ClainkAd=({s,mini,onToggle,onInstall,onDismiss})=>{
   // focus follows the control that replaced the one you used (never back to <body>)
   useEffect(()=>{
     const k=focusNext.current; focusNext.current=null;
-    const el=k==="notnow" ? notNowRef.current : k==="cta" ? ctaRef.current : k==="toggle" ? toggleRef.current : null;
+    const el=k==="notnow" ? notNowRef.current : k==="cta" ? ctaRef.current : k==="toggle" ? toggleRef.current : k==="keep" ? keepRef.current : k==="close" ? closeRef.current : null;
     if(el) try{ el.focus({preventScroll:true}); }catch(_){}
   });
   const toggle=(e)=>{ focusNext.current="toggle"; onToggle(); shieldNextClick(e); }; // the toggle moves out from under the pointer
@@ -111,7 +116,8 @@ export const ClainkAd=({s,mini,onToggle,onInstall,onDismiss})=>{
     if(swallowRepeat(e))return;
     if(e.key!=="Escape")return;
     if(e.repeat){ e.preventDefault(); return; }
-    if(step===1){ e.preventDefault(); focusNext.current="cta"; setStep(0); }
+    if(asking){ e.preventDefault(); focusNext.current="close"; setAsking(false); }
+    else if(step===1){ e.preventDefault(); focusNext.current="cta"; setStep(0); }
     else if(!mini){ e.preventDefault(); toggle(e); }
   };
   return(
@@ -124,10 +130,19 @@ export const ClainkAd=({s,mini,onToggle,onInstall,onDismiss})=>{
           <button type="button" ref={toggleRef} className="claink-ad-min" aria-expanded={!mini} aria-controls={bodyId}
             aria-label={mini ? CK_AD.expandLabel : CK_AD.minimizeLabel} title={mini ? CK_AD.expand : CK_AD.minimize}
             onClick={toggle}>{mini ? <Icon name="maximize-2" /> : <Icon name="minus" />}</button>
-          <button type="button" className="claink-ad-close" aria-label={CK_AD.closeLabel}
-            title={CK_AD.closeTitle} onClick={onDismiss}><Icon name="x" /></button>
+          <button type="button" ref={closeRef} className="claink-ad-close" aria-label={CK_AD.closeLabel} aria-expanded={asking}
+            title={CK_AD.closeTitle} onClick={()=>{ focusNext.current="keep"; setAsking(true); }}><Icon name="x" /></button>
         </span>
       </div>
+      {asking && (
+        <div className="claink-ad-ask" role="group" aria-label={CK_AD.closeLabel} data-ui="confirm-dismiss">
+          <span>{CONFIRM.dismissAd.body}</span>
+          <span className="claink-ad-ask-btns">
+            <button type="button" className="claink-ask-yes" data-ui="confirm-yes" onClick={onDismiss}>{CONFIRM.dismissAd.yes}</button>
+            <button type="button" ref={keepRef} className="claink-ask-no" data-ui="confirm-no" onClick={()=>{ focusNext.current="close"; setAsking(false); }}>{CONFIRM.dismissAd.no}</button>
+          </span>
+        </div>
+      )}
       <div className="claink-ad-body" id={bodyId} hidden={mini}>
         <div className="claink-announce"><Icon name="sparkles" /><span>{CK_AD.announce[0]}<b>{CK_AD.announce[1]}</b>{CK_AD.announce[2]}</span><Icon name="arrow-right" /></div>
         <ClainkLogo/>

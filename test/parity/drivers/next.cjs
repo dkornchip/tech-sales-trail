@@ -222,10 +222,20 @@ module.exports = {
       observe() { const c = controls(); return { dialog: c.dialog, legal: Array.from(c.map.keys()) }; },
       // el.click() makes a click with detail === 0, which the game treats as a keyboard activation: it skips
       // the double-click shield (game.jsx:1790-1791), so the next move is never swallowed.
+      // v2.1 asks before four things that cannot be taken back (a new run mid-quarter, the first Hail Mary of a
+      // run, a quad shot that is certain to end the run, dismissing clAInk's offer). For the harness a move is one
+      // move of the rules, so the driver answers "yes" in the same press; the confirmations themselves are tested
+      // with real presses in test/e2e/confirm.cjs. React renders the question in a microtask queued by the click;
+      // ours run after it (New run takes one more hop: the menu item is itself pressed in a microtask).
       act(move) {
         const el = controls().map.get(move);
         if (!el) throw new Error('next driver: move "' + move + '" is not available');
         el.click();
+        if (/^(hail|act:coffee|ck:dismiss|newgame)$/.test(move)) {
+          let hops = 0;
+          const yes = () => { const b = q('[data-ui="confirm-yes"]'); if (b) b.click(); else if (++hops < 4) queueMicrotask(yes); };
+          queueMicrotask(yes);
+        }
       },
 
       readState() {

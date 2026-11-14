@@ -5,9 +5,10 @@ import { HELP, HELP_MEMO, HELP_OK, HELP_TITLE } from "../copy/help.js";
 import { EVENTS } from "../game/events.js";
 import { causeOf } from "../game/legacy.js";
 import { step, waiting } from "../game/run.js";
-import { handbookFacts } from "../game/selectors.js";
+import { isRunOver } from "../game/log.js";
+import { handbookFacts, nextShot } from "../game/selectors.js";
 import { newGame } from "../game/state.js";
-import { MENU, NAMES, RECOVERY, TOAST } from "../copy/ui.js";
+import { CONFIRM, MENU, NAMES, RECOVERY, TOAST } from "../copy/ui.js";
 import { describe } from "./app/ActionGrid.jsx";
 import { Board } from "./app/Board.jsx";
 import { hailBlock } from "./app/Foot.jsx";
@@ -192,8 +193,32 @@ export function Game({fresh}){
   // v1.14: heartbeat under the music when stress runs hot
   useEffect(()=>{ const a=AUDIO(); if(a) a.setStress(over ? 0 : s.stress); },[s.stress,over]);
 
-  const tryOpportunisticClose=()=>{ if(hailBlock(sRef.current))return; dispatch({t:"hail"}); };
-  const act=a=>{ if(describe(a,sRef.current).block)return; dispatch({t:"act",id:a.id}); };
+  // A confirmation is asked only before something that cannot be taken back: a new run while one is being played,
+  // the first Hail Mary of a run, and a quad shot that is certain to end the run. (Dismissing the vendor's offer
+  // asks inside the ad itself.) Answering "no" changes nothing; nothing here is asked twice for the same thing.
+  const[confirm,setConfirm]=useState(null);       // { kind, run }
+  const hailAsked=useRef(null);                   // a run with no story on file (an old save) is asked once
+  const tryOpportunisticClose=()=>{
+    const cur=sRef.current;
+    if(hailBlock(cur))return;
+    const thrown=cur.story && cur.story.n ? cur.story.n.hails||0 : null;
+    const first=thrown===null ? hailAsked.current!==cur.runId : thrown===0;
+    if(first && !waiting(cur)){ setConfirm({kind:"hail",run:()=>{ hailAsked.current=cur.runId; if(!hailBlock(sRef.current)) dispatch({t:"hail"}); }}); return; }
+    dispatch({t:"hail"});
+  };
+  const act=a=>{
+    const cur=sRef.current;
+    if(describe(a,cur).block)return;
+    if(a.id==="coffee" && nextShot(cur).lethal && !waiting(cur)){ setConfirm({kind:"coffee",run:()=>{ if(!describe(a,sRef.current).block) dispatch({t:"act",id:a.id}); }}); return; }
+    dispatch({t:"act",id:a.id});
+  };
+  // New run from the menu: a quarter in progress asks first. (The ending's own New run does not: that run is over.)
+  const askNew=()=>{
+    const cur=sRef.current;
+    const started=cur.week>1 || cur.slots<cur.maxSlots || (cur.claink && cur.claink.status!=="ad");
+    if(!isRunOver(cur) && started){ setConfirm({kind:"newRun",run:onNew}); return; }
+    onNew();
+  };
   useShortcuts({ onActKey:act, onEndWeek:()=>endWeek(), onHail:tryOpportunisticClose, onRules:openRules });
 
   // clAInk's report has had its say (it finished, was skipped, or there was nothing to watch): an acknowledgement
@@ -212,7 +237,7 @@ export function Game({fresh}){
       <Board s={s} onAct={act} onHail={tryOpportunisticClose} onEndWeek={endWeek}
         top={
           <TopBar onRules={openRules} soundOn={audio.on} onSound={()=>audioApi.setOn(!audio.on)} onSettings={()=>setMenuOpen(o=>!o)} settingsRef={menuBtn} menuOpen={menuOpen}>
-            <SettingsMenu open={menuOpen} onClose={closeMenu} audio={audioApi} captions={audio.captions!==false} onCaptions={audioApi.setCaptions} onSave={onSave} onLoad={onLoad} onNewRun={onNew} anchorRef={menuBtn} />
+            <SettingsMenu open={menuOpen} onClose={closeMenu} audio={audioApi} captions={audio.captions!==false} onCaptions={audioApi.setCaptions} onSave={onSave} onLoad={onLoad} onNewRun={askNew} anchorRef={menuBtn} />
           </TopBar>
         }
         dock={first!==null && first!=="memo-again" ? null /* the vendor waits until onboarding is over */
@@ -267,6 +292,19 @@ export function Game({fresh}){
         }; }) : []}
       >
         <p className="tiny">{eventWords ? eventWords.body(eventParams) : null}</p>
+      </Modal>
+
+      <Modal
+        open={!!confirm && !booting && !over}
+        title={confirm ? CONFIRM[confirm.kind].title : ""}
+        dialogId={confirm ? "confirm:"+confirm.kind : undefined}
+        onDismiss={()=>setConfirm(null)}
+        actions={confirm ? [
+          {label:CONFIRM[confirm.kind].no,className:"ghost",ui:"confirm-no",focus:true,onClick:()=>setConfirm(null)},
+          {label:CONFIRM[confirm.kind].yes,className:"primary",ui:"confirm-yes",onClick:()=>{ const run=confirm.run; setConfirm(null); run(); }}
+        ] : []}
+      >
+        <p className="tiny">{confirm ? CONFIRM[confirm.kind].body : null}</p>
       </Modal>
 
       <Modal

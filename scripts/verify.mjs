@@ -30,6 +30,7 @@
 //   release      the shipped file has no test hook and replays move for move against src/game  (test/e2e/release.cjs)
 //   offline      no network, bundled fonts                 (test/e2e/offline.cjs)
 //   firstday     the onboarding memo and the tour          (test/e2e/firstday.cjs)
+//   confirm      the four confirmations, by real presses   (test/e2e/confirm.cjs): a "no" changes nothing
 //   resilience   a held choice, names, ids, damaged saves  (test/e2e/resilience.cjs)
 //   phone        a touch screen: hints, the strip, the log, captions, sideways endings  (test/e2e/phone.cjs)
 //   keyboard     a whole run with the keyboard only        (test/e2e/keyboard.cjs)
@@ -93,6 +94,7 @@ const STEPS = {
   release: { what: "no hooks; the bundle is the source", cmd: ["test/e2e/release.cjs", shipped], needs: shipped },
   offline: { what: "no network, bundled fonts", cmd: ["test/e2e/offline.cjs", shipped], needs: shipped },
   firstday: { what: "a new player's first day", cmd: ["test/e2e/firstday.cjs", shipped], needs: shipped },
+  confirm: { what: "the confirmations, by real presses", cmd: ["test/e2e/confirm.cjs", shipped], needs: shipped },
   resilience: { what: "reloads, damaged saves, names, ids", cmd: ["test/e2e/resilience.cjs", target], needs: target },
   phone: { what: "a phone: touch, small screens, sideways", cmd: ["test/e2e/phone.cjs", target], needs: target },
   layout: { what: "layout on one screen", cmd: ["test/e2e/layout.cjs", target, "--workers", workers, "--min-font", String(LAYOUT_MIN_FONT), "--expect-fail", LAYOUT_KNOWN.join(","), ...drv("--driver")], needs: target },
@@ -110,7 +112,7 @@ const STEPS = {
   // with --release: the committed release file is exactly what the source builds
   released: { what: "the release file is current", cmd: ["scripts/build.mjs", "--check"] }
 };
-const DEFAULT = ["build", "build-test", "lint-rng", "lint-copy", "lint-css", "copy-check", "copy-render", "copy-deck", "fonts", "notices", "engine", "audio", "sim-smoke", "scenes", "fixtures", "saves", "release", "offline", "firstday", "resilience", "phone", "keyboard", "layout"];
+const DEFAULT = ["build", "build-test", "lint-rng", "lint-copy", "lint-css", "copy-check", "copy-render", "copy-deck", "fonts", "notices", "engine", "audio", "sim-smoke", "scenes", "fixtures", "saves", "release", "offline", "firstday", "confirm", "resilience", "phone", "keyboard", "layout"];
 const order = onlyArg ? onlyArg.split(",").map(s => s.trim()).filter(Boolean) : release ? DEFAULT.concat("released") : DEFAULT;
 for(const s of order) if(!STEPS[s]){ console.error(`verify: unknown step ${s}. steps: ${Object.keys(STEPS).join(", ")}`); process.exit(2); }
 
