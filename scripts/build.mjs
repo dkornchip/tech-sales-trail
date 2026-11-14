@@ -1,9 +1,18 @@
 // Builds the whole game into one self-contained index.html that makes no network requests.
-//   node scripts/build.mjs             -> dist/index.html (or $TST_OUT/index.html)
-//   node scripts/build.mjs --release   -> also writes ./index.html (the file GitHub Pages serves)
-//   node scripts/build.mjs --check     -> fails if ./index.html is not what the source builds to
+//   node scripts/build.mjs             -> dist/index.html (or $TST_OUT/index.html): the release build
+//   node scripts/build.mjs --release   -> also writes ./Tech_Sales_Trail_<major.minor>.html (the release file)
+//   node scripts/build.mjs --check     -> fails if that release file is not what the source builds to
+//   node scripts/build.mjs --test      -> dist-test/index.html: the same game with its test hooks compiled in
+//                                         (a seed for a new run, scripted dice, pinned cosmetic rolls, engine
+//                                         internals for the harness). Never for release.
 //   --dev                              -> unminified and with React's development build: for reading the output and
 //                                         for hearing React's warnings. Never for release (the size check is skipped).
+// Test hooks are written as  if (typeof __TST_TEST__ === "undefined" || __TST_TEST__) { ... }  in the source. A
+// release build defines __TST_TEST__ as false and the bundler drops those branches; the build then checks that no
+// hook name is left in the file. (In Node, where nothing defines it, the hooks are on: that is how the engine tests
+// script the dice.)
+// ./index.html is not written by this script any more: it is the v2.0.1 release, kept as it shipped until the
+// owner promotes a newer one.
 // For a preview page (never a release), three variables swap the inputs:
 //   TST_ENTRY=<script entry>  TST_CSS=<style entry>  TST_TEMPLATE=<html template>
 // The fonts are inlined from src/assets/fonts, which is committed (regenerate it with: npm run fonts).
@@ -17,7 +26,9 @@ import { fileURLToPath } from "node:url";
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const args = new Set(process.argv.slice(2));
 const dev = args.has("--dev");
-const outDir = path.resolve(ROOT, process.env.TST_OUT || "dist");
+const test = args.has("--test");
+const hooks = dev || test;                       // test hooks compiled in: never in a release
+const outDir = path.resolve(ROOT, process.env.TST_OUT || (test ? "dist-test" : "dist"));
 const MAX_RAW = 800 * 1024;
 const ENTRY = process.env.TST_ENTRY || "src/main.jsx";
 const CSS_ENTRY = process.env.TST_CSS || "src/styles/index.css";
@@ -38,7 +49,7 @@ async function bundle(){
     jsx: "transform",
     metafile: true,
     // --dev bundles React's development build, so its warnings (duplicate keys, updates during render) reach the console
-    define: { "process.env.NODE_ENV": dev ? '"development"' : '"production"' }
+    define: { "process.env.NODE_ENV": dev ? '"development"' : '"production"', "__TST_TEST__": hooks ? "true" : "false", "__BUILD_VERSION__": JSON.stringify(readJSON("package.json").version) }
   });
   const css = await esbuild.build({
     ...common,
@@ -118,7 +129,7 @@ function notices(packages, iconNames){
 
   const pkg = readJSON("package.json");
   const text = [
-    "Tech Sales Trail " + pkg.version + ". One self-contained file: it makes no network requests.",
+    "Tech Sales Trail " + pkg.version + (test ? " (test build: carries test hooks, not for release)" : "") + ". One self-contained file: it makes no network requests.",
     "",
     "Third-party notices",
     ...lines.map(l => "  " + l),
@@ -206,6 +217,10 @@ function assemble({ js, css, packages, sources }){
   if(/<link\b(?![^>]*\brel="icon")/i.test(page.replace(/<script>[\s\S]*<\/script>/, ""))) fail("the template links to something other than the inline icon");
 
   if(!dev && /https?:\/\//i.test(page)) fail("the output contains a URL outside the notices: " + /https?:\/\/[^\s"'<)]*/i.exec(page)[0]);
+  // A release carries no test hook: no seed override, no scripted dice, no pinned cosmetic stream, no engine handle.
+  const hook = /__TST_[A-Z]\w*|TST_CLAINK|TST_DEV/.exec(page);
+  if(!hooks && hook) fail("the release build still carries a test hook: " + hook[0] + " (guard it with __TST_TEST__)");
+  if(test && !PREVIEW && !/__TST_RNG/.test(page)) fail("the test build has no dice hook (__TST_RNG): the harness could not script it");
   // the encoding declaration has to sit inside the first 1024 bytes, notices included
   const charset = html.indexOf('<meta charset="utf-8"');
   if(charset < 0 || Buffer.byteLength(html.slice(0, charset)) + 24 > 1024) fail('<meta charset="utf-8"> must end within the first 1024 bytes; shorten the notices');
@@ -218,19 +233,22 @@ const kb = n => (n / 1024).toFixed(0) + " KB";
 const sizes = kb(raw) + " raw, " + kb(gzip) + " gzip";
 if(!dev && raw > MAX_RAW) fail("the output is " + sizes + "; the limit is " + kb(MAX_RAW) + " raw");
 
+// The release file: Tech_Sales_Trail_2.1.html for version 2.1.x.
+const RELEASE_FILE = "Tech_Sales_Trail_" + readJSON("package.json").version.split(".").slice(0, 2).join(".") + ".html";
 if(args.has("--check")){
   if(PREVIEW) fail("--check compares the game, not a preview: unset TST_ENTRY, TST_CSS and TST_TEMPLATE");
-  const committed = fs.existsSync(path.join(ROOT, "index.html")) ? fs.readFileSync(path.join(ROOT, "index.html"), "utf8") : "";
-  if(committed !== html) fail("./index.html is stale. Run: npm run release");
-  console.log("index.html is up to date (" + sizes + ")");
+  if(hooks) fail("--check compares the release build: drop --test and --dev");
+  const committed = fs.existsSync(path.join(ROOT, RELEASE_FILE)) ? fs.readFileSync(path.join(ROOT, RELEASE_FILE), "utf8") : "";
+  if(committed !== html) fail("./" + RELEASE_FILE + " is stale. Run: npm run release");
+  console.log(RELEASE_FILE + " is up to date (" + sizes + ")");
 }else{
   fs.mkdirSync(outDir, { recursive: true });
   fs.writeFileSync(path.join(outDir, "index.html"), html);
   console.log(path.relative(ROOT, path.join(outDir, "index.html")) + "  " + sizes);
   if(args.has("--release")){
-    if(dev) fail("--release and --dev do not go together");
+    if(hooks) fail("--release does not go with --dev or --test: a release carries no test hooks");
     if(PREVIEW) fail("--release builds the game, not a preview: unset TST_ENTRY, TST_CSS and TST_TEMPLATE");
-    fs.writeFileSync(path.join(ROOT, "index.html"), html);
-    console.log("index.html  (released)");
+    fs.writeFileSync(path.join(ROOT, RELEASE_FILE), html);
+    console.log(RELEASE_FILE + "  (released)");
   }
 }

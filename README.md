@@ -177,6 +177,22 @@ Saves from earlier versions load and continue.
 
 ---
 
+## Coming in v2.1: "Operation Final Coat" (release candidate)
+
+`Tech_Sales_Trail_2.1.html` in this repository is the 2.1 candidate: download it and open it. The link above and
+`index.html` still serve v2.0.1 (which the rest of this page describes) until 2.1 is promoted.
+
+2.1 is a polish pass, not a new game: a fairer quarter (pace follows a real quarter's curve, early reviews look at
+your pipeline, the QBR says one thing), a screen that tells the truth about your numbers, saves that cannot be lost
+to a bad file, confirmations before the four things that cannot be undone, and every line rewritten in the voice of
+a company that believes it is exceptional. Same quota, same thirteen weeks, same actions, same six endings.
+
+- Player notes: [TTST_2.1_RELEASE_NOTES.md](TTST_2.1_RELEASE_NOTES.md)
+- What was changed, measured and tested: [TTST_2.1_QA_REPORT.md](TTST_2.1_QA_REPORT.md)
+- The brief and the copydeck it was built from: [docs/2.1](docs/2.1)
+
+---
+
 ## What's new in v2.0 (and v2.0.1)
 
 Everything a player sees or reads was redone, and nothing about how the game plays was changed. A test harness plays v1.21 and v2.0 side by side on the same dice and requires the same state after every move: 54,000 moves and 319,000 dice rolls, identical.
@@ -195,21 +211,22 @@ The full history is in [CHANGELOG.md](CHANGELOG.md).
 
 ## For developers
 
-`index.html` at the root of the repository is generated. The source is in `src/` and the build puts everything (React, the game, the styles, two fonts, the icons) into that one file.
+`index.html` at the root of the repository is the v2.0.1 release, kept exactly as shipped. The source is in `src/` and the build puts everything (React, the game, the styles, two fonts, the icons) into one file. A release is written as `Tech_Sales_Trail_<major.minor>.html`; promoting one to `index.html` (the file GitHub Pages serves) is the owner's call and is not something the build does.
 
 ```
 npm install          # esbuild, React, the fonts, the icons
-npm run build        # src/ -> dist/index.html
-npm run release      # src/ -> ./index.html (the file GitHub Pages serves)
-npm run verify       # build, then every check below
-npm run verify:release   # the same, plus sound parity, and that ./index.html is exactly what the source builds
+npm run build        # src/ -> dist/index.html, the release build: no test hooks in it
+npm run build:test   # src/ -> dist-test/index.html, the same game with the hooks the tests script it through
+npm run release      # src/ -> ./Tech_Sales_Trail_<major.minor>.html
+npm run verify       # both builds, then every check below
+npm run verify:release   # the same, and that the committed release file is exactly what the source builds
 ```
 
 The checks drive a real browser with [Playwright](https://playwright.dev), which is not in `package.json`. Install it once beside the project: `npm install --no-save playwright && npx playwright install chromium`.
 
 | Where | What |
 |---|---|
-| `src/game/` | The rules, as pure functions of the run's state. `rules.js` holds every cost and chance once; the interface reads the same numbers. |
+| `src/game/` | The rules, as pure functions of the run's state. `run.js` is the front door: `step(state, move)` is the only way a run changes, for the interface and for the tests alike. `rng.js` is the run's own seeded dice, saved with the run. `rules.js` holds every cost and chance once; the interface reads the same numbers. |
 | `src/copy/` | Every word the player reads. `engine.js` turns a line and its numbers into what the log shows, without touching the game's dice. |
 | `src/ui/` | The interface (React). `src/styles/tokens.css` is the only file that names a colour or a size. |
 | `src/engine/` | The ASCII scene engine and the synthesized sound. |
@@ -218,16 +235,24 @@ The checks drive a real browser with [Playwright](https://playwright.dev), which
 
 `npm run verify` runs, and stops at the first that fails:
 
-- **lints**: dice only where the rules roll (`lint:rng`), house style on every string (`lint:copy`), colours and sizes only from the tokens (`lint:css`); every log line, dialog and announcement is wired and renders in every wording.
+- **lints**: `Math.random` only in the cosmetic stream and test hooks only behind the build flag (`lint:rng`), house style on every string (`lint:copy`), colours and sizes only from the tokens (`lint:css`); every log line, dialog and announcement is wired and renders in every wording.
 - **fonts and notices**: the bundled fonts are what the pinned packages generate and cover every character the scenes draw; `THIRD-PARTY-NOTICES.md` is current.
-- **parity** (`test/parity/`): plays the frozen v1.21 file (`test/baseline/`) and the build through the same seeded dice, move by move, and compares state, dice rolls, dialogs and legal moves. `npm run parity:full` is the long run; `npm run parity:sound` also compares which sounds fire, move by move (the onboarding memo's three cues moved with the memo, and are checked in the first-day test instead); `npm run parity:selftest` proves the harness catches planted bugs.
-- **scenes**: every frame of every ASCII scene, and every caption under it, is exactly v1.21's (apostrophes are typeset; nothing else differs).
-- **saves** (`test/saves/`): saves from every state and ending of v1.21, and older, load and play on identically. The fixtures are regenerated from the baseline and must match what is committed.
+- **engine** (`test/engine/`, Node): the dice (same seed and moves, same run; a run saved and read back carries on exactly; nothing rolls outside a move), invariants after every move of random and scripted play, and golden replays of seeded runs.
+- **audio** (`test/audio/`, Node): what the sound engine decides, against a fake speaker: which log line makes which sound, what a batch plays, that the announcer never talks over itself, captions, mute.
+- **sim-smoke** (`test/sim/`): the simulation kit plays whole quarters with policy bots on the frozen balance baseline (`test/baseline/checkpoint-engine`) and on the working tree. `npm run sim -- --seeds 1000` prints the balance tables. The bots are heuristics; they are not playtests.
+- **copy-deck** (`scripts/copy-coverage.mjs`): every row of the editorial copydeck (`docs/2.1`) is rendered by the build, or has a reason on file (`docs/2.1/copy-coverage-notes.json`).
+- **scenes**: every frame of every ASCII scene's picture is exactly v1.21's. (v2.1 rewrote the captions under them; the copy lint and the copydeck gate hold those.)
+- **saves** (`test/saves/`): saves from every state and ending of v1.21, and older, load, show what they should, and play on. The fixtures are regenerated from the frozen v1.21 file and must match what is committed.
+- **release** (`test/e2e/release.cjs`): the shipped file exposes no test hook, ignores one planted from outside, and replays move for move against `src/game` from the run it saved.
+- **confirm** (`test/e2e/confirm.cjs`): the four confirmations, by real clicks and key presses on the release build; a "no" must leave the run exactly as it was.
+- **matrix** (`test/e2e/matrix.cjs`): eight screen sizes (1440×900 down to 320×568, a phone on its side, 200% zoom) × twelve states (the offer, a choice, an incident, the handbook, six endings), from `file://` with the network refused; `--shots <dir>` saves the pictures.
 - **offline**, **first day**, **resilience**, **phone**, **keyboard**, **layout** (`test/e2e/`): no network and the bundled fonts in use; the onboarding flow; reloads, damaged saves, duplicate names and an ending whose cutscene cannot play; a touch screen at phone sizes and on its side (hints by tap, the status strip, the log, captions, endings); a whole run on the keyboard; one screen at seven desktop sizes and a phone, with nothing covered or cut off.
 
 `npm run test:selftest` turns the tests on themselves: each one is given a planted fault and must report it.
 
-The rule for changes: jokes never touch dice. Anything cosmetic draws from its own stream (`src/fxrng.js`), and a change that moves a single game roll fails parity.
+Up to v2.0.1 the build was also held move for move, and sound for sound, to the frozen v1.21 file (`test/parity/run.cjs`). v2.1 changes rules on purpose, so that comparison ended at the last commit where it held; the evidence is in `qa/2.1/evidence/`. The harness stays, because the scene, save and browser tests are built on it; `npm run parity:selftest` still proves it catches planted bugs.
+
+The rule for changes: jokes never touch dice. Anything cosmetic draws from its own stream (`src/fxrng.js`); every roll of the rules comes from the run's seeded stream, inside a move.
 
 ---
 

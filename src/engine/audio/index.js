@@ -48,13 +48,22 @@ export function setVolume(v){
 
 export function setCaptions(on){ A.settings.captions = !!on; saveSettings(); if(A.onChange) A.onChange(A.settings); }
 
-root.TST_AUDIO = {
+var API = {
   play:play, say:say, cancelSay:cancelSay, hush:hush, ambient:ambient, stopAmbient:stopAmbient, setStress:setStress,
-  onLogs:onLogs, onModal:onModal, ruleFor:ruleFor, setOn:setOn, setVoice:setVoice, setVolume:setVolume, setCaptions:setCaptions, unlock:unlock,
-  get settings(){ return A.settings; }, get unlocked(){ return A.unlocked; },
-  get lastSpeechError(){ return A.lastSpeechError || null; }, get voiceName(){ return SAY.voiceName.m; }, get voiceNames(){ return SAY.voiceName; },
-  set onChange(fn){ A.onChange = fn; }, set onCaption(fn){ A.onCaption = fn; },
-  presets:P, _A:A, LINES:LINES,
-  // render a preset into an offline context (tests)
-  renderInto:function(c,name){ var p = P[name]; return p.fn({c:c,d:c.destination,t:0.01,j:1}); }
+  onLogs:onLogs, onModal:onModal, setOn:setOn, setVoice:setVoice, setVolume:setVolume, setCaptions:setCaptions, unlock:unlock,
+  get settings(){ return A.settings; },
+  set onChange(fn){ A.onChange = fn; }, set onCaption(fn){ A.onCaption = fn; }
 };
+// What only the tests read: the engine's insides. A release build leaves this out.
+if(typeof __TST_TEST__ === "undefined" || __TST_TEST__){
+  Object.defineProperties(API, {
+    unlocked:{ get:function(){ return A.unlocked; }, enumerable:true },
+    lastSpeechError:{ get:function(){ return A.lastSpeechError || null; }, enumerable:true },
+    voiceName:{ get:function(){ return SAY.voiceName.m; }, enumerable:true },
+    voiceNames:{ get:function(){ return SAY.voiceName; }, enumerable:true }
+  });
+  API.ruleFor = ruleFor; API.presets = P; API._A = A; API.LINES = LINES;
+  // render a preset into an offline context
+  API.renderInto = function(c,name){ var p = P[name]; return p.fn({c:c,d:c.destination,t:0.01,j:1}); };
+}
+root.TST_AUDIO = API;

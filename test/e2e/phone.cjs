@@ -1,12 +1,13 @@
 // The game on a phone: what a thumb, a small screen and no hover need.
-//   node test/e2e/phone.cjs [path/to/index.html]      (default: dist/index.html)
+//   node test/e2e/phone.cjs [path/to/index.html]      (default: dist-test/index.html, the test build:
+//   the dice are scripted through its hook, which a release build does not have)
 //   1. a 360px screen: nothing wider than the screen, a top bar on one line, whole button names, 44px targets
 //   2. a hint stays up after a tap, and a blocked button says why
 //   3. the numbers follow you down the page; the page returns to the top when the week turns
 //   4. the log is a log, the deals are labelled, the announcer's caption covers no control
 //   5. sideways: a caption does not widen the page; an ending shows its whole scene and then its paperwork
 //   6. the onboarding memo's button comes after the job's three lines
-//   7. a stored run that is not a run goes to the recovery page; one that cannot be read says so
+//   7. a stored run that cannot be opened is not played: a dialog says so, fits the phone, and leaves it where it was
 //   8. a 320px screen: the wordmark makes way for the top bar's buttons; a tall dialog opens at its first line
 //   9. turned on its side: the chips are measured again, and settle (they used to be redrawn on every frame)
 // Every screen here is a touch screen (no hover, a coarse pointer). Exits 1 if any check fails.
@@ -17,8 +18,9 @@ const fs = require("fs");
 const path = require("path");
 const { pathToFileURL } = require("url");
 
-const target = path.resolve(process.argv[2] || "dist/index.html");
-const AUTOSAVE = "tst-autosave-v4-3", FLAG = "tst-onboarded-v2";
+const target = path.resolve(process.argv[2] || "dist-test/index.html");
+const AUTOSAVE = "tst-autosave-v4-3", FLAG = "tst-onboarded-v2";      // a crafted run is handed over under the v2.0 key, which is still read
+const { readRun } = require("./lib/store.cjs");
 const FIXTURES = path.join(__dirname, "../saves/fixtures/generated");
 const rows = [];
 const check = (name, ok, detail) => { rows.push(!!ok); console.log("  " + (ok ? "ok  " : "FAIL") + "  " + name + (detail ? "  (" + detail + ")" : "")); return !!ok; };
@@ -30,7 +32,8 @@ async function open(browser, o) {
   await context.addInitScript(([save, first, key, flag]) => {
     try {
       window.sessionStorage.setItem("tst-booted", "1");
-      if (!window.sessionStorage.getItem("__seeded")) {
+      if (window.name !== "tst-seeded" && !window.sessionStorage.getItem("__seeded")) {   // once per tab (the tab's name survives a reload)
+        window.name = "tst-seeded";
         if (!first) window.localStorage.setItem(flag, "1");
         if (save !== null) window.localStorage.setItem(key, save);
         window.sessionStorage.setItem("__seeded", "1");
@@ -53,6 +56,7 @@ const wide = page => page.evaluate(() => ({ page: document.documentElement.scrol
 
 (async () => {
   if (!fs.existsSync(target)) { console.error("phone: no such file: " + target); process.exit(2); }
+  if (!/__TST_RNG/.test(fs.readFileSync(target, "utf8"))) { console.error("phone: " + target + " has no dice hook (it is a release build). Build the test build first: npm run build:test"); process.exit(2); }
   console.log("phone: " + target);
   const browser = await chromium.launch();
   try {
@@ -76,10 +80,10 @@ const wide = page => page.evaluate(() => ({ page: document.documentElement.scrol
     await tap(page, '[data-ui="hail"]');                       // a new run has nothing to throw a Hail Mary at
     await page.waitForTimeout(500);
     const why = await text(page, ".hint");
-    check("a tap on a blocked button leaves its reason in the hint bar", /Hail Mary/.test(why || "") && /proposal|closing/.test(why || ""), why);
+    check("a tap on a blocked button leaves its reason in the hint bar", /Hail Mary/.test(why || "") && /late-stage/.test(why || ""), why);
     const dim = await page.evaluate(() => { const b = document.querySelector('[data-ui="hail"]'), e = document.querySelector('[data-ui="rules"]'); return { hail: getComputedStyle(b).color, text: getComputedStyle(document.querySelector(".quarter-head h2")).color }; });
     check("and a blocked button is drawn dimmer than the text", dim.hail !== dim.text, JSON.stringify(dim));
-    const before = await page.evaluate(k => JSON.parse(window.localStorage.getItem(k) || "{}").energy, AUTOSAVE);
+    const before = (await page.evaluate(readRun)).energy;
     await tap(page, '[data-act="conference"]'); await tap(page, '[data-act="prospect"]'); await tap(page, '[data-act="prospect"]');
     await tap(page, '[data-act="prospect"]');                  // by now there is not the energy for it
     await page.waitForTimeout(400);
@@ -92,7 +96,7 @@ const wide = page => page.evaluate(() => ({ page: document.documentElement.scrol
     check("and when the hint bar is off the screen, the reason is shown in a notice that is on it", !where.hint && where.notice && /Prospect blitz/.test(where.text) && /energy/.test(where.text), JSON.stringify(where));
 
     /* ---------- 3. the numbers follow you ---------- */
-    const state = () => page.evaluate(k => { const s = JSON.parse(window.localStorage.getItem(k)); return { week: s.week, energy: Math.round(s.energy), stress: Math.round(s.stress), cash: Math.round(s.cash) }; }, AUTOSAVE);
+    const state = async () => { const s = await page.evaluate(readRun); return { week: s.week, energy: Math.round(s.energy), stress: Math.round(s.stress), cash: Math.round(s.cash) }; };
     await page.evaluate(() => window.scrollTo(0, 0)); await page.waitForTimeout(300);
     check("at the top of the page the strip is away", !(await page.evaluate(() => !!document.querySelector(".strip.on"))));
     await page.evaluate(() => document.querySelector('[data-ui="end"]').scrollIntoView({ block: "center" })); await page.waitForTimeout(500);
@@ -101,7 +105,7 @@ const wide = page => page.evaluate(() => ({ page: document.documentElement.scrol
     check("scrolled down to End week, the strip is at the top of the screen", strip.on && strip.top === 0 && strip.sw <= strip.cw, JSON.stringify(strip));
     const cash = (now.cash < 0 ? "−$" : "$") + Math.abs(now.cash).toLocaleString("en-US");
     check("and carries the week, energy, stress and cash as they are", strip.text.indexOf("Week " + now.week) === 0 && strip.text.indexOf(" " + now.energy + " ") > 0 && strip.text.indexOf(" " + now.stress + " ") > 0 && strip.text.endsWith(" " + cash), strip.text + " / " + JSON.stringify(now));
-    await page.evaluate(() => { Math.random = () => 0.95; });   // a quiet Friday: no event dialog
+    await page.evaluate(() => { window.__TST_RNG = () => 0.95; });   // a quiet Friday: no event dialog
     // End week at the top of the screen, so the log's first lines are on it when the button is pressed
     await page.evaluate(() => document.querySelector('[data-ui="end"]').scrollIntoView({ block: "start" })); await page.waitForTimeout(300);
     await page.locator('[data-ui="end"]').tap(); await page.waitForTimeout(1200);
@@ -110,7 +114,7 @@ const wide = page => page.evaluate(() => ({ page: document.documentElement.scrol
     const friday = await text(page, ".peek");
     check("and what Friday did is shown, wherever End week was on the screen when it was pressed", !!friday && friday.length > 3, friday);
     // a week that ends in a choice: nothing is shown under the dialog, and the week's lines are shown once it is made
-    await page.evaluate(() => { Math.random = () => 0.1; });
+    await page.evaluate(() => { window.__TST_RNG = () => 0.1; });
     await page.waitForTimeout(5200);                           // the last notice has gone
     await tap(page, '[data-ui="end"]'); await page.waitForTimeout(900);
     const under = await page.evaluate(() => ({ dialog: (document.querySelector("dialog[open]") || { getAttribute() { return null; } }).getAttribute("data-dialog"), notice: !!document.querySelector(".peek") }));
@@ -170,23 +174,23 @@ const wide = page => page.evaluate(() => ({ page: document.documentElement.scrol
     await page.waitForTimeout(2200);
     await page.evaluate(() => { const d = document.querySelector("dialog[open]"); if (d) d.scrollTo(0, d.scrollHeight); }); await page.waitForTimeout(200);
     const memo = await page.evaluate(() => { const d = document.querySelector("dialog[open]"); if (!d) return null; const lines = [...d.querySelectorAll(".welcome-lines li")].map(e => e.getBoundingClientRect()), btn = d.querySelector(".d-footer .btn").getBoundingClientRect(), r = d.getBoundingClientRect(); return { lines: lines.length, above: lines.every(l => l.bottom <= btn.top + 1), seen: lines.every(l => l.top >= r.top && l.bottom <= r.bottom), button: btn.bottom <= r.bottom + 1 }; });
-    check("the memo's button comes after the three lines that state the job, and all of them can be read", !!memo && memo.lines === 3 && memo.above && memo.seen && memo.button, JSON.stringify(memo));
+    check("the memo's button comes after the three lines that state the job and the chapter's line, and all of them can be read", !!memo && memo.lines === 4 && memo.above && memo.seen && memo.button, JSON.stringify(memo));
     check("no errors", errors.length === 0, errors.join(" | "));
     await context.close();
 
     /* ---------- 7. a stored run that is not a run ---------- */
-    ({ context, page, errors } = await open(browser, { viewport: PHONE, save: '{"week":"x"}' }));
-    await page.waitForTimeout(300);
-    const crash = await box(page, ".crash");
-    check('a stored run whose week is not a number goes to the recovery page (it used to play as "Week NaN")', !!crash && !(await text(page, ".quarter-head h2")), JSON.stringify(crash && { left: Math.round(crash.left), right: Math.round(crash.right) }));
-    check("whose card keeps a gutter on a phone", !!crash && crash.left >= 12 && crash.right <= PHONE.width - 12);
-    if (crash) { await page.tap(".crash button"); await page.waitForTimeout(500); }
-    check("and New run starts a quarter from it", (await text(page, ".quarter-head h2")) === "Week 1", await text(page, ".quarter-head h2"));
-    await context.close();
-    ({ context, page, errors } = await open(browser, { viewport: PHONE, save: "{not json" }));
-    await page.waitForTimeout(400);
-    const said = await page.evaluate(() => { const t = document.getElementById("tst-toast"); return t && t.classList.contains("show") ? t.textContent : null; });
-    check("a stored run that cannot be read starts a new one and says so", (await text(page, ".quarter-head h2")) === "Week 1" && /damaged/.test(said || ""), said);
+    for (const [what, raw] of [["whose week is not a number", '{"week":"x"}'], ["that cannot be read", "{not json"]]) {
+      ({ context, page, errors } = await open(browser, { viewport: PHONE, save: raw }));
+      await page.waitForTimeout(300);
+      const dlg = await box(page, 'dialog[open][data-dialog="recovery"]');
+      const words = await text(page, 'dialog[open][data-dialog="recovery"]');
+      check(`a stored run ${what} is not played: a dialog says it could not be opened`, !!dlg && /could not be opened/.test(words || ""), (words || "").slice(0, 80));
+      check("the dialog fits a phone, with a gutter", !!dlg && dlg.left >= 8 && dlg.right <= PHONE.width - 8 && dlg.bottom <= PHONE.height, JSON.stringify(dlg && { left: Math.round(dlg.left), right: Math.round(dlg.right), bottom: Math.round(dlg.bottom) }));
+      if (dlg) { await page.tap('dialog[open] [data-ui="recover-new"]'); await page.waitForTimeout(500); }
+      check("and Start a new run starts a quarter", (await text(page, ".quarter-head h2")) === "Week 1" && !(await box(page, "dialog[open]")), await text(page, ".quarter-head h2"));
+      check("the stored run is still where it was", await page.evaluate(([k, v]) => window.localStorage.getItem(k) === v, [AUTOSAVE, raw]));
+      if (what !== "that cannot be read") await context.close();
+    }
     check("no errors", errors.length === 0, errors.join(" | "));
     await context.close();
 

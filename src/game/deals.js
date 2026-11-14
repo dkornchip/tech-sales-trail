@@ -1,27 +1,17 @@
 import { ACCOUNT_NAMES, ACHIEVEMENTS, DEAL_NOTES } from "../copy/names.js";
 import { MOODS } from "./constants.js";
+import { discountRate } from "./effects.js";
 import { log } from "./log.js";
-import { PAY, closeOdds } from "./rules.js";
+import { CASH, PAY, REFERRAL, closeOdds } from "./rules.js";
 import { choice, clamp, idGen, pct, randi } from "./util.js";
+import { rnd } from "./rng.js";
 
 // Clone nested sub-objects that actions mutate, to avoid accidental state mutation bugs.
 export const cloneForSpend=(state)=>({
   ...state,
   skills:{...(state.skills||{})},
-  modifiers:{...(state.modifiers||{})},
   used:{...(state.used||{})}
 });
-
-export const tickModifiers=(state)=>{
-  let s={...state, modifiers:{...(state.modifiers||{conversion:0,discount:0,expiresIn:0})}};
-  if((s.modifiers.expiresIn||0)>0){
-    s.modifiers.expiresIn-=1;
-    if(s.modifiers.expiresIn<=0){
-      s.modifiers={conversion:0,discount:0,expiresIn:0};
-    }
-  }
-  return s;
-};
 
 
 
@@ -36,8 +26,8 @@ export const makeDeal=(state,{warm=false,big=false}={})=>{
   const base=big?randi(22000,58000):randi(5000,24000);
   const repMult=0.7+0.6*(state.reputation/100);
   const mood=warm
-    ?(Math.random()<0.6?"curious":"neutral")
-    :(Math.random()<0.25?"skeptical":"neutral");
+    ?(rnd()<0.6?"curious":"neutral")
+    :(rnd()<0.25?"skeptical":"neutral");
   return{
     id:idGen(),
     account:choice(ACCOUNT_NAMES),
@@ -72,14 +62,14 @@ export const withDeals=(deals,adds)=>{
 // High-variance referrals: mostly peanuts, rare whales. Returns {deal, tier}: tier is "peanut", "big", "whale" or ""
 // (the ordinary middle), so nothing has to read the size back out of the note on the deal card.
 export const makeReferral=(state)=>{
-  const roll=Math.random();
+  const roll=rnd();
   let base=0, tier="";
   if(roll<0.70){
     base=randi(2000,11000);
     tier="peanut";
   }else if(roll<0.90){
     base=randi(9000,26000);
-  }else if(roll<0.97){
+  }else if(roll<1-REFERRAL.whale){
     base=randi(26000,70000);
     tier="big";
   }else{
@@ -98,13 +88,16 @@ export const makeReferral=(state)=>{
   }};
 };
 
+// One close push (any source) that signs this much in total earns the Whale hunter distinction.
+export const WHALE_PUSH=65000;
+
 export const checkRepo=(state)=>{
   let s={...state};
-  if(s.cash<=-1500 && !s.repo && !s.fired && !s.burnedOut && !s.win && !s.missed){
+  if(s.cash<=CASH.repoAt && !s.repo && !s.fired && !s.burnedOut && !s.win && !s.missed){
     s.repo=true;
     s.endCause="repo";
     s=log(s,"end.repo",null,"bad");
-  }else if(s.cash<=-1000 && !s.repo && !s.repoWarned){
+  }else if(s.cash<=CASH.warnAt && !s.repo && !s.repoWarned){
     s.repoWarned=true;
     s=log(s,"pay.repoWarn",null,"warn");
   }
@@ -119,8 +112,8 @@ export const ageAndGhost=(state)=>{
   const kept=[];
   const ghosts=[];
   for(const d of s.deals){
-    const tooOld=d.age>6 && d.stage<2 && Math.random()<0.25;
-    const ghosted=d.mood==="skeptical" && Math.random()<0.15;
+    const tooOld=d.age>6 && d.stage<2 && rnd()<0.25;
+    const ghosted=d.mood==="skeptical" && rnd()<0.15;
     if(tooOld||ghosted)ghosts.push(d);
     else kept.push({...d,age:d.age+1});
   }
@@ -137,7 +130,7 @@ export const killDeals=(state,predicate,dropProb)=>{
   let lost=0,lostVal=0;
   const kept=[];
   for(const d of s.deals){
-    if(predicate(d) && Math.random()<dropProb){
+    if(predicate(d) && rnd()<dropProb){
       lost++;
       lostVal+=d.value;
     }else kept.push(d);
@@ -152,11 +145,14 @@ export const killDeals=(state,predicate,dropProb)=>{
 
 // src says where the closes came from: "negotiations", "close" (the Close Deals action), "friday" (End Week) or "hail"
 // (the Hail Mary). The log lines name it (CLOSE_SOURCE in src/copy/log.js).
-export const tryCloseSome=(state,src="negotiations")=>{
+// before (optional): the meters before the action that led here (log.js, snap), so the first line of the batch can
+// say what the attempt itself cost. Commission is in the sentence, so cash is left out of it.
+const SPENT=["energy","stress","manager","reputation","product"];
+export const tryCloseSome=(state,src="negotiations",before=null)=>{
   let s={...state};
   const candidates=s.deals.filter(d=>d.stage>=3);
   if(candidates.length===0){
-    return log(s,"close.none",{src},"muted");
+    return log(s,"close.none",{src},"muted",before,SPENT);
   }
   let closedCount=0,totalWon=0,totalDiscount=0,lost=0,lostVal=0;
   let top=null; // the largest deal signed in this pass, for the run's story
@@ -165,9 +161,9 @@ export const tryCloseSome=(state,src="negotiations")=>{
   for(const d of s.deals){
     if(d.stage<3){nextDeals.push(d);continue;}
     const chance=closeOdds(s,d);
-    const roll=Math.random();
+    const roll=rnd();
     if(roll<chance){
-      const rate=s.modifiers.discount||0;
+      const rate=discountRate(s);
       const net=Math.round(d.value*(1-rate));
       totalWon+=net;
       totalDiscount+=Math.round(d.value*rate);
@@ -175,7 +171,7 @@ export const tryCloseSome=(state,src="negotiations")=>{
       if(!top || net>top.value) top={account:d.account,value:net};
     }else{
       const loseProb=d.stage>=4?0.22:0.14;
-      if(Math.random()<loseProb){
+      if(rnd()<loseProb){
         lost++;
         lostVal+=d.value;
       }else{
@@ -198,10 +194,10 @@ export const tryCloseSome=(state,src="negotiations")=>{
   s.discounts+=totalDiscount;
 
   if(closedCount>0){
-    s=log(s,"close.signed",{src,n:closedCount,won:totalWon,keep:Math.round(totalWon*PAY.commission),top});
-    if(totalWon>=65000)s=addAchievement(s,"whale");
+    s=log(s,"close.signed",{src,n:closedCount,won:totalWon,keep:Math.round(totalWon*PAY.commission),top,...(totalDiscount>0 ? {off:totalDiscount} : {})},"info",before,SPENT);
+    if(totalWon>=WHALE_PUSH)s=addAchievement(s,"whale");
   }else{
-    s=log(s,"close.nobody",{src},"warn");
+    s=log(s,"close.nobody",{src},"warn",before,SPENT);
   }
   if(lost>0){
     s=log(s,"close.lost",{n:lost,value:lostVal},"bad");

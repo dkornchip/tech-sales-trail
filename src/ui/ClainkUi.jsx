@@ -1,10 +1,10 @@
 import React from "react";
 import { isMoreLine } from "../copy/claink.js";
 import { CK_AD, CK_END, CK_REPORT, CK_STRIKES, CK_WORKSPACE } from "../copy/clainkUi.js";
-import { CLAINK, buyClaink, cancelClaink, clainkCanCancel, clainkCanDeploy, clainkCanInstall, clainkCancelCost, clainkFrozen, deployClaink, dismissClaink, hideClainkCard } from "../game/claink.js";
+import { CONFIRM } from "../copy/ui.js";
+import { CLAINK, clainkCanCancel, clainkCanDeploy, clainkCanInstall, clainkCancelCost, clainkFrozen } from "../game/claink.js";
 import { QUARTER_WEEKS } from "../game/constants.js";
 import { isRunOver } from "../game/log.js";
-import { checkBurnout } from "../game/stress.js";
 import { getQuarterInfo } from "../game/util.js";
 import { Icon } from "./app/Icon.jsx";
 import { AUDIO, reducedNow } from "./env.js";
@@ -93,6 +93,10 @@ export const ClainkLogo=({small})=>(
 export const ClainkAd=({s,mini,onToggle,onInstall,onDismiss})=>{
   const ref=useRef(null), ctaRef=useRef(null), notNowRef=useRef(null), toggleRef=useRef(null);
   const[step,setStep]=useState(0); // 0: CTA, 1: the AI use policy + confirm
+  // The X turns clAInk off for the rest of the run, which cannot be undone: it asks first, inside the ad.
+  // (Minimizing is the other button, and loses nothing.)
+  const[asking,setAsking]=useState(false);
+  const keepRef=useRef(null), closeRef=useRef(null);
   const focusNext=useRef(null);
   const policyIdRef=useRef(null);
   if(policyIdRef.current===null) policyIdRef.current="claink-policy-"+(++clainkMarkSeq);
@@ -104,7 +108,7 @@ export const ClainkAd=({s,mini,onToggle,onInstall,onDismiss})=>{
   // focus follows the control that replaced the one you used (never back to <body>)
   useEffect(()=>{
     const k=focusNext.current; focusNext.current=null;
-    const el=k==="notnow" ? notNowRef.current : k==="cta" ? ctaRef.current : k==="toggle" ? toggleRef.current : null;
+    const el=k==="notnow" ? notNowRef.current : k==="cta" ? ctaRef.current : k==="toggle" ? toggleRef.current : k==="keep" ? keepRef.current : k==="close" ? closeRef.current : null;
     if(el) try{ el.focus({preventScroll:true}); }catch(_){}
   });
   const toggle=(e)=>{ focusNext.current="toggle"; onToggle(); shieldNextClick(e); }; // the toggle moves out from under the pointer
@@ -112,7 +116,8 @@ export const ClainkAd=({s,mini,onToggle,onInstall,onDismiss})=>{
     if(swallowRepeat(e))return;
     if(e.key!=="Escape")return;
     if(e.repeat){ e.preventDefault(); return; }
-    if(step===1){ e.preventDefault(); focusNext.current="cta"; setStep(0); }
+    if(asking){ e.preventDefault(); focusNext.current="close"; setAsking(false); }
+    else if(step===1){ e.preventDefault(); focusNext.current="cta"; setStep(0); }
     else if(!mini){ e.preventDefault(); toggle(e); }
   };
   return(
@@ -125,10 +130,19 @@ export const ClainkAd=({s,mini,onToggle,onInstall,onDismiss})=>{
           <button type="button" ref={toggleRef} className="claink-ad-min" aria-expanded={!mini} aria-controls={bodyId}
             aria-label={mini ? CK_AD.expandLabel : CK_AD.minimizeLabel} title={mini ? CK_AD.expand : CK_AD.minimize}
             onClick={toggle}>{mini ? <Icon name="maximize-2" /> : <Icon name="minus" />}</button>
-          <button type="button" className="claink-ad-close" aria-label={CK_AD.closeLabel}
-            title={CK_AD.closeTitle} onClick={onDismiss}><Icon name="x" /></button>
+          <button type="button" ref={closeRef} className="claink-ad-close" aria-label={CK_AD.closeLabel} aria-expanded={asking}
+            title={CK_AD.closeTitle} onClick={()=>{ focusNext.current="keep"; setAsking(true); }}><Icon name="x" /></button>
         </span>
       </div>
+      {asking && (
+        <div className="claink-ad-ask" role="group" aria-label={CK_AD.closeLabel} data-ui="confirm-dismiss">
+          <span>{CONFIRM.dismissAd.body}</span>
+          <span className="claink-ad-ask-btns">
+            <button type="button" className="claink-ask-yes" data-ui="confirm-yes" onClick={onDismiss}>{CONFIRM.dismissAd.yes}</button>
+            <button type="button" ref={keepRef} className="claink-ask-no" data-ui="confirm-no" onClick={()=>{ focusNext.current="close"; setAsking(false); }}>{CONFIRM.dismissAd.no}</button>
+          </span>
+        </div>
+      )}
       <div className="claink-ad-body" id={bodyId} hidden={mini}>
         <div className="claink-announce"><Icon name="sparkles" /><span>{CK_AD.announce[0]}<b>{CK_AD.announce[1]}</b>{CK_AD.announce[2]}</span><Icon name="arrow-right" /></div>
         <ClainkLogo/>
@@ -153,7 +167,7 @@ export const ClainkAd=({s,mini,onToggle,onInstall,onDismiss})=>{
                 </div>
               </>}
         </div>
-        <p className="claink-fine">{CK_AD.fine(CLAINK.OFFER_LAST_WEEK)}</p>
+        <p className="claink-fine">{CK_AD.fine(CLAINK.OFFER_LAST_WEEK,Math.round(1/CLAINK.MIRACLE_P))}</p>
       </div>
     </aside>
   );
@@ -196,7 +210,7 @@ export const ClainkStrikes=({n,log,cash,due,ran})=>{
 
 export const ClainkStrikeCard=({st})=>(
   <div className={"claink-strike ck-beat"+(st.n>=CLAINK.STRIKES?" out":"")}>
-    <div className="hd">{CK_STRIKES.cardHead(st.n,CLAINK.STRIKES)}{st.who && <span>{CK_STRIKES.cardBy(st.who)}</span>}</div>
+    <div className="hd"><Icon name="stamp" />{CK_STRIKES.cardHead(st.n,CLAINK.STRIKES)}{st.who && <span>{CK_STRIKES.cardBy(st.who)}</span>}</div>
     <p>{st.why}</p>
     {st.fx && <div className="fx">{st.fx}</div>}
   </div>
@@ -417,34 +431,29 @@ export const ClainkConsole=({s,ui,setUi,focusOnMount,onDeploy,onCancel,onHide,on
 };
 
 // picks what clAInk shows: the ad, the workspace, an end card, or nothing (closed ad, expired offer, closed end card)
-export const ClainkDock=({s,setS,ui,setUi,onEvent})=>{
+// dispatch: the page's one way to change a run (a move through game/run.js)
+// onReport(done): a run's report has started (false) or has had its say (true); the page holds the manager's
+// acknowledgement, which the run itself is waiting on, until then
+export const ClainkDock=({s,dispatch,ui,setUi,onReport})=>{
   const c=s.claink;
   const prev=useRef(c ? c.status : null);
   const justInstalled=prev.current==="ad" && !!c && c.status==="active";
   useEffect(()=>{ prev.current=c ? c.status : null; });
-  const lesson=useRef(null); // the Writing Lesson waits for the run's report to finish
-  // New Game / Load remount the dock: React tears a deleted tree down parent first, so this drops a held lesson before
-  // the workspace's own cleanup could hand it over into the next run
-  useEffect(()=>()=>{ lesson.current=null; },[]);
   if(!c)return null;
-  const commit=fn=>setS(p=>checkBurnout(fn(p)));
+  const ck=op=>dispatch({t:"ck",op});
   if(c.status==="ad"){
     if(isRunOver(s) || getQuarterInfo(s.week).weekInQuarter>CLAINK.OFFER_LAST_WEEK)return null;
     // toggle from what you see, not from the stored preference (a short screen shows the pill before you chose)
     const adMini=!!ui.adMini;
     return <ClainkAd s={s} mini={adMini} onToggle={()=>setUi(u=>({...u,adMini:!adMini}))}
-      onInstall={()=>commit(buyClaink)} onDismiss={e=>{ commit(dismissClaink); focusEndWeek(e); }}/>;
+      onInstall={()=>ck("buy")} onDismiss={e=>{ ck("dismiss"); focusEndWeek(e); }}/>;
   }
   if(c.status==="active" || ((c.status==="cancelled" || c.status==="revoked") && !c.hidden)){
     return <ClainkConsole s={s} ui={ui} setUi={setUi} focusOnMount={justInstalled}
-      onDeploy={()=>{
-        const r=deployClaink(s), L=r.state.claink && r.state.claink.last;
-        lesson.current=r.event ? {...r.event,week:r.state.week,runId:r.state.runId,run:r.state.claink.deploys,announce:(L && L.announce)||""} : null;
-        setS(checkBurnout(r.state));
-      }}
-      onRevealDone={()=>{ const ev=lesson.current; lesson.current=null; if(ev) onEvent(ev); }}
-      onCancel={()=>commit(cancelClaink)}
-      onHide={e=>{ commit(hideClainkCard); focusEndWeek(e); }}/>;
+      onDeploy={()=>{ onReport(false); ck("deploy"); }}
+      onRevealDone={()=>onReport(true)}
+      onCancel={()=>ck("cancel")}
+      onHide={e=>{ ck("hide"); focusEndWeek(e); }}/>;
   }
   return null;
 };

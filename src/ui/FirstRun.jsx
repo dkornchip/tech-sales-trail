@@ -38,6 +38,7 @@ export const Welcome = ({ open, again, s, onClose }) => (
     {!again && (
       <ul className="welcome-lines">
         {WELCOME.lines.map((line, i) => <li key={i}>{line({ quota: s.quota, weeks: QUARTER_WEEKS, slots: s.maxSlots })}</li>)}
+        {again ? null : <li className="chapter-memo">{WELCOME.chapter}</li>}
       </ul>
     )}
   </Modal>

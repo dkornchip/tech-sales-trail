@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // Takes the screenshots the README shows, from the built game, by playing it.
-//   node scripts/screenshots.cjs [path/to/index.html] [--out dir]      (defaults: dist/index.html, test-results/screenshots)
-// The run is played with a seeded Math.random, so the same build gives the same pictures:
+//   node scripts/screenshots.cjs [path/to/index.html] [--out dir]      (defaults: dist-test/index.html, test-results/screenshots)
+// The run is played on the TEST build (npm run build:test), whose dice can be seeded (window.__TST_SEED, read by
+// src/game/rng.js; a release build has no such hook and looks the same). The same build gives the same pictures:
 //   main.png      mid-quarter, with clAInk's workspace reporting on a run
 //   claink.png    the agent workspace on its own, after that run
 //   ending.png    the President's Club ending, once the scene has played and the paperwork is out
@@ -17,12 +18,13 @@ const { pathToFileURL } = require("url");
 const args = process.argv.slice(2);
 const outAt = args.indexOf("--out");
 const out = path.resolve(outAt >= 0 ? args[outAt + 1] : "test-results/screenshots");
-const target = path.resolve(args.find((a, i) => !a.startsWith("--") && i !== outAt + 1) || "dist/index.html");
+const target = path.resolve(args.find((a, i) => !a.startsWith("--") && i !== outAt + 1) || "dist-test/index.html");
 const AUTOSAVE = "tst-autosave-v4-3";
 
-// Runs in the page before any of its scripts: a seeded Math.random, and (unless it is the first-day shot) a player
-// who has been here before.
+// Runs in the page before any of its scripts: the run's seed, a seeded Math.random for the cosmetic stream, and
+// (unless it is the first-day shot) a player who has been here before.
 const seedPage = ([seed, returning]) => {
+  window.__TST_SEED = seed >>> 0;
   let a = seed >>> 0;
   Math.random = () => { a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
   try { if (returning) window.localStorage.setItem("tst-onboarded-v2", "1"); } catch (e) {}
@@ -41,15 +43,16 @@ async function open(browser, { seed = 7, returning = true, width = 1440, height 
   await page.waitForTimeout(700);
   return { context, page };
 }
-const state = page => page.evaluate(k => JSON.parse(window.localStorage.getItem(k)), AUTOSAVE);
+const { readRun } = require("../test/e2e/lib/store.cjs");
+const state = page => page.evaluate(readRun);
 // Press a control and wait until the game has taken it in (the autosave changes), so the next decision is made on
 // the new state however busy the machine is. Returns false if the control is missing or disabled.
 const press = async (page, sel) => {
   const el = page.locator(sel).first();
   if (!(await el.count()) || await el.getAttribute("aria-disabled") === "true" || !(await el.isEnabled())) return false;
-  const before = await page.evaluate(k => window.localStorage.getItem(k), AUTOSAVE);
+  const before = await page.evaluate(k => window.localStorage.getItem(k), "tst-autosave-v5");
   await el.click();
-  await page.waitForFunction(([k, was]) => window.localStorage.getItem(k) !== was, [AUTOSAVE, before], { timeout: 1500 }).catch(() => {});
+  await page.waitForFunction(([k, was]) => window.localStorage.getItem(k) !== was, ["tst-autosave-v5", before], { timeout: 1500 }).catch(() => {});
   await page.waitForTimeout(60);
   return true;
 };
@@ -72,7 +75,8 @@ async function week(page) {
 }
 
 (async () => {
-  if (!fs.existsSync(target)) { console.error("screenshots: no such file: " + target + " (run npm run build first)"); process.exit(2); }
+  if (!fs.existsSync(target)) { console.error("screenshots: no such file: " + target + " (run npm run build:test first)"); process.exit(2); }
+  if (!/__TST_SEED/.test(fs.readFileSync(target, "utf8"))) { console.error("screenshots: " + target + " cannot be seeded (it is a release build); use the test build: npm run build:test"); process.exit(2); }
   fs.mkdirSync(out, { recursive: true });
   const browser = await chromium.launch();
   try {

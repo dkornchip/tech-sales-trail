@@ -56,9 +56,15 @@ import { BOOT, TOAST } from "../copy/ui.js";
   try{ booted = sessionStorage.getItem("tst-booted") === "1"; }catch(e){}
   if(booted) return;
   var saved = null;
-  try{ var raw = localStorage.getItem("tst-autosave-v4-3") || localStorage.getItem("tst-save-v4-3"); saved = raw ? JSON.parse(raw) : null; }catch(e){}
+  // which week the boot screen welcomes you to: the stored run's, read without trusting it (a v2.1 envelope keeps
+  // the run under `state`; an earlier version stored the run itself)
+  try{
+    var raw = localStorage.getItem("tst-autosave-v5") || localStorage.getItem("tst-autosave-v4-3") || localStorage.getItem("tst-save-v5") || localStorage.getItem("tst-save-v4-3");
+    var parsed = raw ? JSON.parse(raw) : null;
+    saved = parsed && typeof parsed === "object" ? (parsed.state && typeof parsed.state === "object" ? parsed.state : parsed) : null;
+  }catch(e){}
   if(saved && (saved.fired || saved.burnedOut || saved.win || saved.missed || saved.repo)) return; // an ending modal is about to open
-  function readWeek(){ return saved && saved.week > 0 ? ((saved.week-1)%13)+1 : 1; }
+  function readWeek(){ return saved && typeof saved.week === "number" && saved.week >= 1 && saved.week < 1000 ? ((Math.floor(saved.week)-1)%13)+1 : 1; }
   var ov = document.createElement("div");
   ov.id = "boot";
   ov.setAttribute("role","dialog"); ov.setAttribute("aria-modal","true"); ov.setAttribute("aria-label",BOOT.label);

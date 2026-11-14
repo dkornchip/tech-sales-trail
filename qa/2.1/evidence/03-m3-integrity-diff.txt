@@ -1,0 +1,43 @@
+integrity diff: 21 policies x 300 seeds (1..300), 6300 runs, 193585 moves compared, 82.1 s
+  identical start to finish          4114  65.3%
+  only the last Friday differs        670  10.6%   (under-70% review no longer rolls; the quarter's total is kept)
+  odds effects differ first          1516  24.1%   (the shared number and timer, fixed)
+        1485  a security choice replaced what was already in force (now they add up)
+          26  a second conference in one week stacked its bonus (now it refreshes)
+           5  a Friday: the shared timer ended something early or carried it over (now each ends on its own week)
+  anything else                         0  0.0%
+  e.g. novice#6 move 31 dlg:spin (week 7): odds -0.08 -> -0.14, discount 0 -> 0   [a security choice replaced what was already in force (now they add up)]
+  e.g. novice#8 move 6 dlg:spin (week 2): odds -0.08 -> -0.02, discount 0 -> 0   [a security choice replaced what was already in force (now they add up)]
+  e.g. novice#10 move 29 dlg:spin (week 6): odds -0.08 -> -0.14, discount 0 -> 0   [a security choice replaced what was already in force (now they add up)]
+  e.g. novice#15 move 18 dlg:spin (week 5): odds -0.08 -> -0.14, discount 0 -> 0   [a security choice replaced what was already in force (now they add up)]
+  e.g. novice#17 move 33 dlg:spin (week 7): odds -0.08 -> -0.14, discount 0 -> 0   [a security choice replaced what was already in force (now they add up)]
+
+INTEGRITY DIFF OK: every difference from the v2.0.1 rules is one of the fixes
+
+--- gates on this tree (node scripts/verify.mjs --only ..., three invocations; logs under test-results/m2/v3*.log) ---
+  audio        ok           0.4 s  AUDIO TESTS OK: 13 tests passed in 1 files, 0.4 s
+  build        ok           0.2 s  dist/index.html 512 KB raw, 199 KB gzip
+  build-test   ok           0.3 s  dist-test/index.html 513 KB raw, 200 KB gzip
+  copy-check   ok           1.0 s  COPY CHECK OK
+  copy-render  ok           0.1 s  15360 renderings, 0 bad; 147 distinct sentences across 96 tags
+  engine       ok           4.5 s  ENGINE TESTS OK: 11 tests passed in 3 files, 4.4 s
+  firstday    ok          13.5 s  FIRST DAY OK: all 26 checks passed
+  fixtures    ok          53.5 s  25 generated fixtures are exactly what the baseline writes.
+  keyboard  ok           3.3 s  KEYBOARD OK: dist-test/index.html, 8/8 stages, 98 key presses (84 of them Tab or Shift+Tab), 0 known findings, 0 unexpected, 0 stale entries
+  layout    ok          27.9 s  LAYOUT OK: dist-test/index.html, 7 fixtures x 7 viewports + phone: 328 ok, 0 known failures, 0 unexpected failures, 0 stale entries, 27.2 s
+  lint-copy    ok           0.1 s  LINT-COPY OK: 0 violations
+  lint-rng     ok           0.6 s  LINT-RNG OK: 84 files under src (1 may read Math.random), 0 offenders
+  offline     ok           4.3 s  all 44 checks passed (dist/index.html, 512 KB)
+  phone     ok          37.3 s  PHONE OK: all 45 checks passed
+  release      ok          38.0 s  RELEASE OK: all 14 checks passed
+  saves       ok          79.7 s  SAVES OK in 79.2 s
+  sim-smoke    ok          21.5 s  SIM SMOKE OK: all 11 checks passed, 21.4 s [automated heuristics, not human play]
+  resilience   ok   RESILIENCE OK: all 57 checks passed (8 consecutive runs after the seeding-guard fix; 1 run in 5 failed before it, in the test's own storage seeding)
+
+--- engine suite (node scripts/unit.mjs engine test/engine) ---
+ENGINE TESTS OK: 91 tests passed in 10 files, 5.3 s
+
+--- mutation check (python3 test/engine/tools/mutation-check.py): 37 planted mistakes in src/game ---
+mutants caught: 35 of 37
+  the two survivors change nothing: (1) the referral +4 reputation moved after the count roll but still before sizing;
+  (2) billClaink's own 'run is over' guard, which End Week already applies before calling it.

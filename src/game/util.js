@@ -1,9 +1,8 @@
 import { QUARTER_WEEKS } from "./constants.js";
 
 export const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));
-export const rand=(a,b)=>Math.random()*(b-a)+a;
-export const randi=(a,b)=>Math.floor(rand(a,b+1));
-export const choice=(arr)=>arr[Math.floor(Math.random()*arr.length)];
+// The dice are in rng.js (a seeded stream carried in the run); the rules still ask for them by these names.
+export { rand, randi, choice } from "./rng.js";
 // FIX: negative cash used to render as "$-1,500". en-US grouping everywhere: logs, badges and the big-close PA regex.
 export const money=(n)=>{const r=Math.round(n);return (r<0?"-$":"$")+Math.abs(r).toLocaleString("en-US");};
 export const pct=(p)=>Math.round(p*100);

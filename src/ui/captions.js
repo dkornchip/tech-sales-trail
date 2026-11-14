@@ -7,7 +7,8 @@ const subs = new Set();
 
 export const pushCaption = c => {
   // `modal`: a dialog was already open when the line arrived, so the dialog shows it and the top bar stays quiet
-  current = { ...c, id: ++seq, at: Date.now(), modal: !!document.querySelector("dialog[open]") };
+  // (a confirmation is on its way out by the time its answer makes the announcer speak: it does not count)
+  current = { ...c, id: ++seq, at: Date.now(), modal: !!document.querySelector('dialog[open]:not([data-dialog^="confirm:"])') };
   subs.forEach(fn => fn(current));
 };
 export const captionSeq = () => seq;

@@ -10,11 +10,14 @@ export const ellipsis = "Agents working...";
 export const banned = [
   "Buff manager, tax reputation.", "Out of mana.", "Good vibes only.", "An epic quarter.", "Quota missed, lol."
 ];
-// over 90 characters as written
+// over 100 characters as written
 export const long = "The forecast call ran long, then longer, then it was moved to a recurring series that nobody is able to decline.";
-// over 90 characters only with a long list of long names: found by the lint's params
+// over 100 characters only with a long list of long names: found by the lint's params
 export const ghosted = ({ names }) => `These accounts stopped answering this week: ${names.join(", ")}.`;
 // a template that renders undefined or NaN
 export const broken = [({ n }) => `Leads added: ${[n][1]}.`, ({ pct }) => `${pct / "quota"}% of quota.`];
+// a line its module has pleaded for (lint.limits, below): no plea buys more than 150 characters
+export const pleaded = "The quarterly business review has been moved to a larger room, then to a smaller room, then to a call, then to an email, and finally to a shared document nobody opened.";
 // a function no synthetic params can satisfy
 export const uncallable = ({ deals }) => deals.first.account.toUpperCase();
+export const lint = { limits: { "len-log": { pleaded: 400 } } };

@@ -1,0 +1,3 @@
+meltdown by play (stress 99, one lunch with leadership): {"id":"end:meltdown","title":"Meltdown","body":"Closed $6,342. Normal operations have ceased."}
+card: Corporate verdict People & Culture has scheduled a webinar on resilience. Attendance is mandatory.
+errors: 0

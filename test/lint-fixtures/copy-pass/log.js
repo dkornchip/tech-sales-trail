@@ -1,4 +1,4 @@
-// Fixture for scripts/lint-copy.mjs: log lines (90 characters at most) built from params. Must produce no violation
+// Fixture for scripts/lint-copy.mjs: log lines (100 characters at most, 150 for a line the module names) built from params. Must produce no violation
 // for any of the synthetic params the lint tries: 0, 1, 2 and a large count, negative money, the longest account name.
 const money = n => (n < 0 ? "−$" : "$") + Math.abs(Math.round(n)).toLocaleString("en-US");
 const count = (n, one, many) => `${n.toLocaleString("en-US")} ${n === 1 ? one : many}`;
@@ -21,10 +21,13 @@ export const weekStart = {
 };
 // a function whose params the lint cannot guess: it is given them
 export const board = ({ deals }) => `On the board: ${deals.map(d => d.account).join(", ")}.`;
+// a line that needs the room, and says so (lint.limits below): 100 < length <= 150
+export const review = "Your mid-quarter review has been rescheduled to a room with better lighting. Please bring your forecast and a pen.";
 // a helper, not copy: left out by name
 export const formatMoney = money;
 
 export const lint = {
   skip: ["formatMoney"],
+  limits: { "len-log": { review: 150 } },
   params: { board: [{ deals: [{ account: "Feral Unicorn" }, { account: "Pinecone Pizza" }] }, { deals: [{ account: "Velvet Switchboard" }] }] }
 };

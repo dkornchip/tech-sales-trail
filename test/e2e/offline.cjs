@@ -13,7 +13,7 @@ const { pathToFileURL } = require("url");
 const target = path.resolve(process.argv[2] || "dist/index.html");
 const ORIGIN = "http://tst-offline.test";
 const SANS = "TST Sans", MONO = "TST Mono";
-const AUTOSAVE = "tst-autosave-v4-3";
+const AUTOSAVE = "tst-autosave-v5";
 
 function reporter(pass){
   const rows = [];
@@ -175,7 +175,9 @@ async function pass(browser, name, open){
       await action.click();
       await page.waitForFunction(({ k, prev }) => { try{ return localStorage.getItem(k) !== prev; }catch(e){ return false; } }, { k: AUTOSAVE, prev: before }, { timeout: 5000 }).catch(() => {});
       const after = await readSave();
-      const a = before ? JSON.parse(before) : null, b = after ? JSON.parse(after) : null;
+      // (the run is stored inside an envelope: { schemaVersion, state, ... })
+      const run = raw => { const e = raw ? JSON.parse(raw) : null; return e && e.state ? e.state : e; };
+      const a = run(before), b = run(after);
       played = !!b && after !== before && (!a || b.energy < a.energy || (b.logs || []).length > (a.logs || []).length);
       detail = JSON.stringify(label) + (a && b ? ": energy " + a.energy + " -> " + b.energy + ", log " + (a.logs || []).length + " -> " + (b.logs || []).length + " lines" : "");
     }

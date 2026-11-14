@@ -1,17 +1,23 @@
 #!/usr/bin/env node
-// Where the dice and the clock may be read.
+// Where the dice, the clock and the test hooks may be read.
 //
 //   node scripts/lint-rng.mjs [src-dir] [--json <file>]        (default src-dir: src)
 //
-// The game's odds are only testable because every mechanical roll comes from Math.random inside the rules, and
-// everything cosmetic (particles, sound jitter, which joke) comes from somewhere else. So:
+// The game's odds are only testable because every mechanical roll comes from the run's own seeded stream
+// (<src>/game/rng.js), and everything cosmetic (particles, sound jitter, which joke) comes from somewhere else. So:
 //
-//   math-random   Math.random may be read only in <src>/game/** and in <src>/fxrng.js (the one cosmetic stream).
-//                 Never in <src>/copy/**, <src>/ui/**, <src>/engine/**, <src>/shell/**, or anywhere else.
-//   math-alias    Math itself may not be handed around outside those files (const M = Math; f(Math)): what is then
+//   math-random   Math.random may be read only in <src>/fxrng.js (the one cosmetic stream). Never in <src>/game/**
+//                 (the rules roll rnd() from rng.js, whose seed comes from crypto, not from Math.random), nor in
+//                 <src>/copy/**, <src>/ui/**, <src>/engine/**, <src>/shell/**, or anywhere else.
+//   math-alias    Math itself may not be handed around outside that file (const M = Math; f(Math)): what is then
 //                 called on it cannot be seen from here.
 //   copy-clock    <src>/copy/** may not read a clock: no Date.now, new Date, Date() or performance.now. Copy that
 //                 depends on the time of day cannot be linted, and cannot be the same in two builds.
+//   test-hook     A test hook (anything named __TST_... other than the build flag __TST_TEST__ itself, and the
+//                 globals TST_CLAINK and TST_DEV) may be touched only inside a branch that tests __TST_TEST__:
+//                   if (typeof __TST_TEST__ === "undefined" || __TST_TEST__) { ... globalThis.__TST_RNG ... }
+//                 A release build defines the flag as false and the bundler drops the branch, so a hook outside
+//                 one would ship.
 //
 // The files are parsed (with the Babel parser that is already a dev dependency), so a mention in a comment or a
 // string is not an offence, and Math["random"] or const { random } = Math is.
@@ -31,7 +37,8 @@ const root = path.resolve(args[0] || "src");
 if(!fs.existsSync(root)){ console.error("lint-rng: no such directory: " + root); process.exit(2); }
 
 const rel = f => path.relative(root, f).split(path.sep).join("/");
-const mayRoll = r => r.startsWith("game/") || r === "fxrng.js";
+const mayRoll = r => r === "fxrng.js";
+const HOOK = /^(__TST_(?!TEST__$)\w+|TST_CLAINK|TST_DEV)$/;
 const isCopy = r => r.startsWith("copy/");
 
 function files(dir){
@@ -58,9 +65,16 @@ function scan(file){
   catch(e){ return { broken: `${r}: ${e.message}` }; }
   const found = [];
   const add = (rule, node, why) => found.push({ rule, file: r, line: node.loc.start.line, column: node.loc.start.column + 1, why, code: (lines[node.loc.start.line - 1] || "").trim().slice(0, 110) });
-  const walk = (node, parent, key) => {
+  // true inside a branch whose condition reads the build flag: if (...__TST_TEST__...) { here }, cond ? here : ..., a && here
+  const mentionsFlag = n => { let hit = false; const see = x => { if(!x || typeof x.type !== "string" || hit) return; if(x.type === "Identifier" && x.name === "__TST_TEST__"){ hit = true; return; }
+    for(const k of Object.keys(x)){ if(k === "loc" || k === "extra" || /Comments$/.test(k)) continue; const v = x[k]; if(Array.isArray(v)) v.forEach(see); else if(v && typeof v === "object") see(v); } }; see(n); return hit; };
+  const walk = (node, parent, key, guarded) => {
     if(!node || typeof node.type !== "string") return;
     const member = node.type === "MemberExpression" || node.type === "OptionalMemberExpression";
+    if(!guarded){
+      const name = member ? propName(node) : node.type === "Identifier" && !(parent && (parent.type === "MemberExpression" || parent.type === "OptionalMemberExpression") && key === "property" && !parent.computed) ? node.name : null;
+      if(typeof name === "string" && HOOK.test(name)) add("test-hook", node, `${name} outside a branch guarded by __TST_TEST__`);
+    }
     if(member && propName(node) === "random" && isNamed(node.object, "Math") && !mayRoll(r)) add("math-random", node, "Math.random outside src/game and src/fxrng.js");
     if(node.type === "VariableDeclarator" && node.id.type === "ObjectPattern" && isNamed(node.init, "Math") && !mayRoll(r) &&
       node.id.properties.some(p => p.type === "RestElement" || (p.key && (p.key.name === "random" || p.key.value === "random")))) add("math-random", node, "random taken out of Math outside src/game and src/fxrng.js");
@@ -79,11 +93,14 @@ function scan(file){
     for(const k of Object.keys(node)){
       if(k === "loc" || k === "leadingComments" || k === "trailingComments" || k === "innerComments" || k === "extra") continue;
       const v = node[k];
-      if(Array.isArray(v)) for(const c of v) walk(c, node, k);
-      else if(v && typeof v === "object") walk(v, node, k);
+      // what a condition on the build flag guards: the consequent of an if or a ?:, and the right side of an &&
+      const g = guarded || ((node.type === "IfStatement" || node.type === "ConditionalExpression") && k === "consequent" && mentionsFlag(node.test))
+        || (node.type === "LogicalExpression" && node.operator === "&&" && k === "right" && mentionsFlag(node.left));
+      if(Array.isArray(v)) for(const c of v) walk(c, node, k, g);
+      else if(v && typeof v === "object") walk(v, node, k, g);
     }
   };
-  walk(ast.program, null, null);
+  walk(ast.program, null, null, false);
   return { found };
 }
 
@@ -96,6 +113,6 @@ for(const b of broken) console.error("lint-rng: cannot parse " + b);
 for(const o of offenders) console.log(`${where}/${o.file}:${o.line}:${o.column}  ${o.rule.padEnd(11)} ${o.why}\n    ${o.code}`);
 const rolling = list.map(rel).filter(mayRoll).length;
 console.log(`${offenders.length || broken.length ? "LINT-RNG FAILED" : "LINT-RNG OK"}: ${list.length} files under ${where} (${rolling} may read Math.random), ${offenders.length} offender${offenders.length === 1 ? "" : "s"}` +
-  (offenders.length ? ` (${["math-random", "math-alias", "copy-clock"].map(k => `${k} ${offenders.filter(o => o.rule === k).length}`).join(", ")})` : "") + (broken.length ? `, ${broken.length} unparsed` : ""));
+  (offenders.length ? ` (${["math-random", "math-alias", "copy-clock", "test-hook"].map(k => `${k} ${offenders.filter(o => o.rule === k).length}`).join(", ")})` : "") + (broken.length ? `, ${broken.length} unparsed` : ""));
 if(jsonFile) fs.writeFileSync(jsonFile, JSON.stringify({ ok: !offenders.length && !broken.length, files: list.length, offenders, broken }, null, 1));
 process.exit(broken.length ? 2 : offenders.length ? 1 : 0);

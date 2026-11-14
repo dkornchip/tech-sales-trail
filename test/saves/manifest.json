@@ -568,7 +568,16 @@
      "perfWarnings": 0,
      "repoWarned": false,
      "claink.status": "expired"
-    }
+    },
+        "stateNow": {
+          "modifiers.conversion": null,
+          "modifiers.expiresIn": null,
+          "effects.0.src": "legacy",
+          "effects.0.conv": 0.06,
+          "effects.0.from": 5,
+          "effects.0.until": 5,
+          "effects.length": 1
+        }
    }
   },
   {
@@ -706,6 +715,7 @@
    "kind": "legacy",
    "file": "fixtures/legacy/corrupt.txt",
    "what": "Not JSON: a save cut off mid-write. The game must start a fresh run and say nothing in the console.",
+      "skipNow": "v2.1 does not load a save it cannot read: it leaves it where it is and says so (a dialog on page load, a notice through Load). test/e2e/resilience.cjs, section 4, holds both.",
    "how": "Hand-written. The first 90 bytes of a save.",
    "terminal": false,
    "policies": [

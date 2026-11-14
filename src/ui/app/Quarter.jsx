@@ -1,7 +1,7 @@
 import React from "react";
 import { QUARTER_WEEKS } from "../../game/constants.js";
 import { RENT_WEEKS, weekOf } from "../../game/selectors.js";
-import { UI } from "../../copy/ui.js";
+import { UI, chapterOf } from "../../copy/ui.js";
 
 // The quarter at a glance: thirteen weeks, the ones that cost rent, the one that ends it, and this week's slots.
 export const Quarter = ({ s }) => {
@@ -10,6 +10,8 @@ export const Quarter = ({ s }) => {
     <div className="quarter">
       <div className="quarter-head">
         <h2 key={week} className="week-in">{UI.week(week)}</h2><span className="of">{UI.ofWeeks(QUARTER_WEEKS)}</span>
+        {/* the chapter of the quarter, beside the heading (not part of it), where there is room for it */}
+        <span className="chapter" data-chapter={chapterOf(week)}>{chapterOf(week)}</span>
         <span className="slots" data-slots={s.slots} data-tour="slots">{UI.slots}
           <span className="pips" aria-hidden="true">{Array.from({ length: s.maxSlots }, (_, i) => <i key={i} className={i < spent ? "spent" : ""} />)}</span>
           <span className="num">{UI.slotsLeft(s.slots)}</span>

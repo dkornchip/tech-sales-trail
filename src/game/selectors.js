@@ -2,22 +2,28 @@
 // Each one mirrors a rule elsewhere in src/game; none of them draws from the dice or changes state.
 import { QUARTER_WEEKS } from "./constants.js";
 import { isRunOver } from "./log.js";
-import { FRIDAY, PAY, PROPOSE_ODDS, RENT_WEEKS, closeOdds, crmGain, crmNukeOdds, demoOdds, isDeadLead, qualifyOdds } from "./rules.js";
-export { RENT_WEEKS };
+import { CLAINK } from "./claink.js";
+import { EFFECT } from "./effects.js";
+import { QBR } from "./quarter.js";
+import { CASH, COST, FIRING_FROM, HAIL, TUNING } from "./rules.js";
+import { STRESS_DANGER } from "./stress.js";
+import { FRIDAY, PACE_GRACE, PAY, PROPOSE_ODDS, RENT_WEEKS, REVIEWS_FROM, closeOdds, crmGain, crmNukeOdds, demoOdds, expectedAttainment, isDeadLead, paceGap, qualifyOdds } from "./rules.js";
+export { RENT_WEEKS, REVIEWS_FROM };
+export { effectChips, convMod, discountRate } from "./effects.js";
 import { CRASH_PER_SHOT, RECHARGE_ENERGY, coffeeEnergy, coffeeRisk, coffeeStress, rechargeMax, rechargeRelief } from "./stress.js";
 import { clamp, getQuarterInfo } from "./util.js";
 
 export const weekOf = s => getQuarterInfo(s.week).weekInQuarter;
-export const REVIEWS_FROM = 5;                 // endWeek: mid-quarter reviews start
 export const rentDueThisWeek = s => RENT_WEEKS.includes(weekOf(s));
 export const nextRentWeek = s => RENT_WEEKS.find(w => w >= weekOf(s)) || null;
 
-// behindPace(): pace is week / 13; more than 3 points behind is "behind"
+// Where the run stands against what this week expects (rules.js, expectedAttainment: the share of quota expected
+// to be closed by this Friday). The reviews read the same numbers (quarter.js, behindPace).
 export const pace = s => {
-  const target = weekOf(s) / QUARTER_WEEKS;
+  const target = expectedAttainment(weekOf(s));
   const done = s.quota > 0 ? s.closedQuarter / s.quota : 0;
-  const gap = target - done;                   // positive = behind
-  return { target, done, gap, behind: gap > 0.03, reviewed: weekOf(s) >= REVIEWS_FROM };
+  const gap = paceGap(s);                      // positive = behind
+  return { target, done, gap, behind: gap > PACE_GRACE, ahead: gap < -PACE_GRACE, reviewed: weekOf(s) >= REVIEWS_FROM };
 };
 
 export const stageCount = (s, stage) => s.deals.filter(d => d.stage === stage).length;
@@ -76,6 +82,40 @@ export const runFacts = s => {
     trip: s.trip || null,
     signed: st ? st.signed : null, top: st ? st.top : null, took: st ? st.took : null,
     shots: k("shots"), hails: k("hails"), lunches: k("lunches"), cadences: k("cadences"), lost: k("lost"),
-    strikes: ck.strikes || 0, revoked: ck.status === "revoked", billed: ck.billed || 0
+    strikes: ck.strikes || 0, revoked: ck.status === "revoked", billed: ck.billed || 0,
+    // what only a story begun under v2.1 can vouch for (null: unknown, and then nothing is said about it)
+    conferences: st && st.v === 2 ? st.n.conferences || 0 : null,
+    tookLargest: st && st.v === 2 ? !!st.tookLargest : null,
+    reversed: st && st.v === 2 ? !!st.reversed : null,
+    manager: s.manager, whale: Array.isArray(s.achievements) && s.achievements.some(a => a && a.key === "whale"),
+    ckSeat: ["active", "cancelled", "revoked"].includes(ck.status), ckEarned: Number.isFinite(ck.earned) ? ck.earned : null
   };
 };
+
+// The distinctions an ending card may show: only what the run can prove, at most three, in the order the card
+// offers them (what the ending itself earned, then the risks taken, then the rest). ending: club, missed, fired,
+// repo, meltdown or ascension. They are remarks on the card; nothing is unlocked and no ending changes.
+export const DISTINCTION_MAX = 3;
+export const distinctionsOf = (s, ending) => {
+  const f = runFacts(s), out = [];
+  if (ending === "repo" && s.quota > 0 && s.closedWon >= s.quota) out.push("americanDream");
+  if (ending === "ascension") out.push("rightStuff");
+  if (f.whale) out.push("whale");
+  // the pilot cost more than the commission its genuine sales paid (both totals known)
+  if (f.ckSeat && f.ckEarned !== null && f.billed > f.ckEarned) out.push("digital");
+  if (f.tookLargest === true) out.push("leader");
+  if (f.manager === 100 && s.quota > 0 && s.closedWon < s.quota) out.push("optics");
+  if (f.conferences !== null && f.conferences >= 3) out.push("patriot");
+  return out.slice(0, DISTINCTION_MAX);
+};
+
+// Every number the handbook quotes, from the rules that use it (src/copy/help.js turns these into sentences).
+export const handbookFacts = s => ({
+  quota: s.quota, weeks: QUARTER_WEEKS, slots: s.maxSlots, conferenceSlots: COST.conference.slots,
+  qbr: { club: QBR.club, safe: QBR.safe, floor: QBR.floor }, reviewsFrom: REVIEWS_FROM, firingFrom: FIRING_FROM, relief: TUNING.relief > 0,
+  salary: PAY.salary, commission: PAY.commission, rent: PAY.rent, rentWeeks: RENT_WEEKS, repoAt: CASH.repoAt,
+  fullFunnel: EFFECT.fullFunnel.conv, neglect: EFFECT.neglect.conv, hailBlast: HAIL.blast, hailWalk: HAIL.walk,
+  fridayEnergy: FRIDAY.energy, rechargeEnergy: [RECHARGE_ENERGY, rechargeMax(RECHARGE_ENERGY)], rechargeRelief: [rechargeRelief(0), rechargeMax(rechargeRelief(0))],
+  stressDanger: STRESS_DANGER, crash: CRASH_PER_SHOT,
+  offerWeek: CLAINK.OFFER_LAST_WEEK, seat: CLAINK.INSTALL, miracle: CLAINK.MIRACLE_P, strikes: CLAINK.STRIKES, trueUpLo: CLAINK.TRUEUP_OVER[0], trueUpHi: CLAINK.TRUEUP_OVER[1], cancelFee: CLAINK.CANCEL
+});

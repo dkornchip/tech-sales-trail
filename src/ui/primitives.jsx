@@ -37,7 +37,9 @@ export const useTween=(target,ms=650)=>{
 // className: a variant ("ending"). An action may carry ui (data-ui, for tests), side:"start" (sits at the left of
 // the footer) and focus (takes the focus when the dialog opens; the first action does otherwise).
 // aside: something quiet at the left of the footer (a link), which is not one of the dialog's answers.
-export const Modal=({open,title,children,actions,onDismiss,dialogId,className,aside})=>{
+// mark: a small picture beside the title (an icon element). Decoration only: it is hidden from screen readers and
+// says nothing the title does not.
+export const Modal=({open,title,children,actions,onDismiss,dialogId,className,aside,mark})=>{
   const ref=useRef(null);
   const titleId=React.useId()+"t";
   // what the announcer says while this dialog is open is captioned under its title, and stays until it closes
@@ -74,7 +76,7 @@ export const Modal=({open,title,children,actions,onDismiss,dialogId,className,as
         // Chromium force-closes on a repeated Esc even when cancel is prevented; keep the dialog in step with state
         if(open && ref.current && !ref.current.open)ref.current.showModal();
       }}>
-      <div className="d-header"><span className="d-title" id={titleId}>{title}</span>
+      <div className={"d-header"+(mark ? " has-mark" : "")}>{mark ? <span className="d-mark" aria-hidden="true">{mark}</span> : null}<span className="d-title" id={titleId}>{title}</span>
         {cap && <span className="d-cap" role="status"><span className="pa-who">{WHO[cap.who]||WHO.pa}</span>{cap.text}</span>}</div>
       <div className="d-body">{children}</div>
       <div className={"d-footer"+(actions && actions.some(a=>a.note) ? " options" : "")}>

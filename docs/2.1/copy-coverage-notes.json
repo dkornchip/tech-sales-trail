@@ -1,0 +1,23 @@
+{
+  "L41": { "kind": "instruction", "why": "The deck says to keep the existing Skip and Sound labels; they are unchanged." },
+  "L71": { "kind": "instruction", "why": "Blocked-action notices keep the exact slots and energy needed and held, once-a-week and quarter-over wording (HINT.blocked)." },
+  "L78": { "kind": "typeset", "why": "The recovery dialog says 'Start a new run or return to a valid saved run.' only when a valid saved run exists, and 'Start a new run.' when none does; 'if available' is resolved by the dialog instead of printed." },
+  "L86": { "kind": "instruction", "why": "Conference hint shows the action's real slots, energy, cash and stress, and the real chance and duration of the signing-odds bonus (HINT.conference, from rules.js)." },
+  "L88": { "kind": "instruction", "why": "Recharge hint shows the real energy and relief ranges, once a week, coffee reducing relief and the trip (HINT.recharge); no cash is implied." },
+  "L91": { "kind": "instruction", "why": "The approved sentences are rendered (HINT.hail); the rest of the row is direction: cost is on the button, the no-eligible state has its own line, and the numbers come from rules.js." },
+  "L150": { "kind": "instruction", "why": "A pointer to the chapter table in section 6, which is applied (CHAPTER_LINE)." },
+  "L203": { "kind": "conditional", "why": "The count is of leads found, not conversations held, so the deck's own alternative is used: 'You found {n} potential customers. Management will call this momentum.'" },
+  "L206": { "kind": "conditional", "why": "The game does not track identified needs, so the deck's own alternative is used: 'No deals qualified.'" },
+  "L290": { "kind": "typeset", "why": "'Use live tooltip for odds' is direction to the player's eye; the handbook says 'The button shows the odds as they stand.' and the Quad shot hint carries the live risk." },
+  "L295": { "kind": "instruction", "why": "The approved sentences are rendered from the live configuration; the last sentence of the row is direction." },
+  "L298": { "kind": "instruction", "why": "The Keys section lists the hotkeys the source actually binds (unchanged from 2.0.1), shown only where there is a keyboard." },
+  "L303": { "kind": "instruction", "why": "Table header." },
+  "L368": { "kind": "instruction", "why": "Strike counters keep their exact counts, thresholds, projected cash range and Collections warning; 'a deal walks' became 'a live deal may walk'." },
+  "L375": { "kind": "instruction", "why": "Token count and skip guidance kept as they were." },
+  "L380": { "kind": "instruction", "why": "End-card totals kept; the pipeline figure is now labelled 'Claimed influence'." },
+  "L392": { "kind": "typeset", "why": "Rendered in three parts so the amount can be set in bold: 'Estimated this week: ' + amount + ' (N tokens), billed Friday; overages possible. Charged back so far ...'." },
+  "L397": { "kind": "instruction", "why": "Control labels (Expand, Minimize, Close, Cancel seat) kept plain." },
+  "L399": { "kind": "skipped", "why": "Optional marketing footnote: left out so the ad does not grow (the deck allows it only if it adds no obstruction)." },
+  "L465": { "kind": "typeset", "why": "'{n-3} more outcome(s), also billed' is rendered with a real plural: '1 more outcome, also billed' / '2 more outcomes, also billed'." },
+  "L479": { "kind": "typeset", "why": "Both approved forms are implemented: 'Shot #N.' when the fatal shot was not the first, 'One shot too many.' otherwise." }
+}

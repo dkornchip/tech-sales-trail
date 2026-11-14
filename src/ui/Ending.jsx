@@ -1,6 +1,7 @@
 import React from "react";
-import { NOTES, NOTE_ORDER, RESULTS } from "../copy/endings.js";
-import { runFacts } from "../game/selectors.js";
+import { DISTINCTIONS, NOTES, NOTE_ORDER, RESULTS, VERDICT } from "../copy/endings.js";
+import { WHALE_PUSH } from "../game/deals.js";
+import { distinctionsOf, runFacts } from "../game/selectors.js";
 import { money } from "../game/util.js";
 import { Cutscene } from "./Cutscene.jsx";
 import { REDUCED_MOTION } from "./env.js";
@@ -17,7 +18,8 @@ const tiles=f=>{
     {label:RESULTS.cash, value:usd(f.cash), tone:f.cash<0 ? "bad" : null}
   ];
   const more=[];
-  if(f.known) more.push({label:RESULTS.signed, value:String(f.signed), sub:f.lost ? RESULTS.lost(f.lost) : null});
+  // once signed revenue has been reversed (a clawback), the count is of what was signed, not of what was kept
+  if(f.known) more.push({label:f.reversed ? RESULTS.signedSoFar : RESULTS.signed, value:String(f.signed), sub:f.lost ? RESULTS.lost(f.lost) : null});
   if(f.top) more.push({label:RESULTS.top, value:usd(f.top.value), sub:f.top.account});
   if(f.shots) more.push({label:RESULTS.shots, value:String(f.shots)});
   if(f.billed>0 || f.strikes>0) more.push({label:RESULTS.claink, value:RESULTS.strikes(f.strikes), sub:f.billed>0 ? RESULTS.clainkBilled(f.billed) : null});
@@ -103,6 +105,8 @@ export const Ending=({over,s,onNew})=>{
   if(!over) return <Modal open={false} title="" />;
   const f=runFacts(s);
   const notes=notesFor(over.id,f);
+  const honours=distinctionsOf(s,over.id).map(k=>DISTINCTIONS.find(d=>d.key===k)).filter(Boolean)
+    .map(d=>({key:d.key,title:d.title,sub:typeof d.sub==="function" ? d.sub(WHALE_PUSH) : d.sub}));
   const engine=window.TST_SCENES;
   const summary=REDUCED_MOTION && engine && engine.summaryFor(over.type,over.meta);
   const actions=[];
@@ -115,11 +119,12 @@ export const Ending=({over,s,onNew})=>{
     <Modal open className="ending" dialogId={"end:"+over.id}
       title={<><span className="end-over">{RESULTS.overline(f.week,f.weeks)}</span><span className="end-title">{over.title}</span></>}
       actions={actions}>
-      <p className="end-body">{over.body}</p>
+      <p className="end-body">{over.body}{over.note ? <span className="end-cause"> {over.note}</span> : null}</p>
       <Cutscene type={over.type} play meta={over.meta} ctrlRef={sceneRef} maxFont={sceneFont()} onDone={()=>setDone(true)} />
       {summary && <p className="scene-note">{summary}</p>}
       <div ref={cardRef} className={"end-card"+(done ? " is-in" : "")} aria-hidden={done ? undefined : "true"}>
         <div className="end-card-in">
+        {VERDICT[over.id] && <p className="end-verdict" data-ui="verdict"><span className="end-notes-h">{RESULTS.verdict}</span>{VERDICT[over.id]}</p>}
         <dl className="end-facts">
           {tiles(f).map(t=>(
             <div className="end-fact" key={t.label}>
@@ -133,6 +138,12 @@ export const Ending=({over,s,onNew})=>{
           <div className="end-notes">
             <div className="end-notes-h">{RESULTS.notes}</div>
             <ul>{notes.map(n=><li key={n.key}>{n.text}</li>)}</ul>
+          </div>
+        )}
+        {honours.length>0 && (
+          <div className="end-notes end-honours" data-ui="distinctions">
+            <div className="end-notes-h">{RESULTS.distinctions}</div>
+            <ul>{honours.map(h=><li key={h.key} data-distinction={h.key}><b>{h.title}</b><span>{h.sub}</span></li>)}</ul>
           </div>
         )}
         </div>

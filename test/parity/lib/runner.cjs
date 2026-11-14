@@ -82,7 +82,8 @@ async function runSession(browser, spec, env) {
   const history = [];       // the last moves, for the failure report
   const benign = (env.driverB.benign || []).map(name => { const r = BENIGN_RULES[name]; if (!r) throw new Error(`driver ${env.driverB.name}: unknown benign rule ${name}`); return r; });
   const canonA = env.driverA.canon, canonB = env.driverB.canon;
-  const normA = s => normalise(s, canonA);
+  // env.self: A is build B too (test/saves --a self), so the keys B adds are taken out of both
+  const normA = s => (env.self ? stripAllowed(normalise(s, canonA), ADDITIVE_KEYS, '') : normalise(s, canonA));
   const normB = s => stripAllowed(normalise(s, canonB), ADDITIVE_KEYS, '');
 
   let a = null, b = null, stateA = null, stateB = null, step = -1, move = '(load)';

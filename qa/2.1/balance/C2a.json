@@ -1,0 +1,4746 @@
+{
+ "label": "C2a",
+ "engine": ".",
+ "tuning": {
+  "pace": "ramp",
+  "relief": 0.12,
+  "reliefRate": 0.25,
+  "reliefWeights": [
+   0.05,
+   0.12,
+   0.25,
+   0.45,
+   0.6
+  ],
+  "caps": null,
+  "fireFloor": 0.02,
+  "drift": "half",
+  "driftCap": 2
+ },
+ "seeds": {
+  "from": 1,
+  "count": 1000
+ },
+ "policies": {
+  "novice": {
+   "n": 1000,
+   "endings": {
+    "club": 2,
+    "missed": 4,
+    "fired": 984,
+    "meltdown": 10,
+    "ascension": 0,
+    "repo": 0
+   },
+   "causes": {
+    "review": 948,
+    "org": 31,
+    "stress": 10,
+    "qbr": 5,
+    "missed": 4,
+    "club": 2
+   },
+   "unfinished": 0,
+   "stuck": 0,
+   "illegal": 0,
+   "survival": 0.006,
+   "survivalCI": [
+    0.0027526691257485827,
+    0.013028168317397155
+   ],
+   "club": 0.002,
+   "clubCI": [
+    0.000548643583190341,
+    0.007262807928320951
+   ],
+   "attainment": {
+    "p25": 0,
+    "median": 0,
+    "p75": 0,
+    "mean": 0.02425175
+   },
+   "weekOfLoss": {
+    "median": 7,
+    "p25": 6,
+    "n": 994
+   },
+   "cash": {
+    "median": 4982,
+    "p25": 3988,
+    "p75": 5976
+   },
+   "warned": 0.969,
+   "warnings": {
+    "risk.audit": 0.969,
+    "risk.hygiene": 0.663,
+    "risk.hr": 0.227,
+    "risk.recurring": 0.226
+   },
+   "movesPerRun": 36.459,
+   "weeksPerRun": 7.486,
+   "mix": {
+    "act:prospect": 0.13831147481094508,
+    "act:cadence": 0.01921601578197494,
+    "act:network": 0.021590618492675264,
+    "act:discovery": 0.3354034997990721,
+    "act:demo": 0.07975011873013553,
+    "act:propose": 0.03576517005808644,
+    "act:close": 0.012092207649873963,
+    "act:conference": 0.005224125963540716,
+    "act:crm": 0.023015380119095458,
+    "act:recharge": 0.1896759580608629,
+    "act:coffee": 0.12190844993241515,
+    "act:politics": 0.01636649252913455,
+    "hail": 0.0016804880721879225,
+    "ck:deploy": 0
+   },
+   "sources": {
+    "act:prospect": 0.7502972651605232,
+    "act:cadence": 0.10424098295679746,
+    "act:network": 0.11712247324613555,
+    "act:conference": 0.028339278636543796
+   },
+   "moves": {
+    "act:prospect": 3786,
+    "act:recharge": 5192,
+    "act:discovery": 9181,
+    "end": 7486,
+    "act:coffee": 3337,
+    "act:demo": 2183,
+    "dlg:match@evt:competitor": 1026,
+    "act:crm": 630,
+    "act:network": 591,
+    "act:cadence": 526,
+    "act:close": 331,
+    "dlg:spin@evt:security": 574,
+    "act:politics": 448,
+    "act:propose": 979,
+    "act:conference": 143,
+    "hail": 46
+   },
+   "eventsPerFriday": {
+    "evt.seFumble": 0.10980496927598184,
+    "evt.competitor.match": 0.13705583756345177,
+    "evt.outage": 0.10419449639326743,
+    "evt.marketing": 0.1930269837029121,
+    "evt.security.spin": 0.07667646273043013,
+    "evt.seSave": 0.037403152551429335,
+    "evt.freeze": 0.08616083355597115,
+    "evt.caseStudy": 0.09083622762489982,
+    "evt.meme": 0.08602725086828747,
+    "evt.champion": 0.03860539674058242,
+    "evt.crud": 0.08789740849585893,
+    "evt.rebalance": 0.0010686615014694097
+   },
+   "eventTotalPerFriday": 1.048757681004542,
+   "tags": {
+    "act.prospect": 3786,
+    "act.recharge": 5192,
+    "act.discovery": 9181,
+    "pay.rent": 2202,
+    "pay.salary": 7486,
+    "evt.seFumble": 822,
+    "week.next": 6486,
+    "week.neglected": 4115,
+    "coffee.shot": 3337,
+    "act.demo": 2183,
+    "coffee.crash": 3337,
+    "ck.expired": 1000,
+    "evt.competitor.match": 1026,
+    "act.crm.clean": 298,
+    "evt.outage": 780,
+    "risk.audit": 969,
+    "act.network": 591,
+    "act.cadence": 526,
+    "evt.marketing": 1445,
+    "mgr.emails": 377,
+    "risk.recurring": 226,
+    "close.none": 1189,
+    "week.backlog": 3187,
+    "risk.hygiene": 663,
+    "end.fired.review": 948,
+    "evt.security.spin": 574,
+    "act.politics": 448,
+    "evt.seSave": 280,
+    "evt.freeze": 645,
+    "evt.caseStudy": 680,
+    "risk.hr": 227,
+    "act.propose": 979,
+    "evt.meme": 644,
+    "act.recharge.trip": 971,
+    "deal.ghost": 878,
+    "week.stale": 775,
+    "act.crm": 332,
+    "deal.lost": 348,
+    "evt.champion": 289,
+    "stress.warn": 885,
+    "close.nobody": 123,
+    "week.fullFunnel": 384,
+    "evt.crud": 658,
+    "act.crm.nuked": 64,
+    "act.conference": 143,
+    "close.signed": 142,
+    "close.lost": 96,
+    "act.hail.lean": 33,
+    "act.hail.torched": 18,
+    "end.fired.org": 31,
+    "evt.rebalance": 8,
+    "end.meltdown.weekend": 10,
+    "pay.repoWarn": 1,
+    "qbr.final": 11,
+    "end.fired.under70": 5,
+    "act.hail.blast": 13,
+    "act.hail.chaosLost": 5,
+    "ach.unlocked": 9,
+    "qbr.pip": 2,
+    "end.missed": 4,
+    "act.hail.chaosWon": 8,
+    "act.hail.cooked": 15,
+    "qbr.dodged": 1,
+    "qbr.survive": 1,
+    "qbr.hit": 2,
+    "end.club": 2
+   },
+   "claink": {
+    "used": 0,
+    "deploysPerUser": 0,
+    "miraclesPerUser": 0,
+    "billedMedian": null,
+    "deliveredMedian": null,
+    "revoked": 0,
+    "repoByClaink": 0
+   }
+  },
+  "balanced": {
+   "n": 1000,
+   "endings": {
+    "club": 390,
+    "missed": 120,
+    "fired": 490,
+    "meltdown": 0,
+    "ascension": 0,
+    "repo": 0
+   },
+   "causes": {
+    "club": 390,
+    "review": 439,
+    "missed": 120,
+    "org": 15,
+    "qbr": 36
+   },
+   "unfinished": 0,
+   "stuck": 0,
+   "illegal": 0,
+   "survival": 0.51,
+   "survivalCI": [
+    0.4790374955609513,
+    0.5408859692681348
+   ],
+   "club": 0.39,
+   "clubCI": [
+    0.36024540613908795,
+    0.4205964807409647
+   ],
+   "attainment": {
+    "p25": 0.2797953125,
+    "median": 0.786821875,
+    "p75": 1.2851265625000001,
+    "mean": 0.8700666187500005
+   },
+   "weekOfLoss": {
+    "median": 9,
+    "p25": 7,
+    "n": 490
+   },
+   "cash": {
+    "median": 24212.5,
+    "p25": 11255.75,
+    "p75": 34031.25
+   },
+   "warned": 0.631,
+   "warnings": {
+    "risk.audit": 0.631,
+    "risk.hygiene": 0.397,
+    "risk.hr": 0,
+    "risk.recurring": 0.246
+   },
+   "movesPerRun": 62.808,
+   "weeksPerRun": 11.003,
+   "mix": {
+    "act:prospect": 0.051759332241961234,
+    "act:cadence": 0,
+    "act:network": 0.10729804563552214,
+    "act:discovery": 0.11604923300794276,
+    "act:demo": 0.09868833242385659,
+    "act:propose": 0.1413731077830999,
+    "act:close": 0.13444087390610157,
+    "act:conference": 0,
+    "act:crm": 0.01774490187756422,
+    "act:recharge": 0.22211443238545645,
+    "act:coffee": 0.10729804563552214,
+    "act:politics": 0.0032336951029729786,
+    "hail": 0,
+    "ck:deploy": 0
+   },
+   "sources": {
+    "act:prospect": 0.32541296060991104,
+    "act:cadence": 0,
+    "act:network": 0.6745870393900889,
+    "act:conference": 0
+   },
+   "moves": {
+    "act:prospect": 2561,
+    "act:network": 5309,
+    "act:discovery": 5742,
+    "act:recharge": 10990,
+    "end": 11003,
+    "act:demo": 4883,
+    "act:propose": 6995,
+    "act:coffee": 5309,
+    "act:close": 6652,
+    "dlg:match@evt:competitor": 634,
+    "act:politics": 160,
+    "dlg:spin@evt:security": 568,
+    "act:crm": 878,
+    "dlg:hold@evt:competitor": 864,
+    "dlg:own@evt:security": 260
+   },
+   "eventsPerFriday": {
+    "evt.meme": 0.08552213032809233,
+    "evt.caseStudy": 0.08861219667363446,
+    "evt.champion": 0.08234117967826957,
+    "evt.crud": 0.07734254294283377,
+    "evt.competitor.match": 0.057620648913932565,
+    "evt.outage": 0.10806143778969372,
+    "evt.seSave": 0.09297464327910569,
+    "evt.marketing": 0.1966736344633282,
+    "evt.security.spin": 0.05162228483140961,
+    "evt.seFumble": 0.10351722257566118,
+    "evt.competitor.hold": 0.07852403889848224,
+    "evt.freeze": 0.08561301463237299,
+    "evt.security.own": 0.02362991911296919,
+    "evt.favors": 0.0012723802599291102
+   },
+   "eventTotalPerFriday": 1.1333272743797147,
+   "tags": {
+    "act.prospect": 2561,
+    "act.network": 5309,
+    "act.discovery": 5742,
+    "act.recharge": 10990,
+    "pay.rent": 2769,
+    "pay.salary": 11003,
+    "week.next": 10003,
+    "act.demo": 4883,
+    "act.propose": 6995,
+    "close.nobody": 2980,
+    "evt.meme": 941,
+    "evt.caseStudy": 975,
+    "ck.expired": 1000,
+    "coffee.shot": 5309,
+    "week.fullFunnel": 2734,
+    "coffee.crash": 5309,
+    "close.lost": 1946,
+    "evt.champion": 906,
+    "week.stale": 1779,
+    "close.signed": 4844,
+    "evt.crud": 851,
+    "risk.audit": 631,
+    "evt.competitor.match": 634,
+    "act.recharge.trip": 2177,
+    "act.politics": 160,
+    "deal.lost": 965,
+    "evt.outage": 1189,
+    "week.neglected": 3433,
+    "risk.recurring": 246,
+    "ach.unlocked": 265,
+    "week.backlog": 792,
+    "evt.seSave": 1023,
+    "deal.ghost": 923,
+    "evt.marketing": 2164,
+    "qbr.final": 546,
+    "qbr.hit": 390,
+    "end.club": 390,
+    "risk.hygiene": 397,
+    "evt.security.spin": 568,
+    "act.crm": 636,
+    "act.crm.clean": 242,
+    "evt.seFumble": 1139,
+    "evt.competitor.hold": 864,
+    "end.fired.review": 439,
+    "close.none": 484,
+    "qbr.survive": 90,
+    "end.missed": 120,
+    "act.crm.nuked": 148,
+    "evt.freeze": 942,
+    "evt.security.own": 260,
+    "end.fired.org": 15,
+    "qbr.dodged": 21,
+    "end.fired.under70": 25,
+    "end.fired.qbr": 11,
+    "qbr.macro": 9,
+    "evt.favors": 14,
+    "stress.warn": 1
+   },
+   "claink": {
+    "used": 0,
+    "deploysPerUser": 0,
+    "miraclesPerUser": 0,
+    "billedMedian": null,
+    "deliveredMedian": null,
+    "revoked": 0,
+    "repoByClaink": 0
+   }
+  },
+  "referral": {
+   "n": 1000,
+   "endings": {
+    "club": 473,
+    "missed": 74,
+    "fired": 453,
+    "meltdown": 0,
+    "ascension": 0,
+    "repo": 0
+   },
+   "causes": {
+    "club": 473,
+    "missed": 74,
+    "review": 416,
+    "org": 13,
+    "qbr": 24
+   },
+   "unfinished": 0,
+   "stuck": 0,
+   "illegal": 0,
+   "survival": 0.547,
+   "survivalCI": [
+    0.5160261709323279,
+    0.5776141137643769
+   ],
+   "club": 0.473,
+   "clubCI": [
+    0.4422178792270141,
+    0.5039887657344532
+   ],
+   "attainment": {
+    "p25": 0.23871562500000001,
+    "median": 0.926309375,
+    "p75": 1.4942890625,
+    "mean": 0.9969897687500002
+   },
+   "weekOfLoss": {
+    "median": 8,
+    "p25": 7,
+    "n": 453
+   },
+   "cash": {
+    "median": 27143.5,
+    "p25": 10462.75,
+    "p75": 38053.25
+   },
+   "warned": 0.611,
+   "warnings": {
+    "risk.audit": 0.611,
+    "risk.hygiene": 0.392,
+    "risk.hr": 0,
+    "risk.recurring": 0.252
+   },
+   "movesPerRun": 62.253,
+   "weeksPerRun": 10.984,
+   "mix": {
+    "act:prospect": 0,
+    "act:cadence": 0,
+    "act:network": 0.18918808566237266,
+    "act:discovery": 0.11369250556315456,
+    "act:demo": 0.09476757242308556,
+    "act:propose": 0.13931363942592329,
+    "act:close": 0.12645203437927444,
+    "act:conference": 0,
+    "act:crm": 0.017945001326990995,
+    "act:recharge": 0.20515280811710185,
+    "act:coffee": 0.1095890410958904,
+    "act:politics": 0.003899312006206235,
+    "hail": 0,
+    "ck:deploy": 0
+   },
+   "sources": {
+    "act:prospect": 0,
+    "act:cadence": 0,
+    "act:network": 1,
+    "act:conference": 0
+   },
+   "moves": {
+    "act:network": 9267,
+    "act:discovery": 5569,
+    "end": 10984,
+    "act:recharge": 10049,
+    "act:demo": 4642,
+    "act:coffee": 5368,
+    "act:propose": 6824,
+    "act:close": 6194,
+    "dlg:own@evt:security": 276,
+    "dlg:spin@evt:security": 502,
+    "dlg:match@evt:competitor": 672,
+    "dlg:hold@evt:competitor": 836,
+    "act:crm": 879,
+    "act:politics": 191
+   },
+   "eventsPerFriday": {
+    "evt.seSave": 0.0819373634377276,
+    "evt.meme": 0.08821922796795338,
+    "evt.seFumble": 0.10833940276766206,
+    "evt.security.own": 0.025127458120903133,
+    "evt.outage": 0.10041879096868171,
+    "evt.caseStudy": 0.09067734887108521,
+    "evt.marketing": 0.192006554989075,
+    "evt.champion": 0.07838674435542607,
+    "evt.crud": 0.08539694100509833,
+    "evt.security.spin": 0.045702840495265844,
+    "evt.competitor.match": 0.06117989803350328,
+    "evt.competitor.hold": 0.07611070648215586,
+    "evt.freeze": 0.0862163146394756,
+    "evt.favors": 0.0025491624180626364
+   },
+   "eventTotalPerFriday": 1.1222687545520758,
+   "tags": {
+    "act.network": 9267,
+    "act.discovery": 5569,
+    "pay.rent": 2746,
+    "pay.salary": 10984,
+    "week.next": 9984,
+    "act.recharge": 10049,
+    "act.demo": 4642,
+    "coffee.shot": 5368,
+    "close.none": 612,
+    "week.neglected": 3450,
+    "coffee.crash": 5368,
+    "act.propose": 6824,
+    "evt.seSave": 900,
+    "ck.expired": 1000,
+    "close.signed": 4440,
+    "ach.unlocked": 405,
+    "week.stale": 1932,
+    "evt.meme": 969,
+    "week.fullFunnel": 2288,
+    "evt.seFumble": 1190,
+    "deal.lost": 861,
+    "evt.security.own": 276,
+    "evt.outage": 1103,
+    "evt.caseStudy": 996,
+    "deal.ghost": 653,
+    "close.nobody": 2787,
+    "evt.marketing": 2109,
+    "evt.champion": 861,
+    "evt.crud": 938,
+    "qbr.final": 571,
+    "qbr.hit": 473,
+    "end.club": 473,
+    "evt.security.spin": 502,
+    "risk.audit": 611,
+    "evt.competitor.match": 672,
+    "evt.competitor.hold": 836,
+    "week.backlog": 873,
+    "evt.freeze": 947,
+    "act.crm": 601,
+    "risk.recurring": 252,
+    "risk.hygiene": 392,
+    "act.recharge.trip": 2029,
+    "act.crm.clean": 278,
+    "qbr.survive": 55,
+    "end.missed": 74,
+    "close.lost": 1717,
+    "act.politics": 191,
+    "end.fired.review": 416,
+    "act.crm.nuked": 121,
+    "qbr.dodged": 13,
+    "evt.favors": 28,
+    "end.fired.org": 13,
+    "qbr.macro": 6,
+    "end.fired.qbr": 5,
+    "end.fired.under70": 19
+   },
+   "claink": {
+    "used": 0,
+    "deploysPerUser": 0,
+    "miraclesPerUser": 0,
+    "billedMedian": null,
+    "deliveredMedian": null,
+    "revoked": 0,
+    "repoByClaink": 0
+   }
+  },
+  "caller": {
+   "n": 1000,
+   "endings": {
+    "club": 226,
+    "missed": 125,
+    "fired": 649,
+    "meltdown": 0,
+    "ascension": 0,
+    "repo": 0
+   },
+   "causes": {
+    "review": 570,
+    "club": 226,
+    "qbr": 66,
+    "missed": 125,
+    "org": 13
+   },
+   "unfinished": 0,
+   "stuck": 0,
+   "illegal": 0,
+   "survival": 0.351,
+   "survivalCI": [
+    0.32203957776457287,
+    0.3811007962820438
+   ],
+   "club": 0.226,
+   "clubCI": [
+    0.20115468448602525,
+    0.25294237919701507
+   ],
+   "attainment": {
+    "p25": 0.256359375,
+    "median": 0.514709375,
+    "p75": 0.9507921875,
+    "mean": 0.6154999437499995
+   },
+   "weekOfLoss": {
+    "median": 9,
+    "p25": 7,
+    "n": 649
+   },
+   "cash": {
+    "median": 17304.5,
+    "p25": 10656.5,
+    "p75": 27609.25
+   },
+   "warned": 0.804,
+   "warnings": {
+    "risk.audit": 0.804,
+    "risk.hygiene": 0.542,
+    "risk.hr": 0,
+    "risk.recurring": 0.368
+   },
+   "movesPerRun": 60.228,
+   "weeksPerRun": 10.531,
+   "mix": {
+    "act:prospect": 0.055638622722965145,
+    "act:cadence": 0.1051489944192903,
+    "act:network": 0,
+    "act:discovery": 0.11313046225123723,
+    "act:demo": 0.09402969358744867,
+    "act:propose": 0.1341265662840897,
+    "act:close": 0.12643992839844162,
+    "act:conference": 0,
+    "act:crm": 0.02510266399915763,
+    "act:recharge": 0.2216910603348426,
+    "act:coffee": 0.10780246393597978,
+    "act:politics": 0.01688954406654733,
+    "hail": 0,
+    "ck:deploy": 0
+   },
+   "sources": {
+    "act:prospect": 0.34603798297314997,
+    "act:cadence": 0.6539620170268501,
+    "act:network": 0,
+    "act:conference": 0
+   },
+   "moves": {
+    "act:prospect": 2642,
+    "act:cadence": 4993,
+    "act:recharge": 10527,
+    "end": 10531,
+    "act:discovery": 5372,
+    "act:demo": 4465,
+    "act:propose": 6369,
+    "act:coffee": 5119,
+    "act:close": 6004,
+    "act:politics": 802,
+    "act:crm": 1192,
+    "dlg:hold@evt:competitor": 818,
+    "dlg:match@evt:competitor": 635,
+    "dlg:spin@evt:security": 509,
+    "dlg:own@evt:security": 250
+   },
+   "eventsPerFriday": {
+    "evt.outage": 0.10407368720919191,
+    "evt.crud": 0.08223340613427026,
+    "evt.caseStudy": 0.08479726521697845,
+    "evt.freeze": 0.0816636596714462,
+    "evt.seFumble": 0.11138543348210046,
+    "evt.marketing": 0.19409362833539076,
+    "evt.competitor.hold": 0.0776754344316779,
+    "evt.competitor.match": 0.06029816731554458,
+    "evt.seSave": 0.09115943405184693,
+    "evt.security.spin": 0.048333491596239675,
+    "evt.champion": 0.08365777229133035,
+    "evt.meme": 0.0843224764979584,
+    "evt.security.own": 0.023739435951001805,
+    "evt.favors": 0.00028487323141202165
+   },
+   "eventTotalPerFriday": 1.1277181654163897,
+   "tags": {
+    "act.prospect": 2642,
+    "act.cadence": 4993,
+    "act.recharge": 10527,
+    "pay.rent": 2730,
+    "pay.salary": 10531,
+    "evt.outage": 1096,
+    "week.neglected": 3374,
+    "week.next": 9531,
+    "act.discovery": 5372,
+    "act.demo": 4465,
+    "evt.crud": 866,
+    "week.fullFunnel": 2576,
+    "act.propose": 6369,
+    "coffee.shot": 5119,
+    "coffee.crash": 5119,
+    "mgr.emails": 1719,
+    "ck.expired": 1000,
+    "close.nobody": 2762,
+    "close.lost": 1860,
+    "act.recharge.trip": 2086,
+    "act.politics": 802,
+    "evt.caseStudy": 893,
+    "evt.freeze": 860,
+    "week.stale": 1551,
+    "risk.audit": 804,
+    "evt.seFumble": 1173,
+    "evt.marketing": 2044,
+    "risk.hygiene": 542,
+    "act.crm": 784,
+    "evt.competitor.hold": 818,
+    "week.backlog": 766,
+    "risk.recurring": 368,
+    "evt.competitor.match": 635,
+    "close.signed": 4427,
+    "end.fired.review": 570,
+    "close.none": 460,
+    "evt.seSave": 960,
+    "deal.lost": 874,
+    "evt.security.spin": 509,
+    "evt.champion": 881,
+    "deal.ghost": 834,
+    "evt.meme": 888,
+    "ach.unlocked": 35,
+    "qbr.final": 417,
+    "qbr.hit": 226,
+    "end.club": 226,
+    "act.crm.clean": 408,
+    "act.crm.nuked": 167,
+    "end.fired.under70": 57,
+    "evt.security.own": 250,
+    "qbr.survive": 81,
+    "end.missed": 125,
+    "end.fired.qbr": 9,
+    "qbr.macro": 15,
+    "end.fired.org": 13,
+    "stress.warn": 2,
+    "qbr.dodged": 29,
+    "qbr.pipGone": 1,
+    "evt.favors": 3
+   },
+   "claink": {
+    "used": 0,
+    "deploysPerUser": 0,
+    "miraclesPerUser": 0,
+    "billedMedian": null,
+    "deliveredMedian": null,
+    "revoked": 0,
+    "repoByClaink": 0
+   }
+  },
+  "conference": {
+   "n": 1000,
+   "endings": {
+    "club": 362,
+    "missed": 146,
+    "fired": 492,
+    "meltdown": 0,
+    "ascension": 0,
+    "repo": 0
+   },
+   "causes": {
+    "club": 362,
+    "review": 451,
+    "missed": 146,
+    "qbr": 31,
+    "org": 10
+   },
+   "unfinished": 0,
+   "stuck": 0,
+   "illegal": 0,
+   "survival": 0.508,
+   "survivalCI": [
+    0.47704293024887356,
+    0.5388958416143954
+   ],
+   "club": 0.362,
+   "clubCI": [
+    0.33279441264206083,
+    0.3922617727165506
+   ],
+   "attainment": {
+    "p25": 0.297309375,
+    "median": 0.7762906249999999,
+    "p75": 1.2161203125,
+    "mean": 0.7883244624999998
+   },
+   "weekOfLoss": {
+    "median": 9,
+    "p25": 7,
+    "n": 492
+   },
+   "cash": {
+    "median": 23054.5,
+    "p25": 10481.75,
+    "p75": 31631.25
+   },
+   "warned": 0.687,
+   "warnings": {
+    "risk.audit": 0.687,
+    "risk.hygiene": 0.437,
+    "risk.hr": 0,
+    "risk.recurring": 0.268
+   },
+   "movesPerRun": 60.054,
+   "weeksPerRun": 10.97,
+   "mix": {
+    "act:prospect": 0.0415098374679213,
+    "act:cadence": 0.0008126603934987169,
+    "act:network": 0.00012831479897348162,
+    "act:discovery": 0.1319076133447391,
+    "act:demo": 0.11437125748502994,
+    "act:propose": 0.16409324208725407,
+    "act:close": 0.14869546621043628,
+    "act:conference": 0.026090675791274595,
+    "act:crm": 0.020615911035072713,
+    "act:recharge": 0.23432420872540632,
+    "act:coffee": 0.11328058169375535,
+    "act:politics": 0.004170230966638152,
+    "hail": 0,
+    "ck:deploy": 0
+   },
+   "sources": {
+    "act:prospect": 0.605616224648986,
+    "act:cadence": 0.01185647425897036,
+    "act:network": 0.00187207488299532,
+    "act:conference": 0.38065522620904835
+   },
+   "moves": {
+    "act:prospect": 1941,
+    "act:discovery": 6168,
+    "act:recharge": 10957,
+    "act:demo": 5348,
+    "end": 10970,
+    "act:propose": 7673,
+    "act:close": 6953,
+    "act:conference": 1220,
+    "act:coffee": 5297,
+    "dlg:match@evt:competitor": 737,
+    "dlg:spin@evt:security": 483,
+    "dlg:hold@evt:competitor": 782,
+    "act:crm": 964,
+    "dlg:own@evt:security": 322,
+    "act:cadence": 38,
+    "act:politics": 195,
+    "act:network": 6
+   },
+   "eventsPerFriday": {
+    "evt.meme": 0.08641750227894257,
+    "evt.outage": 0.10865998176845944,
+    "evt.caseStudy": 0.08368277119416591,
+    "evt.champion": 0.08340929808568824,
+    "evt.competitor.match": 0.06718322698268003,
+    "evt.marketing": 0.19635369188696444,
+    "evt.security.spin": 0.04402917046490428,
+    "evt.crud": 0.08714676390154968,
+    "evt.competitor.hold": 0.07128532360984503,
+    "evt.freeze": 0.08541476754785779,
+    "evt.seFumble": 0.11841385597082954,
+    "evt.seSave": 0.09626253418413856,
+    "evt.security.own": 0.02935278030993619,
+    "evt.favors": 0.00036463081130355516
+   },
+   "eventTotalPerFriday": 1.1579762989972653,
+   "tags": {
+    "act.prospect": 1941,
+    "act.discovery": 6168,
+    "act.recharge": 10957,
+    "act.demo": 5348,
+    "pay.rent": 2760,
+    "pay.salary": 10970,
+    "week.fullFunnel": 2063,
+    "week.next": 9970,
+    "act.propose": 7673,
+    "close.signed": 4732,
+    "act.recharge.trip": 2232,
+    "act.conference": 1220,
+    "evt.meme": 948,
+    "week.neglected": 4832,
+    "ck.expired": 1000,
+    "coffee.shot": 5297,
+    "deal.lost": 858,
+    "evt.outage": 1192,
+    "evt.caseStudy": 918,
+    "coffee.crash": 5297,
+    "evt.champion": 915,
+    "risk.audit": 687,
+    "ach.unlocked": 152,
+    "week.backlog": 718,
+    "evt.competitor.match": 737,
+    "evt.marketing": 2154,
+    "deal.ghost": 633,
+    "evt.security.spin": 483,
+    "close.nobody": 3456,
+    "evt.crud": 956,
+    "week.stale": 1149,
+    "evt.competitor.hold": 782,
+    "qbr.final": 539,
+    "qbr.hit": 362,
+    "end.club": 362,
+    "evt.freeze": 937,
+    "evt.seFumble": 1299,
+    "evt.seSave": 1056,
+    "close.lost": 1948,
+    "risk.hygiene": 437,
+    "act.crm": 576,
+    "act.crm.clean": 388,
+    "act.crm.nuked": 128,
+    "end.fired.review": 451,
+    "evt.security.own": 322,
+    "risk.recurring": 268,
+    "qbr.survive": 98,
+    "end.missed": 146,
+    "act.cadence": 38,
+    "mgr.emails": 37,
+    "act.politics": 195,
+    "end.fired.under70": 29,
+    "close.none": 409,
+    "qbr.dodged": 25,
+    "qbr.macro": 23,
+    "act.network": 6,
+    "stress.warn": 1,
+    "end.fired.org": 10,
+    "evt.favors": 4,
+    "end.fired.qbr": 2
+   },
+   "claink": {
+    "used": 0,
+    "deploysPerUser": 0,
+    "miraclesPerUser": 0,
+    "billedMedian": null,
+    "deliveredMedian": null,
+    "revoked": 0,
+    "repoByClaink": 0
+   }
+  },
+  "risk": {
+   "n": 1000,
+   "endings": {
+    "club": 288,
+    "missed": 80,
+    "fired": 611,
+    "meltdown": 21,
+    "ascension": 0,
+    "repo": 0
+   },
+   "causes": {
+    "missed": 80,
+    "review": 571,
+    "club": 288,
+    "qbr": 22,
+    "stress": 21,
+    "org": 18
+   },
+   "unfinished": 0,
+   "stuck": 0,
+   "illegal": 0,
+   "survival": 0.368,
+   "survivalCI": [
+    0.33866778382108387,
+    0.3983424804349792
+   ],
+   "club": 0.288,
+   "clubCI": [
+    0.26078703394743197,
+    0.31683551167594215
+   ],
+   "attainment": {
+    "p25": 0.2000421875,
+    "median": 0.511925,
+    "p75": 1.1017421875,
+    "mean": 0.7345332375000008
+   },
+   "weekOfLoss": {
+    "median": 8,
+    "p25": 7,
+    "n": 632
+   },
+   "cash": {
+    "median": 16916,
+    "p25": 9082.75,
+    "p75": 30493
+   },
+   "warned": 0.752,
+   "warnings": {
+    "risk.audit": 0.752,
+    "risk.hygiene": 0.486,
+    "risk.hr": 0.208,
+    "risk.recurring": 0.179
+   },
+   "movesPerRun": 58.292,
+   "weeksPerRun": 10.248,
+   "mix": {
+    "act:prospect": 0.03339877835951134,
+    "act:cadence": 0,
+    "act:network": 0.18045375218150086,
+    "act:discovery": 0.11760471204188482,
+    "act:demo": 0.09229930191972077,
+    "act:propose": 0.12912303664921465,
+    "act:close": 0.0618891797556719,
+    "act:conference": 0,
+    "act:crm": 0,
+    "act:recharge": 0.2118455497382199,
+    "act:coffee": 0.07569808027923211,
+    "act:politics": 0.033507853403141365,
+    "hail": 0.06417975567190227,
+    "ck:deploy": 0
+   },
+   "sources": {
+    "act:prospect": 0.15617668060797715,
+    "act:cadence": 0,
+    "act:network": 0.8438233193920228,
+    "act:conference": 0
+   },
+   "moves": {
+    "act:prospect": 1531,
+    "act:network": 8272,
+    "act:discovery": 5391,
+    "act:recharge": 9711,
+    "end": 10248,
+    "act:demo": 4231,
+    "act:propose": 5919,
+    "dlg:match@evt:competitor": 1462,
+    "act:coffee": 3470,
+    "act:close": 2837,
+    "hail": 2942,
+    "act:politics": 1536,
+    "dlg:spin@evt:security": 742
+   },
+   "eventsPerFriday": {
+    "evt.competitor.match": 0.14266198282591724,
+    "evt.champion": 0.0821623731459797,
+    "evt.meme": 0.08265027322404371,
+    "evt.marketing": 0.19798985167837627,
+    "evt.security.spin": 0.07240437158469945,
+    "evt.crud": 0.08645589383294301,
+    "evt.seFumble": 0.10733801717408274,
+    "evt.caseStudy": 0.0857728337236534,
+    "evt.freeze": 0.08548009367681499,
+    "evt.outage": 0.09689695550351288,
+    "evt.seSave": 0.08548009367681499,
+    "evt.rebalance": 0.00234192037470726,
+    "evt.favors": 0.000195160031225605
+   },
+   "eventTotalPerFriday": 1.1278298204527712,
+   "tags": {
+    "act.prospect": 1531,
+    "act.network": 8272,
+    "act.discovery": 5391,
+    "act.recharge": 9711,
+    "pay.rent": 2671,
+    "pay.salary": 10248,
+    "week.next": 9248,
+    "act.demo": 4231,
+    "act.propose": 5919,
+    "close.nobody": 2627,
+    "close.signed": 3981,
+    "ck.expired": 1000,
+    "act.recharge.trip": 1927,
+    "week.fullFunnel": 2120,
+    "evt.competitor.match": 1462,
+    "evt.champion": 842,
+    "evt.meme": 847,
+    "week.stale": 2259,
+    "evt.marketing": 2029,
+    "coffee.shot": 3470,
+    "coffee.crash": 3362,
+    "act.hail.lean": 2361,
+    "close.lost": 1442,
+    "act.hail.cooked": 1557,
+    "week.neglected": 3185,
+    "week.backlog": 1247,
+    "act.politics": 1536,
+    "deal.ghost": 1183,
+    "deal.lost": 2264,
+    "evt.security.spin": 742,
+    "risk.audit": 752,
+    "evt.crud": 886,
+    "qbr.final": 390,
+    "qbr.survive": 68,
+    "end.missed": 80,
+    "close.none": 703,
+    "act.hail.blast": 581,
+    "ach.unlocked": 264,
+    "act.hail.chaosWon": 378,
+    "evt.seFumble": 1100,
+    "evt.caseStudy": 879,
+    "evt.freeze": 876,
+    "act.hail.torched": 804,
+    "evt.outage": 993,
+    "evt.seSave": 876,
+    "risk.recurring": 179,
+    "risk.hygiene": 486,
+    "risk.hr": 208,
+    "end.fired.review": 571,
+    "stress.warn": 338,
+    "qbr.hit": 288,
+    "end.club": 288,
+    "act.hail.chaosLost": 203,
+    "end.fired.under70": 14,
+    "end.meltdown.weekend": 21,
+    "end.fired.org": 18,
+    "evt.rebalance": 24,
+    "qbr.dodged": 9,
+    "qbr.reassigned": 1,
+    "end.fired.qbr": 8,
+    "qbr.pip": 3,
+    "evt.favors": 2
+   },
+   "claink": {
+    "used": 0,
+    "deploysPerUser": 0,
+    "miraclesPerUser": 0,
+    "billedMedian": null,
+    "deliveredMedian": null,
+    "revoked": 0,
+    "repoByClaink": 0
+   }
+  },
+  "claink": {
+   "n": 1000,
+   "endings": {
+    "club": 316,
+    "missed": 102,
+    "fired": 466,
+    "meltdown": 0,
+    "ascension": 0,
+    "repo": 116
+   },
+   "causes": {
+    "missed": 102,
+    "review": 405,
+    "org": 13,
+    "claink": 116,
+    "club": 316,
+    "qbr": 48
+   },
+   "unfinished": 0,
+   "stuck": 0,
+   "illegal": 0,
+   "survival": 0.418,
+   "survivalCI": [
+    0.38780056790848644,
+    0.44882702049300727
+   ],
+   "club": 0.316,
+   "clubCI": [
+    0.28793562188904365,
+    0.34547262525577166
+   ],
+   "attainment": {
+    "p25": 0.172378125,
+    "median": 0.5627437500000001,
+    "p75": 1.1615968749999999,
+    "mean": 0.7183085750000002
+   },
+   "weekOfLoss": {
+    "median": 8,
+    "p25": 6,
+    "n": 582
+   },
+   "cash": {
+    "median": 15530.5,
+    "p25": 5525.75,
+    "p75": 28442
+   },
+   "warned": 0.594,
+   "warnings": {
+    "risk.audit": 0.594,
+    "risk.hygiene": 0.38,
+    "risk.hr": 0,
+    "risk.recurring": 0.263
+   },
+   "movesPerRun": 62.192,
+   "weeksPerRun": 9.841,
+   "mix": {
+    "act:prospect": 0.05593809290328082,
+    "act:cadence": 0,
+    "act:network": 0.10761261165234816,
+    "act:discovery": 0.10479865271056726,
+    "act:demo": 0.08861838879532712,
+    "act:propose": 0.12409132575838325,
+    "act:close": 0.1136029333390181,
+    "act:conference": 0,
+    "act:crm": 0.018482593958515422,
+    "act:recharge": 0.20963994116267667,
+    "act:coffee": 0.09524824660512908,
+    "act:politics": 0.02805431793472468,
+    "hail": 0,
+    "ck:deploy": 0.05391289518002942
+   },
+   "sources": {
+    "act:prospect": 0.3420229405630866,
+    "act:cadence": 0,
+    "act:network": 0.6579770594369134,
+    "act:conference": 0
+   },
+   "moves": {
+    "ck:buy": 1000,
+    "ck:deploy": 2529,
+    "act:prospect": 2624,
+    "act:network": 5048,
+    "act:discovery": 4916,
+    "act:recharge": 9834,
+    "end": 9841,
+    "act:demo": 4157,
+    "act:propose": 5821,
+    "ck:cancel": 884,
+    "ck:hide": 884,
+    "act:close": 5329,
+    "act:coffee": 4468,
+    "act:politics": 1316,
+    "dlg:own@evt:security": 254,
+    "dlg:match@evt:competitor": 559,
+    "act:crm": 867,
+    "dlg:hold@evt:competitor": 744,
+    "dlg:spin@evt:security": 492,
+    "dlg:ack@ck:warning": 500,
+    "dlg:ack@ck:lesson": 125
+   },
+   "eventsPerFriday": {
+    "evt.champion": 0.07600853571791484,
+    "evt.meme": 0.08688141449039732,
+    "evt.security.own": 0.025810385123463064,
+    "evt.outage": 0.10557870135148867,
+    "evt.freeze": 0.08698303017985977,
+    "evt.marketing": 0.19733766893608373,
+    "evt.seSave": 0.08596687328523524,
+    "evt.competitor.match": 0.05680317040951123,
+    "evt.competitor.hold": 0.07560207296006503,
+    "evt.security.spin": 0.04999491921552688,
+    "evt.crud": 0.08210547708566203,
+    "evt.seFumble": 0.1137079565084849,
+    "evt.caseStudy": 0.09135250482674524,
+    "evt.favors": 0.001117772584086983
+   },
+   "eventTotalPerFriday": 1.1352504826745249,
+   "tags": {
+    "ck.install": 1000,
+    "ck.run": 2039,
+    "ck.strike": 1271,
+    "act.prospect": 2624,
+    "act.network": 5048,
+    "act.discovery": 4916,
+    "act.recharge": 9834,
+    "pay.rent": 2553,
+    "pay.salary": 9841,
+    "ck.invoice": 2060,
+    "week.next": 8899,
+    "ck.strike.hurt": 710,
+    "act.demo": 4157,
+    "act.propose": 5821,
+    "week.fullFunnel": 2180,
+    "ck.cancel": 884,
+    "pay.repoWarn": 505,
+    "close.signed": 3939,
+    "close.nobody": 2422,
+    "close.lost": 1552,
+    "coffee.shot": 4468,
+    "coffee.crash": 4468,
+    "act.politics": 1316,
+    "evt.champion": 748,
+    "evt.meme": 855,
+    "week.stale": 1735,
+    "evt.security.own": 254,
+    "act.recharge.trip": 1949,
+    "deal.lost": 831,
+    "evt.outage": 1039,
+    "risk.audit": 594,
+    "evt.freeze": 856,
+    "evt.marketing": 1942,
+    "week.neglected": 3266,
+    "evt.seSave": 846,
+    "week.backlog": 719,
+    "risk.hygiene": 380,
+    "evt.competitor.match": 559,
+    "act.crm": 610,
+    "evt.competitor.hold": 744,
+    "act.crm.nuked": 119,
+    "risk.recurring": 263,
+    "evt.security.spin": 492,
+    "qbr.final": 466,
+    "qbr.macro": 13,
+    "end.missed": 102,
+    "ck.miracle": 490,
+    "ck.signed": 490,
+    "evt.crud": 808,
+    "ck.mgr.warning": 500,
+    "deal.ghost": 805,
+    "end.fired.review": 405,
+    "evt.seFumble": 1119,
+    "end.fired.org": 13,
+    "ck.farewell": 58,
+    "ck.revoked": 58,
+    "end.repo": 116,
+    "evt.caseStudy": 899,
+    "ck.mgr.yoink": 125,
+    "close.none": 500,
+    "qbr.survive": 74,
+    "ach.unlocked": 174,
+    "qbr.hit": 316,
+    "end.club": 316,
+    "act.crm.clean": 257,
+    "end.fired.under70": 38,
+    "qbr.dodged": 15,
+    "end.fired.qbr": 10,
+    "evt.favors": 11,
+    "qbr.pipGone": 1,
+    "stress.warn": 2
+   },
+   "claink": {
+    "used": 1,
+    "deploysPerUser": 2.529,
+    "miraclesPerUser": 0.49,
+    "billedMedian": 2925.5,
+    "deliveredMedian": 0,
+    "revoked": 0.058,
+    "repoByClaink": 0.116
+   }
+  },
+  "expert": {
+   "n": 1000,
+   "endings": {
+    "club": 425,
+    "missed": 103,
+    "fired": 472,
+    "meltdown": 0,
+    "ascension": 0,
+    "repo": 0
+   },
+   "causes": {
+    "club": 425,
+    "review": 444,
+    "qbr": 16,
+    "org": 12,
+    "missed": 103
+   },
+   "unfinished": 0,
+   "stuck": 0,
+   "illegal": 0,
+   "survival": 0.528,
+   "survivalCI": [
+    0.49701080195104524,
+    0.5587748995703959
+   ],
+   "club": 0.425,
+   "clubCI": [
+    0.39470520686935484,
+    0.45586880691249915
+   ],
+   "attainment": {
+    "p25": 0.327746875,
+    "median": 0.849853125,
+    "p75": 1.3274453125,
+    "mean": 0.9124301187500007
+   },
+   "weekOfLoss": {
+    "median": 9,
+    "p25": 7,
+    "n": 472
+   },
+   "cash": {
+    "median": 25495.5,
+    "p25": 12127.75,
+    "p75": 34843.25
+   },
+   "warned": 0.631,
+   "warnings": {
+    "risk.audit": 0.631,
+    "risk.hygiene": 0.393,
+    "risk.hr": 0.151,
+    "risk.recurring": 0.154
+   },
+   "movesPerRun": 62.633,
+   "weeksPerRun": 10.982,
+   "mix": {
+    "act:prospect": 0.05173637156121394,
+    "act:cadence": 0,
+    "act:network": 0.10669612990856935,
+    "act:discovery": 0.11841385042674397,
+    "act:demo": 0.10270237395341293,
+    "act:propose": 0.14811360917955685,
+    "act:close": 0.13903136213432807,
+    "act:conference": 0,
+    "act:crm": 0,
+    "act:recharge": 0.22247450686236747,
+    "act:coffee": 0.11083179597380745,
+    "act:politics": 0,
+    "hail": 0,
+    "ck:deploy": 0
+   },
+   "sources": {
+    "act:prospect": 0.32655150351887396,
+    "act:cadence": 0,
+    "act:network": 0.673448496481126,
+    "act:conference": 0
+   },
+   "moves": {
+    "act:prospect": 2552,
+    "act:network": 5263,
+    "act:discovery": 5841,
+    "act:recharge": 10974,
+    "end": 10982,
+    "act:demo": 5066,
+    "act:propose": 7306,
+    "act:coffee": 5467,
+    "act:close": 6858,
+    "dlg:match@evt:competitor": 664,
+    "dlg:spin@evt:security": 567,
+    "dlg:own@evt:security": 256,
+    "dlg:hold@evt:competitor": 837
+   },
+   "eventsPerFriday": {
+    "evt.meme": 0.0870515388818066,
+    "evt.caseStudy": 0.08923693316335822,
+    "evt.champion": 0.08158805317792751,
+    "evt.crud": 0.07667091604443635,
+    "evt.competitor.match": 0.06046257512292843,
+    "evt.seSave": 0.09051174649426334,
+    "evt.marketing": 0.1972318339100346,
+    "evt.security.spin": 0.051629939901657255,
+    "evt.outage": 0.10835913312693499,
+    "evt.seFumble": 0.10908759788745219,
+    "evt.freeze": 0.0838645055545438,
+    "evt.security.own": 0.023310872336550718,
+    "evt.competitor.hold": 0.0762156255691131,
+    "evt.rebalance": 9.105809506465124e-05,
+    "evt.favors": 0.001092697140775815
+   },
+   "eventTotalPerFriday": 1.1364050264068475,
+   "tags": {
+    "act.prospect": 2552,
+    "act.network": 5263,
+    "act.discovery": 5841,
+    "act.recharge": 10974,
+    "pay.rent": 2767,
+    "pay.salary": 10982,
+    "week.next": 9982,
+    "act.demo": 5066,
+    "act.propose": 7306,
+    "close.nobody": 3031,
+    "evt.meme": 956,
+    "evt.caseStudy": 980,
+    "ck.expired": 1000,
+    "coffee.shot": 5467,
+    "week.fullFunnel": 2863,
+    "coffee.crash": 5467,
+    "close.lost": 1975,
+    "evt.champion": 896,
+    "week.stale": 1772,
+    "close.signed": 5002,
+    "evt.crud": 842,
+    "risk.audit": 631,
+    "evt.competitor.match": 664,
+    "act.recharge.trip": 2215,
+    "ach.unlocked": 282,
+    "evt.seSave": 994,
+    "evt.marketing": 2166,
+    "week.neglected": 3246,
+    "qbr.final": 544,
+    "qbr.hit": 425,
+    "end.club": 425,
+    "risk.hygiene": 393,
+    "evt.security.spin": 567,
+    "evt.outage": 1190,
+    "evt.seFumble": 1198,
+    "risk.hr": 151,
+    "end.fired.review": 444,
+    "deal.ghost": 1227,
+    "close.none": 470,
+    "deal.lost": 981,
+    "week.backlog": 845,
+    "evt.freeze": 921,
+    "evt.security.own": 256,
+    "evt.competitor.hold": 837,
+    "risk.recurring": 154,
+    "evt.rebalance": 1,
+    "end.fired.under70": 12,
+    "end.fired.org": 12,
+    "qbr.survive": 91,
+    "end.missed": 103,
+    "qbr.dodged": 12,
+    "evt.favors": 12,
+    "stress.warn": 1,
+    "end.fired.qbr": 4
+   },
+   "claink": {
+    "used": 0,
+    "deploysPerUser": 0,
+    "miraclesPerUser": 0,
+    "billedMedian": null,
+    "deliveredMedian": null,
+    "revoked": 0,
+    "repoByClaink": 0
+   }
+  },
+  "steady": {
+   "n": 1000,
+   "endings": {
+    "club": 157,
+    "missed": 85,
+    "fired": 758,
+    "meltdown": 0,
+    "ascension": 0,
+    "repo": 0
+   },
+   "causes": {
+    "qbr": 338,
+    "org": 420,
+    "club": 157,
+    "missed": 85
+   },
+   "unfinished": 0,
+   "stuck": 0,
+   "illegal": 0,
+   "survival": 0.242,
+   "survivalCI": [
+    0.21647428710551414,
+    0.26950032030406396
+   ],
+   "club": 0.157,
+   "clubCI": [
+    0.1357693268237746,
+    0.18085582953857152
+   ],
+   "attainment": {
+    "p25": 0.199246875,
+    "median": 0.41429375,
+    "p75": 0.7089765625,
+    "mean": 0.5598686312499999
+   },
+   "weekOfLoss": {
+    "median": 12,
+    "p25": 10,
+    "n": 758
+   },
+   "cash": {
+    "median": 16947,
+    "p25": 11033.25,
+    "p75": 22990.5
+   },
+   "warned": 0,
+   "warnings": {
+    "risk.audit": 0,
+    "risk.hygiene": 0,
+    "risk.hr": 0,
+    "risk.recurring": 0
+   },
+   "movesPerRun": 64.487,
+   "weeksPerRun": 11.592,
+   "mix": {
+    "act:prospect": 0.031362131514779054,
+    "act:cadence": 0,
+    "act:network": 0.06952401720754119,
+    "act:discovery": 0.16914140713280337,
+    "act:demo": 0.10453383026386218,
+    "act:propose": 0.11311777650020816,
+    "act:close": 0.10019229625517911,
+    "act:conference": 0,
+    "act:crm": 0.11375215589873719,
+    "act:recharge": 0.22976428840473406,
+    "act:coffee": 0.06859227246595166,
+    "act:politics": 1.9824356204032276e-05,
+    "hail": 0,
+    "ck:deploy": 0
+   },
+   "sources": {
+    "act:prospect": 0.3108665749656121,
+    "act:cadence": 0,
+    "act:network": 0.6891334250343879,
+    "act:conference": 0
+   },
+   "moves": {
+    "act:prospect": 1582,
+    "act:network": 3507,
+    "act:recharge": 11590,
+    "act:discovery": 8532,
+    "end": 11592,
+    "dlg:own@evt:security": 354,
+    "act:demo": 5273,
+    "act:propose": 5706,
+    "act:close": 5054,
+    "act:coffee": 3460,
+    "act:crm": 5738,
+    "dlg:hold@evt:competitor": 1036,
+    "dlg:spin@evt:security": 480,
+    "dlg:match@evt:competitor": 582,
+    "act:politics": 1
+   },
+   "eventsPerFriday": {
+    "evt.security.own": 0.030538302277432712,
+    "evt.champion": 0.08911318150448586,
+    "evt.outage": 0.1068840579710145,
+    "evt.seSave": 0.09265010351966874,
+    "evt.seFumble": 0.11697722567287784,
+    "evt.crud": 0.08247066942719117,
+    "evt.competitor.hold": 0.0893719806763285,
+    "evt.marketing": 0.19332298136645962,
+    "evt.freeze": 0.08574879227053141,
+    "evt.favors": 0.008799171842650104,
+    "evt.security.spin": 0.041407867494824016,
+    "evt.meme": 0.08781918564527261,
+    "evt.caseStudy": 0.0873015873015873,
+    "evt.competitor.match": 0.05020703933747412
+   },
+   "eventTotalPerFriday": 1.1626121463077983,
+   "tags": {
+    "act.prospect": 1582,
+    "act.network": 3507,
+    "act.recharge": 11590,
+    "act.recharge.trip": 2278,
+    "act.discovery": 8532,
+    "pay.rent": 2890,
+    "pay.salary": 11592,
+    "week.next": 10592,
+    "evt.security.own": 354,
+    "act.demo": 5273,
+    "act.propose": 5706,
+    "evt.champion": 1033,
+    "evt.outage": 1239,
+    "close.nobody": 2649,
+    "coffee.shot": 3460,
+    "evt.seSave": 1074,
+    "evt.seFumble": 1356,
+    "coffee.crash": 3460,
+    "ck.expired": 1000,
+    "close.signed": 3515,
+    "close.lost": 1209,
+    "week.neglected": 3457,
+    "act.crm.clean": 3488,
+    "evt.crud": 956,
+    "evt.competitor.hold": 1036,
+    "act.crm": 2250,
+    "act.crm.nuked": 824,
+    "evt.marketing": 2241,
+    "week.backlog": 652,
+    "evt.freeze": 994,
+    "evt.favors": 102,
+    "qbr.final": 580,
+    "end.fired.under70": 327,
+    "evt.security.spin": 480,
+    "deal.lost": 863,
+    "evt.meme": 1018,
+    "evt.caseStudy": 1012,
+    "end.fired.org": 420,
+    "week.fullFunnel": 2106,
+    "evt.competitor.match": 582,
+    "close.none": 596,
+    "week.stale": 574,
+    "qbr.hit": 157,
+    "end.club": 157,
+    "deal.ghost": 195,
+    "ach.unlocked": 158,
+    "qbr.macro": 46,
+    "end.missed": 85,
+    "qbr.survive": 15,
+    "qbr.dodged": 24,
+    "qbr.pipGone": 6,
+    "end.fired.qbr": 11,
+    "act.politics": 1
+   },
+   "claink": {
+    "used": 0,
+    "deploysPerUser": 0,
+    "miraclesPerUser": 0,
+    "billedMedian": null,
+    "deliveredMedian": null,
+    "revoked": 0,
+    "repoByClaink": 0
+   }
+  },
+  "claink-weekly": {
+   "n": 1000,
+   "endings": {
+    "club": 136,
+    "missed": 49,
+    "fired": 254,
+    "meltdown": 0,
+    "ascension": 0,
+    "repo": 561
+   },
+   "causes": {
+    "claink": 526,
+    "review": 235,
+    "club": 136,
+    "repo": 35,
+    "missed": 49,
+    "qbr": 17,
+    "org": 2
+   },
+   "unfinished": 0,
+   "stuck": 0,
+   "illegal": 0,
+   "survival": 0.185,
+   "survivalCI": [
+    0.1621548036140362,
+    0.21025605426975105
+   ],
+   "club": 0.136,
+   "clubCI": [
+    0.11614206440385187,
+    0.1586438158174134
+   ],
+   "attainment": {
+    "p25": 0,
+    "median": 0.107878125,
+    "p75": 0.49486562500000003,
+    "mean": 0.3542364937499999
+   },
+   "weekOfLoss": {
+    "median": 3,
+    "p25": 3,
+    "n": 815
+   },
+   "cash": {
+    "median": -1568,
+    "p25": -1835,
+    "p75": 8663.25
+   },
+   "warned": 0.327,
+   "warnings": {
+    "risk.audit": 0.327,
+    "risk.hygiene": 0.206,
+    "risk.hr": 0,
+    "risk.recurring": 0.141
+   },
+   "movesPerRun": 40.388,
+   "weeksPerRun": 5.957,
+   "mix": {
+    "act:prospect": 0.07331416200846554,
+    "act:cadence": 0,
+    "act:network": 0.1303111570648486,
+    "act:discovery": 0.10488222559694982,
+    "act:demo": 0.08119810010016479,
+    "act:propose": 0.09283013990758991,
+    "act:close": 0.07182784581085011,
+    "act:conference": 0,
+    "act:crm": 0.014184626320721186,
+    "act:recharge": 0.19244563636951112,
+    "act:coffee": 0.06623800445894859,
+    "act:politics": 0.05567223496720411,
+    "hail": 0,
+    "ck:deploy": 0.1170958673947462
+   },
+   "sources": {
+    "act:prospect": 0.36004443033957473,
+    "act:cadence": 0,
+    "act:network": 0.6399555696604252,
+    "act:conference": 0
+   },
+   "moves": {
+    "ck:buy": 1000,
+    "ck:deploy": 3624,
+    "act:prospect": 2269,
+    "act:network": 4033,
+    "act:discovery": 3246,
+    "act:recharge": 5956,
+    "end": 5957,
+    "act:demo": 2513,
+    "act:propose": 2873,
+    "dlg:match@evt:competitor": 258,
+    "dlg:ack@ck:warning": 571,
+    "act:politics": 1723,
+    "act:close": 2223,
+    "act:coffee": 2050,
+    "ck:hide": 474,
+    "dlg:own@evt:security": 190,
+    "act:crm": 439,
+    "dlg:hold@evt:competitor": 513,
+    "dlg:ack@ck:lesson": 231,
+    "dlg:spin@evt:security": 245
+   },
+   "eventsPerFriday": {
+    "evt.marketing": 0.20412959543394327,
+    "evt.crud": 0.07470203122377035,
+    "evt.competitor.match": 0.043310391136478096,
+    "evt.security.own": 0.031895249286553636,
+    "evt.caseStudy": 0.08930669800235018,
+    "evt.seSave": 0.07537351015611886,
+    "evt.seFumble": 0.10743662917575961,
+    "evt.outage": 0.105254322645627,
+    "evt.freeze": 0.0881316098707403,
+    "evt.competitor.hold": 0.08611717307369482,
+    "evt.meme": 0.09048178613396005,
+    "evt.champion": 0.07453416149068323,
+    "evt.security.spin": 0.041128084606345476,
+    "evt.favors": 0.0006714789323484975
+   },
+   "eventTotalPerFriday": 1.1124727211683734,
+   "tags": {
+    "ck.install": 1000,
+    "ck.run": 2923,
+    "ck.strike": 1271,
+    "act.prospect": 2269,
+    "act.network": 4033,
+    "act.discovery": 3246,
+    "act.recharge": 5956,
+    "pay.rent": 1794,
+    "pay.salary": 5957,
+    "ck.invoice": 2682,
+    "week.next": 5425,
+    "ck.strike.hurt": 710,
+    "act.demo": 2513,
+    "act.propose": 2873,
+    "week.fullFunnel": 1322,
+    "ck.farewell": 942,
+    "ck.revoked": 942,
+    "end.repo": 561,
+    "ck.miracle": 701,
+    "ck.signed": 701,
+    "evt.marketing": 1216,
+    "week.neglected": 2014,
+    "evt.crud": 445,
+    "evt.competitor.match": 258,
+    "ck.mgr.warning": 571,
+    "act.politics": 1723,
+    "close.signed": 1701,
+    "coffee.shot": 2050,
+    "coffee.crash": 2037,
+    "deal.lost": 406,
+    "evt.security.own": 190,
+    "evt.caseStudy": 532,
+    "act.recharge.trip": 1191,
+    "deal.ghost": 466,
+    "week.stale": 1101,
+    "risk.audit": 327,
+    "evt.seSave": 449,
+    "risk.hygiene": 206,
+    "act.crm": 309,
+    "week.backlog": 510,
+    "close.nobody": 1003,
+    "close.lost": 643,
+    "act.crm.nuked": 52,
+    "evt.seFumble": 640,
+    "evt.outage": 627,
+    "end.fired.review": 235,
+    "evt.freeze": 525,
+    "evt.competitor.hold": 513,
+    "pay.repoWarn": 594,
+    "ck.mgr.yoink": 231,
+    "evt.meme": 539,
+    "evt.champion": 444,
+    "ach.unlocked": 75,
+    "close.none": 404,
+    "qbr.final": 202,
+    "qbr.hit": 136,
+    "end.club": 136,
+    "evt.security.spin": 245,
+    "qbr.survive": 34,
+    "end.missed": 49,
+    "act.crm.clean": 130,
+    "risk.recurring": 141,
+    "end.fired.under70": 12,
+    "end.fired.qbr": 5,
+    "qbr.dodged": 9,
+    "end.fired.org": 2,
+    "qbr.macro": 6,
+    "stress.warn": 1,
+    "evt.favors": 4
+   },
+   "claink": {
+    "used": 1,
+    "deploysPerUser": 3.624,
+    "miraclesPerUser": 0.701,
+    "billedMedian": 4138,
+    "deliveredMedian": 0,
+    "revoked": 0.942,
+    "repoByClaink": 0.526
+   }
+  },
+  "claink-budget": {
+   "n": 1000,
+   "endings": {
+    "club": 380,
+    "missed": 113,
+    "fired": 507,
+    "meltdown": 0,
+    "ascension": 0,
+    "repo": 0
+   },
+   "causes": {
+    "club": 380,
+    "review": 457,
+    "missed": 113,
+    "org": 14,
+    "qbr": 36
+   },
+   "unfinished": 0,
+   "stuck": 0,
+   "illegal": 0,
+   "survival": 0.493,
+   "survivalCI": [
+    0.4620994071618871,
+    0.5239541674577526
+   ],
+   "club": 0.38,
+   "clubCI": [
+    0.35042930612834033,
+    0.41048911592262616
+   ],
+   "attainment": {
+    "p25": 0.27158125,
+    "median": 0.75524375,
+    "p75": 1.26355,
+    "mean": 0.8473550625000003
+   },
+   "weekOfLoss": {
+    "median": 8,
+    "p25": 7,
+    "n": 507
+   },
+   "cash": {
+    "median": 21756.5,
+    "p25": 9953,
+    "p75": 32371.25
+   },
+   "warned": 0.644,
+   "warnings": {
+    "risk.audit": 0.644,
+    "risk.hygiene": 0.41,
+    "risk.hr": 0,
+    "risk.recurring": 0.243
+   },
+   "movesPerRun": 64.425,
+   "weeksPerRun": 10.886,
+   "mix": {
+    "act:prospect": 0.05204639701905162,
+    "act:cadence": 0,
+    "act:network": 0.10595588677204158,
+    "act:discovery": 0.11342829096299857,
+    "act:demo": 0.09595929242542621,
+    "act:propose": 0.1370474988480878,
+    "act:close": 0.12731133681911974,
+    "act:conference": 0,
+    "act:crm": 0.016988200412685058,
+    "act:recharge": 0.2179818498707855,
+    "act:coffee": 0.10393252799647415,
+    "act:politics": 0.011158523148426388,
+    "hail": 0,
+    "ck:deploy": 0.018190195724903338
+   },
+   "sources": {
+    "act:prospect": 0.3294028147584633,
+    "act:cadence": 0,
+    "act:network": 0.6705971852415367,
+    "act:conference": 0
+   },
+   "moves": {
+    "act:prospect": 2598,
+    "act:network": 5289,
+    "act:discovery": 5662,
+    "act:recharge": 10881,
+    "end": 10886,
+    "act:demo": 4790,
+    "act:propose": 6841,
+    "act:coffee": 5188,
+    "act:close": 6355,
+    "dlg:match@evt:competitor": 633,
+    "act:politics": 557,
+    "dlg:spin@evt:security": 535,
+    "act:crm": 848,
+    "dlg:hold@evt:competitor": 847,
+    "dlg:own@evt:security": 276,
+    "ck:buy": 363,
+    "ck:deploy": 908,
+    "dlg:ack@ck:warning": 195,
+    "ck:cancel": 362,
+    "ck:hide": 362,
+    "dlg:ack@ck:lesson": 49
+   },
+   "eventsPerFriday": {
+    "evt.meme": 0.08763549513136139,
+    "evt.caseStudy": 0.08533896748116847,
+    "evt.champion": 0.08313430093698328,
+    "evt.crud": 0.07495866250229653,
+    "evt.competitor.match": 0.05814808010288444,
+    "evt.outage": 0.10756935513503582,
+    "evt.seSave": 0.08974830056953886,
+    "evt.marketing": 0.1967664890685284,
+    "evt.security.spin": 0.04914569171412824,
+    "evt.seFumble": 0.10949843836119787,
+    "evt.competitor.hold": 0.07780635678853573,
+    "evt.freeze": 0.0860738563292302,
+    "evt.security.own": 0.02535366525812971,
+    "evt.favors": 0.0012860554841080288
+   },
+   "eventTotalPerFriday": 1.132463714863127,
+   "tags": {
+    "act.prospect": 2598,
+    "act.network": 5289,
+    "act.discovery": 5662,
+    "act.recharge": 10881,
+    "pay.rent": 2746,
+    "pay.salary": 10886,
+    "week.next": 9886,
+    "act.demo": 4790,
+    "act.propose": 6841,
+    "close.nobody": 2806,
+    "evt.meme": 954,
+    "evt.caseStudy": 929,
+    "ck.expired": 637,
+    "coffee.shot": 5188,
+    "week.fullFunnel": 2662,
+    "coffee.crash": 5188,
+    "close.lost": 1856,
+    "evt.champion": 905,
+    "week.stale": 1795,
+    "close.signed": 4665,
+    "evt.crud": 816,
+    "risk.audit": 644,
+    "evt.competitor.match": 633,
+    "act.recharge.trip": 2146,
+    "act.politics": 557,
+    "deal.lost": 904,
+    "evt.outage": 1171,
+    "week.neglected": 3475,
+    "risk.recurring": 243,
+    "ach.unlocked": 250,
+    "week.backlog": 774,
+    "evt.seSave": 977,
+    "deal.ghost": 869,
+    "evt.marketing": 2142,
+    "qbr.final": 529,
+    "qbr.hit": 380,
+    "end.club": 380,
+    "risk.hygiene": 410,
+    "evt.security.spin": 535,
+    "act.crm": 589,
+    "act.crm.clean": 259,
+    "evt.seFumble": 1192,
+    "evt.competitor.hold": 847,
+    "end.fired.review": 457,
+    "close.none": 516,
+    "qbr.survive": 86,
+    "end.missed": 113,
+    "act.crm.nuked": 134,
+    "evt.freeze": 937,
+    "evt.security.own": 276,
+    "ck.install": 363,
+    "ck.run": 725,
+    "ck.strike": 430,
+    "ck.mgr.warning": 195,
+    "ck.invoice": 546,
+    "ck.cancel": 362,
+    "qbr.dodged": 16,
+    "ck.strike.hurt": 295,
+    "end.fired.org": 14,
+    "ck.mgr.yoink": 49,
+    "end.fired.under70": 26,
+    "evt.favors": 14,
+    "ck.miracle": 183,
+    "ck.signed": 183,
+    "end.fired.qbr": 10,
+    "ck.invoice.idle": 8,
+    "qbr.macro": 11
+   },
+   "claink": {
+    "used": 0.363,
+    "deploysPerUser": 2.5013774104683195,
+    "miraclesPerUser": 0.5041322314049587,
+    "billedMedian": 2947,
+    "deliveredMedian": 0,
+    "revoked": 0,
+    "repoByClaink": 0
+   }
+  },
+  "idle": {
+   "n": 1000,
+   "endings": {
+    "club": 0,
+    "missed": 0,
+    "fired": 1000,
+    "meltdown": 0,
+    "ascension": 0,
+    "repo": 0
+   },
+   "causes": {
+    "review": 976,
+    "org": 24
+   },
+   "unfinished": 0,
+   "stuck": 0,
+   "illegal": 0,
+   "survival": 0,
+   "survivalCI": [
+    2.1601063851133708e-19,
+    0.0038267585456940676
+   ],
+   "club": 0,
+   "clubCI": [
+    2.1601063851133708e-19,
+    0.0038267585456940676
+   ],
+   "attainment": {
+    "p25": 0,
+    "median": 0,
+    "p75": 0,
+    "mean": 0
+   },
+   "weekOfLoss": {
+    "median": 7,
+    "p25": 6,
+    "n": 1000
+   },
+   "cash": {
+    "median": 5000,
+    "p25": 4000,
+    "p75": 5400
+   },
+   "warned": 0.976,
+   "warnings": {
+    "risk.audit": 0.976,
+    "risk.hygiene": 0.668,
+    "risk.hr": 0.207,
+    "risk.recurring": 0.138
+   },
+   "movesPerRun": 8.482,
+   "weeksPerRun": 7.001,
+   "mix": {
+    "act:prospect": 0,
+    "act:cadence": 0,
+    "act:network": 0,
+    "act:discovery": 0,
+    "act:demo": 0,
+    "act:propose": 0,
+    "act:close": 0,
+    "act:conference": 0,
+    "act:crm": 0,
+    "act:recharge": 0,
+    "act:coffee": 0,
+    "act:politics": 0,
+    "hail": 0,
+    "ck:deploy": 0
+   },
+   "sources": {
+    "act:prospect": 0,
+    "act:cadence": 0,
+    "act:network": 0,
+    "act:conference": 0
+   },
+   "moves": {
+    "end": 7001,
+    "dlg:match@evt:competitor": 967,
+    "dlg:own@evt:security": 514
+   },
+   "eventsPerFriday": {
+    "evt.freeze": 0.09741465504927868,
+    "evt.competitor.match": 0.1381231252678189,
+    "evt.caseStudy": 0.09670047136123411,
+    "evt.marketing": 0.20539922868161692,
+    "evt.meme": 0.09412941008427368,
+    "evt.outage": 0.11841165547778888,
+    "evt.security.own": 0.07341808313098129,
+    "evt.rebalance": 0.0014283673760891302
+   },
+   "eventTotalPerFriday": 0.8250249964290816,
+   "tags": {
+    "pay.rent": 2105,
+    "pay.salary": 7001,
+    "evt.freeze": 682,
+    "week.next": 6001,
+    "ck.expired": 1000,
+    "evt.competitor.match": 967,
+    "evt.caseStudy": 677,
+    "risk.audit": 976,
+    "risk.hygiene": 668,
+    "evt.marketing": 1438,
+    "week.neglected": 4746,
+    "end.fired.review": 976,
+    "close.none": 1063,
+    "evt.meme": 659,
+    "evt.outage": 829,
+    "week.stale": 1318,
+    "risk.recurring": 138,
+    "risk.hr": 207,
+    "deal.ghost": 85,
+    "evt.security.own": 514,
+    "end.fired.org": 24,
+    "evt.rebalance": 10
+   },
+   "claink": {
+    "used": 0,
+    "deploysPerUser": 0,
+    "miraclesPerUser": 0,
+    "billedMedian": null,
+    "deliveredMedian": null,
+    "revoked": 0,
+    "repoByClaink": 0
+   }
+  },
+  "spam-prospect": {
+   "n": 1000,
+   "endings": {
+    "club": 0,
+    "missed": 0,
+    "fired": 1000,
+    "meltdown": 0,
+    "ascension": 0,
+    "repo": 0
+   },
+   "causes": {
+    "review": 978,
+    "org": 20,
+    "qbr": 2
+   },
+   "unfinished": 0,
+   "stuck": 0,
+   "illegal": 0,
+   "survival": 0,
+   "survivalCI": [
+    2.1601063851133708e-19,
+    0.0038267585456940676
+   ],
+   "club": 0,
+   "clubCI": [
+    2.1601063851133708e-19,
+    0.0038267585456940676
+   ],
+   "attainment": {
+    "p25": 0,
+    "median": 0,
+    "p75": 0,
+    "mean": 0
+   },
+   "weekOfLoss": {
+    "median": 7,
+    "p25": 6,
+    "n": 1000
+   },
+   "cash": {
+    "median": 5000,
+    "p25": 4000,
+    "p75": 6000
+   },
+   "warned": 0.98,
+   "warnings": {
+    "risk.audit": 0.98,
+    "risk.hygiene": 0.68,
+    "risk.hr": 0.228,
+    "risk.recurring": 0.171
+   },
+   "movesPerRun": 14.279,
+   "weeksPerRun": 7.137,
+   "mix": {
+    "act:prospect": 1,
+    "act:cadence": 0,
+    "act:network": 0,
+    "act:discovery": 0,
+    "act:demo": 0,
+    "act:propose": 0,
+    "act:close": 0,
+    "act:conference": 0,
+    "act:crm": 0,
+    "act:recharge": 0,
+    "act:coffee": 0,
+    "act:politics": 0,
+    "hail": 0,
+    "ck:deploy": 0
+   },
+   "sources": {
+    "act:prospect": 1,
+    "act:cadence": 0,
+    "act:network": 0,
+    "act:conference": 0
+   },
+   "moves": {
+    "act:prospect": 5657,
+    "end": 7137,
+    "dlg:match@evt:competitor": 971,
+    "dlg:own@evt:security": 514
+   },
+   "eventsPerFriday": {
+    "evt.marketing": 0.20751015832983047,
+    "evt.freeze": 0.09962168978562422,
+    "evt.meme": 0.0891130727196301,
+    "evt.outage": 0.1136331792069497,
+    "evt.competitor.match": 0.1360515622810705,
+    "evt.crud": 0.0906543365559759,
+    "evt.caseStudy": 0.08701134930643127,
+    "evt.security.own": 0.072019055625613,
+    "evt.rebalance": 0.003222642566904862
+   },
+   "eventTotalPerFriday": 0.89883704637803,
+   "tags": {
+    "act.prospect": 5657,
+    "pay.rent": 2113,
+    "pay.salary": 7137,
+    "week.neglected": 7137,
+    "week.stale": 5504,
+    "week.next": 6137,
+    "close.none": 1054,
+    "evt.marketing": 1481,
+    "ck.expired": 1000,
+    "evt.freeze": 711,
+    "evt.meme": 636,
+    "risk.audit": 980,
+    "evt.outage": 811,
+    "risk.hygiene": 680,
+    "end.fired.review": 978,
+    "evt.competitor.match": 971,
+    "evt.crud": 647,
+    "evt.caseStudy": 621,
+    "deal.ghost": 1715,
+    "risk.recurring": 171,
+    "evt.security.own": 514,
+    "risk.hr": 228,
+    "end.fired.org": 20,
+    "evt.rebalance": 23,
+    "qbr.final": 2,
+    "end.fired.under70": 2
+   },
+   "claink": {
+    "used": 0,
+    "deploysPerUser": 0,
+    "miraclesPerUser": 0,
+    "billedMedian": null,
+    "deliveredMedian": null,
+    "revoked": 0,
+    "repoByClaink": 0
+   }
+  },
+  "spam-network": {
+   "n": 1000,
+   "endings": {
+    "club": 0,
+    "missed": 0,
+    "fired": 1000,
+    "meltdown": 0,
+    "ascension": 0,
+    "repo": 0
+   },
+   "causes": {
+    "review": 976,
+    "org": 24
+   },
+   "unfinished": 0,
+   "stuck": 0,
+   "illegal": 0,
+   "survival": 0,
+   "survivalCI": [
+    2.1601063851133708e-19,
+    0.0038267585456940676
+   ],
+   "club": 0,
+   "clubCI": [
+    2.1601063851133708e-19,
+    0.0038267585456940676
+   ],
+   "attainment": {
+    "p25": 0,
+    "median": 0,
+    "p75": 0,
+    "mean": 0
+   },
+   "weekOfLoss": {
+    "median": 7,
+    "p25": 6,
+    "n": 1000
+   },
+   "cash": {
+    "median": 5000,
+    "p25": 4000,
+    "p75": 5400
+   },
+   "warned": 0.976,
+   "warnings": {
+    "risk.audit": 0.976,
+    "risk.hygiene": 0.687,
+    "risk.hr": 0.256,
+    "risk.recurring": 0.147
+   },
+   "movesPerRun": 19.331,
+   "weeksPerRun": 7.094,
+   "mix": {
+    "act:prospect": 0,
+    "act:cadence": 0,
+    "act:network": 1,
+    "act:discovery": 0,
+    "act:demo": 0,
+    "act:propose": 0,
+    "act:close": 0,
+    "act:conference": 0,
+    "act:crm": 0,
+    "act:recharge": 0,
+    "act:coffee": 0,
+    "act:politics": 0,
+    "hail": 0,
+    "ck:deploy": 0
+   },
+   "sources": {
+    "act:prospect": 0,
+    "act:cadence": 0,
+    "act:network": 1,
+    "act:conference": 0
+   },
+   "moves": {
+    "act:network": 10780,
+    "end": 7094,
+    "dlg:own@evt:security": 521,
+    "dlg:match@evt:competitor": 936
+   },
+   "eventsPerFriday": {
+    "evt.outage": 0.11587256836763463,
+    "evt.security.own": 0.07344234564420637,
+    "evt.freeze": 0.08655201578798985,
+    "evt.marketing": 0.20566676064279674,
+    "evt.caseStudy": 0.09825204398082887,
+    "evt.meme": 0.09853397237101776,
+    "evt.competitor.match": 0.13194248660840147,
+    "evt.crud": 0.08767972934874542,
+    "evt.rebalance": 0.003242176487172258
+   },
+   "eventTotalPerFriday": 0.9011840992387935,
+   "tags": {
+    "act.network": 10780,
+    "pay.rent": 2107,
+    "pay.salary": 7094,
+    "week.neglected": 7094,
+    "week.stale": 6059,
+    "week.next": 6094,
+    "evt.outage": 822,
+    "ck.expired": 1000,
+    "evt.security.own": 521,
+    "evt.freeze": 614,
+    "risk.audit": 976,
+    "evt.marketing": 1459,
+    "risk.recurring": 147,
+    "risk.hygiene": 687,
+    "end.fired.review": 976,
+    "evt.caseStudy": 697,
+    "evt.meme": 699,
+    "evt.competitor.match": 936,
+    "evt.crud": 622,
+    "close.none": 1100,
+    "deal.ghost": 225,
+    "risk.hr": 256,
+    "end.fired.org": 24,
+    "evt.rebalance": 23
+   },
+   "claink": {
+    "used": 0,
+    "deploysPerUser": 0,
+    "miraclesPerUser": 0,
+    "billedMedian": null,
+    "deliveredMedian": null,
+    "revoked": 0,
+    "repoByClaink": 0
+   }
+  },
+  "spam-cadence": {
+   "n": 1000,
+   "endings": {
+    "club": 0,
+    "missed": 0,
+    "fired": 1000,
+    "meltdown": 0,
+    "ascension": 0,
+    "repo": 0
+   },
+   "causes": {
+    "review": 980,
+    "org": 20
+   },
+   "unfinished": 0,
+   "stuck": 0,
+   "illegal": 0,
+   "survival": 0,
+   "survivalCI": [
+    2.1601063851133708e-19,
+    0.0038267585456940676
+   ],
+   "club": 0,
+   "clubCI": [
+    2.1601063851133708e-19,
+    0.0038267585456940676
+   ],
+   "attainment": {
+    "p25": 0,
+    "median": 0,
+    "p75": 0,
+    "mean": 0
+   },
+   "weekOfLoss": {
+    "median": 7,
+    "p25": 6,
+    "n": 1000
+   },
+   "cash": {
+    "median": 5000,
+    "p25": 4000,
+    "p75": 5000
+   },
+   "warned": 0.98,
+   "warnings": {
+    "risk.audit": 0.98,
+    "risk.hygiene": 0.636,
+    "risk.hr": 0.18,
+    "risk.recurring": 0.115
+   },
+   "movesPerRun": 17.817,
+   "weeksPerRun": 6.871,
+   "mix": {
+    "act:prospect": 0,
+    "act:cadence": 1,
+    "act:network": 0,
+    "act:discovery": 0,
+    "act:demo": 0,
+    "act:propose": 0,
+    "act:close": 0,
+    "act:conference": 0,
+    "act:crm": 0,
+    "act:recharge": 0,
+    "act:coffee": 0,
+    "act:politics": 0,
+    "hail": 0,
+    "ck:deploy": 0
+   },
+   "sources": {
+    "act:prospect": 0,
+    "act:cadence": 1,
+    "act:network": 0,
+    "act:conference": 0
+   },
+   "moves": {
+    "act:cadence": 9493,
+    "end": 6871,
+    "dlg:match@evt:competitor": 925,
+    "dlg:own@evt:security": 528
+   },
+   "eventsPerFriday": {
+    "evt.freeze": 0.08790569058361228,
+    "evt.competitor.match": 0.13462378110900888,
+    "evt.security.own": 0.07684470964925047,
+    "evt.caseStudy": 0.08834230825207394,
+    "evt.rebalance": 0.043079609954882844,
+    "evt.marketing": 0.2040459903944113,
+    "evt.outage": 0.11293843690874691,
+    "evt.meme": 0.09765681851258914,
+    "evt.crud": 0.09052539659438219
+   },
+   "eventTotalPerFriday": 0.935962741958958,
+   "tags": {
+    "act.cadence": 9493,
+    "pay.rent": 2076,
+    "pay.salary": 6871,
+    "week.neglected": 6870,
+    "week.stale": 5234,
+    "mgr.emails": 5493,
+    "week.next": 5871,
+    "evt.freeze": 604,
+    "ck.expired": 1000,
+    "evt.competitor.match": 925,
+    "evt.security.own": 528,
+    "close.none": 1067,
+    "risk.audit": 980,
+    "evt.caseStudy": 607,
+    "risk.hygiene": 636,
+    "evt.rebalance": 296,
+    "end.fired.review": 980,
+    "evt.marketing": 1402,
+    "evt.outage": 776,
+    "evt.meme": 671,
+    "evt.crud": 622,
+    "risk.hr": 180,
+    "deal.ghost": 156,
+    "risk.recurring": 115,
+    "end.fired.org": 20
+   },
+   "claink": {
+    "used": 0,
+    "deploysPerUser": 0,
+    "miraclesPerUser": 0,
+    "billedMedian": null,
+    "deliveredMedian": null,
+    "revoked": 0,
+    "repoByClaink": 0
+   }
+  },
+  "spam-politics": {
+   "n": 1000,
+   "endings": {
+    "club": 0,
+    "missed": 0,
+    "fired": 1000,
+    "meltdown": 0,
+    "ascension": 0,
+    "repo": 0
+   },
+   "causes": {
+    "review": 971,
+    "org": 25,
+    "qbr": 4
+   },
+   "unfinished": 0,
+   "stuck": 0,
+   "illegal": 0,
+   "survival": 0,
+   "survivalCI": [
+    2.1601063851133708e-19,
+    0.0038267585456940676
+   ],
+   "club": 0,
+   "clubCI": [
+    2.1601063851133708e-19,
+    0.0038267585456940676
+   ],
+   "attainment": {
+    "p25": 0,
+    "median": 0,
+    "p75": 0,
+    "mean": 0
+   },
+   "weekOfLoss": {
+    "median": 7,
+    "p25": 6,
+    "n": 1000
+   },
+   "cash": {
+    "median": 5000,
+    "p25": 4000,
+    "p75": 6000
+   },
+   "warned": 0.975,
+   "warnings": {
+    "risk.audit": 0.975,
+    "risk.hygiene": 0.696,
+    "risk.hr": 0.264,
+    "risk.recurring": 0.195
+   },
+   "movesPerRun": 17.679,
+   "weeksPerRun": 7.285,
+   "mix": {
+    "act:prospect": 0,
+    "act:cadence": 0,
+    "act:network": 0,
+    "act:discovery": 0,
+    "act:demo": 0,
+    "act:propose": 0,
+    "act:close": 0,
+    "act:conference": 0,
+    "act:crm": 0,
+    "act:recharge": 0,
+    "act:coffee": 0,
+    "act:politics": 1,
+    "hail": 0,
+    "ck:deploy": 0
+   },
+   "sources": {
+    "act:prospect": 0,
+    "act:cadence": 0,
+    "act:network": 0,
+    "act:conference": 0
+   },
+   "moves": {
+    "act:politics": 8879,
+    "end": 7285,
+    "dlg:match@evt:competitor": 992,
+    "dlg:own@evt:security": 523
+   },
+   "eventsPerFriday": {
+    "evt.freeze": 0.09361702127659574,
+    "evt.caseStudy": 0.08757721345229924,
+    "evt.crud": 0.09045984900480439,
+    "evt.favors": 0.07536032944406314,
+    "evt.outage": 0.11434454358270418,
+    "evt.marketing": 0.19862731640356898,
+    "evt.meme": 0.09251887439945093,
+    "evt.competitor.match": 0.13617021276595745,
+    "evt.security.own": 0.07179135209334249
+   },
+   "eventTotalPerFriday": 0.9604667124227866,
+   "tags": {
+    "act.politics": 8879,
+    "pay.rent": 2158,
+    "pay.salary": 7285,
+    "evt.freeze": 682,
+    "week.next": 6285,
+    "evt.caseStudy": 638,
+    "evt.crud": 659,
+    "evt.favors": 549,
+    "week.neglected": 5371,
+    "ck.expired": 1000,
+    "evt.outage": 833,
+    "risk.audit": 975,
+    "evt.marketing": 1447,
+    "evt.meme": 674,
+    "week.stale": 1609,
+    "risk.hygiene": 696,
+    "risk.hr": 264,
+    "close.none": 1096,
+    "deal.ghost": 112,
+    "end.fired.review": 971,
+    "evt.competitor.match": 992,
+    "evt.security.own": 523,
+    "end.fired.org": 25,
+    "risk.recurring": 195,
+    "qbr.final": 4,
+    "end.fired.under70": 4
+   },
+   "claink": {
+    "used": 0,
+    "deploysPerUser": 0,
+    "miraclesPerUser": 0,
+    "billedMedian": null,
+    "deliveredMedian": null,
+    "revoked": 0,
+    "repoByClaink": 0
+   }
+  },
+  "mgr-farm": {
+   "n": 1000,
+   "endings": {
+    "club": 15,
+    "missed": 26,
+    "fired": 959,
+    "meltdown": 0,
+    "ascension": 0,
+    "repo": 0
+   },
+   "causes": {
+    "qbr": 345,
+    "org": 614,
+    "missed": 26,
+    "club": 15
+   },
+   "unfinished": 0,
+   "stuck": 0,
+   "illegal": 0,
+   "survival": 0.041,
+   "survivalCI": [
+    0.03036497101037706,
+    0.05514799333457009
+   ],
+   "club": 0.015,
+   "clubCI": [
+    0.009110978768896503,
+    0.02460097702042674
+   ],
+   "attainment": {
+    "p25": 0,
+    "median": 0.132803125,
+    "p75": 0.306403125,
+    "mean": 0.21157105624999992
+   },
+   "weekOfLoss": {
+    "median": 11,
+    "p25": 8,
+    "n": 959
+   },
+   "cash": {
+    "median": 10232.5,
+    "p25": 6450.25,
+    "p75": 14685.5
+   },
+   "warned": 0,
+   "warnings": {
+    "risk.audit": 0,
+    "risk.hygiene": 0,
+    "risk.hr": 0,
+    "risk.recurring": 0
+   },
+   "movesPerRun": 56.482,
+   "weeksPerRun": 10.539,
+   "mix": {
+    "act:prospect": 0.017061958237083456,
+    "act:cadence": 0,
+    "act:network": 0.03949866203142511,
+    "act:discovery": 0.1500354504494202,
+    "act:demo": 0.08107860851268212,
+    "act:propose": 0.06605219221004963,
+    "act:close": 0.05001944056903689,
+    "act:conference": 0,
+    "act:crm": 0.24104018479976214,
+    "act:recharge": 0.24085721473823846,
+    "act:coffee": 0,
+    "act:politics": 0.11435628845230199,
+    "hail": 0,
+    "ck:deploy": 0
+   },
+   "sources": {
+    "act:prospect": 0.3016579053780833,
+    "act:cadence": 0,
+    "act:network": 0.6983420946219167,
+    "act:conference": 0
+   },
+   "moves": {
+    "act:crm": 10539,
+    "act:politics": 5000,
+    "act:recharge": 10531,
+    "end": 10539,
+    "act:discovery": 6560,
+    "dlg:hold@evt:competitor": 1240,
+    "act:demo": 3545,
+    "act:close": 2187,
+    "act:propose": 2888,
+    "act:network": 1727,
+    "dlg:own@evt:security": 514,
+    "act:prospect": 746,
+    "dlg:match@evt:competitor": 225,
+    "dlg:spin@evt:security": 241
+   },
+   "eventsPerFriday": {
+    "evt.meme": 0.08539709649871904,
+    "evt.competitor.hold": 0.11765822184267957,
+    "evt.caseStudy": 0.08122212733655945,
+    "evt.champion": 0.0656608786412373,
+    "evt.crud": 0.07932441408103236,
+    "evt.seSave": 0.06936141948951513,
+    "evt.security.own": 0.04877123066704621,
+    "evt.freeze": 0.08729480975424614,
+    "evt.outage": 0.1065565992978461,
+    "evt.favors": 0.07856532877882152,
+    "evt.marketing": 0.19536957965651391,
+    "evt.seFumble": 0.09128000759085302,
+    "evt.competitor.match": 0.02134927412467976,
+    "evt.security.spin": 0.022867444729101433
+   },
+   "eventTotalPerFriday": 1.1506784324888513,
+   "tags": {
+    "act.crm.clean": 8336,
+    "act.politics": 5000,
+    "act.recharge": 10531,
+    "pay.rent": 2735,
+    "pay.salary": 10539,
+    "evt.meme": 900,
+    "week.neglected": 5051,
+    "week.next": 9539,
+    "act.discovery": 6560,
+    "evt.competitor.hold": 1240,
+    "act.demo": 3545,
+    "close.none": 934,
+    "evt.caseStudy": 856,
+    "evt.champion": 692,
+    "ck.expired": 1000,
+    "close.signed": 1503,
+    "act.propose": 2888,
+    "evt.crud": 836,
+    "act.network": 1727,
+    "evt.seSave": 731,
+    "evt.security.own": 514,
+    "close.nobody": 1318,
+    "week.stale": 572,
+    "evt.freeze": 920,
+    "act.recharge.trip": 2190,
+    "deal.lost": 542,
+    "evt.outage": 1123,
+    "act.crm": 2203,
+    "evt.favors": 828,
+    "qbr.final": 386,
+    "end.fired.under70": 342,
+    "evt.marketing": 2059,
+    "week.fullFunnel": 376,
+    "act.crm.nuked": 1084,
+    "end.fired.org": 614,
+    "act.prospect": 746,
+    "evt.seFumble": 962,
+    "close.lost": 454,
+    "week.backlog": 503,
+    "evt.competitor.match": 225,
+    "evt.security.spin": 241,
+    "deal.ghost": 71,
+    "ach.unlocked": 45,
+    "qbr.dodged": 12,
+    "qbr.pipGone": 6,
+    "end.missed": 26,
+    "qbr.macro": 14,
+    "qbr.hit": 15,
+    "end.club": 15,
+    "end.fired.qbr": 3
+   },
+   "claink": {
+    "used": 0,
+    "deploysPerUser": 0,
+    "miraclesPerUser": 0,
+    "billedMedian": null,
+    "deliveredMedian": null,
+    "revoked": 0,
+    "repoByClaink": 0
+   }
+  },
+  "hail-only": {
+   "n": 1000,
+   "endings": {
+    "club": 14,
+    "missed": 16,
+    "fired": 970,
+    "meltdown": 0,
+    "ascension": 0,
+    "repo": 0
+   },
+   "causes": {
+    "review": 915,
+    "org": 42,
+    "qbr": 13,
+    "missed": 16,
+    "club": 14
+   },
+   "unfinished": 0,
+   "stuck": 0,
+   "illegal": 0,
+   "survival": 0.03,
+   "survivalCI": [
+    0.021093738770610226,
+    0.04250341426234219
+   ],
+   "club": 0.014,
+   "clubCI": [
+    0.008357575097078516,
+    0.023362034209336115
+   ],
+   "attainment": {
+    "p25": 0.0758703125,
+    "median": 0.14523124999999998,
+    "p75": 0.2754078125,
+    "mean": 0.2161313375
+   },
+   "weekOfLoss": {
+    "median": 7,
+    "p25": 6,
+    "n": 970
+   },
+   "cash": {
+    "median": 7825,
+    "p25": 5986.5,
+    "p75": 10928
+   },
+   "warned": 0.943,
+   "warnings": {
+    "risk.audit": 0.943,
+    "risk.hygiene": 0.597,
+    "risk.hr": 0.176,
+    "risk.recurring": 0.13
+   },
+   "movesPerRun": 41.506,
+   "weeksPerRun": 7.734,
+   "mix": {
+    "act:prospect": 0.040796081592163184,
+    "act:cadence": 0,
+    "act:network": 0.04203608407216815,
+    "act:discovery": 0.20097340194680388,
+    "act:demo": 0.15518631037262073,
+    "act:propose": 0.15490730981461964,
+    "act:close": 0,
+    "act:conference": 0,
+    "act:crm": 0,
+    "act:recharge": 0.2393204786409573,
+    "act:coffee": 0,
+    "act:politics": 0,
+    "hail": 0.16678033356066713,
+    "ck:deploy": 0
+   },
+   "sources": {
+    "act:prospect": 0.49251497005988026,
+    "act:cadence": 0,
+    "act:network": 0.5074850299401198,
+    "act:conference": 0
+   },
+   "moves": {
+    "act:prospect": 1316,
+    "act:discovery": 6483,
+    "act:recharge": 7720,
+    "end": 7734,
+    "dlg:hold@evt:competitor": 905,
+    "act:demo": 5006,
+    "act:propose": 4997,
+    "hail": 5380,
+    "act:network": 1356,
+    "dlg:own@evt:security": 398,
+    "dlg:spin@evt:security": 158,
+    "dlg:match@evt:competitor": 53
+   },
+   "eventsPerFriday": {
+    "evt.competitor.hold": 0.11701577450219809,
+    "evt.caseStudy": 0.08986294284975434,
+    "evt.champion": 0.07525213343677269,
+    "evt.marketing": 0.18916472717869148,
+    "evt.meme": 0.08210499094905611,
+    "evt.outage": 0.10305146108094129,
+    "evt.freeze": 0.08443237651926558,
+    "evt.crud": 0.0874062580811999,
+    "evt.security.own": 0.051461080941298164,
+    "evt.seFumble": 0.10835272821308507,
+    "evt.rebalance": 0.051978277734678044,
+    "evt.seSave": 0.08145849495733126,
+    "evt.security.spin": 0.0204292733385053,
+    "evt.competitor.match": 0.0068528575122834235
+   },
+   "eventTotalPerFriday": 1.148823377295061,
+   "tags": {
+    "act.prospect": 1316,
+    "act.discovery": 6483,
+    "act.recharge": 7720,
+    "pay.rent": 2267,
+    "pay.salary": 7734,
+    "week.next": 6734,
+    "evt.competitor.hold": 905,
+    "act.demo": 5006,
+    "act.propose": 4997,
+    "act.hail.lean": 4339,
+    "close.signed": 1982,
+    "act.hail.cooked": 1548,
+    "close.none": 962,
+    "evt.caseStudy": 695,
+    "evt.champion": 582,
+    "ck.expired": 1000,
+    "close.nobody": 3617,
+    "deal.lost": 2214,
+    "act.hail.torched": 2791,
+    "evt.marketing": 1463,
+    "evt.meme": 635,
+    "evt.outage": 797,
+    "evt.freeze": 653,
+    "week.neglected": 2130,
+    "week.backlog": 188,
+    "risk.audit": 943,
+    "end.fired.review": 915,
+    "week.fullFunnel": 1775,
+    "act.hail.blast": 1041,
+    "act.hail.chaosWon": 351,
+    "act.network": 1356,
+    "evt.crud": 676,
+    "evt.security.own": 398,
+    "evt.seFumble": 838,
+    "act.recharge.trip": 1573,
+    "evt.rebalance": 402,
+    "close.lost": 721,
+    "risk.hygiene": 597,
+    "evt.seSave": 630,
+    "risk.hr": 176,
+    "act.hail.chaosLost": 690,
+    "evt.security.spin": 158,
+    "week.stale": 255,
+    "evt.competitor.match": 53,
+    "risk.recurring": 130,
+    "end.fired.org": 42,
+    "deal.ghost": 116,
+    "qbr.final": 43,
+    "end.fired.qbr": 7,
+    "ach.unlocked": 22,
+    "end.fired.under70": 6,
+    "qbr.dodged": 4,
+    "end.missed": 16,
+    "qbr.hit": 14,
+    "end.club": 14,
+    "qbr.pip": 12,
+    "qbr.reassigned": 5,
+    "stress.warn": 1
+   },
+   "claink": {
+    "used": 0,
+    "deploysPerUser": 0,
+    "miraclesPerUser": 0,
+    "billedMedian": null,
+    "deliveredMedian": null,
+    "revoked": 0,
+    "repoByClaink": 0
+   }
+  },
+  "emailer": {
+   "n": 1000,
+   "endings": {
+    "club": 41,
+    "missed": 43,
+    "fired": 916,
+    "meltdown": 0,
+    "ascension": 0,
+    "repo": 0
+   },
+   "causes": {
+    "review": 869,
+    "qbr": 22,
+    "org": 25,
+    "club": 41,
+    "missed": 43
+   },
+   "unfinished": 0,
+   "stuck": 0,
+   "illegal": 0,
+   "survival": 0.084,
+   "survivalCI": [
+    0.06835881356621411,
+    0.10282504954380337
+   ],
+   "club": 0.041,
+   "clubCI": [
+    0.03036497101037706,
+    0.05514799333457009
+   ],
+   "attainment": {
+    "p25": 0.09980937499999999,
+    "median": 0.19264375,
+    "p75": 0.3591140625,
+    "mean": 0.28681452500000004
+   },
+   "weekOfLoss": {
+    "median": 7,
+    "p25": 6,
+    "n": 916
+   },
+   "cash": {
+    "median": 9028.5,
+    "p25": 6563.75,
+    "p75": 12996.25
+   },
+   "warned": 0.951,
+   "warnings": {
+    "risk.audit": 0.951,
+    "risk.hygiene": 0.633,
+    "risk.hr": 0.256,
+    "risk.recurring": 0.19
+   },
+   "movesPerRun": 41.157,
+   "weeksPerRun": 8.311,
+   "mix": {
+    "act:prospect": 0,
+    "act:cadence": 0.09210230014476435,
+    "act:network": 0,
+    "act:discovery": 0.205629724947724,
+    "act:demo": 0.15261380086858614,
+    "act:propose": 0.15087662859900272,
+    "act:close": 0.1314138652082998,
+    "act:conference": 0,
+    "act:crm": 0,
+    "act:recharge": 0.267363680231623,
+    "act:coffee": 0,
+    "act:politics": 0,
+    "hail": 0,
+    "ck:deploy": 0
+   },
+   "sources": {
+    "act:prospect": 0,
+    "act:cadence": 1,
+    "act:network": 0,
+    "act:conference": 0
+   },
+   "moves": {
+    "act:cadence": 2863,
+    "act:discovery": 6392,
+    "act:recharge": 8311,
+    "end": 8311,
+    "act:demo": 4744,
+    "act:propose": 4690,
+    "act:close": 4085,
+    "dlg:own@evt:security": 386,
+    "dlg:hold@evt:competitor": 952,
+    "dlg:spin@evt:security": 223,
+    "dlg:match@evt:competitor": 200
+   },
+   "eventsPerFriday": {
+    "evt.caseStudy": 0.0883166887257851,
+    "evt.crud": 0.08133798580194923,
+    "evt.outage": 0.10588376849957887,
+    "evt.freeze": 0.0843460474070509,
+    "evt.meme": 0.08314282276501023,
+    "evt.marketing": 0.1967272289736494,
+    "evt.security.own": 0.04644447118276982,
+    "evt.competitor.hold": 0.1145469859222717,
+    "evt.seSave": 0.08627120683431597,
+    "evt.seFumble": 0.10816989531945614,
+    "evt.champion": 0.07784863434003128,
+    "evt.security.spin": 0.02683190951750692,
+    "evt.competitor.match": 0.02406449284081338,
+    "evt.rebalance": 0.016002887739140898
+   },
+   "eventTotalPerFriday": 1.13993502586933,
+   "tags": {
+    "act.cadence": 2863,
+    "act.discovery": 6392,
+    "act.recharge": 8311,
+    "pay.rent": 2371,
+    "pay.salary": 8311,
+    "evt.caseStudy": 734,
+    "evt.crud": 676,
+    "mgr.emails": 2449,
+    "week.next": 7311,
+    "act.demo": 4744,
+    "evt.outage": 880,
+    "week.neglected": 2583,
+    "act.propose": 4690,
+    "ck.expired": 1000,
+    "close.nobody": 2422,
+    "close.lost": 722,
+    "evt.freeze": 701,
+    "evt.meme": 691,
+    "evt.marketing": 1635,
+    "week.fullFunnel": 1797,
+    "risk.audit": 951,
+    "end.fired.review": 869,
+    "close.none": 572,
+    "act.recharge.trip": 1643,
+    "evt.security.own": 386,
+    "close.signed": 2292,
+    "evt.competitor.hold": 952,
+    "evt.seSave": 717,
+    "evt.seFumble": 899,
+    "evt.champion": 647,
+    "risk.hygiene": 633,
+    "risk.hr": 256,
+    "qbr.final": 106,
+    "end.fired.under70": 14,
+    "week.stale": 265,
+    "end.fired.org": 25,
+    "deal.lost": 522,
+    "evt.security.spin": 223,
+    "risk.recurring": 190,
+    "week.backlog": 138,
+    "evt.competitor.match": 200,
+    "qbr.hit": 41,
+    "end.club": 41,
+    "evt.rebalance": 133,
+    "deal.ghost": 92,
+    "qbr.survive": 19,
+    "end.missed": 43,
+    "qbr.dodged": 13,
+    "qbr.reassigned": 5,
+    "end.fired.qbr": 8,
+    "ach.unlocked": 23,
+    "qbr.pip": 11
+   },
+   "claink": {
+    "used": 0,
+    "deploysPerUser": 0,
+    "miraclesPerUser": 0,
+    "billedMedian": null,
+    "deliveredMedian": null,
+    "revoked": 0,
+    "repoByClaink": 0
+   }
+  },
+  "ascend": {
+   "n": 1000,
+   "endings": {
+    "club": 0,
+    "missed": 0,
+    "fired": 0,
+    "meltdown": 0,
+    "ascension": 1000,
+    "repo": 0
+   },
+   "causes": {
+    "caffeine": 1000
+   },
+   "unfinished": 0,
+   "stuck": 0,
+   "illegal": 0,
+   "survival": 0,
+   "survivalCI": [
+    2.1601063851133708e-19,
+    0.0038267585456940676
+   ],
+   "club": 0,
+   "clubCI": [
+    2.1601063851133708e-19,
+    0.0038267585456940676
+   ],
+   "attainment": {
+    "p25": 0,
+    "median": 0,
+    "p75": 0,
+    "mean": 0
+   },
+   "weekOfLoss": {
+    "median": 1,
+    "p25": 1,
+    "n": 1000
+   },
+   "cash": {
+    "median": 1176,
+    "p25": 1170,
+    "p75": 1176
+   },
+   "warned": 0,
+   "warnings": {
+    "risk.audit": 0,
+    "risk.hygiene": 0,
+    "risk.hr": 0,
+    "risk.recurring": 0
+   },
+   "movesPerRun": 4.255,
+   "weeksPerRun": 0,
+   "mix": {
+    "act:prospect": 0,
+    "act:cadence": 0,
+    "act:network": 0,
+    "act:discovery": 0,
+    "act:demo": 0,
+    "act:propose": 0,
+    "act:close": 0,
+    "act:conference": 0,
+    "act:crm": 0,
+    "act:recharge": 0,
+    "act:coffee": 1,
+    "act:politics": 0,
+    "hail": 0,
+    "ck:deploy": 0
+   },
+   "sources": {
+    "act:prospect": 0,
+    "act:cadence": 0,
+    "act:network": 0,
+    "act:conference": 0
+   },
+   "moves": {
+    "act:coffee": 4255
+   },
+   "eventsPerFriday": {},
+   "eventTotalPerFriday": 0,
+   "tags": {
+    "coffee.shot": 3255,
+    "stress.warn": 811,
+    "end.ascension": 1000
+   },
+   "claink": {
+    "used": 0,
+    "deploysPerUser": 0,
+    "miraclesPerUser": 0,
+    "billedMedian": null,
+    "deliveredMedian": null,
+    "revoked": 0,
+    "repoByClaink": 0
+   }
+  },
+  "burn": {
+   "n": 1000,
+   "endings": {
+    "club": 0,
+    "missed": 0,
+    "fired": 0,
+    "meltdown": 393,
+    "ascension": 607,
+    "repo": 0
+   },
+   "causes": {
+    "stress": 393,
+    "caffeine": 607
+   },
+   "unfinished": 0,
+   "stuck": 0,
+   "illegal": 0,
+   "survival": 0,
+   "survivalCI": [
+    2.1601063851133708e-19,
+    0.0038267585456940676
+   ],
+   "club": 0,
+   "clubCI": [
+    2.1601063851133708e-19,
+    0.0038267585456940676
+   ],
+   "attainment": {
+    "p25": 0,
+    "median": 0,
+    "p75": 0,
+    "mean": 0
+   },
+   "weekOfLoss": {
+    "median": 2,
+    "p25": 1,
+    "n": 1000
+   },
+   "cash": {
+    "median": 582,
+    "p25": 582,
+    "p75": 588
+   },
+   "warned": 0,
+   "warnings": {
+    "risk.audit": 0,
+    "risk.hygiene": 0,
+    "risk.hr": 0,
+    "risk.recurring": 0
+   },
+   "movesPerRun": 7.368,
+   "weeksPerRun": 1,
+   "mix": {
+    "act:prospect": 0.5804634695848085,
+    "act:cadence": 0,
+    "act:network": 0,
+    "act:discovery": 0,
+    "act:demo": 0,
+    "act:propose": 0,
+    "act:close": 0,
+    "act:conference": 0,
+    "act:crm": 0,
+    "act:recharge": 0,
+    "act:coffee": 0.4195365304151915,
+    "act:politics": 0,
+    "hail": 0,
+    "ck:deploy": 0
+   },
+   "sources": {
+    "act:prospect": 1,
+    "act:cadence": 0,
+    "act:network": 0,
+    "act:conference": 0
+   },
+   "moves": {
+    "act:prospect": 3607,
+    "act:coffee": 2607,
+    "end": 1000,
+    "dlg:match@evt:competitor": 107,
+    "dlg:own@evt:security": 47
+   },
+   "eventsPerFriday": {
+    "evt.outage": 0.121,
+    "evt.crud": 0.101,
+    "evt.meme": 0.077,
+    "evt.caseStudy": 0.076,
+    "evt.marketing": 0.214,
+    "evt.freeze": 0.107,
+    "evt.competitor.match": 0.107,
+    "evt.security.own": 0.047
+   },
+   "eventTotalPerFriday": 0.85,
+   "tags": {
+    "act.prospect": 3607,
+    "coffee.shot": 2000,
+    "pay.rent": 1000,
+    "pay.salary": 1000,
+    "week.neglected": 1000,
+    "week.stale": 785,
+    "coffee.crash": 1000,
+    "stress.warn": 1607,
+    "end.meltdown.weekend": 393,
+    "evt.outage": 121,
+    "week.next": 607,
+    "end.ascension": 607,
+    "evt.crud": 101,
+    "close.none": 148,
+    "deal.ghost": 288,
+    "evt.meme": 77,
+    "evt.caseStudy": 76,
+    "evt.marketing": 214,
+    "evt.freeze": 107,
+    "evt.competitor.match": 107,
+    "evt.security.own": 47
+   },
+   "claink": {
+    "used": 0,
+    "deploysPerUser": 0,
+    "miraclesPerUser": 0,
+    "billedMedian": null,
+    "deliveredMedian": null,
+    "revoked": 0,
+    "repoByClaink": 0
+   }
+  },
+  "broke": {
+   "n": 1000,
+   "endings": {
+    "club": 0,
+    "missed": 0,
+    "fired": 0,
+    "meltdown": 0,
+    "ascension": 177,
+    "repo": 823
+   },
+   "causes": {
+    "repo": 823,
+    "caffeine": 177
+   },
+   "unfinished": 0,
+   "stuck": 0,
+   "illegal": 0,
+   "survival": 0,
+   "survivalCI": [
+    2.1601063851133708e-19,
+    0.0038267585456940676
+   ],
+   "club": 0,
+   "clubCI": [
+    2.1601063851133708e-19,
+    0.0038267585456940676
+   ],
+   "attainment": {
+    "p25": 0,
+    "median": 0,
+    "p75": 0,
+    "mean": 0.022412562500000007
+   },
+   "weekOfLoss": {
+    "median": 1,
+    "p25": 1,
+    "n": 1000
+   },
+   "cash": {
+    "median": -1506,
+    "p25": -1506,
+    "p75": -1506
+   },
+   "warned": 0,
+   "warnings": {
+    "risk.audit": 0,
+    "risk.hygiene": 0,
+    "risk.hr": 0,
+    "risk.recurring": 0
+   },
+   "movesPerRun": 7.239,
+   "weeksPerRun": 1,
+   "mix": {
+    "act:prospect": 0,
+    "act:cadence": 0,
+    "act:network": 0,
+    "act:discovery": 0,
+    "act:demo": 0,
+    "act:propose": 0,
+    "act:close": 0,
+    "act:conference": 0.4470083724729426,
+    "act:crm": 0,
+    "act:recharge": 0,
+    "act:coffee": 0.31018991219113745,
+    "act:politics": 0,
+    "hail": 0,
+    "ck:deploy": 0.24280171533591996
+   },
+   "sources": {
+    "act:prospect": 0,
+    "act:cadence": 0,
+    "act:network": 0,
+    "act:conference": 1
+   },
+   "moves": {
+    "ck:buy": 1000,
+    "ck:deploy": 1189,
+    "act:conference": 2189,
+    "act:coffee": 1519,
+    "end": 1000,
+    "dlg:ack@ck:warning": 263,
+    "dlg:match@evt:competitor": 39,
+    "dlg:ack@ck:lesson": 18,
+    "dlg:own@evt:security": 22
+   },
+   "eventsPerFriday": {
+    "evt.freeze": 0.017,
+    "evt.crud": 0.014,
+    "evt.competitor.match": 0.039,
+    "evt.outage": 0.018,
+    "evt.caseStudy": 0.021,
+    "evt.security.own": 0.022,
+    "evt.marketing": 0.038,
+    "evt.meme": 0.023
+   },
+   "eventTotalPerFriday": 0.192,
+   "tags": {
+    "ck.install": 1000,
+    "ck.run": 966,
+    "ck.strike": 603,
+    "act.conference": 2189,
+    "coffee.shot": 1342,
+    "pay.rent": 1000,
+    "pay.salary": 1000,
+    "end.repo": 823,
+    "ck.miracle": 223,
+    "ck.signed": 223,
+    "evt.freeze": 17,
+    "evt.crud": 14,
+    "week.neglected": 189,
+    "coffee.crash": 189,
+    "ck.invoice": 189,
+    "week.next": 189,
+    "ck.mgr.warning": 263,
+    "stress.warn": 178,
+    "pay.repoWarn": 61,
+    "end.ascension": 177,
+    "close.none": 146,
+    "ck.strike.hurt": 363,
+    "week.stale": 175,
+    "evt.competitor.match": 39,
+    "ck.mgr.yoink": 18,
+    "evt.outage": 18,
+    "evt.caseStudy": 21,
+    "evt.security.own": 22,
+    "evt.marketing": 38,
+    "evt.meme": 23
+   },
+   "claink": {
+    "used": 1,
+    "deploysPerUser": 1.189,
+    "miraclesPerUser": 0.223,
+    "billedMedian": 500,
+    "deliveredMedian": 0,
+    "revoked": 0,
+    "repoByClaink": 0
+   }
+  }
+ },
+ "seconds": 182.385,
+ "distance": {
+  "novice / referral": {
+   "mix": 0.4160000670161237,
+   "sources": 0.8828775267538644,
+   "tools": 0
+  },
+  "novice / risk": {
+   "mix": 0.4163773757264151,
+   "sources": 0.7267008461458873,
+   "tools": 0
+  },
+  "novice / steady": {
+   "mix": 0.3689949114195323,
+   "sources": 0.5720109517882523,
+   "tools": 0
+  },
+  "novice / spam-prospect": {
+   "mix": 0.861688525189055,
+   "sources": 0.2497027348394768,
+   "tools": 0
+  },
+  "novice / spam-network": {
+   "mix": 0.9784093815073248,
+   "sources": 0.8828775267538644,
+   "tools": 0
+  },
+  "novice / spam-cadence": {
+   "mix": 0.9807839842180252,
+   "sources": 0.8957590170432026,
+   "tools": 0
+  },
+  "novice / spam-politics": {
+   "mix": 0.9836335074708653,
+   "sources": 0.5,
+   "tools": 0
+  },
+  "balanced / novice": {
+   "mix": 0.36504071914240255,
+   "sources": 0.5574645661439533,
+   "tools": 0
+  },
+  "balanced / referral": {
+   "mix": 0.0850467518398788,
+   "sources": 0.3254129606099111,
+   "tools": 0
+  },
+  "balanced / caller": {
+   "mix": 0.13054631428591962,
+   "sources": 0.674587039390089,
+   "tools": 0
+  },
+  "balanced / conference": {
+   "mix": 0.11741922561058864,
+   "sources": 0.6727149645070936,
+   "tools": 0
+  },
+  "balanced / risk": {
+   "mix": 0.16916509955199144,
+   "sources": 0.16923628000193391,
+   "tools": 0
+  },
+  "balanced / claink": {
+   "mix": 0.08396453677087792,
+   "sources": 0.016609979953175508,
+   "tools": 1
+  },
+  "balanced / expert": {
+   "mix": 0.02160347338823732,
+   "sources": 0.0011385429089628973,
+   "tools": 0
+  },
+  "balanced / steady": {
+   "mix": 0.16259478200531674,
+   "sources": 0.01454638564429897,
+   "tools": 0
+  },
+  "balanced / claink-weekly": {
+   "mix": 0.2141023484548081,
+   "sources": 0.03463146972966369,
+   "tools": 1
+  },
+  "balanced / claink-budget": {
+   "mix": 0.026402088547447133,
+   "sources": 0.003989854148552241,
+   "tools": 0.363
+  },
+  "balanced / idle": {
+   "mix": 0.5,
+   "sources": 0.5,
+   "tools": 0
+  },
+  "balanced / spam-prospect": {
+   "mix": 0.9482406677580388,
+   "sources": 0.674587039390089,
+   "tools": 0
+  },
+  "balanced / spam-network": {
+   "mix": 0.8927019543644779,
+   "sources": 0.3254129606099111,
+   "tools": 0
+  },
+  "balanced / spam-cadence": {
+   "mix": 1,
+   "sources": 1,
+   "tools": 0
+  },
+  "balanced / spam-politics": {
+   "mix": 0.996766304897027,
+   "sources": 0.5,
+   "tools": 0
+  },
+  "balanced / mgr-farm": {
+   "mix": 0.3871468760657864,
+   "sources": 0.02375505523182775,
+   "tools": 0
+  },
+  "balanced / hail-only": {
+   "mix": 0.338942728735313,
+   "sources": 0.16710200944996917,
+   "tools": 0
+  },
+  "balanced / emailer": {
+   "mix": 0.2903610291913445,
+   "sources": 1,
+   "tools": 0
+  },
+  "balanced / burn": {
+   "mix": 0.8409426221225166,
+   "sources": 0.674587039390089,
+   "tools": 0
+  },
+  "balanced / broke": {
+   "mix": 0.8927019543644777,
+   "sources": 1,
+   "tools": 1
+  },
+  "referral / risk": {
+   "mix": 0.13779202352819706,
+   "sources": 0.15617668060797718,
+   "tools": 0
+  },
+  "referral / steady": {
+   "mix": 0.21699592578458288,
+   "sources": 0.3108665749656121,
+   "tools": 0
+  },
+  "referral / spam-prospect": {
+   "mix": 1,
+   "sources": 1,
+   "tools": 0
+  },
+  "referral / spam-network": {
+   "mix": 0.8108119143376274,
+   "sources": 0,
+   "tools": 0
+  },
+  "referral / spam-cadence": {
+   "mix": 1,
+   "sources": 1,
+   "tools": 0
+  },
+  "referral / spam-politics": {
+   "mix": 0.9961006879937937,
+   "sources": 0.5,
+   "tools": 0
+  },
+  "caller / novice": {
+   "mix": 0.34754710816065415,
+   "sources": 0.5497210340700526,
+   "tools": 0
+  },
+  "caller / referral": {
+   "mix": 0.19747376409250395,
+   "sources": 1,
+   "tools": 0
+  },
+  "caller / conference": {
+   "mix": 0.13567118534482955,
+   "sources": 0.6421055427678797,
+   "tools": 0
+  },
+  "caller / risk": {
+   "mix": 0.26572606698064477,
+   "sources": 0.8438233193920228,
+   "tools": 0
+  },
+  "caller / claink": {
+   "mix": 0.17298975088087057,
+   "sources": 0.6579770594369134,
+   "tools": 1
+  },
+  "caller / expert": {
+   "mix": 0.15104345364674648,
+   "sources": 0.673448496481126,
+   "tools": 0
+  },
+  "caller / steady": {
+   "mix": 0.23276181873499188,
+   "sources": 0.6891334250343879,
+   "tools": 0
+  },
+  "caller / claink-weekly": {
+   "mix": 0.303865254645752,
+   "sources": 0.6539620170268501,
+   "tools": 1
+  },
+  "caller / claink-budget": {
+   "mix": 0.13016585103136005,
+   "sources": 0.6705971852415367,
+   "tools": 0.363
+  },
+  "caller / idle": {
+   "mix": 0.5,
+   "sources": 0.5,
+   "tools": 0
+  },
+  "caller / spam-prospect": {
+   "mix": 0.944361377277035,
+   "sources": 0.6539620170268501,
+   "tools": 0
+  },
+  "caller / spam-network": {
+   "mix": 1,
+   "sources": 1,
+   "tools": 0
+  },
+  "caller / spam-cadence": {
+   "mix": 0.8948510055807097,
+   "sources": 0.3460379829731499,
+   "tools": 0
+  },
+  "caller / spam-politics": {
+   "mix": 0.9831104559334527,
+   "sources": 0.5,
+   "tools": 0
+  },
+  "caller / mgr-farm": {
+   "mix": 0.40897406981936313,
+   "sources": 0.6983420946219168,
+   "tools": 0
+  },
+  "caller / hail-only": {
+   "mix": 0.39622613595021866,
+   "sources": 0.6539620170268501,
+   "tools": 0
+  },
+  "caller / emailer": {
+   "mix": 0.2184799889991758,
+   "sources": 0.3460379829731499,
+   "tools": 0
+  },
+  "conference / novice": {
+   "mix": 0.36506726983690163,
+   "sources": 0.3523159475725045,
+   "tools": 0
+  },
+  "conference / referral": {
+   "mix": 0.18905977086339917,
+   "sources": 0.9981279251170048,
+   "tools": 0
+  },
+  "conference / risk": {
+   "mix": 0.27384281549093287,
+   "sources": 0.8419512445090275,
+   "tools": 0
+  },
+  "conference / expert": {
+   "mix": 0.11679434920288848,
+   "sources": 0.6715764215981307,
+   "tools": 0
+  },
+  "conference / steady": {
+   "mix": 0.19976574106029646,
+   "sources": 0.6872613501513926,
+   "tools": 0
+  },
+  "conference / idle": {
+   "mix": 0.5,
+   "sources": 0.5,
+   "tools": 0
+  },
+  "conference / spam-prospect": {
+   "mix": 0.9584901625320787,
+   "sources": 0.394383775351014,
+   "tools": 0
+  },
+  "conference / spam-network": {
+   "mix": 0.9998716852010266,
+   "sources": 0.9981279251170048,
+   "tools": 0
+  },
+  "conference / spam-cadence": {
+   "mix": 0.9991873396065013,
+   "sources": 0.9881435257410296,
+   "tools": 0
+  },
+  "conference / spam-politics": {
+   "mix": 0.9958297690333618,
+   "sources": 0.5,
+   "tools": 0
+  },
+  "conference / mgr-farm": {
+   "mix": 0.39464152160031807,
+   "sources": 0.6964700197389213,
+   "tools": 0
+  },
+  "conference / hail-only": {
+   "mix": 0.32356521423906837,
+   "sources": 0.5056129550571244,
+   "tools": 0
+  },
+  "conference / emailer": {
+   "mix": 0.23629376624402343,
+   "sources": 0.9881435257410296,
+   "tools": 0
+  },
+  "risk / steady": {
+   "mix": 0.23374523449981852,
+   "sources": 0.15468989435763492,
+   "tools": 0
+  },
+  "risk / spam-prospect": {
+   "mix": 0.9666012216404888,
+   "sources": 0.8438233193920228,
+   "tools": 0
+  },
+  "risk / spam-network": {
+   "mix": 0.8195462478184993,
+   "sources": 0.15617668060797718,
+   "tools": 0
+  },
+  "risk / spam-cadence": {
+   "mix": 1,
+   "sources": 1,
+   "tools": 0
+  },
+  "risk / spam-politics": {
+   "mix": 0.9664921465968587,
+   "sources": 0.5,
+   "tools": 0
+  },
+  "claink / novice": {
+   "mix": 0.3702918483017387,
+   "sources": 0.5408545861907779,
+   "tools": 1
+  },
+  "claink / referral": {
+   "mix": 0.13903071968892794,
+   "sources": 0.3420229405630866,
+   "tools": 1
+  },
+  "claink / conference": {
+   "mix": 0.19970953443685016,
+   "sources": 0.6561049845539181,
+   "tools": 1
+  },
+  "claink / risk": {
+   "mix": 0.1661987235915575,
+   "sources": 0.1858462599551094,
+   "tools": 1
+  },
+  "claink / expert": {
+   "mix": 0.10556801015911525,
+   "sources": 0.01547143704421261,
+   "tools": 1
+  },
+  "claink / steady": {
+   "mix": 0.19565210507305028,
+   "sources": 0.031156365597474478,
+   "tools": 1
+  },
+  "claink / claink-weekly": {
+   "mix": 0.1309590766512639,
+   "sources": 0.01802148977648818,
+   "tools": 0
+  },
+  "claink / claink-budget": {
+   "mix": 0.05966130855179051,
+   "sources": 0.012620125804623267,
+   "tools": 0.637
+  },
+  "claink / idle": {
+   "mix": 0.49999999999999994,
+   "sources": 0.5,
+   "tools": 1
+  },
+  "claink / spam-prospect": {
+   "mix": 0.9440619070967191,
+   "sources": 0.6579770594369134,
+   "tools": 1
+  },
+  "claink / spam-network": {
+   "mix": 0.8923873883476516,
+   "sources": 0.3420229405630866,
+   "tools": 1
+  },
+  "claink / spam-cadence": {
+   "mix": 0.9999999999999999,
+   "sources": 1,
+   "tools": 1
+  },
+  "claink / spam-politics": {
+   "mix": 0.9719456820652753,
+   "sources": 0.5,
+   "tools": 1
+  },
+  "claink / mgr-farm": {
+   "mix": 0.3853136326732387,
+   "sources": 0.040365035185003256,
+   "tools": 1
+  },
+  "claink / hail-only": {
+   "mix": 0.39001952590871436,
+   "sources": 0.15049202949679366,
+   "tools": 1
+  },
+  "claink / emailer": {
+   "mix": 0.3592487582340276,
+   "sources": 1,
+   "tools": 1
+  },
+  "expert / novice": {
+   "mix": 0.38014390904660056,
+   "sources": 0.5563260232349905,
+   "tools": 0
+  },
+  "expert / referral": {
+   "mix": 0.10433626908700058,
+   "sources": 0.32655150351887396,
+   "tools": 0
+  },
+  "expert / risk": {
+   "mix": 0.17144523134797518,
+   "sources": 0.17037482291089678,
+   "tools": 0
+  },
+  "expert / steady": {
+   "mix": 0.17362077481381646,
+   "sources": 0.015684928553261868,
+   "tools": 0
+  },
+  "expert / idle": {
+   "mix": 0.5,
+   "sources": 0.5,
+   "tools": 0
+  },
+  "expert / spam-prospect": {
+   "mix": 0.9482636284387861,
+   "sources": 0.673448496481126,
+   "tools": 0
+  },
+  "expert / spam-network": {
+   "mix": 0.8933038700914305,
+   "sources": 0.32655150351887396,
+   "tools": 0
+  },
+  "expert / spam-cadence": {
+   "mix": 1.0000000000000002,
+   "sources": 1,
+   "tools": 0
+  },
+  "expert / spam-politics": {
+   "mix": 1,
+   "sources": 0.5,
+   "tools": 0
+  },
+  "expert / mgr-farm": {
+   "mix": 0.4054007811506113,
+   "sources": 0.024893598140790646,
+   "tools": 0
+  },
+  "expert / hail-only": {
+   "mix": 0.3254634939135874,
+   "sources": 0.16596346654100627,
+   "tools": 0
+  },
+  "claink-weekly / novice": {
+   "mix": 0.3861404160941462,
+   "sources": 0.5228330964142897,
+   "tools": 1
+  },
+  "claink-weekly / referral": {
+   "mix": 0.2421829523642096,
+   "sources": 0.3600444303395748,
+   "tools": 1
+  },
+  "claink-weekly / conference": {
+   "mix": 0.3305850382017315,
+   "sources": 0.6380834947774299,
+   "tools": 1
+  },
+  "claink-weekly / risk": {
+   "mix": 0.20329892498366253,
+   "sources": 0.2038677497315976,
+   "tools": 1
+  },
+  "claink-weekly / expert": {
+   "mix": 0.23214554628620238,
+   "sources": 0.03349292682070079,
+   "tools": 1
+  },
+  "claink-weekly / steady": {
+   "mix": 0.2754874483567402,
+   "sources": 0.04917785537396266,
+   "tools": 1
+  },
+  "claink-weekly / idle": {
+   "mix": 0.5,
+   "sources": 0.5,
+   "tools": 1
+  },
+  "claink-weekly / spam-prospect": {
+   "mix": 0.9266858379915344,
+   "sources": 0.6399555696604253,
+   "tools": 1
+  },
+  "claink-weekly / spam-network": {
+   "mix": 0.8696888429351513,
+   "sources": 0.3600444303395748,
+   "tools": 1
+  },
+  "claink-weekly / spam-cadence": {
+   "mix": 1,
+   "sources": 1,
+   "tools": 1
+  },
+  "claink-weekly / spam-politics": {
+   "mix": 0.9443277650327959,
+   "sources": 0.5,
+   "tools": 1
+  },
+  "claink-weekly / mgr-farm": {
+   "mix": 0.37910441518533655,
+   "sources": 0.05838652496149144,
+   "tools": 1
+  },
+  "claink-weekly / hail-only": {
+   "mix": 0.445811732361453,
+   "sources": 0.13247053972030548,
+   "tools": 1
+  },
+  "claink-weekly / emailer": {
+   "mix": 0.45681605221493415,
+   "sources": 1,
+   "tools": 1
+  },
+  "claink-budget / novice": {
+   "mix": 0.3635719874687301,
+   "sources": 0.5534747119954011,
+   "tools": 0.363
+  },
+  "claink-budget / referral": {
+   "mix": 0.09237586808204473,
+   "sources": 0.32940281475846334,
+   "tools": 0.363
+  },
+  "claink-budget / conference": {
+   "mix": 0.14154261943089003,
+   "sources": 0.6687251103585414,
+   "tools": 0.363
+  },
+  "claink-budget / risk": {
+   "mix": 0.16520337241496275,
+   "sources": 0.17322613415048616,
+   "tools": 0.363
+  },
+  "claink-budget / expert": {
+   "mix": 0.04664694474385249,
+   "sources": 0.0028513112395893436,
+   "tools": 0.363
+  },
+  "claink-budget / steady": {
+   "mix": 0.17283404802824143,
+   "sources": 0.01853623979285121,
+   "tools": 0.363
+  },
+  "claink-budget / claink-weekly": {
+   "mix": 0.18904241877084155,
+   "sources": 0.030641615581111448,
+   "tools": 0.637
+  },
+  "claink-budget / idle": {
+   "mix": 0.49999999999999994,
+   "sources": 0.5,
+   "tools": 0.363
+  },
+  "claink-budget / spam-prospect": {
+   "mix": 0.9479536029809484,
+   "sources": 0.6705971852415367,
+   "tools": 0.363
+  },
+  "claink-budget / spam-network": {
+   "mix": 0.8940441132279585,
+   "sources": 0.32940281475846334,
+   "tools": 0.363
+  },
+  "claink-budget / spam-cadence": {
+   "mix": 1.0000000000000002,
+   "sources": 1,
+   "tools": 0.363
+  },
+  "claink-budget / spam-politics": {
+   "mix": 0.9888414768515735,
+   "sources": 0.5,
+   "tools": 0.363
+  },
+  "claink-budget / mgr-farm": {
+   "mix": 0.3867322740448272,
+   "sources": 0.02774490938037999,
+   "tools": 0.363
+  },
+  "claink-budget / hail-only": {
+   "mix": 0.3527509022283706,
+   "sources": 0.16311215530141693,
+   "tools": 0.363
+  },
+  "claink-budget / emailer": {
+   "mix": 0.30827173107358213,
+   "sources": 1,
+   "tools": 0.363
+  },
+  "idle / novice": {
+   "mix": 0.49999999999999994,
+   "sources": 0.5,
+   "tools": 0
+  },
+  "idle / referral": {
+   "mix": 0.49999999999999994,
+   "sources": 0.5,
+   "tools": 0
+  },
+  "idle / risk": {
+   "mix": 0.49999999999999994,
+   "sources": 0.5,
+   "tools": 0
+  },
+  "idle / steady": {
+   "mix": 0.5,
+   "sources": 0.5,
+   "tools": 0
+  },
+  "idle / spam-prospect": {
+   "mix": 0.5,
+   "sources": 0.5,
+   "tools": 0
+  },
+  "idle / spam-network": {
+   "mix": 0.5,
+   "sources": 0.5,
+   "tools": 0
+  },
+  "idle / spam-cadence": {
+   "mix": 0.5,
+   "sources": 0.5,
+   "tools": 0
+  },
+  "idle / spam-politics": {
+   "mix": 0.5,
+   "sources": 0,
+   "tools": 0
+  },
+  "idle / mgr-farm": {
+   "mix": 0.5,
+   "sources": 0.5,
+   "tools": 0
+  },
+  "spam-prospect / steady": {
+   "mix": 0.9686378684852208,
+   "sources": 0.6891334250343879,
+   "tools": 0
+  },
+  "spam-network / steady": {
+   "mix": 0.9304759827924587,
+   "sources": 0.3108665749656121,
+   "tools": 0
+  },
+  "spam-network / spam-prospect": {
+   "mix": 1,
+   "sources": 1,
+   "tools": 0
+  },
+  "spam-network / spam-politics": {
+   "mix": 1,
+   "sources": 0.5,
+   "tools": 0
+  },
+  "spam-cadence / steady": {
+   "mix": 0.9999999999999998,
+   "sources": 1,
+   "tools": 0
+  },
+  "spam-cadence / spam-prospect": {
+   "mix": 1,
+   "sources": 1,
+   "tools": 0
+  },
+  "spam-cadence / spam-network": {
+   "mix": 1,
+   "sources": 1,
+   "tools": 0
+  },
+  "spam-cadence / spam-politics": {
+   "mix": 1,
+   "sources": 0.5,
+   "tools": 0
+  },
+  "spam-politics / steady": {
+   "mix": 0.999980175643796,
+   "sources": 0.5,
+   "tools": 0
+  },
+  "spam-politics / spam-prospect": {
+   "mix": 1,
+   "sources": 0.5,
+   "tools": 0
+  },
+  "mgr-farm / novice": {
+   "mix": 0.45464664567363217,
+   "sources": 0.5812196213757811,
+   "tools": 0
+  },
+  "mgr-farm / referral": {
+   "mix": 0.4226614696633526,
+   "sources": 0.30165790537808335,
+   "tools": 0
+  },
+  "mgr-farm / risk": {
+   "mix": 0.38333102325647667,
+   "sources": 0.14548122477010617,
+   "tools": 0
+  },
+  "mgr-farm / steady": {
+   "mix": 0.2527174193306273,
+   "sources": 0.009208669587528778,
+   "tools": 0
+  },
+  "mgr-farm / spam-prospect": {
+   "mix": 0.9829380417629164,
+   "sources": 0.6983420946219168,
+   "tools": 0
+  },
+  "mgr-farm / spam-network": {
+   "mix": 0.9605013379685748,
+   "sources": 0.30165790537808335,
+   "tools": 0
+  },
+  "mgr-farm / spam-cadence": {
+   "mix": 0.9999999999999999,
+   "sources": 1,
+   "tools": 0
+  },
+  "mgr-farm / spam-politics": {
+   "mix": 0.885643711547698,
+   "sources": 0.5,
+   "tools": 0
+  },
+  "hail-only / novice": {
+   "mix": 0.4297681630470849,
+   "sources": 0.39036255669398423,
+   "tools": 0
+  },
+  "hail-only / referral": {
+   "mix": 0.40503739039856657,
+   "sources": 0.4925149700598802,
+   "tools": 0
+  },
+  "hail-only / risk": {
+   "mix": 0.30951278154737805,
+   "sources": 0.3363382894519031,
+   "tools": 0
+  },
+  "hail-only / steady": {
+   "mix": 0.3100444821114451,
+   "sources": 0.18164839509426814,
+   "tools": 0
+  },
+  "hail-only / idle": {
+   "mix": 0.5,
+   "sources": 0.5,
+   "tools": 0
+  },
+  "hail-only / spam-prospect": {
+   "mix": 0.9592039184078369,
+   "sources": 0.5074850299401197,
+   "tools": 0
+  },
+  "hail-only / spam-network": {
+   "mix": 0.9579639159278319,
+   "sources": 0.4925149700598802,
+   "tools": 0
+  },
+  "hail-only / spam-cadence": {
+   "mix": 1,
+   "sources": 1,
+   "tools": 0
+  },
+  "hail-only / spam-politics": {
+   "mix": 1,
+   "sources": 0.5,
+   "tools": 0
+  },
+  "hail-only / mgr-farm": {
+   "mix": 0.40695264991838215,
+   "sources": 0.19085706468179692,
+   "tools": 0
+  },
+  "emailer / novice": {
+   "mix": 0.45787080477134223,
+   "sources": 0.8957590170432026,
+   "tools": 0
+  },
+  "emailer / referral": {
+   "mix": 0.32062144009146026,
+   "sources": 1,
+   "tools": 0
+  },
+  "emailer / risk": {
+   "mix": 0.3872382198952879,
+   "sources": 1,
+   "tools": 0
+  },
+  "emailer / expert": {
+   "mix": 0.27688179436961896,
+   "sources": 1,
+   "tools": 0
+  },
+  "emailer / steady": {
+   "mix": 0.2832504014432131,
+   "sources": 1,
+   "tools": 0
+  },
+  "emailer / idle": {
+   "mix": 0.5,
+   "sources": 0.5,
+   "tools": 0
+  },
+  "emailer / spam-prospect": {
+   "mix": 1,
+   "sources": 1,
+   "tools": 0
+  },
+  "emailer / spam-network": {
+   "mix": 1,
+   "sources": 1,
+   "tools": 0
+  },
+  "emailer / spam-cadence": {
+   "mix": 0.9078976998552357,
+   "sources": 0,
+   "tools": 0
+  },
+  "emailer / spam-politics": {
+   "mix": 1,
+   "sources": 0.5,
+   "tools": 0
+  },
+  "emailer / mgr-farm": {
+   "mix": 0.4119570935205727,
+   "sources": 1,
+   "tools": 0
+  },
+  "emailer / hail-only": {
+   "mix": 0.25621568994464994,
+   "sources": 1,
+   "tools": 0
+  },
+  "ascend / novice": {
+   "mix": 0.8780915500675848,
+   "sources": 0.5,
+   "tools": 0
+  },
+  "ascend / balanced": {
+   "mix": 0.8927019543644779,
+   "sources": 0.5,
+   "tools": 0
+  },
+  "ascend / referral": {
+   "mix": 0.8904109589041096,
+   "sources": 0.5,
+   "tools": 0
+  },
+  "ascend / caller": {
+   "mix": 0.8921975360640202,
+   "sources": 0.5,
+   "tools": 0
+  },
+  "ascend / conference": {
+   "mix": 0.8867194183062446,
+   "sources": 0.5,
+   "tools": 0
+  },
+  "ascend / risk": {
+   "mix": 0.924301919720768,
+   "sources": 0.5,
+   "tools": 0
+  },
+  "ascend / claink": {
+   "mix": 0.9047517533948708,
+   "sources": 0.5,
+   "tools": 1
+  },
+  "ascend / expert": {
+   "mix": 0.8891682040261926,
+   "sources": 0.5,
+   "tools": 0
+  },
+  "ascend / steady": {
+   "mix": 0.9314077275340483,
+   "sources": 0.5,
+   "tools": 0
+  },
+  "ascend / claink-weekly": {
+   "mix": 0.9337619955410514,
+   "sources": 0.5,
+   "tools": 1
+  },
+  "ascend / claink-budget": {
+   "mix": 0.8960674720035259,
+   "sources": 0.5,
+   "tools": 0.363
+  },
+  "ascend / idle": {
+   "mix": 0.5,
+   "sources": 0,
+   "tools": 0
+  },
+  "ascend / spam-prospect": {
+   "mix": 1,
+   "sources": 0.5,
+   "tools": 0
+  },
+  "ascend / spam-network": {
+   "mix": 1,
+   "sources": 0.5,
+   "tools": 0
+  },
+  "ascend / spam-cadence": {
+   "mix": 1,
+   "sources": 0.5,
+   "tools": 0
+  },
+  "ascend / spam-politics": {
+   "mix": 1,
+   "sources": 0,
+   "tools": 0
+  },
+  "ascend / mgr-farm": {
+   "mix": 1,
+   "sources": 0.5,
+   "tools": 0
+  },
+  "ascend / hail-only": {
+   "mix": 1,
+   "sources": 0.5,
+   "tools": 0
+  },
+  "ascend / emailer": {
+   "mix": 1,
+   "sources": 0.5,
+   "tools": 0
+  },
+  "ascend / burn": {
+   "mix": 0.5804634695848085,
+   "sources": 0.5,
+   "tools": 0
+  },
+  "ascend / broke": {
+   "mix": 0.6898100878088625,
+   "sources": 0.5,
+   "tools": 1
+  },
+  "burn / novice": {
+   "mix": 0.7397800752566397,
+   "sources": 0.2497027348394768,
+   "tools": 0
+  },
+  "burn / referral": {
+   "mix": 0.8904109589041096,
+   "sources": 1,
+   "tools": 0
+  },
+  "burn / caller": {
+   "mix": 0.8365589133410549,
+   "sources": 0.6539620170268501,
+   "tools": 0
+  },
+  "burn / conference": {
+   "mix": 0.8452095808383233,
+   "sources": 0.394383775351014,
+   "tools": 0
+  },
+  "burn / risk": {
+   "mix": 0.8909031413612567,
+   "sources": 0.8438233193920228,
+   "tools": 0
+  },
+  "burn / claink": {
+   "mix": 0.84881366049159,
+   "sources": 0.6579770594369134,
+   "tools": 1
+  },
+  "burn / expert": {
+   "mix": 0.8374318324649787,
+   "sources": 0.673448496481126,
+   "tools": 0
+  },
+  "burn / steady": {
+   "mix": 0.9000455960192694,
+   "sources": 0.6891334250343879,
+   "tools": 0
+  },
+  "burn / claink-weekly": {
+   "mix": 0.8604478335325859,
+   "sources": 0.6399555696604253,
+   "tools": 1
+  },
+  "burn / claink-budget": {
+   "mix": 0.8440210749844742,
+   "sources": 0.6705971852415367,
+   "tools": 0.363
+  },
+  "burn / idle": {
+   "mix": 0.5,
+   "sources": 0.5,
+   "tools": 0
+  },
+  "burn / spam-prospect": {
+   "mix": 0.41953653041519146,
+   "sources": 0,
+   "tools": 0
+  },
+  "burn / spam-network": {
+   "mix": 1,
+   "sources": 1,
+   "tools": 0
+  },
+  "burn / spam-cadence": {
+   "mix": 1,
+   "sources": 1,
+   "tools": 0
+  },
+  "burn / spam-politics": {
+   "mix": 1,
+   "sources": 0.5,
+   "tools": 0
+  },
+  "burn / mgr-farm": {
+   "mix": 0.9829380417629165,
+   "sources": 0.6983420946219168,
+   "tools": 0
+  },
+  "burn / hail-only": {
+   "mix": 0.9592039184078369,
+   "sources": 0.5074850299401197,
+   "tools": 0
+  },
+  "burn / emailer": {
+   "mix": 1.0000000000000002,
+   "sources": 1,
+   "tools": 0
+  },
+  "broke / novice": {
+   "mix": 0.872867424104044,
+   "sources": 0.9716607213634563,
+   "tools": 1
+  },
+  "broke / referral": {
+   "mix": 0.8904109589041096,
+   "sources": 1,
+   "tools": 1
+  },
+  "broke / caller": {
+   "mix": 0.8921975360640202,
+   "sources": 1,
+   "tools": 1
+  },
+  "broke / conference": {
+   "mix": 0.86062874251497,
+   "sources": 0.6193447737909517,
+   "tools": 1
+  },
+  "broke / risk": {
+   "mix": 0.9243019197207679,
+   "sources": 1,
+   "tools": 1
+  },
+  "broke / claink": {
+   "mix": 0.8508388582148413,
+   "sources": 1,
+   "tools": 0
+  },
+  "broke / expert": {
+   "mix": 0.8891682040261926,
+   "sources": 1,
+   "tools": 1
+  },
+  "broke / steady": {
+   "mix": 0.9314077275340483,
+   "sources": 1,
+   "tools": 1
+  },
+  "broke / claink-weekly": {
+   "mix": 0.8166661281463051,
+   "sources": 1,
+   "tools": 0
+  },
+  "broke / claink-budget": {
+   "mix": 0.8778772762786226,
+   "sources": 1,
+   "tools": 0.637
+  },
+  "broke / idle": {
+   "mix": 0.5,
+   "sources": 0.5,
+   "tools": 1
+  },
+  "broke / spam-prospect": {
+   "mix": 1,
+   "sources": 1,
+   "tools": 1
+  },
+  "broke / spam-network": {
+   "mix": 1,
+   "sources": 1,
+   "tools": 1
+  },
+  "broke / spam-cadence": {
+   "mix": 1,
+   "sources": 1,
+   "tools": 1
+  },
+  "broke / spam-politics": {
+   "mix": 1,
+   "sources": 0.5,
+   "tools": 1
+  },
+  "broke / mgr-farm": {
+   "mix": 1,
+   "sources": 1,
+   "tools": 1
+  },
+  "broke / hail-only": {
+   "mix": 1,
+   "sources": 1,
+   "tools": 1
+  },
+  "broke / emailer": {
+   "mix": 1,
+   "sources": 1,
+   "tools": 1
+  },
+  "broke / burn": {
+   "mix": 0.6898100878088625,
+   "sources": 1,
+   "tools": 1
+  }
+ }
+}

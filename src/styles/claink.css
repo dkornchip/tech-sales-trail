@@ -35,6 +35,14 @@
   font-size:18px;line-height:1;cursor:pointer;padding:0;transition:border-color .2s,color .2s}
 .claink-ad-min{font-size:15px}
 .claink-ad-close:hover{border-color:var(--ck-p);color:#fff}
+/* the X asks before it turns the offer off for the run: a strip under the top row, in the ad's own voice */
+.claink-ad-ask{position:relative;z-index:2;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 10px;margin:0 0 10px;padding:9px 10px;border:1px solid var(--ck-line);border-radius:12px;background:#16123a;font-size:13px;line-height:1.35;color:#ddd8ff}
+.claink-ad.is-mini .claink-ad-ask{margin:8px 0 0}
+.claink-ad-ask-btns{display:flex;gap:6px;margin-left:auto}
+.claink-ask-yes,.claink-ask-no{min-height:30px;padding:0 12px;border-radius:9px;border:1px solid var(--ck-line);background:transparent;color:#ddd8ff;font:inherit;font-weight:600;cursor:pointer}
+.claink-ask-no{background:var(--ck-p);border-color:var(--ck-p);color:#fff}
+.claink-ask-yes:hover{border-color:#ff9db0;color:#fff}
+.claink-ask-yes:focus-visible,.claink-ask-no:focus-visible{outline:2px solid #fff;outline-offset:2px}
 .claink-ad-min:hover{border-color:var(--ck-c);color:#fff}
 /* v1.21: minimized, the ad is a pill in the same corner: the mark, the name, the deadline, expand and close */
 .claink-ad.is-mini{left:auto;width:auto;max-width:calc(100vw - 32px);max-height:none;overflow:hidden;border-radius:999px;padding:5px 6px 5px 12px}
@@ -140,6 +148,7 @@
 .claink-strike{border-radius:11px;padding:8px 10px;font-size:13px;color:#ffe4e6;background:linear-gradient(180deg,#2a0b14,#160a1c);border:1px solid #9f1239}
 .claink-strike .hd{font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#fda4af;margin-bottom:3px}
 .claink-strike .hd span{font-weight:600;letter-spacing:0;text-transform:none;color:#fecdd3}
+.claink-strike .hd .icon{width:14px;height:14px;margin-right:6px;vertical-align:-2px}
 .claink-strike p{margin:0}
 .claink-strike .fx{margin-top:5px;font-size:13px;font-weight:600;color:#fda4af}
 .claink-strike.out{border-color:#f43f5e;box-shadow:0 0 18px rgba(244,63,94,.22)}

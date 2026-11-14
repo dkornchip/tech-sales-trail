@@ -24,8 +24,8 @@ const look = page => page.evaluate(([flag]) => {
     ad: !!document.querySelector(".claink-ad"),
     ring: !!document.querySelector(".coach-ring"),
     flag: window.localStorage.getItem(flag),
-    week: (() => { try { return JSON.parse(window.localStorage.getItem("tst-autosave-v4-3")).week; } catch (e) { return null; } })(),
-    logs: (() => { try { return JSON.parse(window.localStorage.getItem("tst-autosave-v4-3")).logs.length; } catch (e) { return null; } })()
+    week: (() => { try { return JSON.parse(window.localStorage.getItem("tst-autosave-v5")).state.week; } catch (e) { return null; } })(),
+    logs: (() => { try { return JSON.parse(window.localStorage.getItem("tst-autosave-v5")).state.logs.length; } catch (e) { return null; } })()
   };
 }, [FLAG]);
 
@@ -73,8 +73,8 @@ async function pastBoot(page) {
     check("its button has the focus", s.focus === "welcome-ok", "focus on " + s.focus);
     check("the vendor's ad is not up yet", s.ad === false);
     check("Escape does not dismiss the opening", (await page.keyboard.press("Escape"), await page.waitForTimeout(150), (await look(page)).dialog) === "welcome");
-    const memo = await page.evaluate(() => { const m = document.querySelector('dialog[open] .memo'); const l = document.querySelectorAll('dialog[open] .welcome-lines li'); return { memo: !!m && m.textContent.length > 200, lines: l.length, quota: /\$160,000/.test(document.querySelector('dialog[open]').textContent) }; });
-    check("it holds the memo and the job in three lines, quota included", memo.memo && memo.lines === 3 && memo.quota, JSON.stringify(memo));
+    const memo = await page.evaluate(() => { const m = document.querySelector('dialog[open] .memo'); const l = document.querySelectorAll('dialog[open] .welcome-lines li:not(.chapter-memo)'); return { memo: !!m && m.textContent.length > 200, lines: l.length, chapter: document.querySelectorAll('dialog[open] .welcome-lines li.chapter-memo').length, quota: /\$160,000/.test(document.querySelector('dialog[open]').textContent) }; });
+    check("it holds the memo, the job in three lines (quota included) and the first chapter's one line", memo.memo && memo.lines === 3 && memo.chapter === 1 && memo.quota, JSON.stringify(memo));
     // the gag takes 1.65 s to reach the stamp; the welcome line waits out the boot screen's own announcement
     await page.waitForFunction(() => { const h = window.__heard || []; return h.includes("play:stamp") && !!document.querySelector('dialog[open] .d-cap'); }, null, { timeout: 8000 }).catch(() => {});
     const cues = await page.evaluate(() => ({ heard: window.__heard.filter(x => /welcome|sadHorn|stamp/.test(x)), caption: (document.querySelector('dialog[open] .d-cap') || { textContent: "" }).textContent }));

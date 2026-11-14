@@ -1,0 +1,17 @@
+integrity diff: 22 policies x 300 seeds (1..300), 6600 runs, 198346 moves compared, 71.5 s
+  identical start to finish          4321  65.5%
+  only the last Friday differs        614  9.3%   (under-70% review no longer rolls; the quarter's total is kept)
+  odds effects differ first          1665  25.2%   (the shared number and timer, fixed)
+        1635  a security choice replaced what was already in force (now they add up)
+          26  a second conference in one week stacked its bonus (now it refreshes)
+           3  the total went past 30 points (now held to 30)
+           1  a Friday: the shared timer ended something early or carried it over (now each ends on its own week)
+  anything else                         0  0.0%
+  (the joke stream moved in           837  12.7%   of those runs: clAInk's rewritten reports draw different joke numbers; no rule reads that stream)
+  e.g. novice#6 move 31 dlg:spin (week 7): odds -0.08 -> -0.14, discount 0 -> 0   [a security choice replaced what was already in force (now they add up)]
+  e.g. novice#8 move 6 dlg:spin (week 2): odds -0.08 -> -0.02, discount 0 -> 0   [a security choice replaced what was already in force (now they add up)]
+  e.g. novice#10 move 29 dlg:spin (week 6): odds -0.08 -> -0.14, discount 0 -> 0   [a security choice replaced what was already in force (now they add up)]
+  e.g. novice#15 move 18 dlg:spin (week 5): odds -0.08 -> -0.14, discount 0 -> 0   [a security choice replaced what was already in force (now they add up)]
+  e.g. novice#17 move 33 dlg:spin (week 7): odds -0.08 -> -0.14, discount 0 -> 0   [a security choice replaced what was already in force (now they add up)]
+
+INTEGRITY DIFF OK: every difference from the v2.0.1 rules is one of the fixes
