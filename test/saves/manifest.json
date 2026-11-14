@@ -568,7 +568,16 @@
      "perfWarnings": 0,
      "repoWarned": false,
      "claink.status": "expired"
-    }
+    },
+        "stateNow": {
+          "modifiers.conversion": null,
+          "modifiers.expiresIn": null,
+          "effects.0.src": "legacy",
+          "effects.0.conv": 0.06,
+          "effects.0.from": 5,
+          "effects.0.until": 5,
+          "effects.length": 1
+        }
    }
   },
   {

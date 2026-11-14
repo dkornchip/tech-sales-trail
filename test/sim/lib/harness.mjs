@@ -40,7 +40,9 @@ export const dialogOf = (E, g) => (E.inState ? (g.s.pending && g.s.pending[0]) |
 
 // What a player could press right now, as move ids:
 //   act:<id>  hail  end  dlg:<option id>  ck:buy  ck:dismiss  ck:deploy  ck:cancel  ck:hide
+const idOf = m => (m.t === "act" ? "act:" + m.id : m.t === "choose" ? "dlg:" + m.option : m.t === "ck" ? "ck:" + m.op : m.t);
 export function legalMoves(E, g) {
+  if (E.inState) return E.run.legalMoves(g.s).map(idOf);        // newer rules say for themselves what is legal
   const s = g.s, d = dialogOf(E, g);
   if (isOver(E, g)) return [];
   if (d) return E.events.EVENTS[d.id].options.map(o => "dlg:" + o.id);

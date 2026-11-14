@@ -1,4 +1,7 @@
 import { newClaink, sanitizeClaink } from "./claink.js";
+import { legacyEffects, sanitizeEffects } from "./effects.js";
+import { EVENTS } from "./events.js";
+import { isRunOver } from "./log.js";
 import { AUTOSAVE_KEY, LEGACY_KEYS, MAX_QUARTERS, SAVE_KEY } from "./constants.js";
 import { newStory, sanitizeStory } from "./story.js";
 import { newRng, sanitizeRng } from "./rng.js";
@@ -18,17 +21,39 @@ export const readStoredRun=(preferAutosave=true)=>{
   return null;
 };
 
+// The choices a save was waiting on: only ones the rules know, in order, and none on a finished run.
+export const sanitizePending=(raw,over)=>{
+  if(over || !Array.isArray(raw)) return [];
+  const out=[];
+  for(const p of raw.slice(0,4)){
+    if(!p || typeof p!=="object" || typeof p.id!=="string" || !Object.prototype.hasOwnProperty.call(EVENTS,p.id)) continue;
+    const params=p.params && typeof p.params==="object" && !Array.isArray(p.params) ? p.params : null;
+    const clean={};
+    if(params){
+      if(typeof params.account==="string") clean.account=params.account.slice(0,60);
+      if(typeof params.miracle==="boolean") clean.miracle=params.miracle;
+    }
+    out.push(Object.keys(clean).length ? {id:p.id,params:clean} : {id:p.id});
+  }
+  return out;
+};
+
 // Single merge path for restored runs (was duplicated between initial load and the Load button).
 export const mergeSaved=(parsed)=>{
   const base=newGame();
+  const week=Number.isFinite(parsed.week) && parsed.week>=1 ? Math.floor(parsed.week) : 1;
+  // a save from before v2.1 carries one shared bonus-and-timer (modifiers); from v2.1 on, a list of effects
+  const {modifiers,...rest}=parsed;
   // ids handed out from here on must not repeat one the save already holds
   idsPast([...(Array.isArray(parsed.deals) ? parsed.deals : []),...(Array.isArray(parsed.logs) ? parsed.logs : [])].map(x=>x && x.id));
   return{
     ...base,
-    ...parsed,
+    ...rest,
     quota: base.quota, // force current difficulty
     skills:{...base.skills,...(parsed.skills||{})},
-    modifiers:{...base.modifiers,...(parsed.modifiers||{})},
+    effects:Array.isArray(parsed.effects) ? sanitizeEffects(parsed.effects,week) : legacyEffects(modifiers,week),
+    pending:sanitizePending(parsed.pending,isRunOver(parsed)),
+    lastConference:Number.isFinite(parsed.lastConference) && parsed.lastConference>=1 ? Math.floor(parsed.lastConference) : 0,
     used:{...base.used,...(parsed.used||{})},
     repo:!!parsed.repo,
     repoWarned:!!parsed.repoWarned,
@@ -78,7 +103,9 @@ export const newGame=(opts)=>({
   missed:false,
   repo:false,
   repoWarned:false,
-  modifiers:{conversion:0,discount:0,expiresIn:0},
+  effects:[],          // what is bending the signing odds, and until when (effects.js)
+  pending:[],          // choices waiting for an answer, first in line first (events.js); nothing else moves until then
+  lastConference:0,    // the week of the last conference this run, or 0
   achievements:[],
   perfWarnings:0,
   coffeesThisWeek:0,

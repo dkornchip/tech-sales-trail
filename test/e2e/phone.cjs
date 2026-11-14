@@ -31,7 +31,8 @@ async function open(browser, o) {
   await context.addInitScript(([save, first, key, flag]) => {
     try {
       window.sessionStorage.setItem("tst-booted", "1");
-      if (!window.sessionStorage.getItem("__seeded")) {
+      if (window.name !== "tst-seeded" && !window.sessionStorage.getItem("__seeded")) {   // once per tab (the tab's name survives a reload)
+        window.name = "tst-seeded";
         if (!first) window.localStorage.setItem(flag, "1");
         if (save !== null) window.localStorage.setItem(key, save);
         window.sessionStorage.setItem("__seeded", "1");

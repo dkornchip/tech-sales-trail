@@ -14,9 +14,9 @@ export var TAG_SOUND = {
   /* the actions */
   "act.prospect":["dial",3], "act.cadence":["whoosh",3], "act.discovery":["typewriter",3], "act.demo":["demo",3],
   "act.propose":["printer",3], "act.conference":["airport",3], "act.politics":["sneaky",3],
-  "act.recharge":["bowl",3], "act.recharge.flat":["bowl",3], "act.recharge.already":["nope",3], "act.recharge.trip":["airport",3],
+  "act.recharge":["bowl",3], "act.recharge.flat":["bowl",3], "act.recharge.trip":["airport",3],
   "act.crm":["crm",3,"hygiene"], "act.crm.clean":["crm",3,"hygiene"], "act.crm.nuked":["lost",4,"closeOut"],
-  "act.hail.none":["nope",3], "act.hail.blast":["hailmary",3], "act.hail.lean":["hailmary",3],
+  "act.hail.blast":["hailmary",3], "act.hail.lean":["hailmary",3],
   "act.hail.chaosWon":["fanfareS",3], "act.hail.chaosLost":["bad",3], "act.hail.torched":["bad",3], "act.hail.cooked":["warn",3],
   /* coffee and stress */
   "coffee.shot":["coffee",3], "coffee.crash":["sick",2], "stress.warn":["heartbeat",2],

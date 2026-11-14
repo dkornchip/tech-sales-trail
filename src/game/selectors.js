@@ -2,22 +2,23 @@
 // Each one mirrors a rule elsewhere in src/game; none of them draws from the dice or changes state.
 import { QUARTER_WEEKS } from "./constants.js";
 import { isRunOver } from "./log.js";
-import { FRIDAY, PAY, PROPOSE_ODDS, RENT_WEEKS, closeOdds, crmGain, crmNukeOdds, demoOdds, isDeadLead, qualifyOdds } from "./rules.js";
-export { RENT_WEEKS };
+import { FRIDAY, PACE_GRACE, PAY, PROPOSE_ODDS, RENT_WEEKS, REVIEWS_FROM, closeOdds, crmGain, crmNukeOdds, demoOdds, expectedAttainment, isDeadLead, paceGap, qualifyOdds } from "./rules.js";
+export { RENT_WEEKS, REVIEWS_FROM };
+export { effectChips, convMod, discountRate } from "./effects.js";
 import { CRASH_PER_SHOT, RECHARGE_ENERGY, coffeeEnergy, coffeeRisk, coffeeStress, rechargeMax, rechargeRelief } from "./stress.js";
 import { clamp, getQuarterInfo } from "./util.js";
 
 export const weekOf = s => getQuarterInfo(s.week).weekInQuarter;
-export const REVIEWS_FROM = 5;                 // endWeek: mid-quarter reviews start
 export const rentDueThisWeek = s => RENT_WEEKS.includes(weekOf(s));
 export const nextRentWeek = s => RENT_WEEKS.find(w => w >= weekOf(s)) || null;
 
-// behindPace(): pace is week / 13; more than 3 points behind is "behind"
+// Where the run stands against what this week expects (rules.js, expectedAttainment: the share of quota expected
+// to be closed by this Friday). The reviews read the same numbers (quarter.js, behindPace).
 export const pace = s => {
-  const target = weekOf(s) / QUARTER_WEEKS;
+  const target = expectedAttainment(weekOf(s));
   const done = s.quota > 0 ? s.closedQuarter / s.quota : 0;
-  const gap = target - done;                   // positive = behind
-  return { target, done, gap, behind: gap > 0.03, reviewed: weekOf(s) >= REVIEWS_FROM };
+  const gap = paceGap(s);                      // positive = behind
+  return { target, done, gap, behind: gap > PACE_GRACE, ahead: gap < -PACE_GRACE, reviewed: weekOf(s) >= REVIEWS_FROM };
 };
 
 export const stageCount = (s, stage) => s.deals.filter(d => d.stage === stage).length;

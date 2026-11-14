@@ -1,4 +1,4 @@
-import { PAY } from "./rules.js";
+import { CASH, PAY } from "./rules.js";
 import { CK_CANCEL, CK_CLEAR, CK_COUNCIL, CK_INCIDENT, CK_MGR, CK_MIRACLE, CK_NOTES, CK_OLD_SAVE, CK_ONBOARD, CK_OUTCOMES, CK_REVOKE, CK_RUN, CK_WASTE } from "../copy/claink.js";
 import { ACCOUNT_NAMES } from "../copy/names.js";
 import { QUARTER_WEEKS } from "./constants.js";
@@ -21,7 +21,7 @@ import { clamp, fmtTok, getQuarterInfo, pct } from "./util.js";
 export const CLAINK={
   rng:rnd,                            // mechanical rolls: the run's own stream (rng.js)
   flavor:flavor,                      // the jokes: the run's flavor stream, which no rule ever reads
-  INSTALL:500, CANCEL:250, REPO_AT:-1500,
+  INSTALL:500, CANCEL:250, REPO_AT:CASH.repoAt,
   OFFER_LAST_WEEK:3,                  // "Pilot pricing ends Week 3": the activation deadline (v1.21: was week 10). End Week of
                                       // week 3 expires an unanswered ad, and the offer never comes back for the rest of the run
   MIRACLE_P:0.20,                     // first draw of every run
@@ -63,7 +63,9 @@ export const ckPipe=(s)=>({...s,pipeline:s.deals.reduce((sum,d)=>sum+d.value,0)}
 export const ckTok=(dollars)=>Math.max(0,Math.round(dollars*CLAINK.TOKENS_PER_DOLLAR*(0.88+0.24*ckF())));
 export const ckLast=(o)=>({kind:"strike",week:0,run:0,tokens:0,revenue:0,lines:[],strike:null,clear:"",farewell:"",ping:"",yoink:false,warn:false,cashWarn:false,announce:"",...o});
 export const newClaink=()=>({status:"ad",hidden:false,deployed:false,strikes:0,claims:0,due:0,weekTokens:0,mgr:{noticed:false,yoinks:0},
-  last:null,strikeLog:[],deploys:0,miracles:0,fakes:0,incidents:0,claimed:0,delivered:0,billed:0,lastInvoice:0,tokens:0});
+  last:null,strikeLog:[],deploys:0,miracles:0,fakes:0,incidents:0,claimed:0,delivered:0,earned:0,billed:0,lastInvoice:0,tokens:0});
+// earned: the commission paid on what the agents genuinely closed (delivered). A save from before v2.1 that had a
+// miracle never recorded it, and reads back as null: unknown, not zero.
 
 // saves are user data: coerce every field. v1.19 saves say "rugged", "scam"/"rug" and flags; the v1.16 prototype's
 // shape ({active, usedThisWeek, runs, totalBilled, ...}) still maps too. `week` lets an ad from a save made before
@@ -132,7 +134,9 @@ export const sanitizeClaink=(raw,week)=>{
       announce:oldKind ? "" : str(L.announce,320)}) : null,
     strikeLog:[...filed.values()].sort((x,y)=>x.n-y.n),
     deploys, miracles:n(raw.miracles), fakes:n(raw.fakes), incidents:n(raw.incidents),
-    claimed:n(raw.claimed,0,1e12), delivered:n(raw.delivered), billed, lastInvoice,
+    claimed:n(raw.claimed,0,1e12), delivered:n(raw.delivered),
+    earned:Number.isFinite(raw.earned) ? n(raw.earned) : (n(raw.miracles)>0 || n(raw.delivered)>0 ? null : 0),
+    billed, lastInvoice,
     tokens:raw.tokens!==undefined ? n(raw.tokens,0,1e13) : billed*CLAINK.TOKENS_PER_DOLLAR
   };
 };
@@ -198,7 +202,7 @@ export const clainkMiracle=(state)=>{
   let fees=0; for(let i=0;i<signed.length;i++) fees+=ckInt(CLAINK.PER_OUTCOME[0],CLAINK.PER_OUTCOME[1]);
   const c=s.claink;
   const tokens=ckTok(CLAINK.RETAINER+fees);
-  s.claink={...c,miracles:c.miracles+1,delivered:c.delivered+total,claims:c.claims+signed.length,due:c.due+fees,
+  s.claink={...c,miracles:c.miracles+1,delivered:c.delivered+total,earned:Number.isFinite(c.earned) ? c.earned+keep : c.earned,claims:c.claims+signed.length,due:c.due+fees,
     tokens:c.tokens+tokens,weekTokens:c.weekTokens+tokens,
     last:ckLast({kind:"miracle",week:s.week,run:c.deploys,tokens,revenue:total,
       lines:[...signed.map(d=>CK_MIRACLE.signed(d)),
@@ -219,18 +223,20 @@ export const clainkIncident=(state,rKind)=>{
   if(kind==="churn" && s.closedQuarter<=0) kind="slop";
   if(kind!=="churn" && kind!=="slop" && !ranked.length) kind=s.closedQuarter>0 ? "churn" : "slop";
   let card; // the strike card and its one-liner: {who, why, fx, line}
+  // what the incident really took off a meter (one already near zero has less to lose than the rule says)
+  const took=k=>Math.round(state[k])-Math.round(s[k]);
   if(kind==="slop"){
     const v=ranked[0], k=ckFi(18,40);
     if(v) s.deals=s.deals.filter(d=>d.id!==v.id);
     s.reputation=clamp(s.reputation-I.slop.rep,0,100);
     s.manager=clamp(s.manager-I.slop.mgr,0,100);
-    card=CK_INCIDENT.slop({account:v?v.account:null,k,rep:I.slop.rep,mgr:I.slop.mgr});
+    card=CK_INCIDENT.slop({account:v?v.account:null,k,rep:took("reputation"),mgr:took("manager")});
   }else if(kind==="discount"){
     const v=ranked.find(d=>d.stage>=2)||ranked[0];
     s.deals=s.deals.map(d=>d.id===v.id?{...d,value:Math.round(d.value*(1-I.discount.cut)),mood:"skeptical",probNote:CK_NOTES.discount}:d);
     s.manager=clamp(s.manager-I.discount.mgr,0,100);
     s.reputation=clamp(s.reputation-I.discount.rep,0,100);
-    card=CK_INCIDENT.discount({account:v.account,cut:pct(I.discount.cut),mgr:I.discount.mgr,rep:I.discount.rep});
+    card=CK_INCIDENT.discount({account:v.account,cut:pct(I.discount.cut),mgr:took("manager"),rep:took("reputation")});
   }else if(kind==="leak"){
     const lost=ranked.slice(0,I.leak.n);
     const ids=new Set(lost.map(d=>d.id));
@@ -238,7 +244,7 @@ export const clainkIncident=(state,rKind)=>{
     s.deals=s.deals.filter(d=>!ids.has(d.id));
     s.reputation=clamp(s.reputation-I.leak.rep,0,100);
     s.manager=clamp(s.manager-I.leak.mgr,0,100);
-    card=CK_INCIDENT.leak({n:lost.length,value:val,rep:I.leak.rep,mgr:I.leak.mgr});
+    card=CK_INCIDENT.leak({n:lost.length,value:val,rep:took("reputation"),mgr:took("manager")});
   }else{
     const amt=Math.min(s.closedQuarter,Math.max(I.churn.lo,Math.min(I.churn.hi,Math.round(s.closedQuarter*I.churn.frac))));
     const back=Math.round(amt*PAY.commission);
@@ -259,15 +265,16 @@ export const clainkRevoke=(state)=>{
   const lost=[...s.deals].sort(ckRank)[0]||null;
   if(lost){ s.deals=s.deals.filter(d=>d.id!==lost.id); s=ckPipe(s); }
   s.manager=clamp(s.manager-CLAINK.REVOKE_MGR,0,100);
+  const mgrHit=Math.round(state.manager)-Math.round(s.manager);     // what it really cost with your manager
   const tt=ckTok(charge);
   const who=CK_REVOKE.who;
   const strike={n:CLAINK.STRIKES,who,why:CK_REVOKE.why,
-    fx:CK_REVOKE.fx(charge,tt,CLAINK.REVOKE_MGR)};
+    fx:CK_REVOKE.fx(charge,tt,mgrHit)};
   s.claink={...c,status:"revoked",due:0,claims:0,weekTokens:0,lastInvoice:charge,tokens:c.tokens+tt,
     strikeLog:[...c.strikeLog,{n:CLAINK.STRIKES,who,line:CK_REVOKE.line(charge)}].slice(-CLAINK.STRIKES),
     last:{...c.last,kind:"revoked",strike,farewell:lost?lost.account:"",
       announce:CK_REVOKE.announce(c.last.announce,charge,lost?lost.account:null)}};
-  if(lost) s=log(s,"ck.farewell",{account:lost.account,mgr:CLAINK.REVOKE_MGR},"bad");
+  if(lost) s=log(s,"ck.farewell",{account:lost.account,mgr:mgrHit},"bad");
   return clainkCharge(s,charge,"ck.revoked",{cost:charge},"bad");
 };
 
@@ -311,8 +318,8 @@ export const clainkStrikeRun=(state,rInc,rKind)=>{
 export const clainkManager=(state,rMgr)=>{
   if(rMgr>=CLAINK.MGR_P || isRunOver(state) || !state.claink)return {state,event:null};
   let s={...state};
-  const hit=CLAINK.MGR_HIT;
-  s.manager=clamp(s.manager-hit,0,100);
+  s.manager=clamp(s.manager-CLAINK.MGR_HIT,0,100);
+  const hit=Math.round(state.manager)-Math.round(s.manager);        // what it really cost (less, when there was less to lose)
   const c=s.claink;
   const withLast=(ping,say,yoink=false,warn=false)=>c.last ? {...c.last,ping,yoink,warn,announce:`${c.last.announce} ${say}`} : c.last;
   if(!c.mgr.noticed){
@@ -325,10 +332,12 @@ export const clainkManager=(state,rMgr)=>{
     s.claink={...c,last:withLast(CK_MGR.circlePing,CK_MGR.circleSay)};
     return {state:log(s,"ck.mgr.circle",{hit},"warn"),event:null};
   }
+  // largest: the deal he took was the biggest one on the board at that moment (the ending screen may say so)
+  const largest=s.deals.every(d=>d.value<=victim.value);
   s.deals=s.deals.filter(d=>d.id!==victim.id);
   s=ckPipe(s);
   s.claink={...c,mgr:{...c.mgr,yoinks:c.mgr.yoinks+1},last:withLast(CK_MGR.yoinkPing(victim.account),CK_MGR.yoinkSay(victim.account),true)};
-  s=log(s,"ck.mgr.yoink",{account:victim.account,hit},"bad");
+  s=log(s,"ck.mgr.yoink",{account:victim.account,hit,largest},"bad");
   return {state:s,event:{id:"ck:lesson",params:{account:victim.account}}};
 };
 

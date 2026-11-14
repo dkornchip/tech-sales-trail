@@ -13,7 +13,8 @@ export const rechargeRelief=(n)=>Math.max(0,12-2*n); // caffeine in the system b
 export const RECHARGE_ENERGY=35;
 export const RECHARGE_LUCK=0.5;         // v1.18: each Recharge rolls a 0-50% bonus on both energy and relief
 export const TRIP_AT=0.40;              // a roll above this and your manager signs off a trip (the destinations: TRIPS in src/copy/names.js)
-export const rechargeMax=(base)=>base+Math.round(base*RECHARGE_LUCK);
+// the most a Recharge can give on a base: the luck roll is always below RECHARGE_LUCK, so the bonus rounds to at most this
+export const rechargeMax=(base)=>base+Math.max(0,Math.ceil(base*RECHARGE_LUCK-0.5));
 export const coffeeRisk=(n)=>n<2?0:n===2?0.20:n===3?0.45:Math.min(0.95,0.75+0.10*(n-4)); // palpitations from shot 3
 export const checkBurnout=(state)=>{
   if(!state || isRunOver(state))return state; // an ending already landed; keep its priority

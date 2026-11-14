@@ -74,3 +74,9 @@ SAVES OK in 69.8 s
   ok    working tree: between them the policies reach at least five of the six endings  (ascension, club, fired, meltdown, missed, repo)
 
 SIM SMOKE OK: all 11 checks passed, 20.8 s   [automated heuristics, not human play]
+
+--- selftests (npm run test:selftest), after the M2 commit's tree was verified ---
+LINT SELFTEST OK: 19/19 checks held
+SAVES SELFTEST OK: 13 mutants, 38.9 s
+LAYOUT SELFTEST OK: 10 checks, 18.3 s
+KEYBOARD SELFTEST OK: 5 breakages, 13.4 s

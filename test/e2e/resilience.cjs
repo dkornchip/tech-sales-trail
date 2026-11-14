@@ -1,7 +1,8 @@
 // Small promises the game keeps when things go sideways.
 //   node test/e2e/resilience.cjs [path/to/index.html]      (default: dist-test/index.html, the test build:
 //   the dice are scripted through its hook, which a release build does not have)
-//   1. an End Week choice that was on screen when the page closed is still waiting when it opens again
+//   1. a choice that is waiting is part of the run: a reload, a second press or another dialog cannot lose it,
+//      repeat it or walk past it (an End Week choice, a word from clAInk's manager, and both at once)
 //   2. two open deals never share an account name, even when the dice pick the same name every time
 //   3. ids handed out after a reload never repeat one in the save
 //   4. a save that parses but is not a save gets a plain page with a way out, not a blank one
@@ -27,7 +28,9 @@ async function open(browser, storage, fixedTime, init, phone) {
   await context.addInitScript(([kv, flag]) => {
     try {
       window.sessionStorage.setItem("tst-booted", "1");
-      if (!window.sessionStorage.getItem("__seeded")) { window.localStorage.setItem(flag, "1"); for (const k of Object.keys(kv || {})) window.localStorage.setItem(k, kv[k]); window.sessionStorage.setItem("__seeded", "1"); }
+      // once per tab: a reload must find the storage the page left, not the storage it started with. The tab's name
+      // is the marker (it survives a reload; sessionStorage on a file:// page occasionally does not).
+      if (window.name !== "tst-seeded" && !window.sessionStorage.getItem("__seeded")) { window.localStorage.setItem(flag, "1"); for (const k of Object.keys(kv || {})) window.localStorage.setItem(k, kv[k]); window.name = "tst-seeded"; window.sessionStorage.setItem("__seeded", "1"); }
     } catch (e) {}
   }, [storage || null, FLAG]);
   const page = await context.newPage();
@@ -52,35 +55,100 @@ const dice = (page, v) => page.evaluate(x => { window.__TST_RNG = () => x; Math.
   try {
     /* ---------- 1. a choice survives a reload ---------- */
     let { context, page, errors } = await open(browser);
-    await dice(page, 0.1);                       // at 0.1 the week's first two events fire: inbound leads, then the price cut
+    await dice(page, 0.1);                       // at 0.1 the price cut comes up on the first Friday
     await page.click('[data-ui="end"]');
     await page.waitForSelector('dialog[open]', { timeout: 3000 }).catch(() => {});
     check("an End Week choice opens", await dialog(page) === "evt:competitor", "dialog " + await dialog(page));
-    const held = await page.evaluate(k => window.localStorage.getItem(k), PENDING);
     const before = await save(page);
-    check("it is kept beside the autosave, with its run and week", !!held && JSON.parse(held).runId === before.runId && JSON.parse(held).week === before.week, held);
+    check("it is part of the saved run", Array.isArray(before.pending) && before.pending.length === 1 && before.pending[0].id === "evt:competitor", JSON.stringify(before.pending));
+    check("the v2.0 side key is not written", await page.evaluate(k => window.localStorage.getItem(k), PENDING) === null);
     await page.reload(); await page.evaluate(() => document.fonts.ready); await page.waitForTimeout(500);
     check("after a reload the same choice is waiting", await dialog(page) === "evt:competitor", "dialog " + await dialog(page));
     const same = await save(page);
     check("and the run is where it was", same.week === before.week && same.cash === before.cash && same.deals.length === before.deals.length);
+    // nothing else moves while it waits, however the press arrives (a click() from a script lands behind the dialog)
+    await page.evaluate(() => { document.querySelector('[data-act="prospect"]').click(); document.querySelector('[data-ui="end"]').click(); });
+    await page.waitForTimeout(300);
+    const held = await save(page);
+    check("nothing else moves while it waits", held.week === same.week && held.slots === same.slots && held.deals.length === same.deals.length && await dialog(page) === "evt:competitor", `week ${held.week} slots ${held.slots}`);
     await page.click('dialog[open] .d-footer .btn >> nth=0');
     await page.waitForTimeout(300);
     const after = await save(page);
-    check("answering it applies the answer", await dialog(page) === null && after.modifiers.discount === 0.2, "discount " + (after.modifiers && after.modifiers.discount));
-    check("and nothing is left waiting", await page.evaluate(k => window.localStorage.getItem(k), PENDING) === null);
+    const match = (after.effects || []).find(e => e.src === "competitorMatch");
+    check("answering it applies the answer, for this week", await dialog(page) === null && !!match && match.disc === 0.2 && match.from === after.week && match.until === after.week, JSON.stringify(after.effects));
+    check("and nothing is left waiting", after.pending.length === 0);
     await page.reload(); await page.waitForTimeout(500);
     check("another reload brings back no dialog", await dialog(page) === null);
     check("no errors", errors.length === 0, errors.join(" | "));
     await context.close();
 
-    // a held choice from another week, or another run, is not honoured
+    // A run saved by v2.0 kept its choice under a key of its own. It is honoured once, for that run and week.
     const mid = fs.readFileSync(path.join(__dirname, "../saves/fixtures/generated/midrun-seeded.json"), "utf8").trim();
     const midRun = JSON.parse(mid);
+    const legacyHeld = JSON.stringify({ runId: midRun.runId, week: midRun.week, id: "evt:security" });
+    ({ context, page, errors } = await open(browser, { [AUTOSAVE]: mid, [PENDING]: legacyHeld }));
+    check("a choice a v2.0 run was waiting on is still waiting", await dialog(page) === "evt:security", "dialog " + await dialog(page));
+    await page.click('dialog[open] .d-footer .btn >> nth=1'); await page.waitForTimeout(300);
+    check("it is answered once", await dialog(page) === null && (await save(page)).pending.length === 0);
+    check("the v2.0 key is left as it was (that page may still be in use)", await page.evaluate(k => window.localStorage.getItem(k), PENDING) === legacyHeld);
+    await page.reload(); await page.waitForTimeout(500);
+    check("and a reload does not ask again", await dialog(page) === null, "dialog " + await dialog(page));
+    check("no errors", errors.length === 0, errors.join(" | "));
+    await context.close();
     ({ context, page, errors } = await open(browser, { [AUTOSAVE]: mid, [PENDING]: JSON.stringify({ runId: midRun.runId, week: midRun.week + 1, id: "evt:security" }) }));
-    check("a choice held for a different week is dropped", await dialog(page) === null && await page.evaluate(k => window.localStorage.getItem(k), PENDING) === null);
+    check("a choice held for a different week is not honoured", await dialog(page) === null);
     await context.close();
     ({ context, page, errors } = await open(browser, { [AUTOSAVE]: mid, [PENDING]: JSON.stringify({ runId: midRun.runId, week: midRun.week, id: "ck:warning" }) }));
-    check("only End Week choices are held, whatever the key says", await dialog(page) === null);
+    check("only End Week choices were ever held there, whatever the key says", await dialog(page) === null);
+    await context.close();
+
+    /* ---------- 1b. a Friday choice and a word from clAInk's manager, together ---------- */
+    // The agent is run; the manager notices (at 0.1 the run is a real sale and he remarks on it). His warning waits
+    // for the report to finish. End Week is pressed before it has.
+    ({ context, page, errors } = await open(browser));
+    await dice(page, 0.1);
+    await page.click(".claink-cta"); await page.waitForTimeout(200);
+    await page.click(".claink-confirm"); await page.waitForTimeout(400);
+    await page.click(".claink-deploy"); await page.waitForTimeout(300);
+    let st = await save(page);
+    check("the manager's warning is part of the saved run as soon as the agent has run", st.claink.deploys === 1 && st.pending.length === 1 && st.pending[0].id === "ck:warning", JSON.stringify(st.pending));
+    check("it waits for the report: nothing has opened yet", await dialog(page) === null, "dialog " + await dialog(page));
+    await page.click('[data-ui="end"]'); await page.waitForTimeout(300);
+    st = await save(page);
+    check("End Week does not go ahead of it: the week has not turned, and the warning opens", st.week === 1 && await dialog(page) === "ck:warning", `week ${st.week}, dialog ${await dialog(page)}`);
+    await page.reload(); await page.evaluate(() => document.fonts.ready); await page.waitForTimeout(600);
+    check("after a reload the warning is still waiting, and showing", await dialog(page) === "ck:warning" && (await save(page)).pending[0].id === "ck:warning", "dialog " + await dialog(page));
+    await page.click('dialog[open] .d-footer .btn >> nth=0'); await page.waitForTimeout(300);
+    check("acknowledged once, it is gone", await dialog(page) === null && (await save(page)).pending.length === 0);
+    await dice(page, 0.1);
+    await page.click('[data-ui="end"]');
+    await page.waitForSelector('dialog[open]', { timeout: 3000 }).catch(() => {});
+    st = await save(page);
+    check("then End Week runs, and its own choice opens", st.week === 2 && await dialog(page) === "evt:competitor" && st.pending.length === 1, `week ${st.week}, dialog ${await dialog(page)}`);
+    // the agent cannot be run behind the choice
+    await page.evaluate(() => { const b = document.querySelector(".claink-deploy"); if (b) b.click(); });
+    await page.waitForTimeout(300);
+    const st2 = await save(page);
+    check("the agent cannot be run behind that choice", st2.claink.deploys === st.claink.deploys && st2.pending.length === 1 && st2.pending[0].id === "evt:competitor" && await dialog(page) === "evt:competitor", `deploys ${st2.claink.deploys}, pending ${JSON.stringify(st2.pending)}`);
+    await page.click('dialog[open] .d-footer .btn >> nth=1'); await page.waitForTimeout(300);
+    check("answered, and nothing is left waiting", await dialog(page) === null && (await save(page)).pending.length === 0);
+    check("no errors", errors.length === 0, errors.join(" | "));
+    await context.close();
+
+    // Both at once, as a saved run could hold them: each is asked in turn, once, and a reload between them loses neither.
+    const both = Object.assign({}, midRun, { pending: [{ id: "ck:lesson", params: { account: "Initech" } }, { id: "evt:competitor" }] });
+    ({ context, page, errors } = await open(browser, { [AUTOSAVE]: JSON.stringify(both) }));
+    check("two waiting choices: the first in line is asked first", await dialog(page) === "ck:lesson", "dialog " + await dialog(page));
+    const lessonText = await page.evaluate(() => document.querySelector("dialog[open]").textContent);
+    check("and it still says what it was about", /Initech/.test(lessonText), lessonText.slice(0, 120));
+    await page.click('dialog[open] .d-footer .btn >> nth=0'); await page.waitForTimeout(300);
+    check("then the second", await dialog(page) === "evt:competitor" && (await save(page)).pending.length === 1, "dialog " + await dialog(page));
+    await page.reload(); await page.evaluate(() => document.fonts.ready); await page.waitForTimeout(600);
+    check("a reload between them loses neither and repeats neither", await dialog(page) === "evt:competitor" && (await save(page)).pending.length === 1, "dialog " + await dialog(page));
+    await page.click('dialog[open] .d-footer .btn >> nth=0'); await page.waitForTimeout(300);
+    const done = await save(page);
+    check("both answered exactly once", await dialog(page) === null && done.pending.length === 0 && done.logs.filter(e => e.tag === "evt.competitor.match").length === 1, `pending ${done.pending.length}`);
+    check("no errors", errors.length === 0, errors.join(" | "));
     await context.close();
 
     /* ---------- 2. no two deals share a name ---------- */

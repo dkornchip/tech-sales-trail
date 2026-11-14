@@ -2,522 +2,522 @@
  "novice#11": {
   "ending": "fired",
   "cause": "review",
-  "week": 9,
-  "closed": 15614,
-  "cash": 7256,
-  "moves": 34,
-  "mech": "ba03e48825fdf6758afa",
-  "full": "8eaa6395f91382a4c9bc"
+  "week": 6,
+  "closed": 0,
+  "cash": 3976,
+  "moves": 33,
+  "mech": "70942cc95291240fd5f4",
+  "full": "11a90461339f93d8e136"
  },
  "novice#12": {
   "ending": "fired",
   "cause": "review",
-  "week": 6,
-  "closed": 0,
-  "cash": 3982,
-  "moves": 32,
-  "mech": "fe37890ab40783f3aacb",
-  "full": "378eac0e4910232a15cb"
+  "week": 11,
+  "closed": 68908,
+  "cash": 15639,
+  "moves": 52,
+  "mech": "1dc0ea51ce0819cf7db6",
+  "full": "72d7619dfd5c35fc9ef9"
  },
  "novice#13": {
   "ending": "fired",
-  "cause": "review",
-  "week": 8,
+  "cause": "org",
+  "week": 6,
   "closed": 0,
-  "cash": 5988,
-  "moves": 33,
-  "mech": "5f384f34a243c81f981d",
-  "full": "8de9bfd461c533e363fc"
+  "cash": 3982,
+  "moves": 27,
+  "mech": "c744391b750c37cbf4b6",
+  "full": "359a3b599513e44bbae1"
  },
  "novice#14": {
   "ending": "fired",
   "cause": "review",
-  "week": 12,
+  "week": 6,
   "closed": 0,
-  "cash": 8370,
-  "moves": 52,
-  "mech": "92950a2e06bf1ad31279",
-  "full": "0f7372570159825178df"
+  "cash": 3188,
+  "moves": 25,
+  "mech": "109cab26ec6cdc94cab8",
+  "full": "fc45335d428f0648fb6c"
  },
  "novice#15": {
   "ending": "fired",
   "cause": "review",
   "week": 6,
-  "closed": 0,
-  "cash": 3976,
-  "moves": 33,
-  "mech": "793ce24ab9d10b04e919",
-  "full": "a65a843c2dac8a02da3c"
+  "closed": 11036,
+  "cash": 5306,
+  "moves": 29,
+  "mech": "bcf0be1ea26262170fbc",
+  "full": "95aef6d33cca25d593ce"
  },
  "novice#16": {
   "ending": "fired",
   "cause": "review",
   "week": 6,
-  "closed": 0,
-  "cash": 3988,
+  "closed": 18335,
+  "cash": 6182,
   "moves": 31,
-  "mech": "22b46df4515b9b8778ea",
-  "full": "ffaeacf7d4d72838a636"
+  "mech": "3e1f332b158a2186f064",
+  "full": "f4b7e1dd11707deb2f57"
  },
  "balanced#11": {
   "ending": "fired",
-  "cause": "org",
-  "week": 8,
-  "closed": 60413,
-  "cash": 13243,
-  "moves": 43,
-  "mech": "59e7196e4632d1edb250",
-  "full": "6d9ec2ddb03924412dd2"
+  "cause": "qbr",
+  "week": 13,
+  "closed": 107748,
+  "cash": 22306,
+  "moves": 72,
+  "mech": "4ecba8cb3137d71fd464",
+  "full": "6a470c56b7a5460c988f"
  },
  "balanced#12": {
   "ending": "club",
   "cause": "club",
   "week": 13,
-  "closed": 234361,
-  "cash": 37487,
-  "moves": 76,
-  "mech": "b9a0c9928e595ec8b3d8",
-  "full": "98dce6c912ea3ff9d60b"
+  "closed": 187212,
+  "cash": 31824,
+  "moves": 75,
+  "mech": "cdc43e21e374fe0a37d3",
+  "full": "49a46a1391123e35beff"
  },
  "balanced#13": {
-  "ending": "fired",
-  "cause": "org",
-  "week": 12,
-  "closed": 77419,
-  "cash": 17685,
-  "moves": 63,
-  "mech": "8e365f01940eb85d2a9f",
-  "full": "61f31f70dd816f081959"
+  "ending": "missed",
+  "cause": "missed",
+  "week": 13,
+  "closed": 159766,
+  "cash": 28542,
+  "moves": 76,
+  "mech": "7507827a9849018c8b27",
+  "full": "405c3f5556812da98bad"
  },
  "balanced#14": {
-  "ending": "club",
-  "cause": "club",
-  "week": 13,
-  "closed": 195245,
-  "cash": 32799,
-  "moves": 73,
-  "mech": "76f542d6892c0d19beba",
-  "full": "64d7e53440661e60a649"
+  "ending": "fired",
+  "cause": "org",
+  "week": 7,
+  "closed": 31683,
+  "cash": 8783,
+  "moves": 41,
+  "mech": "336633f40514101c23b7",
+  "full": "e1a117b4583f07d59892"
  },
  "balanced#15": {
   "ending": "fired",
-  "cause": "qbr",
-  "week": 13,
-  "closed": 91977,
-  "cash": 20432,
-  "moves": 69,
-  "mech": "7bf3fc3dd5652a10c0b9",
-  "full": "dc6c9b9955bdcee44c0f"
+  "cause": "org",
+  "week": 6,
+  "closed": 27228,
+  "cash": 7262,
+  "moves": 32,
+  "mech": "82de970201e33ee3eeef",
+  "full": "849571c523473f2b47d3"
  },
  "balanced#16": {
   "ending": "fired",
-  "cause": "qbr",
-  "week": 13,
-  "closed": 36326,
-  "cash": 13747,
-  "moves": 68,
-  "mech": "1d0439a5e8daae758afb",
-  "full": "429b0d3f3429edb7ad73"
+  "cause": "org",
+  "week": 9,
+  "closed": 40841,
+  "cash": 10276,
+  "moves": 52,
+  "mech": "f7f8f4c7657525ecb9c6",
+  "full": "7a6d18cd350a9d6a1409"
  },
  "referral#11": {
   "ending": "fired",
   "cause": "org",
-  "week": 12,
-  "closed": 118113,
-  "cash": 22550,
-  "moves": 67,
-  "mech": "152d3e0087452067b175",
-  "full": "fafe1f7317358a3df499"
+  "week": 7,
+  "closed": 0,
+  "cash": 4988,
+  "moves": 40,
+  "mech": "6e0255dfca5f5c0a45bb",
+  "full": "46d1998d916dd60c74ad"
  },
  "referral#12": {
   "ending": "fired",
-  "cause": "org",
-  "week": 7,
-  "closed": 3500,
-  "cash": 5414,
-  "moves": 41,
-  "mech": "cdbbd06389ac209f270a",
-  "full": "4b465bd615b5a63e20ce"
+  "cause": "qbr",
+  "week": 13,
+  "closed": 106051,
+  "cash": 22096,
+  "moves": 76,
+  "mech": "017fde6435db5839ec54",
+  "full": "3e61828ace41608a9471"
  },
  "referral#13": {
   "ending": "fired",
-  "cause": "org",
-  "week": 12,
-  "closed": 9606,
-  "cash": 9547,
-  "moves": 66,
-  "mech": "f58320c3a19db7ccbfa4",
-  "full": "30b67afa10baea5ac058"
+  "cause": "qbr",
+  "week": 13,
+  "closed": 95455,
+  "cash": 20836,
+  "moves": 71,
+  "mech": "4d9592fa208151b3fd15",
+  "full": "938d8e659583c7316026"
  },
  "referral#14": {
   "ending": "club",
   "cause": "club",
   "week": 13,
-  "closed": 284775,
-  "cash": 43538,
-  "moves": 75,
-  "mech": "009a2f720b89e537fffe",
-  "full": "fdbd4288ea932a4a81b2"
+  "closed": 254467,
+  "cash": 39901,
+  "moves": 76,
+  "mech": "f8c561d79f5a097bad45",
+  "full": "41be5dd33d356e023da1"
  },
  "referral#15": {
-  "ending": "fired",
-  "cause": "qbr",
+  "ending": "missed",
+  "cause": "missed",
   "week": 13,
-  "closed": 74362,
-  "cash": 18318,
-  "moves": 71,
-  "mech": "f7665cacf51ccff8fe1d",
-  "full": "102d15c2a477fbf95205"
+  "closed": 131504,
+  "cash": 25157,
+  "moves": 74,
+  "mech": "75a8d0f5a2b1742c756d",
+  "full": "de4003906c3e8272d393"
  },
  "referral#16": {
   "ending": "fired",
-  "cause": "org",
-  "week": 9,
-  "closed": 43146,
-  "cash": 10572,
-  "moves": 51,
-  "mech": "5a3afc7101451caa7bbd",
-  "full": "9a58d3bee758a71ad02a"
+  "cause": "qbr",
+  "week": 13,
+  "closed": 73663,
+  "cash": 18227,
+  "moves": 70,
+  "mech": "ff64ce3ea70402c7e900",
+  "full": "13a10ff8760149696ea6"
  },
  "caller#11": {
   "ending": "fired",
   "cause": "org",
   "week": 9,
-  "closed": 42315,
-  "cash": 10459,
-  "moves": 50,
-  "mech": "c4d555fc36ac5e2de43c",
-  "full": "d3f56fb6450862badb2f"
+  "closed": 89400,
+  "cash": 16128,
+  "moves": 45,
+  "mech": "092b3a73e52e85d4c7b0",
+  "full": "5d217e98340aa4ef1905"
  },
  "caller#12": {
   "ending": "fired",
   "cause": "org",
-  "week": 12,
-  "closed": 97067,
-  "cash": 20042,
-  "moves": 62,
-  "mech": "ae9455caea239acdde95",
-  "full": "944d262ffe3a06aeedfe"
+  "week": 7,
+  "closed": 13124,
+  "cash": 6569,
+  "moves": 36,
+  "mech": "92468558a6d123834ac7",
+  "full": "50bf12b874f7853b2503"
  },
  "caller#13": {
   "ending": "fired",
   "cause": "org",
-  "week": 7,
-  "closed": 31973,
-  "cash": 8825,
-  "moves": 38,
-  "mech": "451173acde4c2b96ba26",
-  "full": "86f768344490cc7e4499"
+  "week": 10,
+  "closed": 53242,
+  "cash": 12777,
+  "moves": 57,
+  "mech": "d398ebf7670d0bf2285c",
+  "full": "ac76115fdd56c19ca279"
  },
  "caller#14": {
   "ending": "fired",
   "cause": "org",
-  "week": 9,
-  "closed": 38993,
-  "cash": 10073,
-  "moves": 45,
-  "mech": "b393ab3fa950466d72d4",
-  "full": "9775fbb99f85f2b1a3b8"
+  "week": 6,
+  "closed": 38587,
+  "cash": 8625,
+  "moves": 31,
+  "mech": "e5de2ec5daa970edb901",
+  "full": "253224123440d01395d2"
  },
  "caller#15": {
   "ending": "fired",
   "cause": "org",
-  "week": 6,
-  "closed": 0,
-  "cash": 3982,
-  "moves": 36,
-  "mech": "5dca8c2139a641326ba6",
-  "full": "489ba1c928ea98cf76a3"
+  "week": 7,
+  "closed": 32010,
+  "cash": 8829,
+  "moves": 38,
+  "mech": "6f625110e6f9d3e46933",
+  "full": "073edb76d98213fab508"
  },
  "caller#16": {
   "ending": "fired",
-  "cause": "org",
-  "week": 8,
-  "closed": 58752,
-  "cash": 13039,
-  "moves": 42,
-  "mech": "cbf63dda9f42173eb8c6",
-  "full": "0901f834a2fc851bf86b"
+  "cause": "qbr",
+  "week": 13,
+  "closed": 92669,
+  "cash": 20508,
+  "moves": 61,
+  "mech": "d398bfb12c3910729f8b",
+  "full": "550220e9b7fbfebb578f"
  },
  "conference#11": {
   "ending": "fired",
   "cause": "org",
   "week": 9,
-  "closed": 42315,
-  "cash": 10459,
-  "moves": 50,
-  "mech": "c4d555fc36ac5e2de43c",
-  "full": "d3f56fb6450862badb2f"
+  "closed": 89400,
+  "cash": 16128,
+  "moves": 45,
+  "mech": "092b3a73e52e85d4c7b0",
+  "full": "5d217e98340aa4ef1905"
  },
  "conference#12": {
   "ending": "fired",
   "cause": "org",
-  "week": 9,
-  "closed": 97067,
-  "cash": 17042,
-  "moves": 46,
-  "mech": "d6df610a041cbe792121",
-  "full": "0814f637097abc2074af"
+  "week": 6,
+  "closed": 13124,
+  "cash": 4775,
+  "moves": 29,
+  "mech": "457fb181c4f68acb02cd",
+  "full": "822820e417dd6dda3581"
  },
  "conference#13": {
-  "ending": "fired",
-  "cause": "org",
-  "week": 9,
-  "closed": 31973,
-  "cash": 9219,
-  "moves": 50,
-  "mech": "f5b6cd65159bc7f81060",
-  "full": "5aac2f5a04372134f079"
+  "ending": "missed",
+  "cause": "missed",
+  "week": 13,
+  "closed": 122669,
+  "cash": 23320,
+  "moves": 64,
+  "mech": "eb90e830d38b48a3511e",
+  "full": "18d598b23c7a27ce16be"
  },
  "conference#14": {
   "ending": "fired",
   "cause": "org",
-  "week": 9,
-  "closed": 38993,
-  "cash": 10073,
-  "moves": 45,
-  "mech": "b393ab3fa950466d72d4",
-  "full": "9775fbb99f85f2b1a3b8"
+  "week": 6,
+  "closed": 38587,
+  "cash": 8625,
+  "moves": 31,
+  "mech": "e5de2ec5daa970edb901",
+  "full": "253224123440d01395d2"
  },
  "conference#15": {
   "ending": "fired",
   "cause": "org",
-  "week": 6,
-  "closed": 0,
-  "cash": 3982,
-  "moves": 36,
-  "mech": "5dca8c2139a641326ba6",
-  "full": "489ba1c928ea98cf76a3"
+  "week": 11,
+  "closed": 42269,
+  "cash": 12460,
+  "moves": 56,
+  "mech": "32357ea1adf0be8ed31e",
+  "full": "6de3703551b5d73623ea"
  },
  "conference#16": {
-  "ending": "fired",
-  "cause": "org",
-  "week": 8,
-  "closed": 58752,
-  "cash": 13039,
-  "moves": 42,
-  "mech": "cbf63dda9f42173eb8c6",
-  "full": "0901f834a2fc851bf86b"
+  "ending": "club",
+  "cause": "club",
+  "week": 13,
+  "closed": 300742,
+  "cash": 44664,
+  "moves": 68,
+  "mech": "d4380a7c0a3ebc8d90ba",
+  "full": "e9e76748fdee4e537097"
  },
  "risk#11": {
   "ending": "fired",
   "cause": "review",
-  "week": 7,
-  "closed": 0,
-  "cash": 4970,
-  "moves": 45,
-  "mech": "a3fa6f68a587a066a382",
-  "full": "35742be835708953f984"
+  "week": 8,
+  "closed": 53405,
+  "cash": 12379,
+  "moves": 49,
+  "mech": "a39ebc57e45c6393e44c",
+  "full": "689a7223c4daca273f3d"
  },
  "risk#12": {
-  "ending": "missed",
-  "cause": "missed",
-  "week": 13,
-  "closed": 139943,
-  "cash": 26152,
-  "moves": 84,
-  "mech": "73791869105b39b2253a",
-  "full": "a42fe633c87dc8ff16c4"
+  "ending": "fired",
+  "cause": "review",
+  "week": 6,
+  "closed": 48664,
+  "cash": 9822,
+  "moves": 39,
+  "mech": "0d812e6918683388824d",
+  "full": "4d2ea270e4af74d06199"
  },
  "risk#13": {
   "ending": "fired",
   "cause": "review",
-  "week": 11,
-  "closed": 84411,
-  "cash": 17493,
-  "moves": 65,
-  "mech": "8627c40d6b00e4b51d9a",
-  "full": "a7c98966b58420cbf15d"
+  "week": 6,
+  "closed": 28922,
+  "cash": 7447,
+  "moves": 38,
+  "mech": "2782d8ae602c341f2d8a",
+  "full": "73d839b965f592f06a5f"
  },
  "risk#14": {
   "ending": "fired",
   "cause": "review",
-  "week": 7,
-  "closed": 16218,
-  "cash": 6916,
-  "moves": 45,
-  "mech": "c54ae6dcabff1d17ab94",
-  "full": "c7bd3d21b764742b9e8f"
+  "week": 10,
+  "closed": 51452,
+  "cash": 12544,
+  "moves": 61,
+  "mech": "21c95795d4a893c6c15c",
+  "full": "ced173121b14fa09c431"
  },
  "risk#15": {
   "ending": "fired",
   "cause": "review",
-  "week": 8,
-  "closed": 49669,
-  "cash": 11937,
-  "moves": 52,
-  "mech": "a90fc84cf8584f3edc1a",
-  "full": "8c46699d0a7e53616119"
+  "week": 6,
+  "closed": 27912,
+  "cash": 7332,
+  "moves": 36,
+  "mech": "480be027ad97d8ecf2b8",
+  "full": "0292f11fc6ec3a3e1c10"
  },
  "risk#16": {
   "ending": "fired",
   "cause": "review",
   "week": 7,
-  "closed": 31583,
-  "cash": 8772,
+  "closed": 26528,
+  "cash": 8159,
   "moves": 42,
-  "mech": "61e4f1587cc96876278e",
-  "full": "0c10b5709626db28c11f"
+  "mech": "e1368b57b7566a079d2c",
+  "full": "fdd931cd03efc0ed7725"
  },
  "claink#11": {
+  "ending": "club",
+  "cause": "club",
+  "week": 13,
+  "closed": 194793,
+  "cash": 30051,
+  "moves": 77,
+  "mech": "17500e81115015af1044",
+  "full": "b9565c8a1d4c5796d130"
+ },
+ "claink#12": {
+  "ending": "repo",
+  "cause": "claink",
+  "week": 2,
+  "closed": 0,
+  "cash": -1559,
+  "moves": 15,
+  "mech": "804446a43a9a7201661d",
+  "full": "abcd43405b096af9f9f3"
+ },
+ "claink#13": {
   "ending": "repo",
   "cause": "claink",
   "week": 3,
   "closed": 0,
-  "cash": -2612,
-  "moves": 16,
-  "mech": "d07fc469e703b1c1cfdd",
-  "full": "c81867575288904356b8"
+  "cash": -2475,
+  "moves": 17,
+  "mech": "1006974df3786835480f",
+  "full": "d60ca93ad152f77ffbb9"
  },
- "claink#12": {
+ "claink#14": {
+  "ending": "fired",
+  "cause": "qbr",
+  "week": 13,
+  "closed": 121773,
+  "cash": 20393,
+  "moves": 81,
+  "mech": "d518107f06989bcc6a7a",
+  "full": "82a3d3c57e4e53447c27"
+ },
+ "claink#15": {
   "ending": "club",
   "cause": "club",
   "week": 13,
-  "closed": 187787,
-  "cash": 28892,
-  "moves": 82,
-  "mech": "7463d2306130de86d0d6",
-  "full": "2729f30313eb03bded7f"
- },
- "claink#13": {
-  "ending": "fired",
-  "cause": "org",
-  "week": 11,
-  "closed": 35437,
-  "cash": 9463,
-  "moves": 67,
-  "mech": "d83b575c8a6bb6edd824",
-  "full": "4fa23d3fe32e194e38c0"
- },
- "claink#14": {
-  "ending": "missed",
-  "cause": "missed",
-  "week": 13,
-  "closed": 133817,
-  "cash": 19986,
-  "moves": 87,
-  "mech": "05b6fbad7b19e8ab3725",
-  "full": "d4490957a0c0764b4209"
- },
- "claink#15": {
-  "ending": "fired",
-  "cause": "org",
-  "week": 10,
-  "closed": 29393,
-  "cash": 6831,
-  "moves": 60,
-  "mech": "47f5b829ff085048723a",
-  "full": "f50c78d0adb0b57e3a23"
+  "closed": 173320,
+  "cash": 27174,
+  "moves": 76,
+  "mech": "726a3a75f7cbd2c59097",
+  "full": "e77883659ae6ab96c8d9"
  },
  "claink#16": {
   "ending": "fired",
   "cause": "org",
-  "week": 6,
-  "closed": 0,
-  "cash": 1811,
-  "moves": 43,
-  "mech": "873e486e7fe255bef427",
-  "full": "628197bb33c1b8e0a24a"
+  "week": 10,
+  "closed": 55955,
+  "cash": 10392,
+  "moves": 65,
+  "mech": "c1ed7eb9cfed495ba415",
+  "full": "c4d51664a9e654d84ef1"
  },
  "expert#21": {
   "ending": "fired",
-  "cause": "qbr",
-  "week": 13,
-  "closed": 59762,
-  "cash": 16565,
-  "moves": 72,
-  "mech": "8d40c8d4e8331a10594b",
-  "full": "9fe77a0e26fa77a4a1f0"
+  "cause": "org",
+  "week": 10,
+  "closed": 74284,
+  "cash": 15308,
+  "moves": 54,
+  "mech": "a005c3804d2231505ce6",
+  "full": "e95241b2868c7489a672"
  },
  "expert#22": {
   "ending": "fired",
-  "cause": "qbr",
-  "week": 13,
-  "closed": 80634,
-  "cash": 19058,
-  "moves": 70,
-  "mech": "3397fae816211f7ade05",
-  "full": "9a85e6325f4944464c56"
+  "cause": "org",
+  "week": 7,
+  "closed": 54198,
+  "cash": 11492,
+  "moves": 41,
+  "mech": "fd33043661370c16a59b",
+  "full": "e8e9e184708e7a48bb01"
  },
  "claink-weekly#21": {
-  "ending": "club",
-  "cause": "club",
-  "week": 13,
-  "closed": 172306,
-  "cash": 4372,
-  "moves": 90,
-  "mech": "4132b19f2a0d2d4640e3",
-  "full": "bbbf6d4e998ae3e25045"
+  "ending": "repo",
+  "cause": "claink",
+  "week": 4,
+  "closed": 13539,
+  "cash": -1624,
+  "moves": 27,
+  "mech": "d67acddaac659f97a37e",
+  "full": "c7fdd28b9f686b412e37"
  },
  "claink-weekly#22": {
   "ending": "repo",
   "cause": "claink",
   "week": 3,
   "closed": 0,
-  "cash": -2144,
+  "cash": -1785,
   "moves": 17,
-  "mech": "cd1e27f10421abb8f1f7",
-  "full": "77c7d95654414d96e82d"
+  "mech": "dac2e438342a93914d40",
+  "full": "5fd04f4a6d814887bd43"
  },
  "claink-budget#21": {
-  "ending": "fired",
-  "cause": "org",
-  "week": 10,
-  "closed": 66326,
-  "cash": 14353,
-  "moves": 53,
-  "mech": "3eff6965836710a18f75",
-  "full": "cd24c5043ebf42b7a37e"
+  "ending": "missed",
+  "cause": "missed",
+  "week": 13,
+  "closed": 130579,
+  "cash": 25064,
+  "moves": 67,
+  "mech": "9e2bbc3fc7dc6d118e11",
+  "full": "a66f34f15684d8324050"
  },
  "claink-budget#22": {
   "ending": "fired",
-  "cause": "org",
-  "week": 10,
-  "closed": 40061,
-  "cash": 7831,
-  "moves": 64,
-  "mech": "36a186a07faff3f0231b",
-  "full": "e20e9b8002e8882dfd20"
+  "cause": "qbr",
+  "week": 13,
+  "closed": 84026,
+  "cash": 19465,
+  "moves": 70,
+  "mech": "eeb659701658df67abb7",
+  "full": "4451640c93a6e415cadd"
  },
  "hail-only#21": {
   "ending": "fired",
   "cause": "review",
-  "week": 7,
-  "closed": 17157,
-  "cash": 7059,
-  "moves": 40,
-  "mech": "3644d70a14c3b3da4d8d",
-  "full": "69b554324ece48018e19"
+  "week": 6,
+  "closed": 20515,
+  "cash": 6462,
+  "moves": 31,
+  "mech": "874691055eef7376c002",
+  "full": "121b0a778f224977097e"
  },
  "hail-only#22": {
   "ending": "fired",
   "cause": "review",
   "week": 7,
-  "closed": 0,
-  "cash": 5000,
+  "closed": 25717,
+  "cash": 8086,
   "moves": 38,
-  "mech": "8eec0ca5aa7cb0d18198",
-  "full": "7d18a64457b728f5febb"
+  "mech": "0e19511cdc81b02053fb",
+  "full": "5d7d54f36e4ebf495616"
  },
  "mgr-farm#21": {
   "ending": "fired",
-  "cause": "org",
-  "week": 10,
-  "closed": 0,
-  "cash": 6400,
-  "moves": 52,
-  "mech": "353b0c2727bc1708638f",
-  "full": "30a83a20bbea2bdb881a"
+  "cause": "qbr",
+  "week": 13,
+  "closed": 125908,
+  "cash": 24509,
+  "moves": 68,
+  "mech": "f9a10028365724b42657",
+  "full": "be0d7c79b97708311661"
  },
  "mgr-farm#22": {
   "ending": "fired",
   "cause": "org",
-  "week": 7,
-  "closed": 43338,
-  "cash": 10201,
-  "moves": 38,
-  "mech": "83855ae220fea26695ce",
-  "full": "dbac015c6c8a37e24640"
+  "week": 9,
+  "closed": 0,
+  "cash": 5400,
+  "moves": 48,
+  "mech": "d86a10b281c97ab7bd55",
+  "full": "69f6bf996169c4c5d1c4"
  },
  "ascend#21": {
   "ending": "ascension",
@@ -526,8 +526,8 @@
   "closed": 0,
   "cash": 1182,
   "moves": 3,
-  "mech": "2bf0f843653b5ec090bf",
-  "full": "b9ac5ace3621be95707d"
+  "mech": "31b1e457ab6da9104dfa",
+  "full": "d4684619492abfb9d363"
  },
  "ascend#22": {
   "ending": "ascension",
@@ -536,18 +536,18 @@
   "closed": 0,
   "cash": 1176,
   "moves": 4,
-  "mech": "2cb8cbbad5945900c964",
-  "full": "55aceeccc79571642ce5"
+  "mech": "ecd946bd819e693ca899",
+  "full": "ac64376caa7bbca051da"
  },
  "burn#21": {
-  "ending": "meltdown",
-  "cause": "stress",
-  "week": 1,
+  "ending": "ascension",
+  "cause": "caffeine",
+  "week": 2,
   "closed": 0,
-  "cash": 588,
-  "moves": 6,
-  "mech": "a93761508fd049302e67",
-  "full": "7832c6ef42f1ad65e79f"
+  "cash": 582,
+  "moves": 9,
+  "mech": "2832ec428eda13282a40",
+  "full": "7eca9fbb9981a97b84b4"
  },
  "burn#22": {
   "ending": "ascension",
@@ -556,8 +556,8 @@
   "closed": 0,
   "cash": 582,
   "moves": 8,
-  "mech": "2eb77b54cf37ce7b0444",
-  "full": "03b02fe9b6f4359f37f9"
+  "mech": "6fde3b44fa3b285295fc",
+  "full": "26c770ab4104b2d9c936"
  },
  "broke#21": {
   "ending": "ascension",
@@ -565,9 +565,9 @@
   "week": 2,
   "closed": 13539,
   "cash": -1090,
-  "moves": 14,
-  "mech": "40d5ba8d325d76f74646",
-  "full": "963ae497b801fdad2d18"
+  "moves": 13,
+  "mech": "03cb1065876989ae727b",
+  "full": "e74851d9cb55e10d2158"
  },
  "broke#22": {
   "ending": "repo",
@@ -576,7 +576,7 @@
   "closed": 0,
   "cash": -1506,
   "moves": 7,
-  "mech": "ebf6b5927938b62c48e5",
-  "full": "7f8aec098a24770a7194"
+  "mech": "39cf0d43ba2291b743e6",
+  "full": "43f6edc3f71c8782c0d7"
  }
 }

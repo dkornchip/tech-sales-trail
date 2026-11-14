@@ -65,6 +65,25 @@ export function violations(eng, s) {
     f(c.status === "active" || c.due === 0, `a seat that is ${c.status} still owes ${c.due}`);
     f(c.strikeLog.length === c.strikes || c.status === "ad" || c.status === "dismissed" || c.status === "expired", `strike log ${c.strikeLog.length} for ${c.strikes} strikes`);
   }
+  // what is bending the odds: dated effects from known sources, none already spent, and never the old shared number
+  f(!("modifiers" in s), "the run still carries the old shared modifiers");
+  f(Array.isArray(s.effects), "effects is not a list");
+  const sources = new Set();
+  for (const e of s.effects || []) {
+    f(typeof e.src === "string" && (e.src === "legacy" || eng.effects.EFFECT[e.src]), `effect from an unknown source ${e.src}`);
+    f(!sources.has(e.src), `two effects from ${e.src}`); sources.add(e.src);
+    f(Number.isInteger(e.from) && Number.isInteger(e.until) && e.from <= e.until, `effect ${e.src} runs ${e.from}..${e.until}`);
+    f(over || e.until >= s.week, `effect ${e.src} ended in week ${e.until} and is still carried in week ${s.week}`);
+    f(Number.isFinite(e.conv) && Math.abs(e.conv) <= 0.30 && Number.isFinite(e.disc) && e.disc >= 0 && e.disc < 1, `effect ${e.src} is ${e.conv} / ${e.disc}`);
+  }
+  f(Math.abs(eng.effects.convMod(s)) <= 0.30 + 1e-12, `the odds are bent by ${eng.effects.convMod(s)}`);
+  // choices: a list of known ones; a finished run waits on nothing; while one waits, its options are the only moves
+  f(Array.isArray(s.pending), "pending is not a list");
+  for (const p of s.pending || []) f(p && typeof p.id === "string" && Object.prototype.hasOwnProperty.call(eng.events.EVENTS, p.id), `an unknown choice is waiting: ${p && p.id}`);
+  f(!over || (s.pending || []).length === 0, "a finished run is still waiting on a choice");
+  const moves = eng.run.legalMoves(s);
+  f(over ? moves.length === 0 : moves.length > 0, `${moves.length} legal moves on a ${over ? "finished" : "live"} run`);
+  if (!over && (s.pending || []).length) f(moves.every(m => m.t === "choose" && m.event === s.pending[0].id), "something other than the waiting choice is legal");
   // the dice
   const r = s.rng;
   f(r && [r.seed, r.core, r.fl].every(x => Number.isInteger(x) && x >= 0 && x <= 0xFFFFFFFF), "the run has no sound dice");
@@ -85,6 +104,7 @@ test("after every move of random legal play, the state is sound", async () => {
       assert.ok(legal.length > 0, `seed ${seed} move ${k}: a live run with nothing to press`);
       const id = chaos(viewOf(eng, g, legal), ctx);
       const r = play(eng, g, id); g = r.g; steps++;
+      assert.ok(r.changed, `seed ${seed} move ${k}: ${id} was offered as legal and did nothing`);
       const bad = violations(eng, g.s);
       assert.deepEqual(bad, [], `seed ${seed} move ${k} (${id})`);
     }

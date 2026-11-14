@@ -39,7 +39,6 @@ export const LOG = {
   "act.propose": p => line(`Proposals: ${p.n} sent.`, spent("propose")),
   // size: "whale", "big" or "" (the best referral in the batch)
   "act.network": p => line(`Referrals: +${n(p.n, "intro")}.${p.size === "whale" ? " Whale." : p.size === "big" ? " Big one." : ""}`, `${spent("network")} · +4 reputation`),
-  "act.recharge.already": () => "Already recharged this week.",
   // nap: the lucky bonus in percent, 0 when there was none worth mentioning
   "act.recharge": p => line(`Recharged.${p.nap ? ` Good nap, +${p.nap}%.` : ""}`, `+${p.energy} energy · −${p.relief} stress`),
   "act.recharge.flat": p => line("Recharged. Caffeine ate the calm.", `+${p.energy} energy`),
@@ -49,7 +48,6 @@ export const LOG = {
   "act.crm.nuked": p => line(`“Close that out.” ${p.account} gone.`, `${usd(-p.value)} pipeline`),
   "act.politics": () => line("Politics.", "+8 manager · +3 product · −4 reputation · +2 stress"),
   "act.conference": p => line(`Conference: +${n(p.n, "lead")}.`, `${spent("conference")} · ${usd(-COST.conference.cash)} · +5 stress`),
-  "act.hail.none": () => "No late-stage deals to Hail Mary.",
   "act.hail.blast": () => "Hail Mary: “last chance” blast to every exec.",
   "act.hail.lean": () => "Hail Mary: leaning on every late deal. Hard.",
   "act.hail.chaosWon": () => line("Chaos worked.", "+8 manager · +4 stress"),

@@ -417,15 +417,13 @@ export const ClainkConsole=({s,ui,setUi,focusOnMount,onDeploy,onCancel,onHide,on
 
 // picks what clAInk shows: the ad, the workspace, an end card, or nothing (closed ad, expired offer, closed end card)
 // dispatch: the page's one way to change a run (a move through game/run.js)
-export const ClainkDock=({s,dispatch,ui,setUi,onEvent})=>{
+// onReport(done): a run's report has started (false) or has had its say (true); the page holds the manager's
+// acknowledgement, which the run itself is waiting on, until then
+export const ClainkDock=({s,dispatch,ui,setUi,onReport})=>{
   const c=s.claink;
   const prev=useRef(c ? c.status : null);
   const justInstalled=prev.current==="ad" && !!c && c.status==="active";
   useEffect(()=>{ prev.current=c ? c.status : null; });
-  const lesson=useRef(null); // the Writing Lesson waits for the run's report to finish
-  // New Game / Load remount the dock: React tears a deleted tree down parent first, so this drops a held lesson before
-  // the workspace's own cleanup could hand it over into the next run
-  useEffect(()=>()=>{ lesson.current=null; },[]);
   if(!c)return null;
   const ck=op=>dispatch({t:"ck",op});
   if(c.status==="ad"){
@@ -437,11 +435,8 @@ export const ClainkDock=({s,dispatch,ui,setUi,onEvent})=>{
   }
   if(c.status==="active" || ((c.status==="cancelled" || c.status==="revoked") && !c.hidden)){
     return <ClainkConsole s={s} ui={ui} setUi={setUi} focusOnMount={justInstalled}
-      onDeploy={()=>{
-        const r=ck("deploy"), ev=r.events[0], L=r.state.claink && r.state.claink.last;
-        lesson.current=ev ? {...ev,week:r.state.week,runId:r.state.runId,run:r.state.claink.deploys,announce:(L && L.announce)||""} : null;
-      }}
-      onRevealDone={()=>{ const ev=lesson.current; lesson.current=null; if(ev) onEvent(ev); }}
+      onDeploy={()=>{ onReport(false); ck("deploy"); }}
+      onRevealDone={()=>onReport(true)}
       onCancel={()=>ck("cancel")}
       onHide={e=>{ ck("hide"); focusEndWeek(e); }}/>;
   }

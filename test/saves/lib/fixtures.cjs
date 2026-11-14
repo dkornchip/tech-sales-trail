@@ -20,7 +20,7 @@ const MANIFEST = path.join(DIR, 'manifest.json');
 const KEYS = { autosave: 'tst-autosave-v4-3', manual: 'tst-save-v4-3', legacy: ['tst-save-v4-2', 'tst-autosave-v4-2'] };
 const ALL_KEYS = [KEYS.autosave, KEYS.manual].concat(KEYS.legacy);
 
-const EXPECT_KEYS = ['dialog', 'dock', 'cause', 'said', 'legal', 'illegal', 'state'];
+const EXPECT_KEYS = ['dialog', 'dock', 'cause', 'said', 'legal', 'illegal', 'state', 'stateNow'];
 
 // A fixture file holds exactly the string that was in localStorage, plus one trailing newline.
 const readRaw = file => fs.readFileSync(path.join(DIR, file), 'utf8').replace(/\n$/, '');
@@ -54,11 +54,15 @@ function loadManifest() {
 // The manifest's expectations in the form the parity runner checks (lib/runner.cjs, "expectations").
 // expect.state is { 'dotted.path': value }: every path must hold exactly that value in the BASELINE's state after
 // loading (and the build's state is compared with the baseline's field by field, as always).
-function toRunnerExpect(expect) {
+// expect.stateNow overrides paths of expect.state for the CURRENT build (run.cjs --a self), where a save's field has
+// a new home: { 'old.path': null } drops a path, { 'new.path': value } adds one. (v2.1 keeps what bends the signing
+// odds as a list of dated effects, not as one `modifiers` number and timer.)
+function toRunnerExpect(expect, now) {
   const x = {};
   for (const k of ['dialog', 'dock', 'cause', 'said', 'legal', 'illegal']) if (k in expect) x[k] = expect[k];
   if (expect.state) {
-    const want = expect.state;
+    const want = Object.assign({}, expect.state);
+    if (now && expect.stateNow) for (const k of Object.keys(expect.stateNow)) { if (expect.stateNow[k] === null && k in want) delete want[k]; else want[k] = expect.stateNow[k]; }
     const fn = s => Object.keys(want).every(p => JSON.stringify(getAt(s, p)) === JSON.stringify(want[p]));
     fn.toString = () => 'state has ' + JSON.stringify(want);
     x.state = fn;

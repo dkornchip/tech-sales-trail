@@ -29,11 +29,6 @@
   3,
   null
  ],
- "act.recharge.already": [
-  "nope",
-  3,
-  null
- ],
  "act.recharge": [
   "bowl",
   3,
@@ -71,11 +66,6 @@
  ],
  "act.conference": [
   "airport",
-  3,
-  null
- ],
- "act.hail.none": [
-  "nope",
   3,
   null
  ],

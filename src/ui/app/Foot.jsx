@@ -1,9 +1,9 @@
 import React from "react";
 import { isRunOver } from "../../game/log.js";
-import { blocked, fridayPreview, lateDeals, stageCount } from "../../game/selectors.js";
+import { hailBlock } from "../../game/run.js";
+import { effectChips, fridayPreview, lateDeals, stageCount } from "../../game/selectors.js";
 import { CHIP, HINT, UI } from "../../copy/ui.js";
 import { isPhone, noHover } from "../env.js";
-import { HAIL } from "./actionList.js";
 import { Icon } from "./Icon.jsx";
 
 // The one thing worth doing next, for when nothing is under the pointer.
@@ -26,10 +26,14 @@ export const HintBar = ({ hint, s }) => (
   </div>
 );
 
+// One chip per effect in force, each with its own clock (game/effects.js): what it does to the signing odds, and a
+// second chip for a discount it carries.
 const chips = s => {
-  const out = [], m = s.modifiers || {};
-  if (m.conversion) out.push({ id: "odds", icon: m.conversion > 0 ? "trending-up" : "trending-down", kind: m.conversion > 0 ? "good" : "warn", text: CHIP.closeOdds(m.conversion, m.expiresIn || 1) });
-  if (m.discount > 0) out.push({ id: "discount", icon: "receipt", kind: "warn", text: CHIP.discount(m.discount) });
+  const out = [];
+  for (const e of effectChips(s)) {
+    if (e.conv) out.push({ id: "odds-" + e.src, icon: e.conv > 0 ? "trending-up" : "trending-down", kind: e.conv > 0 ? "good" : "warn", text: CHIP.closeOdds(e.conv, e.weeksLeft) });
+    if (e.disc > 0) out.push({ id: "discount-" + e.src, icon: "receipt", kind: "warn", text: CHIP.discount(e.disc, e.weeksLeft) });
+  }
   if (s.pip) out.push({ id: "pip", icon: "file-warning", kind: "warn", text: CHIP.pip(s.pipLevel || 1) });
   if (s.coffeesThisWeek > 0) out.push({ id: "shots", icon: "coffee", kind: "", text: CHIP.shots(s.coffeesThisWeek) });
   if (s.trip) out.push({ id: "trip", icon: "plane", kind: "", text: CHIP.trip(s.trip) });
@@ -79,8 +83,8 @@ const Chips = ({ list, onHint }) => {
   );
 };
 
-// Why the Hail Mary can't be thrown right now, or null.
-export const hailBlock = s => blocked(s, { energy: HAIL.energy, slots: 1 }) || (lateDeals(s).length ? null : { why: "none" });
+// Why the Hail Mary can't be thrown right now, or null: the rules' own answer (game/run.js).
+export { hailBlock };
 
 export const Foot = ({ s, onHail, onEndWeek, onHint, onBlocked }) => {
   const late = lateDeals(s).length;

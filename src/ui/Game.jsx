@@ -3,8 +3,8 @@ import { ENDINGS } from "../copy/endings.js";
 import { EVENT_COPY } from "../copy/events.js";
 import { HELP, HELP_MEMO, HELP_OK, HELP_TITLE } from "../copy/help.js";
 import { EVENTS } from "../game/events.js";
-import { legacyCause } from "../game/legacy.js";
-import { step } from "../game/run.js";
+import { causeOf } from "../game/legacy.js";
+import { step, waiting } from "../game/run.js";
 import { CLAINK } from "../game/claink.js";
 import { AUTOSAVE_KEY, SAVE_KEY } from "../game/constants.js";
 import { isRunOver } from "../game/log.js";
@@ -27,23 +27,25 @@ import { Tour, Welcome, endFirstDay, isFirstDay, useBooting } from "./FirstRun.j
 
 const { useState, useEffect, useRef } = React;
 
-// An End Week choice ("evt:" dialogs) is kept beside the autosave while it is on screen, with the run and week it
-// belongs to, so a reload cannot be used to walk away from it. It is honoured only for that same run and week.
-const PENDING_KEY="tst-pending-v2";
-const heldEvent=s=>{
+// A choice that is waiting for an answer is part of the run (its `pending` list, game/run.js), so it is saved with
+// it and nothing can walk away from it: not a reload, not a Load, not a second press.
+//
+// v2.0 kept an End Week choice beside the autosave instead, under this key, with the run and week it belonged to.
+// A run saved by v2.0 that was waiting on one still gets it: it is read here, once, when that run is opened, and
+// only for that same run and week. The key is never written or removed (the v2.0 page may still be in use).
+const LEGACY_PENDING_KEY="tst-pending-v2";
+// stored: the run as it was read from storage, before it was merged. One that already lists its own choices (even
+// an empty list) was saved by v2.1, and is never asked twice.
+const withLegacyChoice=(s,stored)=>{
+  if(isRunOver(s) || (stored && Array.isArray(stored.pending)) || (Array.isArray(s.pending) && s.pending.length))return s;
   try{
-    const p=JSON.parse(localStorage.getItem(PENDING_KEY)||"null");
-    if(!p || typeof p.id!=="string" || p.id.indexOf("evt:")!==0 || !EVENTS[p.id])return null;
-    if(p.runId!==s.runId || p.week!==s.week || isRunOver(s))return null;
-    return {id:p.id,params:p.params && typeof p.params==="object" ? p.params : undefined};
-  }catch{ return null; }
+    const p=JSON.parse(localStorage.getItem(LEGACY_PENDING_KEY)||"null");
+    if(!p || typeof p.id!=="string" || p.id.indexOf("evt:")!==0 || !Object.prototype.hasOwnProperty.call(EVENTS,p.id))return s;
+    if(p.runId!==s.runId || p.week!==s.week)return s;
+    return {...s,pending:[{id:p.id}]};
+  }catch{ return s; }
 };
-const holdEvent=(pending,s)=>{
-  try{
-    if(pending && pending.id.indexOf("evt:")===0) localStorage.setItem(PENDING_KEY,JSON.stringify({runId:s.runId,week:s.week,id:pending.id,params:pending.params}));
-    else localStorage.removeItem(PENDING_KEY);
-  }catch{}
-};
+const isAck=p=>!!p && p.id.indexOf("ck:")===0;
 
 // What every screen assumes about a run: its counters are numbers and its lists are lists.
 const isRun=r=>!!r && ["week","energy","stress","cash","slots","maxSlots","quota"].every(k=>Number.isFinite(r[k])) && r.week>=1 && Array.isArray(r.deals) && Array.isArray(r.logs);
@@ -60,17 +62,20 @@ export function Game({fresh}){
     let raw=null;
     try{ raw=readStoredRun(true); }catch{ return base; }
     if(!raw)return base;
-    let run;
-    try{ run=mergeSaved(JSON.parse(raw)); }catch{ unreadable.current=true; return base; }
+    let run,stored;
+    try{ stored=JSON.parse(raw); run=mergeSaved(stored); }catch{ unreadable.current=true; return base; }
     if(!isRun(run)) throw new Error("the stored run is not a run");
-    return run;
+    return withLegacyChoice(run,stored);
   };
 
   const[s,setS]=useState(createInitial);
   useEffect(()=>{ if(unreadable.current){ unreadable.current=false; notify(TOAST.damaged); } },[]);
-  // the event dialog on screen: {id, params} (EVENTS in game/events.js), or null. A choice that was on screen when
-  // the page closed is still waiting when it opens again (v1.21 dropped it, and both of its outcomes with it).
-  const[pending,setPending]=useState(()=>heldEvent(s));
+  // The choice the run is waiting on: {id, params} (EVENTS in game/events.js), or null. An End Week choice is shown
+  // at once. An acknowledgement of clAInk's manager (a "ck:" choice) waits for the run's report to have its say:
+  // it is shown when the report finishes (or is skipped), when anything else is attempted, and at once in a run
+  // that was opened with one already waiting.
+  const head=waiting(s);
+  const[ackOpen,setAckOpen]=useState(()=>isAck(waiting(s)));
   const[over,setOver]=useState(null);
   const[showHelp,setShowHelp]=useState(false);
   // The first day (ui/FirstRun.jsx): "memo" (the opening), then 0, 1, 2 (the tour's stops), then null for good.
@@ -92,14 +97,19 @@ export function Game({fresh}){
   const sRef=useRef(s);
   const commit=ns=>{ sRef.current=ns; setS(ns); };
   // Every change to a run is a move through the rules' front door (game/run.js). Returns what the move did.
-  const dispatch=move=>{ const r=step(sRef.current,move); if(r.state!==sRef.current) commit(r.state); return r; };
+  const dispatch=move=>{
+    const r=step(sRef.current,move);
+    if(r.state!==sRef.current) commit(r.state);
+    if(r.refused==="pending") setAckOpen(true);     // the manager will not be talked over
+    return r;
+  };
 
   const onNew=()=>{
     const a=AUDIO(); if(a){ a.hush(); a.play("newgame"); a.say("newrun",{cooldown:3000}); }
     commit(newGame());
     setEpoch(e=>e+1); // v1.19: fresh clAInk UI state
     expandAd();
-    setPending(null); // an event that fired on the final week must not leak into the next run
+    setAckOpen(false);
     setOver(null);
   };
   const onSave=()=>{
@@ -121,17 +131,18 @@ export function Game({fresh}){
     }
     try{
       const a=AUDIO(); if(a){ a.hush(); a.play("load"); }
-      const run=mergeSaved(JSON.parse(v));
+      const stored=JSON.parse(v);
+      const run=withLegacyChoice(mergeSaved(stored),stored);
       if(!isRun(run)) throw new Error("the saved run is not a run");
       commit(run);
       setEpoch(e=>e+1); // v1.19: fresh clAInk UI state
-      setPending(null);
+      setAckOpen(isAck(waiting(run)));
       setOver(null);
     }catch{
       notify(TOAST.damaged);
       commit(newGame());
       setEpoch(e=>e+1); // v1.19: fresh clAInk UI state
-      setPending(null);
+      setAckOpen(false);
       setOver(null);
     }
   };
@@ -173,19 +184,24 @@ export function Game({fresh}){
     if(fresh.length===0 || fresh.length>40)return;
     a.onLogs(fresh.reverse(),{over:!!(s.fired||s.burnedOut||s.win||s.missed||s.repo)});
   },[s.logs]);
+  // the choice on screen right now, or null (an acknowledgement waits its turn; see above)
+  const shown=head && (!isAck(head) || ackOpen) ? head : null;
+  const shownId=shown ? shown.id : null;
   useEffect(()=>{
-    if(!pending || s.fired || s.burnedOut || s.win || s.missed || s.repo)return;
-    const a=AUDIO(); if(a) a.onModal(pending.id);
-  },[pending]);
-  useEffect(()=>{ holdEvent(pending,s); },[pending]);
+    if(!shownId)return;
+    const a=AUDIO(); if(a) a.onModal(shownId);
+    // an acknowledgement brings the run's result for screen readers (the report behind it is inert by now)
+    const L=isAck(shown) && sRef.current.claink ? sRef.current.claink.last : null;
+    if(!L || !L.announce)return;
+    const t=setTimeout(()=>{
+      const d=[...document.querySelectorAll("dialog[open]")].find(x=>x.getAttribute("data-dialog")===shownId);
+      const sr=d && d.querySelector(".tst-sr");
+      if(sr && sr.textContent!==L.announce){ sr.textContent=""; sr.textContent=L.announce; } // once, even if the run's own effect got there first
+    },120);
+    return()=>clearTimeout(t);
+  },[shownId]);
 
-  const endWeek=()=>{
-    const was=sRef.current;
-    const r=dispatch({t:"end"});
-    if(r.state===was)return;                                      // the run was already over
-    if(r.events.length) setPending(r.events[r.events.length-1]);  // an event that needs a choice
-    if(r.over)setPending(null);                                   // ...never stacks on an ending
-  };
+  const endWeek=()=>{ dispatch({t:"end"}); };
 
   useEffect(()=>{
     if(s.fired || s.burnedOut || s.win || s.missed || s.repo){
@@ -196,14 +212,13 @@ export function Game({fresh}){
         s.missed ? "missed" :
         "fired";
       // v1.15: endCause is set wherever an ending lands; log parsing (game/legacy.js) is only for pre-v1.15 saves
-      const cause=s.endCause || legacyCause(type,s.logs);
+      const cause=causeOf(type,s);
       // the burnout ending has two faces; everything else is its own ending
       const id=type==="burnout" ? (cause==="caffeine" ? "ascension" : "meltdown") : type;
       const words=ENDINGS[id], p={closed:s.closedWon,cash:s.cash,cause};
       const title=words.title(p);
       const body=words.body(p);
       const meta={pct:s.quota>0 ? s.closedWon/s.quota : 0, cause, shots:s.coffeesThisWeek||0};
-      setPending(null);
       setOver({id,title,body,type,meta});
     }else{
       setOver(null);
@@ -217,29 +232,14 @@ export function Game({fresh}){
   const act=a=>{ if(describe(a,sRef.current).block)return; dispatch({t:"act",id:a.id}); };
   useShortcuts({ onActKey:act, onEndWeek:()=>endWeek(), onHail:tryOpportunisticClose, onRules:openRules });
 
-  // v1.20: the Writing Lesson (ev: {id, params} from clainkManager, plus where it came from) arrives after the run's
-  // report has played. It only opens on the run, week and clAInk run
-  // that produced it (New Game or Load mid-report drop it), waits for the Rules to close, and gives way to any other
-  // dialog: then it stays in the log only. It brings the run's result for screen readers, as v1.19's did.
-  const helpOpen=useRef(false); helpOpen.current=showHelp;
-  const lessonWait=useRef(null);
-  const offerLesson=ev=>{
-    const cur=sRef.current;
-    if(!cur || isRunOver(cur) || ev.runId!==cur.runId || ev.week!==cur.week || !cur.claink || cur.claink.deploys!==ev.run)return;
-    if(helpOpen.current){ lessonWait.current=ev; return; }
-    setPending(p=>p||{id:ev.id,params:ev.params});
-    if(ev.announce) setTimeout(()=>{
-      const d=[...document.querySelectorAll("dialog[open]")].find(x=>x.getAttribute("data-dialog")===ev.id);
-      const sr=d && d.querySelector(".tst-sr");
-      if(sr && sr.textContent!==ev.announce){ sr.textContent=""; sr.textContent=ev.announce; } // once, even if the run's own effect got there first
-    },120);
-  };
-  useEffect(()=>{ if(!showHelp && lessonWait.current){ const ev=lessonWait.current; lessonWait.current=null; offerLesson(ev); } },[showHelp]);
+  // clAInk's report has had its say (it finished, was skipped, or there was nothing to watch): an acknowledgement
+  // that the run is waiting on may open now. A run started while one was waiting hides it again until its own report is done.
+  const onReport=done=>setAckOpen(done ? isAck(waiting(sRef.current)) : false);
 
   // the event dialog on screen: what its buttons do (game/events.js) and what it says (copy/events.js)
-  const eventDef=pending ? EVENTS[pending.id] : null;
-  const eventWords=pending ? EVENT_COPY[pending.id] : null;
-  const eventParams=(pending && pending.params)||{};
+  const eventDef=shown ? EVENTS[shown.id] : null;
+  const eventWords=shown ? EVENT_COPY[shown.id] : null;
+  const eventParams=(shown && shown.params)||{};
   // the numbers the Rules quote, straight from the game
   const helpNumbers={quota:s.quota, rechargeEnergy:RECHARGE_ENERGY, luckPct:pct(RECHARGE_LUCK), tripPct:pct(TRIP_AT), crash:CRASH_PER_SHOT,
     seat:CLAINK.INSTALL, strikes:CLAINK.STRIKES, trueUpLo:CLAINK.TRUEUP_OVER[0], trueUpHi:CLAINK.TRUEUP_OVER[1], offerWeek:CLAINK.OFFER_LAST_WEEK};
@@ -253,7 +253,7 @@ export function Game({fresh}){
           </TopBar>
         }
         dock={first!==null && first!=="memo-again" ? null /* the vendor waits until onboarding is over */
-          : <ClainkDock key={s.runId+":"+epoch} s={s} dispatch={dispatch} ui={clainkUiFor(claUi,shortScreen,narrowScreen)} setUi={setClaUiByYou} onEvent={offerLesson} />} />
+          : <ClainkDock key={s.runId+":"+epoch} s={s} dispatch={dispatch} ui={clainkUiFor(claUi,shortScreen,narrowScreen)} setUi={setClaUiByYou} onReport={onReport} />} />
 
       <Modal
         open={showHelp}
@@ -282,7 +282,7 @@ export function Game({fresh}){
 
       <Welcome key={"w"+helpOpens} open={!booting && (first==="memo" || first==="memo-again")} again={first==="memo-again"} s={s}
         onClose={()=>{ if(first==="memo"){ endFirstDay(); setFirst(0); } else setFirst(null); }} />
-      {typeof first==="number" && !over && !pending && !showHelp && (
+      {typeof first==="number" && !over && !head && !showHelp && (
         <Tour step={first} onStep={setFirst} onEnd={toDesk=>{
           setFirst(null);
           if(toDesk===true){ const b=document.querySelector('[data-act="prospect"]'); if(b) try{ if(b.scrollIntoView) b.scrollIntoView({block:"center",inline:"nearest"}); b.focus({preventScroll:true}); }catch{} }
@@ -290,16 +290,16 @@ export function Game({fresh}){
       )}
 
       <Modal
-        open={!!pending && !booting}
+        open={!!shown && !booting && !(isAck(shown) && showHelp)}
         title={eventWords ? eventWords.title(eventParams) : NAMES.event}
-        dialogId={pending ? pending.id : undefined}
+        dialogId={shown ? shown.id : undefined}
         actions={eventDef && eventWords ? eventDef.options.map(opt=>{ const w=eventWords.options[opt.id](eventParams); return {
           label:typeof w==="string" ? w : w.label,
           note:typeof w==="string" ? null : w.effect,
           className:opt.className||"ghost",
           onClick:()=>{
-            dispatch({t:"choose",event:pending.id,option:opt.id});
-            setPending(null);
+            dispatch({t:"choose",event:shown.id,option:opt.id});
+            setAckOpen(false);
           }
         }; }) : []}
       >

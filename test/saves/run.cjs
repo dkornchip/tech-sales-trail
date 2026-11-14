@@ -74,8 +74,8 @@ function parseArgs(argv) {
 }
 
 // The sessions one fixture is tested with: one per way in.
-function sessionsFor(f, moves, n) {
-  const x = toRunnerExpect(f.expect);
+function sessionsFor(f, moves, n, now) {
+  const x = toRunnerExpect(f.expect, now);
   // `said` (which line the announcer was asked for) can only be checked through the Load button: on a page load
   // the sound engine is still locked, as it is in a real browser before the first key or click, and says nothing.
   const xPage = Object.assign({}, x); delete xPage.said;
@@ -123,7 +123,7 @@ async function runSaves(opts) {
   const driverA = opts.a === 'self' ? driverB : requireE2E(loadDriver('v121'));
   const env = { buildA, buildB, driverA, driverB, sound: false, self: opts.a === 'self' };
   const sessions = [];
-  fixtures.forEach((f, n) => { for (const s of sessionsFor(f, opts.moves === undefined ? 30 : opts.moves, n)) sessions.push(s); });
+  fixtures.forEach((f, n) => { for (const s of sessionsFor(f, opts.moves === undefined ? 30 : opts.moves, n, opts.a === 'self')) sessions.push(s); });
 
   const browser = await chromium.launch();
   const rows = [], failures = [];

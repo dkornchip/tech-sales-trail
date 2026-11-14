@@ -10,7 +10,22 @@ import { idGen, now } from "./util.js";
 // wk is the week the line was written in, dl its stat changes as the interface shows them, v which wording was used
 // (so the next one differs). Entries from saves made before tags existed have msg and kind only.
 // Choosing the wording rolls no dice: it is a hash of the run, the tag and how often the tag has been logged.
-export const log=(state,tag,params,kind="info")=>{
+// The meters a line can report a change to.
+const FX_KEYS=["energy","stress","manager","reputation","product","cash"];
+// The meters as they stand, to measure a change against later (the rules change a state in place while they build it).
+export const snap=(s)=>({energy:s.energy,stress:s.stress,manager:s.manager,reputation:s.reputation,product:s.product,cash:s.cash});
+// What actually happened to the meters between two moments, in the whole numbers the interface shows. A meter that
+// was already at its limit moves by less than the rule says, and this is what says so: {manager:-3,stress:6}.
+export const fxOf=(before,after,keys=FX_KEYS)=>{
+  const out={};
+  for(const k of keys){ const d=Math.round(after[k])-Math.round(before[k]); if(d) out[k]=d; }
+  return out;
+};
+
+// before (optional): the meters before whatever this line reports (snap). The line then carries what really
+// changed, as params.fx, limited to `keys` when given.
+export const log=(state,tag,params,kind="info",before=null,keys=undefined)=>{
+  if(before){ const fx=fxOf(before,state,keys); if(Object.keys(fx).length) params={...(params||{}),fx}; }
   const line=LOG[tag];
   let n=0,last=-1;
   for(const e of state.logs){ if(e.tag===tag){ if(n===0 && typeof e.v==="number") last=e.v; n++; } }
