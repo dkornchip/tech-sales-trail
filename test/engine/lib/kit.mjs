@@ -53,6 +53,11 @@ export const act = id => ({ t: "act", id });
 export const END = { t: "end" }, HAIL = { t: "hail" };
 export const tags = (before, after) => { const top = before.logs.length ? before.logs[0].id : null, out = []; for (const e of after.logs) { if (e.id === top) break; out.push(e.tag); } return out.reverse(); };
 
+// The log lines a move wrote, oldest first, as {tag, kind, d (the line's params, with d.fx the real meter changes), msg, dl}.
+export const lines = (before, after) => { const top = before.logs.length ? before.logs[0].id : null, out = []; for (const e of after.logs) { if (e.id === top) break; out.push({ tag: e.tag, kind: e.kind, d: e.d || {}, msg: e.msg, dl: e.dl || "" }); } return out.reverse(); };
+// A state nobody may change: step() must build a new one. (Modules are strict, so a write to this throws.)
+export const frozen = v => { if (v && typeof v === "object" && !Object.isFrozen(v)) { Object.freeze(v); for (const k of Object.keys(v)) frozen(v[k]); } return v; };
+
 // The mechanical part of a state: everything the rules decided, with the words taken out. Rewording a line must not
 // change it. The log is reduced to its tags (what happened, in order); clAInk's report and strike cards to their
 // shape; deal notes and achievement labels are dropped.
