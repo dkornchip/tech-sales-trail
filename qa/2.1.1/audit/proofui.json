@@ -1,0 +1,121 @@
+{
+ "area": "proofui: editorial proofread of everything that is not the activity log (dashboard labels, cost lines, hint bar, Friday dialogs, handbook, onboarding and memo, clAInk ad / workspace / reports / strikes, endings and scene captions, confirmations, recovery). Frozen release build 2.1.0 at 1366x768 and 390x844 touch, plus the test build for scripted clAInk runs. Read-only; scratch in test-results/audit/proofui/",
+ "summary": "The words themselves are in good order: every string I rendered matches the approved copydeck, and every number the handbook, hints and dialogs quote matches the rules. What I found is mostly how text breaks on screen (the worst at 1366x768: the Cash warning leaves its minus sign on one line and the amount on the next), plus four places where the text misleads: the manager's warning is captioned with the wrong quip after a run that worked, the Hail Mary never states its cost, the recovery dialog cuts its button labels on small phones, and its last sentence points at the wrong run.",
+ "verified_ok": [
+  "Handbook (How it works), all 16 paragraphs at both sizes: text identical to copydeck section 8, and every number agrees with handbookFacts and the rules ($160,000, 13 weeks, 100% / 80-99% / 70-79% / below 70%, five slots, conferences two, reviews week 5, dismissal week 6, $1,000 salary, 12%, rent $1,600 weeks 1, 5 and 9, -$1,500, +6 / -6 pp, four times in five and 55%, 15 energy, 35-52 and 12-18, 80+, third shot, 13 stress, week 3, $500, 20%, third strike, $200-$1,800, $250, week 13, keys 1-9 0 - =, E H M ?). Paragraphs use text-wrap:pretty; no number was separated from its unit at either size.",
+  "Onboarding memo, the three orientation lines, the chapter line and the three tour stops at both sizes: identical to copydeck section 2; quota, weeks and slots interpolate; the stamp lands on the title. (The phone hides the second letterhead line on purpose: memo.css:34.)",
+  "Friday dialogs at both sizes: evt:competitor and evt:security titles, bodies, labels and effect lines; the effect numbers equal the rules (EFFECT table, SECURITY_WALK 30% / 15%, +4 / +6 / -18 / -8 / -12 in game/events.js). ck:warning (run that failed) and ck:lesson with a long account name read as the copydeck has them.",
+  "clAInk ad at both sizes: fresh, week 3 (Pilot pricing ends this week), not enough cash (Activation unavailable · insufficient cash), the policy step, the dismissal question; 1 in 5 / The other 4 / Offer ends after week 3 agree with the rules.",
+  "clAInk workspace: idle, ran, minimized pill (Ready · 1/3 strikes), cancel box and its fee arithmetic, Insufficient cash to cancel safely, week-13 freeze, week 12 Last eligible run this quarter, all three variants of the two-strike warning (figures recomputed by hand).",
+  "Seventeen live clAInk runs in the test build with scripted draws: plain strikes billing 2, 4 and 5 outcomes (1 more outcome / 2 more outcomes), an empty pipeline, follow-up spam with and without an account, the discount, the leak (1 deal / 2 deals), the churn, a miracle, a miracle with the warning, the warning, the take-over, the circle-back, the revocation with its farewell, the revocation with the warning. Interpolation, plurals, effect lines and the screen-reader announcements were all correct and per copydeck section 10.",
+  "Stored clAInk text against the lengths a save keeps when read back: longest report line 90 of 120, strike reason 165 of 200, effect 58 of 160, manager note 122 of 160, announcement 289 of 320 (lens.mjs). Nothing a 2.1 run writes is cut on reload.",
+  "Endings: all ten end fixtures at both sizes (titles, first lines, the four reasons on file, verdicts, number tiles), plus fourteen crafted v2.1 runs with a story so that every For the record note (trip and largest sale for each of the six endings, none, took, strikes, revoked, billed, quad shots x2, Hail Marys, lunches, cadences, lost) and all seven distinctions were seen rendered: wording per copydeck section 11, singular and plural right (1 strike, 2 Hail Marys, 9 quad shots).",
+  "Scene caption bands for the six scenes in ten cause variants, dumped frame by frame from the test build: titles and both caption sets match scenes.js and the copydeck, including Shot #3. against One shot too many.; the reduced-motion notes appear in place of the animation.",
+  "Announcer captions: all 50 lines said and captioned at 1366x768 equal copy/pa.js with typeset apostrophes and ChatGDP; HR labels the terminations and the offboarding; nothing is cut from 1024 to 1920 wide, and on phones captions wrap in a notice.",
+  "Dashboard text in 13 crafted states at 1366x768 and 390x844: the hint for all twelve actions, the Hail Mary and End week (counts and singular / plural such as 1 lead and 3 leads, chances 52% / 61% / 38%, CRM 15%, 20% chance it ends the run, the lethal shot, every blocked reason, rent and no-rent Friday lines), cost lines (including Done this week, Used this week, 20% heart risk), six kinds of status chip and the +N chip, every KPI sub-line (on pace, ahead, behind, reviews from week 5, rent due Friday / in week N / paid up, Collections, crash, danger).",
+  "Confirmations (Hail Mary, the quad shot that ends the run, new run, dismiss the offer) at both sizes: prompts as approved, buttons say what they do. Boot and standby screens: strings as approved.",
+  "Seen and deliberately not reported (negligible, legacy, or approved): No open deals appears twice on an empty board (both strings are copydeck text); Run saved. has a full stop and Sound on has none (both kept from 2.0.1 on the copydeck's instruction); Dangerous stress / level wraps at 1280 to 1440 wide (a no-break space would only move the lone word); the tile label Deals signed (incl. / reversed); Demo / marathon wraps on a phone when the button carries a count (layout, for the dashboard audit)."
+ ],
+ "findings": [
+  {
+   "title": "The Cash warning and three hints let a minus sign, a number or a separator come loose at the line end",
+   "kind": "polish",
+   "where": "src/copy/ui.js:5 (usd), :52 (KPI.collections), :103 (HINT.endWeek), :100 (HINT.politics), :97 (HINT.crm); drawn by src/ui/app/Kpis.jsx:48",
+   "evidence": "KPI.collections «Collections at −$1,500 cash»: at 1366x768 the Cash tile draws «Collections at −» / «$1,500 cash», so the amount stands on its own line without its sign (test-results/audit/proofui/crop-minus-kpi-1366.png; also s-noslots-1366.png and run-revoke-1366-s1.png in the same folder). Measured in test-results/audit/proofui/b14-minus.txt: the same split at 1280x800, 1280x720, 768x1024, 375x667, 360x740 and 320x568; at 1440x900, 1536x864 and 390x844 it is «Collections at −$1,500» / «cash» (s-lowenergy-390.png); it fits one line only at 1920 and 1024. HINT.endWeek on 375x667 and 360x740: «…salary +$1,000, rent −» / «$1,600, energy +15…» (test-results/audit/proofui/crop-minus-hint-375.png). HINT.politics at 390x844: «Internal politics. Lunch with leadership. +8» / «manager · +3 product · −4 reputation · +2 stress.» (test-results/audit/proofui/hint-politics-390.png); at 320x568 a line starts with the separator: «· −4 reputation · +2 stress.» (hint-politics-320.png). HINT.crm at 390x844: «…Removes 2 dead leads: +7» / «manager. Once per week.» The handbook and clAInk copy already guard against this (help.js:61 and clainkUi.js:7 put U+2060 after the minus; ui.js:50 and :55-57 use U+00A0); ui.js's own usd and these four strings do not.",
+   "proposal": "In src/copy/ui.js only, no change of wording: line 5 build «−⁠$»; line 103 «rent −⁠${usd(f.rent)}»; line 52 «Collections at ${usd(at)} cash» (narrow tiles then read «Collections at» / «−$1,500 cash»); lines 100 and 97 put U+00A0 between each number and its word and in front of each «·», the form ActionGrid.jsx:46 already gives the cost lines.",
+   "risk": "Checks that compare these strings letter for letter (the lint samples for KPI.collections and HINT.*, any browser test that looks for «−$1,500» in the tile) must allow the invisible characters, as they already must for the handbook. The politics list could then break only after a dot, so on a 320px phone that hint may take one more line. None of these strings is stored in a save or read by the rules.",
+   "confidence": "high"
+  },
+  {
+   "title": "After a run that worked, the manager's warning is announced with the quip for a run that failed",
+   "kind": "misleading",
+   "where": "src/engine/audio/tagmap.js:62 (MODAL_SAY ck:warning -> chatgdp), src/engine/audio/director.js:35-39 (onModal), src/ui/Game.jsx:170, src/ui/primitives.jsx:48-50; copy keys LINES.chatgdp (src/copy/pa.js:63) and EVENT_COPY[ck:warning].body (src/copy/events.js:36-38)",
+   "evidence": "With params.miracle true the dialog Writing development opportunity shows the caption «PA  Always on ChatGDP, huh?» directly above the manager's own words «“Nice week. ChatGDP do that? Enjoy it. I’d like you to develop your own written communication skills before I start intervening in your deals.”». Seen with a crafted waiting choice (test-results/audit/proofui/ck-warning-miracle-1366.png, ck-warning-miracle-390.png) and in a live scripted run in the test build, behind a report reading Revenue verified, Closed +$17,000 (test-results/audit/proofui/run-miracle-warn-dialog-1366.png; text in b3-runs.txt line 39). With sound on, the same line is what is spoken. For a failed run the caption is hidden because the dialog already contains those words (primitives.jsx:48-50); the miracle branch slips past that test. Copydeck section 10 says these lines «must match modal and actual event». A weaker cousin: when he has no deal to take, the top bar says «PA  Always on ChatGDP, huh?» beside the workspace note «ChatGDP again? We’ll circle back.» (run-circle in b3-runs.txt).",
+   "proposal": "Say no announcer line for a warning that follows a run that worked: hand the choice's params to onModal (Game.jsx:170) and skip say() when the id is ck:warning and params.miracle is true (director.js:38). The dialog's cue sound stays, and no new copy is needed.",
+   "risk": "test/audio/behaviour.test.mjs:202-208 calls onModal(id) with no params and still gets its line. The miracle warning would open with its chime and no caption, which is how the failed-run warning already looks on screen.",
+   "confidence": "high"
+  },
+  {
+   "title": "The Hail Mary takes a slot and 10 energy and nothing on the page says so",
+   "kind": "misleading",
+   "where": "src/copy/ui.js:102 (HINT.hail) and :156 (CONFIRM.hail); src/ui/app/Foot.jsx:93 and :102-103 (the button shows UI.hail only); src/copy/help.js:40; cost in src/game/rules.js:23; docs/2.1/copy-coverage-notes.json entry L91",
+   "evidence": "Pressed in the release build: Slots «5 left» became «4 left» and Energy 80 became 70. Everything the page said beforehand: the button «Hail Mary»; the hint «Hail Mary. One close attempt against all proposal/closing deals. Four times in five, each remaining late deal then has a 55% chance to walk.»; the confirmation «This may save the week or destroy the pipeline. Continue?»; the handbook «One desperate signing attempt. Four times in five each remaining late-stage deal has a 55% chance to walk. Manager, reputation and stress can suffer.» (test-results/audit/proofui/hail-hint-1366.png, hail-confirm-1366.png). Each of the twelve actions prints its cost under its title. Copydeck section 3 says of this hint «Show cost, danger, and no-eligible state»; the coverage note for that row (and QA report line 482) records «cost is on the button», which it is not. The README's table does say 10 energy.",
+   "proposal": "Add the cost to the hint from COST.hail in the form the conference hint already uses: «One close attempt against all proposal/closing deals. 1 slot, 10 energy. Four times in five, …» (HINT.hail takes the cost as a parameter from Foot.jsx).",
+   "risk": "The hint is two lines at 1366x768 today and the addition fits on its second line; on a 390 phone it stays four lines. The lint sample arguments for HINT.hail change, and the coverage note should be corrected to match.",
+   "confidence": "high"
+  },
+  {
+   "title": "Recovery dialog: the Open buttons are cut off on small phones",
+   "kind": "defect",
+   "where": "src/copy/ui.js:172 (RECOVERY.open), src/ui/Game.jsx:330; src/styles/app.css:105 (.btn white-space:nowrap), src/styles/dialogs.css:22 and :36",
+   "evidence": "A damaged v2.1 autosave beside runs stored by an earlier version (which every player coming from 2.0.1 keeps): at 375x667 the third button reads «pen your saved run · week 12 (earlier version)», its box starting 8px left of the screen (test-results/audit/proofui/recovery-others-375.png); at 320x568 the two read «ne autosave · week 12 (earlier version)» and «r saved run · week 12 (earlier version)», 49 and 63px off screen (test-results/audit/proofui/recovery-others-320.png); at 390x844 the words are whole but the buttons (333 and 347px) overhang the 322px column to the left (recovery-damaged-others-390.png). When the other run is a v2.1 save («Open your saved run · week 12») everything fits at all four widths.",
+   "proposal": "Let a dialog's footer buttons wrap on a phone: in the max-width:640px block of dialogs.css, give «dialog .d-footer .btn» min-width:0, white-space:normal, height:auto and min-height:44px (or scope it to dialog[data-dialog=recovery]).",
+   "risk": "Only a label wider than the phone's column changes, from cut off to two lines. No other dialog has one today: the confirmations, the event options (which already wrap), the endings, the handbook and the welcome all fit at 390.",
+   "confidence": "high"
+  },
+  {
+   "title": "Recovery dialog: «It will be kept aside» reads as the run you are about to start",
+   "kind": "misleading",
+   "where": "src/copy/ui.js:170 (RECOVERY.body)",
+   "evidence": "Rendered in three states: «The run stored in this browser is damaged. Start a new run. It will be kept aside, not deleted.» (test-results/audit/proofui/recovery-damaged-alone-1366.png); «…Start a new run or return to a valid saved run. It will be kept aside, not deleted.» (recovery-damaged-others-1366.png); «It was saved by a newer version of the game. Start a new run. It will be kept aside, not deleted.» (recovery-newer-1366.png). In each the nearest noun for «It» is the new run or the valid saved run; what is kept aside is the run that could not be opened (src/ui/storage.js:66-70). The third sentence is not copydeck text (deck line 78 has only the first two).",
+   "proposal": "Same words, the reassurance before the instruction: «The run stored in this browser is damaged. It will be kept aside, not deleted. Start a new run or return to a valid saved run.»",
+   "risk": "None to behaviour. I found no test that pins the whole sentence (grep of test/); one that did would need the new order.",
+   "confidence": "high"
+  },
+  {
+   "title": "On a tablet-width window the top bar cuts the announcer's longer lines, punchline first",
+   "kind": "polish",
+   "where": "src/styles/app.css:13-15 (.pa-line overflow hidden, .pa-cap nowrap, .pa-text ellipsis); the wrapping notice exists only under max-width:640px (same file, 248-250). Lines LINES.meetings, whale, sqlStorm, freeze in src/copy/pa.js:43, 45, 47, 50",
+   "evidence": "768x1024: «PA  Please log all meetings, including meetings about m…» (test-results/audit/proofui/caption-cut-768.png; 335 of 367px shown). Also cut there: «Large opportunity detected. Please inform your manager.», «Marketing leads delivered. Qualification remains your responsibility.», «Budget freeze reported. Please remain commercially optimistic.» Measured from 700 to 1024 wide: all seven long lines tried are cut at 700, four at 768, two at 820, one at 834, none from 880 up; none at 1024 to 1920, none on phones. With sound off (or no speech in the browser) the caption is the whole announcement. This is outside the two sizes I was given; 768x1024 is one of the project's own matrix sizes.",
+   "proposal": "Give stacked layouts up to about 880px the phone's treatment (the wrapping notice at app.css:248-250), or let .pa-text take two lines there.",
+   "risk": "At those widths the caption would move to the foot of the screen, where phones already have it; check it against the End week row at 768x1024.",
+   "confidence": "high"
+  },
+  {
+   "title": "The End week hint promises energy and relief that a nearly full or nearly empty meter cannot take",
+   "kind": "nit",
+   "where": "src/game/selectors.js:58-61 (fridayPreview); src/copy/ui.js:103 (HINT.endWeek), :45-46 (KPI.energyFriday, KPI.stressEases)",
+   "evidence": "Energy 95, stress 2: the hint reads «End week. Friday: salary +$1,000, energy +15, stress −4. Friday events and collections may change this.» (test-results/audit/proofui/endweek-hint-energy95-1366.png). After pressing it the Energy tile shows 100 with its own change chip «+5» and Stress shows 0 with «−2»; from Energy 100 nothing is added. ui.js:82-84 and CHANGELOG line 111 say the hint tells what the button will do with the numbers as they stand. A new run opens at Energy 95 under «+15 on Friday».",
+   "proposal": "Clamp the preview to the meters in fridayPreview: energy Math.min(FRIDAY.energy, 100 - s.energy), relief Math.min(FRIDAY.relief, s.stress). The handbook's «Recover 15 on Friday» stays as the rule.",
+   "risk": "The Energy tile would read «+5 on Friday», or «+0 on Friday» on a full meter; if that reads worse, clamp only what HINT.endWeek is given. A unit test may pin fridayPreview. The numbers audit may report the same thing.",
+   "confidence": "medium"
+  },
+  {
+   "title": "On a phone, three headings leave one word on their last line, and two effect lines part a number from its word",
+   "kind": "nit",
+   "where": "src/styles/dialogs.css:9 (.d-title has no text-wrap; body text has text-wrap:pretty at :20); src/copy/events.js:13 (weeks) and :27; src/styles/claink.css:90-91 and :32; src/ui/ClainkUi.jsx:289-291",
+   "evidence": "All at 390x844. Event title: «Customer incident — internal» / «statement», and under it the first option: «+6 reputation, −18 product, −15 pp odds for 2» / «weeks; each deal at Demoed or later has a» / «30% chance to walk.» (test-results/audit/proofui/evt-security-390.png; the title breaks the same way at 375 and 360). clAInk policy step: «SHITCORP AI ACCEPTABLE USE» / «POLICY» with the version gag split «v3 (final)» / «(2)», and «SPONSORED · ENTERPRISE» / «PILOT» (test-results/audit/proofui/ad-policy-390-clip.png). Strike 3 card: «STRIKE 3 OF 3 · filed by AI Governance» / «Council» and «Final true-up $4,000 charged (16.5M tokens) · −8» / «manager» (test-results/audit/proofui/run-revoke-390.png).",
+   "proposal": "Three one-line changes: «dialog .d-title{text-wrap:balance}»; events.js:13 «for ${k} weeks»; claink.css:91 add white-space:nowrap to the version span so «v3 (final) (2)» stays in one piece. Leave the Sponsored label and the strike card unless wanted (its effect text is stored in saves, so it would have to be done in the stylesheet).",
+   "risk": "text-wrap:balance is ignored by older browsers, which then look as they do now. With the version unbroken the policy heading has less room on a 320px phone and wraps to two lines of words.",
+   "confidence": "high"
+  },
+  {
+   "title": "Two hyphenated terms break at their hyphen: «true-» / «up» at 1366x768 and «out-» / «of-office» on a phone",
+   "kind": "nit",
+   "where": "src/copy/clainkUi.js:52 (CK_STRIKES.hotHead; the same word at :51 and :36); src/copy/endings.js:101 (NOTES.top.meltdown)",
+   "evidence": "1366x768, workspace with two strikes: «Next $0 run is strike 3: seat revoked, a live deal may walk, and the token true-» / «up leaves you around −$200 to −$1,800. Collections comes at −$1,500.» (test-results/audit/proofui/ws-ck-active-2-strikes-1366.png, crop-trueup-1366.png; all three variants of the note break there). 390x844, meltdown ending with an 18-letter account: «Largest sale: Caffeine Cathedral, $41,000. Your out-» / «of-office reply is active.» (test-results/audit/proofui/crop-st-meltdown-390.png). The stylesheet already guards the ad's by-line against a break at a hyphen (claink.css:73).",
+   "proposal": "A word joiner after the hyphen in those strings («true-⁠up», «out-⁠of-⁠office»), the device clainkUi.js:7 already uses for minus signs. Not U+2011: the bundled fonts are subsets and may not carry it. Leave the stored strike cards in claink.js alone.",
+   "risk": "A text lookup for «true-up» or «out-of-office» in these strings would need the joiner (none found in test/). Neither string is stored in a save.",
+   "confidence": "high"
+  },
+  {
+   "title": "Three one-character inconsistencies that follow the copydeck to the letter (for the editor to rule on)",
+   "kind": "nit",
+   "where": "src/copy/claink.js:95 (CK_RUN.influenced); src/copy/help.js:30 and :32; compare src/copy/clainkUi.js:54 and UI.endWeek in src/copy/ui.js:32",
+   "evidence": "(a) The first line of a run report has no full stop when there is pipeline and one when there is none: «Claimed influence over $40,000 in pipeline» against «Claimed influence over $0 in pipeline.», in a list whose other lines end «…Sent 0.» (test-results/audit/proofui/run-slop-390.png; run-empty in b3-runs.txt). (b) The handbook says «End Week advances the quarter.»; the button, its hint title and the keyboard line say «End week» and «E ends the week» (help-1366-0.png, main-1366.png in the same folder). (c) The handbook says «Collections take the jacket…»; everywhere else the department is singular: «Collections comes at −$1,500.» (workspace), «Collections has recovered the jacket» (log), «Collections thanks you for your digital transformation.» (announcer). Copydeck lines 465, 274 and 276 read exactly this way.",
+   "proposal": "One character each: (a) drop the full stop from the $0 form, matching its twin and «2 more outcomes, also billed»; (b) «End week advances the quarter.»; (c) «Collections takes the jacket…».",
+   "risk": "Each departs from the copydeck's literal text. (a) is a line a run stores in its save: only new runs would change, and it would show up in the frozen-engine equivalence check.",
+   "confidence": "medium"
+  }
+ ],
+ "not_checked": [
+  "The crash page (CRASH.title, body, button): I could not make a save that passes validation and then fails to draw, so those three strings were read in source only.",
+  "Speech itself: headless Chromium has no audible voice. I checked captions (which are the spoken strings, typeset) and the code path that chooses them, not the audio.",
+  "Only Chromium, and only the widths named in each finding. Safari and Firefox break lines a little differently, so the exact break points (the minus sign, the hyphens, the heading orphans) may differ there.",
+  "The 30 agent outcome lines and 12 harmless strike cards were all read against the copydeck, but only about two dozen were seen rendered across the 17 scripted runs, and not each at both sizes.",
+  "The ck-*.json and end-*.json fixtures hold reports and strike cards written before 2.1 (stored text keeps its old wording by design); I did not proofread that old text and used scripted new runs and crafted v2.1 runs instead.",
+  "Activity log lines and their variants (another auditor's area), including the phone's peek of new log lines, which I saw fading over the foot of the clAInk card in run-revoke-390.png and did not investigate.",
+  "On a 390x844 touch screen my first scripted tap on Hail Mary showed its hint and did not open the confirmation; the second tap did. It may be the hint bar growing under the finger or an artefact of the script; it is not copy and I did not pursue it.",
+  "I ran no npm script, build or test (ground rules), so the risk notes about tests come from reading and searching the test folder, not from running it."
+ ]
+}

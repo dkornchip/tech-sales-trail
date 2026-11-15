@@ -21,7 +21,7 @@ Rows noted, with the reason on file:
 | 3:Un.damaged | typeset | The recovery dialog says 'Start a new run or return to a valid saved run.' only when a valid saved run exists, and 'Start a new run.' when none does; 'if available' is resolved by the dialog instead of printed. |
 | 3:Conference | instruction | Conference hint shows the action's real slots, energy, cash and stress, and the real chance and duration of the signing-odds bonus (HINT.conference, from rules.js). |
 | 3:Recharge | instruction | Recharge hint shows the real energy and relief ranges, once a week, coffee reducing relief and the trip (HINT.recharge); no cash is implied. |
-| 3:Hail Mary | instruction | The approved sentences are rendered (HINT.hail); the rest of the row is direction. From 2.1.1 the cost is stated in the hint itself (one slot and its energy, from rules.js); 2.1 stated it nowhere, though this note said it was on the button. The no-eligible state has its own line, and the numbers come from rules.js. |
+| 3:Hail Mary | instruction | The approved sentences are rendered (HINT.hail); the rest of the row is direction. From 2.1.1 the cost is stated in the hint itself (its energy, from rules.js, as the action cards state theirs); 2.1 stated it nowhere, though this note said it was on the button. The no-eligible state has its own line, and the numbers come from rules.js. |
 | 4:week.next | instruction | A pointer to the chapter table in section 6, which is applied (CHAPTER_LINE). |
 | 5:act.prospect | conditional | The count is of leads found, not conversations held, so the deck's own alternative is used: 'You found {n} potential customers. Management will call this momentum.' |
 | 5:act.discovery | conditional | The game does not track identified needs, so the deck's own alternative is used: 'No deals qualified.' |
@@ -31,7 +31,7 @@ Rows noted, with the reason on file:
 | 8:Keys | instruction | The Keys section lists the hotkeys the source actually binds (unchanged from 2.0.1), shown only where there is a keyboard. |
 | 9:uo | instruction | Table header. |
 | 10:we.proofBy | owner | Changed on the owner's instruction after the copydeck: the testimonial's by-line is now 'VP, Revenue Transformation · Fortune 500,000 company (latest Post-Product, Pre-Revenue Hot List!)'. |
-| 10:vn | instruction | Strike counters keep their exact counts, thresholds, projected cash range and Collections warning; 'a deal walks' became 'a live deal may walk'. |
+| 10:vn | instruction | Strike counters keep their exact counts, thresholds, projected cash range and Collections warning; The deck gives two wordings: 'a deal walks', and 'a live deal may walk' if the pipeline can be empty. 2.1 used the second always; from 2.1.1 the first is used whenever there is a deal on the board (the third strike always takes the most advanced one) and the second only when there is none. |
 | 10:Xn.tokens | instruction | Token count and skip guidance kept as they were. |
 | 10:Tr.statsRevoked/statsCancelled | instruction | End-card totals kept; the pipeline figure is now labelled 'Claimed influence'. |
 | 10:ue.usageRan | typeset | Rendered in three parts so the amount can be set in bold: 'Estimated this week: ' + amount + ' (N tokens), billed Friday; overages possible. Charged back so far ...'. |

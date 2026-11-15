@@ -1,0 +1,112 @@
+{
+ "area": "dashboard: visual refinement of the main screen at laptop sizes (1280x720, 1366x768, 1440x900, 1536x864, 1920x1080), frozen release build 2.1",
+ "summary": "The approved identity holds up under measurement: text contrast, tabular figures, card and column alignment, and the disabled, hover and focus states are all clean at the five laptop sizes. Two things need attention before anything cosmetic: in desktop windows shorter than about 746px the week's card overflows (at 1280x720 Hail Mary and End week hang through the card's border, and below 717px they are cut off or off screen with no way to scroll), and the hint bar keeps the numbers from before a press while the pointer stays on the button; the rest is a short list of spacing and wrapping polish.",
+ "verified_ok": [
+  "Text contrast, from computed styles in five states at 1366x768 (script test-results/audit/dashboard/contrast.cjs, results contrast.json beside it): every piece of dashboard text reaches 4.5:1. Lowest: End week's label, white on #2f6fed, 4.55:1; secondary text (--text-3) 5.11:1 on cards and 5.38:1 on the panel; status colours 6.1 to 9.1:1; chips 6.7 to 7.9:1. Only the decorative breadcrumb slashes are lower (1.72:1). The key cap in the hint bar and the announcer's tag (--text-3 on --bg) work out to 5.65:1 by arithmetic.",
+  "Disabled states are legible and unmistakable: a blocked action's title and icon go from 15.3:1 to 5.38:1, the card loses its fill, the cursor is not-allowed, and hover or focus still explains why in the hint bar ('Conference run. Needs 40 energy. You have 38.'). Twelve blocked cards at 0 slots and ten at 12 energy read clearly at all five sizes; a blocked Hail Mary is 5.38:1.",
+  "Stat cards share their geometry at all five sizes (align.cjs): padding 12px, label 13px from the card top, value 35.2, meter 62.2, equal heights (119px; 125.3 at 1920). The one exception is the Cash card's third line (finding 5).",
+  "The twelve action cards share everything: icon 13px from the left, title at 37px, identical title and cost offsets, count pill 13px from the right; icon, text block and pill centres agree within 0.4px; no title or cost line is cut at any of the five sizes. Hover (lighter fill, stronger border), pressed (fill returns, border stays strong) and keyboard focus (2px #82b0ff ring, 2px offset) are present and distinct; pictures st-action-hover.png, st-action-pressed.png, st-action-focus.png in test-results/audit/dashboard/.",
+  "Pipeline table: tabular figures confirmed (every digit 8.4px wide in a value cell, 9.1px at 1920). Value and Odds right edges are identical from row to row for $4,000 to $126,000 and equal to their headings' right edges; the Odds edge equals the header's '5 open · $76,000 in pipeline' edge; Stage and Mood headings sit on their columns' left edges; rows are 32px. Rows have no hover style, correctly, since they are not controls. A 24-deal board scrolls inside its own box with a fade. Account names are whole at 1366 and wider; at 1280 two of the 57 ('Velvet Switchboard', 'Ghost Pepper Labs') are cut by 1 to 4px, noted and judged not worth a change.",
+  "Left column edges: the week strip, stat cards, stats, actions, hint bar and footer all end on the same right edge with the same 17px inset on both sides, and the gaps between the six blocks are equal at each size (16px at 1366x768, 26 at 1440x900, 18.8 at 1536x864, 53 at 1920x1080).",
+  "One-screen fit with padding intact at 1366x768, 1440x900, 1536x864, 1920x1080, and also 1440x789 and 1920x953 (fit.cjs).",
+  "Empty states (fresh run, empty board in week 11) at five sizes: both lines legible, nothing orphaned. The repeated 'No open deals' in the Deals header and body is the copydeck's own (J.dealsMeta, J.noDeals) and was left alone.",
+  "The three glance questions are each answered without hovering at every size: slots (white pips plus 'N left') and energy (number, coloured bar, Friday line); pace (a sentence in words, colour only repeating it, plus 'Expected by Friday'); what can advance (count pills on Discovery, Demo, Proposals and Close, and the idle hint naming the next step).",
+  "Change chips after an action (+18, +12, −$6) sit in the cards' top-right corners without touching the labels at 1366 and 1280 (after-action-1366.png, after-action-1280.png).",
+  "Settings menu: opens under the gear inside the window, rows 36px with a hover fill, switches clear (st-menu-hover.png). The volume slider's light unfilled track is the browser's native control; a lighter accent darkens it but then no longer matches the switches, so it is left alone.",
+  "Status chips: nothing is cut mid-word at any size; what does not fit folds into '+N', which names the rest on hover and on keyboard focus (st-more-focus.png).",
+  "The phone reference picture (390x844, phone-midrun.png) is coherent; it was looked at, not audited."
+ ],
+ "findings": [
+  {
+   "title": "Desktop windows shorter than about 746px: the week's card overflows. At 1280x720 Hail Mary and End week hang through the card's border; below 717px they are cut off or off screen, and nothing scrolls",
+   "kind": "defect",
+   "where": "src/styles/app.css:183-191 (the one-screen tier starts at min-height:620px and sets html,body{overflow:hidden}, .app{height:100dvh}); app.css:23-24 (.panel/.left have no overflow rule); app.css:54-61 (the stat card that grew in 2.1)",
+   "evidence": "Measured on the frozen release build with test-results/audit/dashboard/fit.cjs; a fresh run and a behind-pace run give identical numbers. Once the action rows reach their 54px minimum the footer row sits at y 681 to 717 whatever the window height. 1280x720 and 1366x720: card bottom edge 708, footer bottom 717.1, so the buttons are 9.1px outside the card and its 16px bottom padding is gone (zoom-foot-1280x720.png, fresh-1280.png, behind-1280.png, and every other 1280 picture in that folder). 1536x730: buttons flush on the border. 1366x700: End week cut off by 17px. 1366x680, 657, 640, 625, 620: End week entirely below the window (short-1366x657.png). reach.cjs at 1366x657: six wheel turns, PageDown, End and Space leave every scrollTop at 0; only tabbing to End week moves anything, and it drags the whole page up 60px so the top bar leaves the screen (short-1366x657-tabbed.png). The card fits with its padding from about 746px (640px of content; 768 and 789 measured to fit). Against 2.0.1 at 1280x720 the footer was 668.2 to 704.2, 3.8px inside the card (v201-1280x720.png); 2.1's stat cards grew from 106.1 to 119px, so the border crossing is new in 2.1, while the cut-off below 717px is already in 2.0.1 (v201-short-1366x657.png). The layout gate passes because it only asks that End week be inside the viewport (717.1 of 720) and its shortest desktop size is 720. Neither QA report section 9 nor the release notes list this. A maximized browser on a 1366x768 laptop usually leaves roughly 625 to 657px of height; that figure is an estimate, not measured here.",
+   "proposal": "Two rules in app.css, both tried as an injected style sheet on the frozen build (proposals.cjs; fix-trial-1280x720.png, fix-trial-1366x657.png). (1) Inside the one-screen tier: .left{overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border-strong) transparent}, so the card scrolls inside itself when the window is shorter than its content; at 1366x657 the wheel then brings End week to 632 of 657. (2) @media (min-width:1025px) and (min-height:620px) and (max-height:767px){ .left{padding:var(--sp-4);gap:var(--sp-4)} }, the values the phone tier already uses at app.css:268; it saves 28px, and at 1280x720 the footer then ends 13px inside the card with nothing scrolling (1536x730 likewise). A cheaper alternative for the cut-off alone is to move the tier boundary from 620/619 to 720/719 (app.css:183 and 195), which gives shorter windows the stacked, scrolling page they already get below 620, but leaves the 1280x720 border crossing.",
+   "risk": "Rule 2 leaves 2px of slack at 720px: anything that later adds height to the card would make it scroll at the gated 1280x720, which the layout gate's page-no-scroll check would rightly fail. In that band the left card's inset becomes 12px while the right card's stays 16px. Windows of 620 to 717px still need a scroll of up to 93px inside the card to reach End week. The first-day tour was not exercised with a scrolling card. The layout gate has no size below 720 and should gain one (for example 1366x657).",
+   "confidence": "high"
+  },
+  {
+   "title": "The hint bar keeps the numbers from before a press while the pointer or focus stays on the button; on Quad shot it goes on describing shot 1 while the card shows 45% heart risk",
+   "kind": "misleading",
+   "where": "src/ui/app/ActionGrid.jsx:35-39 (the hint is set on mouseenter and focus only; press does not refresh it) and src/ui/app/Board.jsx:18 (the bar's text is a snapshot held in state)",
+   "evidence": "test-results/audit/dashboard/stale2.cjs, 1366x768, release build, pointer resting on Quad shot, three clicks. The bar reads 'Quad shot. Shot 1: +18 energy, +12 stress now, +13 more on Friday. Later shots give less and risk more.' before press 1, before press 2, before press 3 and after it, while the card's own cost line goes '$6 · +25 stress by Friday', '+28 stress by Friday', '20% heart risk', '45% heart risk'. Moving off and back gives 'Quad shot. Shot 4: +14 energy, +21 stress now, +13 more on Friday. 45% chance it ends the run.' Picture stale-hint-heart-risk.png shows the card and the bar disagreeing. stale.cjs: after Discovery is pressed the bar still says '3 leads waiting. Each has a 52% chance to qualify' beside a count pill of 1 (fresh text: '1 lead waiting. Each has a 53% chance'); keyboard focus plus Enter behaves the same. CHANGELOG.md:111 says the bar tells what the button 'will do with the numbers as they stand'. End week was checked and is not affected, because the week's dialog interrupts the hover.",
+   "proposal": "In ActionGrid.jsx remember which action the bar is describing (a ref set where the hint is shown, cleared on leave) and, in an effect on the run, re-issue that action's hint from describe(a, s) when the run changes and the device can hover (!noHover()). No copy, rule or style changes. Foot.jsx:94 builds the Hail Mary hint the same way; that button was not tested.",
+   "risk": "The bar is role=status aria-live=polite, so a screen reader will hear the refreshed hint after each press as well as the log's own line. Touch must keep its current behaviour (hint cleared after a tap), hence the noHover() guard. A test that reads the bar after a press without moving the pointer will see new text. This borders on the action-clarity area and may be reported there too.",
+   "confidence": "high"
+  },
+  {
+   "title": "Hints that need two lines are squeezed into the one-line hint bar: the text sits 1px from its borders at 1280 and 1366, 2px at 1440 and 1536",
+   "kind": "polish",
+   "where": "src/styles/app.css:95 (.hint: min-height:36px, padding:0 var(--sp-4), so no vertical padding); it is also held at that minimum because .actions{height:100%} at app.css:190 always over-fills the column and the bar is a shrinkable flex item",
+   "evidence": "test-results/audit/dashboard/hints.cjs hovered the twelve actions, Hail Mary, End week and the +N chip in three states at five sizes: 229 hints, 31 of them on two lines. One-line bars are 36px with 9.2 to 10.1px above and below the text. Two-line bars at 1280x720 and 1366x768 are still 36px with 0.8px above and 1px below; at 1440x900 and 1536x864 they are 38.4px with 2 and 2.2px. Affected: Hail Mary ('One close attempt against all proposal/closing deals. Four times in five, each remaining late deal then has a 55% chance to walk.'), Conference run and CRM cleanup at every size up to 1536; End week in rent weeks at 1366 and every week at 1280; Recharge at 1280 and in some states at 1366. Nothing wraps at 1920x1080. The buttons under the bar do not move. Pictures: hint-2lines-datauiend-1366.png, st-hail-hover.png, st-end-hover.png, hint-2lines-end-1280.png in the same folder.",
+   "proposal": "Reserve the second line where there is height for it, as the phone tier already does at app.css:258: @media (min-width:1025px) and (min-height:768px){ .hint{flex:none;min-height:calc(2.8em + 2 * var(--sp-2) + 2px);padding-block:var(--sp-2)} }. Tried on the frozen build (fix-trial-1366x768.png): the bar is 46.4px for every hint, a two-line hint has 6px above and below, and neither End week nor the action cards move when the hint changes. The 10.4px comes out of the action rows at 1366x768 (59.5 to 56.9px) and out of the spare gaps at 1440x900 and 1536x864.",
+   "risk": "Windows under 768px tall keep the squeezed two-liners, because there is no height left there (finding 1 uses the same room); curing those needs more trimming or shorter wording for five hints, which is the copydeck's call. Costs 10px of the action grid at 1366x768.",
+   "confidence": "high"
+  },
+  {
+   "title": "The cash warning breaks between the minus sign and the amount: 'Collections at −' / '$1,500 cash' at 1366 and 1280",
+   "kind": "polish",
+   "where": "src/copy/ui.js:5 (usd builds '−$' with nothing holding the sign to the amount), used by KPI.collections at ui.js:52 and shown by src/ui/app/Kpis.jsx:48",
+   "evidence": "With cash below zero the Cash card's sub-line wraps as 'Collections at −' then '$1,500 cash' at 1366x768 and 1280x720 (card 155.8 and 144.9px wide). At 1440 and 1536 it breaks after the amount instead, and it is one line at 1920. Pictures: test-results/audit/dashboard/zoom-kpis-behind-1280.png, behind-1366.png, behind-1280.png. src/copy/clainkUi.js:7 and src/copy/help.js:11 already put U+2060 after the minus for exactly this. Editing the text node in the open page to add U+2060 moved the break to 'Collections at ' / '−$1,500 cash' (proposals.cjs).",
+   "proposal": "ui.js:5: (v < 0 ? \"−⁠$\" : \"$\"), as the other two copy modules do. The visible text is unchanged and still matches the copydeck's tt.collections.",
+   "risk": "Every string built with ui.js's usd gains an invisible character after a minus (the End week hint's 'rent −$1,600' too). A test or the house-style lint that compares those strings exactly may need the same joiner; which tests assert that text was not checked.",
+   "confidence": "high"
+  },
+  {
+   "title": "The Cash card's third line sits 8px above the same line in the three cards beside it",
+   "kind": "polish",
+   "where": "src/styles/app.css:55 (.kpi rows with a 4px gap) and src/ui/app/Kpis.jsx:63 (the Cash card has no meter, so its sub-line rises by the meter's 4px plus one gap)",
+   "evidence": "test-results/audit/dashboard/align.cjs, all five sizes: in Energy, Stress and Closed the meter is 62.2px from the card top and the sub-line 70.2px; the Cash sub-line is at 62.2px (65.9 against 73.9 at 1920x1080). In the pictures 'Rent due in week 9' rides above '+15 on Friday' and 'Eases 4 on Friday': zoom-kpis-midrun.png, midrun-1366.png.",
+   "proposal": ".kpi[data-kpi=\"cash\"] .value{margin-bottom:8px}. Tried in the page: the four sub-lines are then at 70.2/70.2/70.2/70.2 (73.9 at 1920), and the two-line 'Collections…' text still ends 15px above the card's bottom at 1280.",
+   "risk": "Very low. On the phone's two-column grid the Cash card needs 8px more, in a row whose height the taller Closed card already sets; that was not pictured with the change.",
+   "confidence": "high"
+  },
+  {
+   "title": "Meter tracks are effectively invisible (1.08:1), so the quota bar has no visible end to read the fill and the pace mark against",
+   "kind": "polish",
+   "where": "src/styles/app.css:62 (.meter{background:var(--surface-3)}) on a card filled with --surface-2 (src/styles/tokens.css:8-9)",
+   "evidence": "contrast.cjs: the stat-card meter track is #1b1f24 on #15181c, 1.08:1 (the stat rows' track and the future weeks' ticks are 1.13:1 on the panel). At normal size the unfilled part of the Energy, Stress and quota bars cannot be made out (test-results/audit/dashboard/midrun-1366.png); it shows only in the 3x close-up zoom-kpis-midrun.png. The fill (7.3:1) and the pace mark (14.3:1) therefore float on nothing: at '$6,342, 4%' the card that answers 'am I on pace' shows a short grey dash and a white tick with no bar.",
+   "proposal": ".kpi .meter{background:var(--border-strong)}: an existing token, 1.55:1 on the card, the grey the past weeks' ticks already use. Tried in the page: fix-trial-1366x768.png, fix-trial-1280x720.png. The 2px meters in the stat rows can stay as they are.",
+   "risk": "It changes how the approved palette is applied on three bars, so it needs the art director's eye. No layout effect; the colour lint is satisfied because it is a token.",
+   "confidence": "medium"
+  },
+  {
+   "title": "The dashboard never states the quota: the Closed card gives percentages only",
+   "kind": "polish",
+   "where": "src/copy/ui.js:53 (ofQuota: share => pc(share)) and src/ui/app/Kpis.jsx:64",
+   "evidence": "The card reads 'Closed this quarter $6,342 4%' and 'Expected by Friday: 36% of quota' (test-results/audit/dashboard/midrun-1366.png). In the 1,928 strings of test-results/audit/strings.json '$160,000' occurs once, in the handbook (help.js HELP[0].rows[0].body). Nothing on the main screen names the target, so the dollars still to close cannot be read at a glance; Energy and Stress both show their scale ('38 / 100').",
+   "proposal": "Only if the copy owner agrees, since the copydeck is authoritative and does not ask for it: ofQuota: (share, quota) => `${pc(share)} of ${usd(quota)}` with s.quota passed from Kpis.jsx:64, so the small text reads '4% of $160,000'. By arithmetic the widest case (about 210px) fits the card's 228px at 1280.",
+   "risk": "A copy addition outside the approved copydeck, which this pass may rule out. On a phone the card is about 140px wide inside, so the small text would wrap under the amount and would need a nowrap and a look. The card's screen-reader text at Kpis.jsx:34 changes with it. Not tried in the page.",
+   "confidence": "medium"
+  },
+  {
+   "title": "With two effect chips showing, 'PIP level N' is folded into '+N' at 1440 wide and below",
+   "kind": "nit",
+   "where": "src/ui/app/Foot.jsx:32-42 (chip order: effects, then PIP, quad shots, trip, rested; whatever does not fit folds from the end)",
+   "evidence": "A behind-pace week with a matched competitor discount (two effect chips), a PIP, four quad shots and a rest. At 1366x768 and 1440x900 the row shows 'Close odds +12 pp · this week', 'Discount 20% · this week' and '+3'; 'PIP level 1' is behind the '+3' and appears only on hover or focus ('3 more. PIP level 1 · 4 quad shots · Rested'). At 1280 one chip shows; at 1536 the PIP chip shows. That chip is the only standing sign of the PIP on the main screen. Pictures: test-results/audit/dashboard/behind-1366.png, behind-1440.png, behind-1280.png, st-more-focus.png.",
+   "proposal": "Push the PIP chip before the effect chips (move Foot.jsx:38 above the loop at line 34), so the fold takes 'Rested' and the shot count first.",
+   "risk": "Chip order changes for every player on a PIP, phones included (where all chips show). No test was found that depends on the order (phone.cjs counts chips). It only matters in a week with two effect chips.",
+   "confidence": "medium"
+  },
+  {
+   "title": "End week and Hail Mary have no pressed state: pressed looks exactly like hovered",
+   "kind": "nit",
+   "where": "src/styles/app.css:105-112 (.btn has :hover rules only; the action cards have :active at app.css:83)",
+   "evidence": "test-results/audit/dashboard/states.cjs, computed styles with the mouse held down: End week is rgb(42,99,214) hovered and rgb(42,99,214) pressed; Hail Mary rgb(21,24,28) for both. An action card does change (hover rgb(27,31,36), pressed rgb(21,24,28), border stays strong). Pictures st-end-hover.png, st-end-pressed.png, st-hail-pressed.png.",
+   "proposal": "Optional: .btn:active{background:var(--surface-3)} and .btn.primary:active{background:var(--accent);border-color:var(--accent)}, so a press returns to the resting blue the way an action card returns to its resting fill, with the aria-disabled rule at app.css:108 extended to :active. Reasonable to leave as is.",
+   "risk": "None to layout. Both buttons answer at once with a dialog or a new week, so the gain is slight.",
+   "confidence": "high"
+  }
+ ],
+ "not_checked": [
+  "Browsers other than headless Chromium. The window heights that real browsers leave on 1366x768 and 1536x864 laptops are estimates from common viewport sizes, not measurements.",
+  "Window widths between 1025 and 1279 (apart from one account-name check at 1025x768, where 38 of 57 names are cut in a 92px column), and the tablet tier.",
+  "The proposals were tried only as an injected style sheet or a DOM edit on the frozen release build (test-results/audit/dashboard/proposals.cjs). Nothing was built or run through the gates (layout.cjs, matrix.cjs, the copy lints), and none was pictured on a phone. The stale-hint fix and the quota label were not tried at all.",
+  "The announcer's caption in the top bar (it did not appear in the states opened), the first-day tour over the dashboard, dialogs, endings, and the inside of clAInk's ad and workspace, which belong to other areas.",
+  "Browser zoom, operating-system text scaling, forced-colors or high-contrast modes, and reduced motion.",
+  "Contrast was computed from computed styles at 1366x768 only (the palette does not change with size). How the 1.05 to 1.6:1 card borders, tracks and pips look on a real laptop panel was not assessed.",
+  "Whether the Hail Mary hint goes stale after a throw the way the action hints do (same code pattern, not tested).",
+  "Which tests assert the exact text of strings built with ui.js's usd, for the word-joiner proposal."
+ ]
+}

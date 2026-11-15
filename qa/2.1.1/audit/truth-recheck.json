@@ -1,0 +1,118 @@
+{
+ "verdicts": [
+  {
+   "title": "With nothing eligible, Discovery, Demo marathon and Close deals still buy a skill and a full-funnel tick, Proposals buys only the tick, and all four hints say only what is lost",
+   "reproduced": true,
+   "real": true,
+   "intended": true,
+   "worth_doing": "marginal",
+   "why": "Reproduced by pressing in the frozen release build (week 2, no deals; test-results/audit/check-truth/r1-zero.txt). Discovery took a slot and 22 energy and raised Discovery 35 to 37; Demo marathon 28 energy, Demo 30 to 32; Close deals 28 energy, Negotiation 25 to 26; Proposals 25 energy and no skill. Close deals + Discovery + Demo marathon on an empty board, then End week, wrote 'A balanced week…' with +6 pp; Proposals after Close deals cost a slot and 25 energy and changed nothing else. The facts stand, but 'misleading' overstates them: each hint is true, and what it leaves out is a small gain on a press it is steering the player away from, so the omission hurts nobody. The wording is the copydeck's own (docs/2.1/TTST_2.1_Editorial_Copydeck.md line 84: zero: “No eligible deals. You would still spend a slot and energy.”; line 85 for Close deals), and the approved handbook says 'Some unsuccessful actions still develop skill' (line 281). The deck leaves one door open, on line 84: 'Add training note only if action actually trains skill'. Discovery and Demo marathon do train with nothing waiting, so the note they carry when deals are waiting would be true in the zero case too. That is a slight gain. Naming the full-funnel tick is different: it tells players that three empty presses earn +6 pp, which changes how the game is played without changing a rule, and no document records that as intended.",
+   "smallest_fix": "Optional. src/copy/ui.js:91-92: end the zero variants of HINT.discovery and HINT.demo with the sentence each already uses when deals are waiting ('No eligible deals. You would still spend a slot and energy. Trains discovery.' and '… Trains demos.'). Leave HINT.propose and HINT.close as they are, do not name the full-funnel tick, and do not disable or refuse any press (src/game untouched). Leaving all four alone is also defensible.",
+   "regression_risk": "Small for the two sentences: the approved zero sentence stays whole, so copydeck coverage still finds it; the lint params at ui.js:189 already call the zero variants; no test asserts the zero text; 88 characters is two lines at 1025x768 and one at 1280x720 (measured). The larger versions carry real risk. A refused Proposals press changes which moves the rules allow, in the engine 2.1.1 means to freeze, for a press almost nobody makes, and the release gate holds the page to exactly those moves. A note added to a card's cost line is cut to an ellipsis in desktop windows under about 1,200 px (see missed). The work-211 branch as committed at 0d150c6 (diff read, not run) does all three larger things: it names the tick, adds 'skill only' / 'no deals' to the cost line, and refuses the no-op Proposals press in src/game/actions.js and run.js."
+  },
+  {
+   "title": "A zero count shows nothing on the card, so by touch or number key the slot is spent before any warning can be read",
+   "reproduced": true,
+   "real": true,
+   "intended": false,
+   "worth_doing": "marginal",
+   "why": "Reproduced (check-truth/r2-touch-hail.txt, f2-phone-discovery-before.png and -after.png). Phone, 390x844 touch, one Proposal deal and no leads: the card read 'Discovery / 22 energy' with no badge, the hint bar read '1 deal ready for a close attempt.' before and after the tap, and one tap took slots 5 to 4 and energy 95 to 73. The only word about it came afterwards ('Discovery: 0 deals qualified. −22 energy'). Key 4 on a desktop did the same. With a pointer, or by Tab, the 'No eligible deals…' hint is on screen before the press, so the gap is touch and number keys only. It costs such a player a slot once or twice before they learn that no badge means nothing waiting, which the badges on the other cards teach. No document records 'no badge at zero' as a decision: the brief (section D) asks both to 'highlight useful actions with qualified counts' and to 'expose eligibility', which pull opposite ways here, and CHANGELOG.md:73 only records that a tapped blocked action says why. Real, slight.",
+   "smallest_fix": "Optional. src/ui/app/ActionGrid.jsx:47: draw the badge whenever the count is not null, zero included, with a muted style for zero at src/styles/app.css:88. Or leave alone.",
+   "regression_risk": "A fresh board gains four '0' pills: the README and QA pictures go out of date, and the badge stops meaning 'useful now'. In desktop windows 1,025 to about 1,060 px wide 'Demo marathon' is already cut to 'Demo marat…' whenever it carries a badge (measured in the frozen build, check-truth/f2-badges-all-four-1025.png); a permanent badge makes that permanent. A screen reader would read a bare '0'. With all four badges showing, nothing was cut at 1280x720, 1440x900 or 390x844."
+  },
+  {
+   "title": "The Hail Mary's cost (one slot, 10 energy) is stated nowhere in the game",
+   "reproduced": true,
+   "real": true,
+   "intended": false,
+   "worth_doing": "yes",
+   "why": "Reproduced (check-truth/r2-touch-hail.txt, f3-hail-hover.png, f3-hail-confirm.png, f3-handbook.png). The button is 'Hail Mary' with no title or label; the hint, the first-throw confirmation and the handbook row give no cost; '10 energy' is in none of the 1,928 strings and nowhere in the release file. The throw took slots 5 to 4 and energy 95 to 85. The game names the number only once the button is blocked ('Needs 10 energy. You have 5.'). The copydeck asks for it (line 91: 'Show cost, danger, and no-eligible state'), and the record says it was done when it was not: TTST_2.1_QA_REPORT.md:482 and docs/2.1/copy-coverage-notes.json L91 both say 'cost is on the button'. Every one of the twelve cards states its energy; this is the one press whose price cannot be read before it is paid. The fix is small and I measured it to be safe.",
+   "smallest_fix": "src/copy/ui.js:102: HINT.hail takes the cost and states the energy after its first sentence, as the cards do ('One close attempt against all proposal/closing deals. 10 energy. Four times in five, …'); src/ui/app/Foot.jsx:93 passes COST.hail; add the argument to the lint params at ui.js:192; correct the L91 note in docs/2.1/copy-coverage-notes.json. Energy only, not '1 slot, 10 energy.' (see the risk).",
+   "regression_risk": "Hint length. At 1025x768, the narrowest two-column window, the hint with '1 slot, 10 energy.' runs to three lines in a 36 px box; with '10 energy.' it stays at two (measured at 1025, 1100, 1180, 1280 and 1366 wide; check-truth/r10-hintfit2.cjs). test/engine/copy.test.mjs:41-42 calls HINT.hail with three arguments and checks the 'Four times in five…' sentence and the exact no-deal text: keep the new argument optional or update the call. Copydeck coverage is unaffected, since the approved sentences stay whole."
+  },
+  {
+   "title": "Only the lethal quad shot is flagged; other presses that are certain to end the run look ordinary",
+   "reproduced": true,
+   "real": true,
+   "intended": true,
+   "worth_doing": "yes",
+   "why": "Yes to one thing only. Reproduced by pressing (check-truth/r3-lethal.txt, f4-stress98-prospect.png): at 98 stress Prospect blitz reads '30 energy' and 'Cold calls. … Costs time and energy.', and one press ends the run in Meltdown; Internal politics at 98, Conference run at 95, the Hail Mary at 96, Conference run at −$800, Quad shot at −$1,495 and End week in week 5 at −$900 all end the run behind their ordinary text, and at 97 stress or −$699 the same presses do not. I split the finding. (1) One of these costs is on no screen before the press: Prospect blitz adds 2 stress every time and its hint says it 'Costs time and energy'. It is the commonest action and, over a quarter, the main source of stress outside coffee, so the omission matters every week, not only at 98. The line is approved text (copydeck line 81), but the deck's rule is 'factual first' and its Internal politics line prints '+2 stress' in exactly this form. Worth fixing. (2) For every other press on the list the deciding numbers are already in front of the player: '+2 stress' and '+5 stress' are in those hints, '$800' and '$6' are on the cards beside 'Collections at −$1,500 cash', the Stress card is red from 80, and the handbook says 100 ends the run. A run-ending flag for all of them is a new card state, a new selector and new sentences for states reached rarely, and more confirmations go against a recorded decision: CHANGELOG.md:32 'Confirmations before the four things that cannot be undone', the brief's section D 'coffee lethal state warns explicitly, no repeated mandatory dialogs. Avoid extra friction each action', and TTST_2.1_QA_REPORT.md:546.",
+   "smallest_fix": "src/copy/ui.js:87: HINT.prospect ends '… Costs time and energy. +2 stress.' (approved sentences left whole), with one assertion beside the Internal politics one in test/engine/copy.test.mjs that a press adds what the hint says. No run-ending flag on other cards and no new confirmations.",
+   "regression_risk": "Low for the sentence: 106 characters is two lines at 1025x768 and one at 1280x720 (measured), and copydeck coverage still finds the approved sentences. The 2 is a literal at src/game/actions.js:22; quoting it from the rules means editing a file 2.1.1 means to freeze, so a test is the cheaper guard. For the wider fix: new CONFIRM entries are copy the editor has not seen; test/e2e/confirm.cjs and three documents name four confirmations; and the QA evidence reaches Meltdown by a plain click at 99 stress (qa/2.1/evidence/13-meltdown-by-play.txt), which a confirmation would interrupt. The work-211 branch as committed at 0d150c6 (diff read, not run) adds the flag ('Ends the run' on the card), a hint sentence and two further confirmations."
+  },
+  {
+   "title": "A Conference run does not count as lead generation for the full-funnel rule, and the handbook says 'lead generation'",
+   "reproduced": true,
+   "real": true,
+   "intended": false,
+   "worth_doing": "yes",
+   "why": "Reproduced by pressing, three weeks each (check-truth/r4-rest.txt). Conference run + Discovery + Demo marathon, then End week: no 'balanced week' line and no bonus, three of three. Conference run + Discovery: 'Parts of your funnel have been declared a nature reserve. −6 pp signing odds next week', three of three. Prospect blitz or Referrals + Discovery + Demo marathon: the bonus, six of six. A conference finds 3 to 8 leads, so a player who reads 'lead generation' in the handbook counts it, plans a week around it and is penalised instead. It is worse than the report says: in a week with a Conference run the bonus cannot be earned at all. The conference takes two slots and 40 energy, and the cheapest three categories that do count cost 63 more (Referrals 16, Discovery 22, Proposals 25), which is 103 against a ceiling of 100; Recharge and coffee each take one of the three slots left. No document records the exclusion as a decision; the conference simply sets no flag (src/game/actions.js:218-236). The rule must stay as it is, so the handbook is where to say it.",
+   "smallest_fix": "src/copy/help.js:36: add one sentence after the two approved ones, which stay word for word: '… gives −6 pp next week. A conference does not count.' Add the same clause to the tip at README.md:181. Leave src/game/week.js alone.",
+   "regression_risk": "Low. Appending keeps both approved sentences whole, so copydeck coverage and the fragments checked in test/engine/copy.test.mjs ('+6 pp signing odds next week', 'gives -6 pp next week') still pass; rewording the bracket instead would need a coverage note. The row grows by at most one line: at 1440x900 the handbook stays on one screen (dialog 859 px where 876 fit) and at 1920x1080 it does not grow; it already scrolls at 1536x864 and smaller as shipped (measured, check-truth/r7-handbookfit.cjs and r12-handbookfit2.cjs)."
+  },
+  {
+   "title": "The idle hint keeps naming an action that is blocked, and a number key on a blocked action says nothing",
+   "reproduced": true,
+   "real": true,
+   "intended": false,
+   "worth_doing": "marginal",
+   "why": "Reproduced (check-truth/r5-rest.txt). Energy 12 with one Proposal deal: '1 deal ready for a close attempt.' while Close deals is dimmed; energy 10 and no deals: 'No leads. Prospect or ask for referrals.' with both dimmed; energy 24 with one demoed deal: '1 demoed deal ready for a proposal.'. Key 7 on the dimmed Close deals changed nothing and said nothing; a click on the same card said 'Close deals. Needs 28 energy. You have 12.'. The state is common, because energy runs out before slots most weeks, but the harm is close to nil: the idle line is a true statement about the pipeline, the card it points at is visibly dimmed, and hover, focus or a tap gives the reason. A key that does nothing on a dimmed button is ordinary behaviour. The weakest of the marginal findings; leaving it alone is acceptable.",
+   "smallest_fix": "Optional. src/ui/app/Foot.jsx:11-20: when the action the idle hint names is blocked, follow it with the blocked sentence the game already has (HINT.blocked.energy or .slots), for the four stage cues only. Leave 'No leads. Prospect or ask for referrals.' as it is: with both actions blocked it only reads well with a new sentence, which is outside the copydeck. Leave the number key alone.",
+   "regression_risk": "Low: no test asserts the idle text and no new sentence is needed. The line gets longer (still within two lines). Making a number key focus the blocked card moves keyboard focus, which test/e2e/keyboard.cjs watches."
+  },
+  {
+   "title": "CRM cleanup's 'dead leads' can be Qualified deals of any size and mood, and nothing shows which ones",
+   "reproduced": true,
+   "real": true,
+   "intended": true,
+   "worth_doing": "marginal",
+   "why": "Reproduced (check-truth/r5-rest.txt, f7-crm-before.png). With 'NebulaSoft | Qualified | happy | $150,000' (five weeks old, which no column shows) and 'Feral Unicorn | Qualified | skeptical | $30,000' on the board, the hint read 'Removes 2 dead leads: +7 manager. Once per week. Your manager may remove a live deal while he’s in the CRM (15%).', the press removed both, and the log said '2 dead leads removed' with no names and no amount. The hint does what the copydeck directed (line 87: 'show actual number of stale/dead leads prunable, manager gain and chance of losing a live opportunity'), so the count alone is the intended design. The usual case is a cheap skeptical cold lead, where the count is enough. The costly case is real but uncommon: a deal that has sat five weeks, or a large conference deal that the demo backlog sent back to Lead as skeptical. An amount would let a player see that case coming.",
+   "smallest_fix": "Optional. src/game/selectors.js:52-56: crmPreview also returns the total value of the dead leads; src/copy/ui.js:97: HINT.crm prints it after the count ('Removes 2 dead leads ($180,000): +7 manager.'); pass it at src/ui/app/ActionGrid.jsx:21 and add it to the lint params.",
+   "regression_risk": "Low. With the risk sentence the hint is 137 characters, still two lines at 1025x768 (measured). The approved sentence in the hint stays whole. selectors.js sits under src/game but only the interface reads crmPreview; no rule changes."
+  },
+  {
+   "title": "Recharge and Quad shot do not say they take a slot, on the card or in the hint",
+   "reproduced": true,
+   "real": true,
+   "intended": true,
+   "worth_doing": "no",
+   "why": "Reproduced: the cards read 'Recharge / Once a week' and 'Quad shot / $6 · +25 stress by Friday', neither hint mentions a slot, and each press took slots 5 to 4 (check-truth/r5-rest.txt). It is not a defect. None of the ten single-slot cards names its slot; only the conference, which takes two, does. The rule is stated where the copydeck put it: the tour ('Most actions use one slot and energy; conferences use two. Recharge restores energy if you have a slot left.', deck line 36), the handbook ('Recharge and coffee can restore energy with a slot left', line 274; 'Once per week for one slot', line 288; 'Costs cash and a slot', line 290), and the blocked hint at zero slots. The deck's own lists of what these two hints must show (lines 88 and 89) do not include the slot. A player learns it in one press, as the auditor says.",
+   "smallest_fix": "leave alone",
+   "regression_risk": "If done anyway: 'Takes a slot.' at the front of both hints stays within two lines at 1025x768 (measured), but it changes two approved hint lines for a gain the player gets from the slot pips on the first press."
+  },
+  {
+   "title": "The stale-lead and demo-backlog rules are in the README but not in the game",
+   "reproduced": true,
+   "real": true,
+   "intended": false,
+   "worth_doing": "marginal",
+   "why": "Reproduced (check-truth/r5-rest.txt). Six leads, no Discovery: the End week hint read 'Friday: salary +$1,000, energy +15, stress −4. Friday events and collections may change this.' and the log then said '3 raw leads went stale.'; five Qualified deals, no demo: '1 lead cooled off in the demo queue.'. Neither threshold is in the handbook or any hint; README.md:182 has both. The log names the cause in plain words after the fact, so a player is not misled, only left to work out the threshold and the remedy. The README calls the handbook 'the full rulebook on one sheet' (line 41), and this rule is not on it. One factual handbook sentence would close that, but it is copy the editor has not approved, so I rate it optional. The End week hint is the wrong place: it is kept to the certain parts of Friday (src/game/selectors.js:57) and these rules are rolls. The same gap exists for a third Friday rule the report does not mention: End week makes a close attempt of its own 15% of the time (src/game/rules.js:31; 12 of 96 weeks played here, 3 of them losing a late deal, check-truth/r13-missed.txt), and neither the game nor the README says so.",
+   "smallest_fix": "Optional, with the editor's approval. src/copy/help.js:35: one sentence at the end of the Pipeline row, with the rule's own numbers (six leads and no Discovery; five qualified deals and no demo). Not the End week hint.",
+   "regression_risk": "New handbook copy outside the approved deck. The thresholds and chances are literals at src/game/week.js:55-70, so quoting them means either numbers in the copy guarded by a test, or moving them into rules.js, which edits the frozen engine. Height: with this sentence and the conference one the handbook is 872 px at 1440x900 where 876 fit, 4 px from scrolling (measured, check-truth/r12-handbookfit2.cjs)."
+  },
+  {
+   "title": "Hints quote the rule's full amount when a meter cannot take it",
+   "reproduced": true,
+   "real": true,
+   "intended": true,
+   "worth_doing": "no",
+   "why": "Reproduced: at energy 98 and stress 3 the Recharge hint read '+35–52 energy, −12–18 stress' and the press gave +2 energy and −3 stress; the log line said '+2 energy · −3 stress' (check-truth/r5-rest.txt). This is the design 2.1 chose and wrote down. The approved handbook row says 'capped by actual meters' (copydeck line 288); the brief's section D says 'Keep action estimates and actual log values separate'; TTST_2.1_QA_REPORT.md:88 records 'Log lines and strike cards carry what really happened to each meter, measured after clamping'. A player can read the room left on the meter beside the hint. The auditor's own first proposal is to leave it.",
+   "smallest_fix": "leave alone",
+   "regression_risk": "Capping the quoted figures would change numbers in three approved hints and their lint params, and add a second way of computing what the rules already compute."
+  }
+ ],
+ "missed": [
+  {
+   "title": "End week is not flagged when the coffee crash is certain to reach 100 stress, and from 80 stress the crash figure is not on the Stress card either",
+   "where": "src/ui/app/Kpis.jsx:47 (from 80 stress 'Dangerous stress level' replaces 'Crash: +N on Friday'); src/copy/ui.js:103 (HINT.endWeek); rule at src/game/week.js:82-94 (the crash, then the burnout check). Nothing in End week lowers stress in a week with shots: events.js and quarter.js only add.",
+   "evidence": "Frozen release build (check-truth/r9-endweek.txt, r13-missed.txt, m1-desktop-stress80-two-shots-end-hover.png). Stress 80 with two shots drunk: the End week hint reads 'Friday: salary +$1,000, energy +15, stress +26. Friday events and collections may change this.' and the Stress card reads 'Dangerous stress level'. On a 390x844 touch screen the page contains neither '+26' nor 'Crash' anywhere, only the chip '2 quad shots', and one tap on End week ended the run in Meltdown. Played by pressing End week: stress 74 with two shots (74+26=100) ended in Meltdown 16 of 16 times; stress 87 with one shot 16 of 16; stress 62 with three shots 24 of 24. One point lower (73 and 86) it was 10 and 12 of 16, which is the weekend roll. This is the same family as the report's fourth finding, which covers End week by cash (week 5 at −$900) but not by stress, and it is the likelier road, since coffee is how players push stress.",
+   "proposal": "Least change, no new words: at Kpis.jsx:47 let a pending crash keep its line from 80 stress up ('Crash: +26 on Friday', in the danger colour), so the number that decides Friday is on the page for touch players too. A sentence on the End week hint would be new copy, and I would not add a confirmation."
+  },
+  {
+   "title": "In desktop windows 1,025 to 1,198 px wide the cost line of three cards ends in an ellipsis; the Conference run card loses '2 slots'",
+   "where": "src/styles/app.css:86 (.action .cost: one line, ellipsis) in the three-column grid at :80; the two-column desktop layout starts at 1,025 px (:183).",
+   "evidence": "Frozen release build, fresh week-2 board (check-truth/r16-costcut2.cjs, m2-cards-1100.png, m2-board-1100x768.png). At 1100x768 the cards read 'Conference run / 40 energy · $800 · 2…', 'CRM cleanup / 15 energy · once a w…' and 'Quad shot / $6 · +25 stress by Fr…'. The conference cost needs 158 px and has 123 at 1,025 wide, 138 at 1,100, 149 at 1,152 and 154 at 1,180; it fits from 1,199. CRM cleanup is cut up to about 1,120 and Quad shot up to about 1,160. With a badge showing, 'Demo marathon' is cut to 'Demo marat…' at 1,025 to 1,060. The QA matrix checks 1440x900 and the stacked 1024x768, so nothing in between is covered. The hint still gives the full cost on hover.",
+   "proposal": "Mainly a warning for this area's fixes: anything added to a card's cost line or badge (a zero-count note, a run-ending label, a zero badge) must be checked from 1,025 to 1,200 px wide, where a cost line wider than 123 to 154 px is cut. As a fix in its own right it is optional: a rule for that width range only (a smaller column gap or card padding), checked at every size in the matrix."
+  }
+ ]
+}

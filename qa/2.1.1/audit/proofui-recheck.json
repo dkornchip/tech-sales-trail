@@ -1,0 +1,118 @@
+{
+ "verdicts": [
+  {
+   "title": "The Cash warning and three hints let a minus sign, a number or a separator come loose at the line end",
+   "reproduced": true,
+   "real": true,
+   "intended": false,
+   "worth_doing": "yes",
+   "why": "Worth doing for the two minus signs only. Re-measured in release.html at 12 sizes (test-results/audit/check-proofui/f1.txt, f1-kpi-1366.png): the Cash tile draws «Collections at −» / «$1,500 cash» at 1366x768, 1280x800, 1280x720, 768x1024, 375x667, 360x740 and 320x568; it fits one line only at 1920 and 1024. This is the red warning a player in debt reads at the main desktop size, and a minus left at a line end reads as a dash, so the amount looks positive. The End week hint splits «rent −» / «$1,600» at 375 and 360 wide. The politics and CRM parts also reproduce («+8» / «manager» at 390, a line starting «· −4 reputation» at 320), but they are ordinary wraps of a list in a phone hint: negligible, leave them. No document records any of this as decided (searched CHANGELOG, QA report, release notes, copydeck); the handbook and clAInk copy already carry the joiner.",
+   "smallest_fix": "src/copy/ui.js line 5: usd builds \"−⁠$\" (the only negative amount it formats is KPI.collections); line 103: `rent −⁠${usd(f.rent)}`. Nothing else: no rewording of line 52, no no-break spaces in HINT.politics or HINT.crm. Tried in the live page only: the tile becomes «Collections at» / «−$1,500 cash» with the same height at all 12 sizes, and the hint keeps its line count (fix13.txt, fix1-kpi-1366.png in the same folder).",
+   "regression_risk": "Low. scripts/copy-coverage.mjs (norm) and test/engine/copy.test.mjs (plain) already strip U+2060; the lint's pictograph rule does not cover it; no browser test reads the tile's text; neither string is stored in a save or read by the rules. The same character already ships in the handbook and clAInk in the same fonts and drew clean in my picture."
+  },
+  {
+   "title": "After a run that worked, the manager's warning is announced with the quip for a run that failed",
+   "reproduced": true,
+   "real": true,
+   "intended": false,
+   "worth_doing": "marginal",
+   "why": "Reproduced by a live scripted run in test.html (draws 0.1, 0.1: the run works and the manager notices) at 1366x768 and 390x844: the dialog shows «PA Always on ChatGDP, huh?» above «“Nice week. ChatGDP do that? Enjoy it…”»; after a failed run there is no caption (test-results/audit/check-proofui/f2.txt, f2-miracle-1366.png). But \"misleading\" overstates it: nothing about the run is misstated and the two lines do not contradict each other. The rule the auditor quotes (copydeck line 467, \"must match modal and actual event\") is about the manager's own ping and announcement, and those do match: the workspace note read «Nice week. ChatGDP do that? Improve your written communication skills…». The announcer line is the one approved line for key chatgdp (copydeck section 9: \"Use same keys for audio routing\"), routed to the dialog whatever the variant, and the caption filter (src/ui/primitives.jsx:48-50) is written to hide only a line that repeats the dialog. It occurs in one first warning in five, once per run, in an optional feature. No release document records the pairing as decided.",
+   "smallest_fix": "Leave alone unless the editor wants it. If done: src/ui/Game.jsx:170 `a.onModal(shownId, shown.params)` and src/engine/audio/director.js:35-38 skip say() when id === \"ck:warning\" and params.miracle (the chime stays).",
+   "regression_risk": "Touches the audio director. test/audio/behaviour.test.mjs:202-208 and :221 call onModal(id) with no params and keep passing, so the new branch needs a test of its own. The warning after a good run would then open with no announcer line at all, spoken or captioned, which removes a joke as well as the mismatch."
+  },
+  {
+   "title": "The Hail Mary takes a slot and 10 energy and nothing on the page says so",
+   "reproduced": true,
+   "real": true,
+   "intended": false,
+   "worth_doing": "yes",
+   "why": "Release build at 1366x768 and 390x844 (test-results/audit/check-proofui/f3.txt): Slots «5 left» became «4 left» and Energy 80 became 70. The button's text is «Hail Mary» only (no title, no label), and neither the hint nor the confirmation names a cost; only a blocked hint betrays it («Needs 10 energy. You have 5.»). All twelve actions print their cost. v1.21's button read «Hail-Mary (10 Energy • 1 Slot • Risky)» (test/baseline/v1.21/index.html:5876); the cost was lost in the 2.0 redesign and the 2.x button never carried one (checked Foot.jsx through its history). The documents record the opposite intention: copydeck line 91 «Show cost, danger, and no-eligible state», while docs/2.1/copy-coverage-notes.json L91 and TTST_2.1_QA_REPORT.md:482 say «cost is on the button», which is not true of the build. A slot is the scarcest thing in a week.",
+   "smallest_fix": "src/copy/ui.js:102 HINT.hail takes the cost and inserts `${n(cost.slots, \"slot\")}, ${cost.energy} energy.` after its first sentence (the form HINT.conference uses); src/ui/app/Foot.jsx:93 passes COST.hail; update the lint sample at ui.js:192; correct coverage note L91 and the QA report row. Tried in the live page: «One close attempt against all proposal/closing deals. 1 slot, 10 energy. Four times in five, …» (fix3-hail-1366.png).",
+   "regression_risk": "Both approved sentences stay whole, so the coverage gate is unchanged; test/engine/copy.test.mjs:42 matches by pattern and :43 is untouched. Line count is unchanged at 1536, 1440, 1366, 1280, 1200, 768, 667, 390, 375 and 360 wide; one more line at 1920 (36 to 41px, the footer does not move), at 1024 (footer moves 3px while hovered, as other two-line hints already do) and at 320 (4 to 5 lines, +18px) (fix13.txt). On a touch screen a tap acts and clears the hint, so this serves pointer and keyboard players; a phone sees the hint only through the lost first tap described under missed. Reaching phones properly needs the cost on the button or in the confirmation, which is a larger change."
+  },
+  {
+   "title": "Recovery dialog: the Open buttons are cut off on small phones",
+   "reproduced": true,
+   "real": true,
+   "intended": false,
+   "worth_doing": "yes",
+   "why": "Release build with a damaged v2.1 autosave beside 2.0.1 runs, whose keys are never removed (src/ui/storage.js). Measured (test-results/audit/check-proofui/f4.txt, f4-legacy-others-375.png, f4-legacy-others-320.png): at 375x667 the third button starts 8px off screen and reads «pen your saved run · week 12 (earlier version)»; at 360x740, 9 and 23px off; at 320x568, 49 and 63px («ne autosave…», «r saved run…»); at 390 and 393 the labels are whole but the buttons overhang the column by 13 and 27px and the dialog's edge by 10px; 3 to 5px at 412 and 414; it fits from 430. With a v2.1 save everything fits. A rare state, but it is the dialog that stands between a player and their run, on three sizes of the project's own matrix, and test/e2e/phone.cjs holds phones to whole button names.",
+   "smallest_fix": "src/styles/dialogs.css, inside the existing @media (max-width:640px) block: `dialog[data-dialog=\"recovery\"] .d-footer .btn{white-space:normal;height:auto;min-height:44px;min-width:0}`. Tried in the live page (unscoped form): the labels wrap to two lines inside 44px buttons from 320 to 414 wide, and nothing changes at 430, 768 or 1366 (f4-legacy-others-375-fixed.png).",
+   "regression_risk": "Scoped to one dialog on phones: none elsewhere. The unscoped form should be inert where labels fit, but I measured only the recovery dialog, so keep it scoped. Two lines sit tight in a 44px button (about 39px of text). The recovery tests read text and press buttons; none measures them."
+  },
+  {
+   "title": "Recovery dialog: «It will be kept aside» reads as the run you are about to start",
+   "reproduced": true,
+   "real": true,
+   "intended": false,
+   "worth_doing": "marginal",
+   "why": "All three forms rendered as quoted (test-results/audit/check-proofui/f4.txt). The form with a real ambiguity is «…or return to a valid saved run. It will be kept aside, not deleted.»: the nearest noun is the valid save, and a hasty reader can take it that the good run is what gets set aside. In the two «Start a new run.» forms the sense rescues the pronoun. The sentence is the developer's addition, not copydeck text (deck line 78 has only the first two; release notes line 54 say «The unreadable one is set aside, not deleted»). A rare dialog and a recoverable meaning, so slight; but the fix costs nothing.",
+   "smallest_fix": "src/copy/ui.js:170, same words with the reassurance first: «The run stored in this browser is damaged. It will be kept aside, not deleted. Start a new run or return to a valid saved run.»",
+   "regression_risk": "None found. Same sentences and length, so the coverage row stays noted under L78; test/e2e/resilience.cjs matches only /could not be opened|damaged/ and /newer version/; nothing is stored."
+  },
+  {
+   "title": "On a tablet-width window the top bar cuts the announcer's longer lines, punchline first",
+   "reproduced": true,
+   "real": true,
+   "intended": false,
+   "worth_doing": "marginal",
+   "why": "Release build, all 54 lines of src/copy/pa.js said in turn (test-results/audit/check-proofui/f6all.txt, f6-768.png): at 768x1024 five are cut («…meetings about m…», whale, sqlStorm, freeze, one HR line), three at 810, two at 820, one at 834, none from 880 up and none at 1024 to 1366. It reaches further than reported: see missed for the phone on its side. With the voice on, the line is still heard in full; with sound off the caption is the whole announcement. The ellipsis is a coded fallback (app.css:13-15; :205 already gives the caption the breadcrumbs' room in the stacked layout), and no document records the cut as accepted. Against it: a line that is on screen for 4 to 9 seconds, and a fix that changes the top bar at two matrix sizes.",
+   "smallest_fix": "src/styles/app.css after line 205: `@media (min-width:641px) and (max-width:1024px){ .pa-cap{white-space:normal;line-height:1.25} .pa-text{overflow:visible;text-overflow:clip} }`. Tried in the live page: two lines fit the 48px bar from 700 to 1024 wide (f6fix.txt, f6fix-768.png). At 667x375 the longest line needs a third and touches the bar's edges, so clamp to two lines there, or take the auditor's larger option (the phone's notice up to about 880px, which also needs the phone block's top-bar spacing rules).",
+   "regression_risk": "The top bar at every stacked width from 641 to 1024 (touch tablets, phones on their side): the matrix at 768x1024 and 667x375 must be re-run and looked at. The moved-notice variant must also clear the End week row and the log peek."
+  },
+  {
+   "title": "The End week hint promises energy and relief that a nearly full or nearly empty meter cannot take",
+   "reproduced": true,
+   "real": true,
+   "intended": false,
+   "worth_doing": "no",
+   "why": "Reproduced in test.html with a quiet Friday (test-results/audit/check-proofui/f7.txt): at Energy 95 and Stress 2 the hint says «energy +15, stress −4» and the tiles' own chips then show +5 and −2; at 100 and 0 the tiles still read «+15 on Friday» and «Eases 4 on Friday»; a new run opens at 95 under «+15 on Friday». But the figure is only wrong when a week ends above 85 energy or below 4 stress, which play rarely reaches (actions cost 15 to 40 energy; stress starts at 28). The meters say «/ 100», and the handbook states the rule the same way («Recover 15 on Friday»). The clamped form would print «+0 on Friday» and «Eases 0 on Friday», which read worse. Negligible gain.",
+   "smallest_fix": "leave alone",
+   "regression_risk": "If done: src/game/selectors.js sits in the engine folder under the frozen-2.1 equivalence check; the tiles would read «+0 on Friday»; test/engine/rng.test.mjs:91 calls fridayPreview."
+  },
+  {
+   "title": "On a phone, three headings leave one word on their last line, and two effect lines part a number from its word",
+   "reproduced": true,
+   "real": true,
+   "intended": false,
+   "worth_doing": "no",
+   "why": "All re-measured at 390x844 (test-results/audit/check-proofui/f8.txt): «Customer incident — internal» / «statement» (also at 412, 393, 375 and 360), «…−15 pp odds for 2» / «weeks;…», «Shitcorp AI Acceptable Use» / «Policy» with «v3 (final)» / «(2)», «Sponsored · Enterprise» / «pilot», «…filed by AI Governance» / «Council», «…· −8» / «manager». The observations are accurate, but these are ordinary wraps on a phone: nothing is cut, nothing misleads, and each figure still sits beside its word on the next line. A preference, not a defect.",
+   "smallest_fix": "leave alone. The only part with a case is the version gag: `white-space:nowrap` on `.claink-policy .hd span` (src/styles/claink.css:91) keeps «v3 (final) (2)» whole at 390 (f8-policy-390-fixed.png), but costs the policy box a line at 320.",
+   "regression_risk": "text-wrap:balance would re-break every dialog and ending title at every size. The nowrap adds a line to the policy step on a 320px phone, where the ad's height is already managed closely. The event effect text is checked by test/engine/copy.test.mjs (its plain() tolerates a no-break space)."
+  },
+  {
+   "title": "Two hyphenated terms break at their hyphen: «true-» / «up» at 1366x768 and «out-» / «of-office» on a phone",
+   "reproduced": true,
+   "real": true,
+   "intended": false,
+   "worth_doing": "no",
+   "why": "Reproduced (test-results/audit/check-proofui/f8.txt, f9.txt, f9-trueup-1366.png): at 1366x768 all three variants of the two-strike note break «…the token true-» / «up leaves you around…»; at 390x844 an 18-letter account gives «…Your out-» / «of-office reply is active.» (other names and widths break at «out-of-» / «office»). A break after a hyphen is correct typesetting; nothing is cut or misread. Negligible.",
+   "smallest_fix": "leave alone. If wanted anyway: U+2060 after the hyphen in src/copy/clainkUi.js:52 only; tried in the live page, the note stays two lines at 1366 and breaks before «true-up».",
+   "regression_risk": "None found (no test and no stored text carries these strings), but it adds invisible characters to copy for no reader's gain."
+  },
+  {
+   "title": "Three one-character inconsistencies that follow the copydeck to the letter (for the editor to rule on)",
+   "reproduced": true,
+   "real": true,
+   "intended": true,
+   "worth_doing": "no",
+   "why": "All three seen rendered: report first lines «Claimed influence over $36,000 in pipeline» and «Claimed influence over $0 in pipeline.» (test-results/audit/check-proofui/f2.txt); the handbook's «End Week advances the quarter.» beside the button «End week»; «Collections take the jacket…». Each is the approved copydeck's literal text: line 465 (“Claimed influence over {pipeline} in pipeline” / “Claimed influence over $0 in pipeline.”), line 274 («End Week advances the quarter.»), line 276 («Collections take the jacket when cash reaches {repoThreshold} or lower.»). The copydeck is authoritative for this pass; changing these is the editor's decision.",
+   "smallest_fix": "leave alone; refer to the editor",
+   "regression_risk": "Each change departs from the copydeck. (a) is engine copy that a run stores in its save, so it would show in the frozen-engine equivalence check."
+  }
+ ],
+ "missed": [
+  {
+   "title": "On a phone the first tap on End week (upper part of the button) or on Hail Mary shows the hint instead of acting; 2.0.1 did not do this",
+   "where": "src/styles/app.css:257-258 (the phone's hint bar keeps room for two lines «so the buttons under it do not move»); src/ui/app/Foot.jsx:103 and :105 (onFocus raises the hint); src/copy/ui.js:103 (HINT.endWeek is three lines on a phone since 2.1 added «Friday events and collections may change this.») and :102 (HINT.hail, four lines)",
+   "evidence": "Release build, real touch taps in Chromium's touch emulation. End week tapped 15% or 35% of the way down the button at 390x844, 360x740, 375x667 and 412x915 (and at 430x932 in a rent week): the week does not end and the hint bar grows from 54 to 73px; taps at 50% and 85% end it (test-results/audit/check-proofui/tapend.txt). Hail Mary at 390x844 tapped at its centre: the first tap shows the hint (54 to 91px, the button moves 36px), the second opens the confirmation (f3touch.txt). Event trace: mousedown and focusin land on the button, mouseup on div.hint, click on section.panel (tapwhy.txt). The same taps in test/baseline/v2.0.1/index.html end the week every time, because its hint was two lines (tapend201.txt). The auditor saw the Hail Mary symptom and listed it as not pursued. Safari does not focus a button on tap, so iPhones are probably spared; not tested. The existing phone test taps the centre and cannot see this.",
+   "proposal": "Smallest that keeps the layout: in Foot.jsx raise the hint from onFocus only where there is hover or the button is blocked (`onFocus={() => { if (!noHover() || hailBlocked) hailHint(); }}`, and the same for End week with `over`); the click already clears the hint on touch. CSS-only alternative, tried in the live page: the phone's `.hint` min-height for four lines (calc(5.6em + 2 * var(--sp-3) + 2px)) makes every tap land at 390 and 360 at a cost of 36px of page height; three lines cures End week only (tapfix.txt). Add a phone check that taps End week near its top edge. Weigh this together with the Hail Mary cost fix, which lengthens that hint at 320."
+  },
+  {
+   "title": "On a phone held sideways (667x375, a matrix size) the top bar cuts 33 of the 54 announcer lines, not only the long ones",
+   "where": "src/styles/app.css:13-15 (.pa-line, .pa-cap, .pa-text) and the wrapping notice that exists only under max-width:640px (:248-250); lines in src/copy/pa.js",
+   "evidence": "Release build, every line said in turn through the page's own announcer (test-results/audit/check-proofui/f6all.txt): 33 of 54 cut at 667x375 («PA Pipeline hygiene is everyone’s resp…», f6-667.png), 10 at 740x360, 1 at 844x390, none from 896x414. The auditor's finding measured 700 to 1024 wide and called it tablet-width; 667x375 is the size the QA report names as a phone on its side.",
+   "proposal": "Decide it with the tablet finding, as one change: a two-line caption (or the phone's notice) for the stacked layout between 641px and about 880px wide. Check 667x375 specifically, where the longest line needs three lines in the 48px bar (f6fix.txt)."
+  }
+ ]
+}

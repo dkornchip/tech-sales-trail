@@ -1,0 +1,109 @@
+$ npm run test:selftest
+dist-test/index.html  556 KB raw, 214 KB gzip
+lint-copy
+  ok   the passing modules pass under --strict   160 strings, 0 violations
+  ok   the variant engine next to them is skipped, not called
+  ok   the failing modules fail under --strict
+  ok   every rule fires, with exactly the planted number of findings   {"emoji":3,"quotes":2,"plural":1,"minus":3,"ellipsis":1,"banned":5,"sentence-case":6,"len-spoken":1,"len-caption":1,"len-log":3,"render":2,"callable":1}
+  ok   each of the five banned words is named   buff, epic, lol, mana, vibes
+  ok   violations that only exist for some params are found (negative money, a long list)   render:broken[0](n=0) render:broken[1](n=0) len-log:ghosted(n=large) minus:rent(negative money)
+  ok   a module's plea for a longer line is held to 150 characters   168 characters (limit 150)
+  ok   without --strict the same report exits 0
+  ok   --only limits the report to those rules
+  ok   a missing copy folder is not an error by default, and is one under --strict
+lint-rng
+  ok   the passing tree passes (comments, strings, the rest of Math and JSX text are not offences)   LINT-RNG OK: 5 files under test/lint-fixtures/rng-pass (1 may read Math.random), 0 offenders
+  ok   the failing tree fails
+  ok   exactly the 19 marked lines are reported, each with its rule   reported 19
+  ok   the game's own source is clean today   LINT-RNG OK: 86 files under src (1 may read Math.random), 0 offenders
+lint-css
+  ok   the passing stylesheets pass under --strict   {"hex":0,"gradient":0,"text-shadow":0,"glow":0,"font-size":0,"media":0}
+  ok   the failing stylesheets fail under --strict
+  ok   every rule fires, with exactly the planted number of findings   {"hex":2,"gradient":1,"text-shadow":1,"glow":2,"font-size":5,"media":4}
+  ok   literals in an allowlisted file are not findings; font sizes and media queries there are
+  ok   without --strict the same report exits 0
+  ok   the game's own stylesheets get a report, not an error   LINT-CSS OK: 0 findings
+
+LINT SELFTEST OK: 20/20 checks held
+save-compatibility selftest: the baseline against a baseline that loads saves wrongly; each must be caught
+
+  ok   load-prefers-autosave    the Load button reads the autosave before the manual save
+         caught by ck-revoked-card / Load button: [state] 24 field(s) differ (week)
+  ok   legacy-keys-ignored      the v4-2 storage keys are no longer read
+         caught by legacy-v42-keys-only / page load: [state] 20 field(s) differ (week)
+  ok   legacy-keys-swapped      the v4-2 autosave is preferred over the v4-2 manual save
+         caught by legacy-v42-keys-only / page load: [state] 4 field(s) differ (week)
+  ok   quota-kept               an old save keeps its own quota instead of the current one
+         caught by legacy-v42-keys-only / page load: [state] 1 field(s) differ (quota)
+  ok   claink-not-sanitised     the clAInk part of a save is taken as it is
+         caught by legacy-missing-optional-fields / page load: [state] 1 field(s) differ (claink.status)
+  ok   rugged-not-revoked       v1.19's "rugged" seat is read as cancelled, not revoked
+         caught by legacy-v119-rugged / page load: [state] 1 field(s) differ (claink.status)
+  ok   prototype-not-mapped     the v1.16 prototype's {active, runs, ...} shape is read as a fresh ad
+         caught by legacy-v116-claink-prototype / page load: [state] 3 field(s) differ (claink.status)
+  ok   stale-ad-kept            an ad saved before the week-3 deadline existed stays up past it
+         caught by legacy-ad-past-week-3 / page load: [state] 1 field(s) differ (claink.status)
+  ok   card-not-hidden          a closed end card comes back after a load
+         caught by ck-revoked-hidden / page load: [state] 1 field(s) differ (claink.hidden)
+  ok   legacy-cause-lost        a pre-v1.15 "org update" firing is no longer recognised from its log line
+         caught by legacy-no-endcause-org / Load button: [scenario] scenario legacy-no-endcause-org: expected B to ask the announcer for "firedOrg"; its sound intents: play:click play:load play:stingerFired say:fired p
+  ok   ending-unrecognisable    a firing opens a dialog that is not the "fired" ending
+         caught by end-org / page load: [dialog] open dialog: A end:fired (1 options), B unknown:Let go 💼 (1 options)
+  ok   report-not-drawn         a loaded seat does not show its last run report (the state is right, the screen is not)
+         caught by ck-report-miracle / page load: [scenario] ck-report-miracle / page load (on load): expected clAInk dock workspace+report, B shows workspace
+  ok   error-on-load            loading a save logs a console error
+         caught by fresh / page load: [trouble] B console.error: merge: unexpected shape
+
+SAVES SELFTEST OK: 13 mutants, 32.7 s
+layout selftest on dist-test/index.html: each check on an untouched page, then on the same page broken on purpose
+
+  ok   page-no-scroll         a 3000px block is added to the page (midrun at 1920x1080)
+         reported: the page scrolls inside <body>: 4080px of content in a 1080px box
+  ok   controls-in-viewport   End Week is pushed 3000px down (midrun at 1920x1080)
+         reported: end: outside the viewport (box 993.4,4015 to 1125.4,4051; viewport 1920x1080)
+  ok   log-not-covered        a box is laid over half of the activity log (midrun at 1920x1080)
+         reported: 18 of 36 points are under <div>
+  ok   deals-not-covered      a box is laid over half of the deal list (midrun at 1920x1080)
+         reported: 18 of 36 points are under <div>
+  ok   dialog-in-viewport     the open dialog is shifted most of a screen to the right (rules at 1920x1080)
+         reported: <dialog.help> “How it worksThe quarterThe goal.…” is outside the viewport (box 1824,56 to 2784,1024; viewport 1920x1080)
+  ok   text-not-clipped       the first action is squeezed to 50px with its overflow hidden (midrun at 1920x1080)
+         reported: “Prospect blitz” in <span.title> is cut off by <span.title> “Prospect blitz” (98.5px)
+  ok   min-font               End Week is set in 5px type (enforced minimum: 6px) (midrun at 1920x1080)
+         reported: 5px <button.btn.primary> “End week” (1 text node)
+  ok   no-infinite-animation  End Week is given a pulse that never stops (midrun at 1920x1080)
+         reported: a script animation on <button.btn.primary> never stops
+  ok   dock-whole             clAInk's ad is given a 220px dock (fresh-ad at 1920x1080)
+         reported: the ad is 441px tall in a 219px dock: part of it is scrolled out of sight
+  ok   dock-fair              clAInk's workspace is allowed 68% of the column beside a full board (ck-report at 1280x720)
+         reported: clAInk's window may be 439.3px tall, and 297.2px is all there is for it (the deal list needs 258.4px and the log 104px of this 646px column)
+  ok   dock-fair              clAInk's workspace is held to its own share on an early board (ck-early at 1366x768)
+         reported: clAInk's window may be only 319.2px tall, and there is 405px for it (the deal list needs 160px and the log 129px of this 694px column)
+  ok   dock-fair              clAInk's ad is held to 58% of the column beside an empty board (fresh-ad at 1280x720)
+         reported: clAInk's window may be only 374.7px tall, and there is 439.3px for it (the deal list needs 74px and the log 104px of this 646px column)
+  ok   dock-fair              clAInk's ad is allowed 68% of the column beside ten deals (ad-board at 1366x768)
+         reported: clAInk's ad may be 471.9px tall; its plainest layout needs 337px and there is 312.4px to spare (the deal list needs 277.6px and the log 104px of this 694px column)
+  ok   dock-question-seen     the workspace is scrolled back to its top while it asks about the seat (ck-cancel at 1280x720)
+         reported: the cancel question runs 518.9px below the fold of clAInk's window
+  ok   mobile-no-hscroll      a 900px-wide block is added to the page (midrun at 390x844)
+         reported: the page is 900px wide on a 390px screen
+  ok   mobile-end-reachable   a fixed sheet is laid over the whole screen (midrun at 390x844)
+         reported: scrolled to center: it is under <div>
+
+LAYOUT SELFTEST OK: 16 checks, 29.3 s
+keyboard selftest on dist-test/index.html: the journey on an untouched page, then on the same page broken on purpose
+  untouched page: 8/8 stages, findings: none
+
+  ok   End Week is taken out of the tab order
+         reported: journey@week  could not reach end with Shift+Tab: 90 presses went through <button.action> “Prospect blitz30 energy”, <button.iconbtn> “Settings”, <button.iconbtn> “
+  ok   the first action gives focus away as soon as it gets it
+         reported: focus-lost@week  Shift+Tab from <button.action> “Email cadence18 energy” left focus on <body>
+  ok   the first action has its focus outline removed
+         reported: no-focus-ring@week  <button.action> “Prospect blitz30 energy” shows nothing when it has focus
+  ok   the Rules dialog cannot be closed with Escape
+         reported: journey@rules  Escape does not close the Rules
+  ok   an action is made to act again on every auto-repeat
+         reported: held-key@enter-on-action  holding Enter on an action made it act 3 times
+
+KEYBOARD SELFTEST OK: 5 breakages, 12.6 s
+exit 0

@@ -1,0 +1,75 @@
+$ python3 qa/2.1.1/tools/hygiene.py Tech_Sales_Trail_2.1.1.html
+Tech_Sales_Trail_2.1.1.html: 568,319 bytes, sha256 7d4e1e8a05bcb2f01a6829fecce28c4d762088b7b401acc2dce2845d2c60c3d4
+
+URLs anywhere in the file (distinct, with count): 5
+   1x https://github.com/JetBrains/JetBrainsMono
+   1x https://github.com/rsms/inter
+   1x https://openfontlicense.org
+   1x https://opensource.org/license/isc-license-txt
+   1x https://opensource.org/license/mit,
+
+ways to reach the network (pattern: occurrences): 13
+   \bfetch\s*\(: 0
+   XMLHttpRequest: 0
+   WebSocket: 0
+   EventSource: 0
+   sendBeacon: 0
+   importScripts: 0
+   <script[^>]+src=: 0
+   <link[^>]+href=[\"']?https?:: 0
+   <img[^>]+src=[\"']?https?:: 0
+   @import\s+url: 0
+   url\(\s*[\"']?https?:: 0
+   navigator\.serviceWorker: 0
+   \.src\s*=\s*[\"']https?:: 0
+
+test hooks and developer handles (name: occurrences): 4
+   TST_AUDIO: 4
+   TST_SCENES: 5
+   TST_TOAST: 5
+   __REACT_DEVTOOLS_GLOBAL_HOOK__: 5
+
+console calls (method: occurrences): 2
+   console.error: 5
+   console.is: 3
+
+debugger statements / source maps: 0
+
+e-mail addresses: 0
+
+local paths and hosts: 0
+
+notes to self: 0
+
+things shaped like credentials: 0
+
+storage keys the game uses: 27
+   tst-audio-v1
+   tst-autosave-v4-2
+   tst-autosave-v4-3
+   tst-autosave-v5
+   tst-band
+   tst-booted
+   tst-booting
+   tst-cam
+   tst-cam-win
+   tst-card-w
+   tst-claink-ui
+   tst-crt-off
+   tst-crt-on
+   tst-fx
+   tst-glitch
+   tst-impact
+   tst-lb
+   tst-live
+   tst-onboarded-v2
+   tst-pending-v2
+   tst-save-v4-2
+   tst-save-v4-3
+   tst-save-v5
+   tst-set-aside-v5
+   tst-shake
+   tst-slash
+   tst-toast
+
+the studio's statement, word for word, is in the file: True

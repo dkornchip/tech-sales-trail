@@ -1,0 +1,19 @@
+$ node qa/2.1.1/tools/v5-compat.cjs Tech_Sales_Trail_2.1.html Tech_Sales_Trail_2.1.1.html . 8
+  ok    session 1 (6 presses in 2.1, week 2, 8 deals, clAInk ad): opens in 2.1.1 as the same run  (cash −$200 -> −$200, closed $0, 0% -> $0, 0%, 8 deal rows, schema 5, keys tst-autosave-v5,tst-save-v5)
+  ok    session 1: one more press in 2.1.1 is taken and saved  (week 2 -> 3, log 9 -> 13 lines)
+  ok    session 2 (15 presses in 2.1, week 4, 10 deals, clAInk expired): opens in 2.1.1 as the same run  (cash $2,600 -> $2,600, closed $0, 0% -> $0, 0%, 10 deal rows, schema 5, keys tst-autosave-v5,tst-save-v5)
+  ok    session 2: one more press in 2.1.1 is taken and saved  (week 4 -> 5, log 29 -> 34 lines)
+  ok    session 3 (24 presses in 2.1, week 6, 17 deals, clAInk expired): opens in 2.1.1 as the same run  (cash $3,000 -> $3,000, closed $0, 0% -> $0, 0%, 17 deal rows, schema 5, keys tst-autosave-v5,tst-save-v5)
+  ok    session 3: one more press in 2.1.1 is taken and saved  (week 6 -> 7, log 46 -> 53 lines)
+  ok    session 4 (33 presses in 2.1, week 8, 23 deals, clAInk expired, dialog end:fired open): opens in 2.1.1 as the same run  (cash $3,600 -> $3,600, closed $0, 0% -> $0, 0%, 23 deal rows, schema 5, keys tst-autosave-v5,tst-save-v5)
+  ok    session 4: the run had ended in 2.1; 2.1.1 shows the same ending and offers a new run  (end:fired: Skip to the end / New run)
+  ok    session 5 (25 presses in 2.1, week 6, 15 deals, clAInk expired, dialog end:fired open): opens in 2.1.1 as the same run  (cash $4,000 -> $4,000, closed $0, 0% -> $0, 0%, 15 deal rows, schema 5, keys tst-autosave-v5,tst-save-v5)
+  ok    session 5: the run had ended in 2.1; 2.1.1 shows the same ending and offers a new run  (end:fired: Skip to the end / New run)
+  ok    session 6 (47 presses in 2.1, week 11, 19 deals, clAInk expired, dialog end:fired open): opens in 2.1.1 as the same run  (cash $5,800 -> $5,800, closed $0, 0% -> $0, 0%, 19 deal rows, schema 5, keys tst-autosave-v5,tst-save-v5)
+  ok    session 6: the run had ended in 2.1; 2.1.1 shows the same ending and offers a new run  (end:fired: Skip to the end / New run)
+  ok    session 7 (33 presses in 2.1, week 7, 14 deals, clAInk expired, dialog end:fired open): opens in 2.1.1 as the same run  (cash $4,200 -> $4,200, closed $0, 0% -> $0, 0%, 14 deal rows, schema 5, keys tst-autosave-v5,tst-save-v5)
+  ok    session 7: the run had ended in 2.1; 2.1.1 shows the same ending and offers a new run  (end:fired: Skip to the end / New run)
+  ok    session 8 (35 presses in 2.1, week 8, 17 deals, clAInk expired, dialog end:fired open): opens in 2.1.1 as the same run  (cash $5,200 -> $5,200, closed $0, 0% -> $0, 0%, 17 deal rows, schema 5, keys tst-autosave-v5,tst-save-v5)
+  ok    session 8: the run had ended in 2.1; 2.1.1 shows the same ending and offers a new run  (end:fired: Skip to the end / New run)
+
+V5 COMPAT OK: all 16 checks passed

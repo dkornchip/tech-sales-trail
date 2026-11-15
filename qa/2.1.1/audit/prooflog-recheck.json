@@ -1,0 +1,92 @@
+{
+ "verdicts": [
+  {
+   "title": "After a clAInk run that worked, the announcer speaks and captions the failure quip under the manager's dialog",
+   "reproduced": true,
+   "real": true,
+   "intended": false,
+   "worth_doing": "marginal",
+   "why": "Reproduced on my own seed in the frozen release build (claink seed 9, week 1; test-results/audit/check-prooflog/warning.cjs, w-miracle.png, w-miracle-dialog.png): the dialog 'Writing development opportunity' carries 'PA Always on ChatGDP, huh?' above the body '“Nice week. ChatGDP do that? Enjoy it. …”', and the speech engine is handed 'Always on Chat GDP, huh?'. Control after a failed run (claink seed 2, week 3; w-fail.png): same spoken line, no caption. 62 of 268 first warnings (23%) in 600 clAInk-policy quarters follow a run that worked. But 'defect' and 'real disagreement' overstate it. Nothing false is said (he is commenting on ChatGDP either way); 'chatgdp' has exactly one approved line in copydeck section 9 and has been this dialog's announcer line since v1.21 (tagmap.js:62, 'v1.21: the warning'), when the dialog's own title was 'Always on ChatGDP?' for both outcomes (CHANGELOG.md:188-189). The deck sentence the auditor quotes ('These must match modal and actual event', section 10) is about the workspace strings Oo.warnPing/warnSay, and those do match. What is actually off is smaller: the dialog's own rule for not showing the manager's line twice (src/ui/primitives.jsx:48-50, 'the manager's warning is his line already') only works for one of the dialog's two bodies, so about one first warning in four shows a PA caption quoting his other opening. Once per run at most, clAInk buyers only, not misleading. No document records it as a decision.",
+   "smallest_fix": "Leave alone; or, if the dialog should look the same after either kind of run, one condition in src/ui/primitives.jsx (Modal, the `cap` line at :50): do not draw a caption whose key is \"chatgdp\" in the dialog \"ck:warning\" (what already happens after a failed run). No copy change, no audio change. If the spoken line must go as well: pass shown.params from src/ui/Game.jsx:170 to onModal in src/engine/audio/director.js and skip say() when params.miracle (two lines, the auditor's 'smaller still'). Not the new LINES.chatgdpNice key.",
+   "regression_risk": "Modal's caption rule serves every dialog, so the condition must name both the key and the dialog id; test/e2e/firstday.cjs:83-86 (welcome caption under the memo) is the only test that reads .d-cap. The auditor's main proposal is out of proportion: a 40th announcer line the deck's section 9 does not have (needs the editor), a key list to extend in test/parity/lib/census.cjs:197, and four source files touched."
+  },
+  {
+   "title": "Stat chips break in the middle of a chip, and the wrapped row loses its alignment",
+   "reproduced": true,
+   "real": true,
+   "intended": false,
+   "worth_doing": "yes",
+   "why": "Reproduced by pressing Internal politics in the release build at 1366x768 (pol-1366-activity.png) and by my own measurement at 18 sizes (test-results/audit/check-prooflog/wraps.cjs on a save holding one real line for each of the widest chip rows; chips-act-1280.png, nofix-act-1366.png). The log row is 474px at 1366 and 440px at 1280; the politics chips need about 499px, so '… −4 reputation · +3' / 'product' at every width I tried from 1100 to 1420 (fits from 1440; at 1024 and below the single column gives 942px). Conference with its bonus and the security disclosure break at 1366 too ('this' / 'week', 'for 2' / 'weeks'); the security spin joins at 1280. The broken row starts flush left while every one-row chip line sits flush right. Phones: 7 to 9 of the 15 widest rows break inside a chip; at 320, 360 and 414 a row starts with the separator. Reach: every Internal politics line (143 of 143 in 420 core-policy quarters), about 0.6 broken rows a quarter at 1366 and 1.1 at 1280 for the bots, every lunch for a player who uses the action. It survived because the size matrix opens 1440x900 and 1024x768, the two desktop sizes where the rows happen to fit, and layout.cjs (which does open 1366 and 1280) only looks for overflow. The studio already holds this standard elsewhere: CHANGELOG.md:75 'A cost breaks after its dot, not before it', implemented at src/ui/app/ActionGrid.jsx:41-46.",
+   "smallest_fix": "In markup, not in the stored text: in src/ui/app/Activity.jsx:12 and src/ui/app/LogPeek.jsx:100 draw e.dl as one span per chip (split on \" · \", the dot kept with the chip before it, a plain space between spans: the pattern ActionGrid.jsx:41-46 already uses for costs); in src/styles/app.css:156 add text-align:right to .line .deltas, plus .line .deltas .seg{display:inline-block}. Leave src/copy/log.js and the saved dl alone, and skip the optional text-wrap:pretty (browser-dependent, not needed).",
+   "regression_risk": "Tried in the page only (wrapfix.cjs, no file changed) at 17 sizes from 320x568 to 1920x1080: no chip broken inside, no row starting with a separator, nothing overflows, page width unchanged, every wrapped row flush right, and each row's textContent identical to before (so test/e2e/resilience.cjs:329, screen readers and saves see the same text); pictures fix-act-1366.png and fix-390x844.png. What can move: the DOM inside .deltas, so layout.cjs, matrix.cjs and phone.cjs need a run; text-align also applies in the phone peek. The auditor's first variant (U+00A0 inside the dl strings) is the riskier one: it changes stored text and golden 'full' digests, needs the lint and plain() helpers taught about the character, and would not fix lines already in a save."
+  },
+  {
+   "title": "A single referral is described as “One of them”",
+   "reproduced": true,
+   "real": true,
+   "intended": false,
+   "worth_doing": "yes",
+   "why": "Rendered in the release build from my own run (balanced seed 54, week 1): 'Referrals: 1 introduction. One of them is a whale.' (test-results/audit/check-prooflog/whale1.png). In 1,100 quarters (count-misc.mjs): 149 of 491 suffixed referral lines have one introduction (30%; 4.5% of all 3,310 referral lines, roughly one quarter in eight), including 43 of 144 whale lines, the line the announcer also marks. src/game/actions.js:120 rolls 1 or 2 introductions and src/copy/log.js:105 appends the suffix whatever n is. It is a number-agreement slip on the game's best referral news; the deck's own rule is 'Use zero/one/many forms' (section 1), and the studio has already rendered a deck template with a real plural and recorded it as typeset (TTST_2.1_QA_REPORT.md:497, 'more outcome(s)'). It passed the gates because nothing renders this case: test/copy/render.mjs:5 always uses size \"\", and lint.params[\"LOG.act.network\"] (log.js:43) has n: 1 only with size \"\". No document records it as deliberate.",
+   "smallest_fix": "src/copy/log.js:105: when p.n === 1 the suffix reads \" It is a whale.\" / \" It is substantial.\"; two introductions keep the approved sentences. Add { n: 1, size: \"whale\" } and { n: 1, size: \"big\" } to lint.params[\"LOG.act.network\"] (log.js:43) so the lint renders the case. The two singular forms are new words (three and four of them) and want the editor's nod.",
+   "regression_risk": "Words only. 10 of the 58 golden replays contain such a line (golden-touch.mjs: balanced#13, referral#11/15/16, risk#12/13/14, claink#14/15, mgr-farm#22), so their 'full' digests in test/engine/golden/replay.json need TST_GOLDEN=update; 'mech' must not move. The line has no variants, so nothing after it is re-chosen. No test asserts the text (grepped); the coverage gate reads only the message cell of deck section 4 and the plural sentences are still rendered. Old saves keep the old line; the sonar and the announcer read params.size."
+  },
+  {
+   "title": "“1 of your largest deal”",
+   "reproduced": true,
+   "real": true,
+   "intended": false,
+   "worth_doing": "yes",
+   "why": "Rendered in the release build from my own run (hail-only seed 96, week 4): 'Territory optimization: 1 of your largest deal, $33,247, reassigned.' (test-results/audit/check-prooflog/reb1.png). src/game/events.js:141-150 takes up to two deals, so n is 1 only when one deal is all there is, with manager under 35. Rare: 3 of 47 rebalance lines, 3 of 1,100 quarters, all in the hail-only probe; none in the seven core policies. It is a literal reading of the deck's template '{n} of your largest {deal/deals}' and is not English. I rate it yes despite the rarity because it is an unambiguous grammatical error on a red bad-news line and the fix is one word that moves nothing else; if log.js is opened for the referral line, this is the next line but 76. Downgrade to marginal if the pass is to touch only what most players will see.",
+   "smallest_fix": "src/copy/log.js:181: `${p.n} of your largest deals, ${usd(p.value)}, reassigned.` (drop the singular branch; '2 of your largest deals' is unchanged). qbr.reassigned ('reassigned 1 deal worth …') is correct and stays.",
+   "regression_risk": "None found. 0 of the 58 golden replays contain the line with n = 1 (golden-touch.mjs), so replay.json does not move; no test asserts the text; the deck's {deal/deals} placeholder matches either word in scripts/copy-coverage.mjs; no lint rule objects to '1 of your largest deals'."
+  },
+  {
+   "title": "Avoiding a repeat always lands on the first alternative, so its joke returns every other time",
+   "reproduced": true,
+   "real": true,
+   "intended": false,
+   "worth_doing": "no",
+   "why": "The mechanism is as described (src/copy/engine.js:56 with mostly() in log.js:23: from any of the three plain slots the walk reaches A before B) and my counts agree: pay.salary 41.7% plain, 36.4% 'HR has confirmed your continued existence', 21.9% 'Payroll cleared.' over 11,577 Fridays; the HR line 4.77 times in 13 Fridays, 60% of its gaps exactly two weeks (count-misc.mjs, count-repeat.mjs). But this is the method the deck allowed ('If exact weights are costly, use existing deterministic arrays and include base multiple times, with explicit nonrepeat check based on resolved text', section 5), and the studio's own test already accepts what it costs the plain line ('avoiding an immediate repeat takes some of that back', plain share asserted between 0.40 and 0.66, test/engine/copy.test.mjs:101-102). The proposed change does not bring the plain line back toward 60% (42.7%); it only moves about one HR line a quarter over to 'Payroll cleared.' (4.8 to 3.8 of 13). No player can perceive that, and the price is every seeded run reading differently. A preference about distribution, below the bar. The skew toward A itself is not recorded anywhere as a decision.",
+   "smallest_fix": "leave alone",
+   "regression_risk": "If done anyway: every run is reworded from its first avoided repeat on, so all 58 golden 'full' digests, the QA report's rendering counts and any kept transcript change, and it edits the variant engine that copy.test.mjs pins."
+  },
+  {
+   "title": "“Exceptional nap” is the usual nap",
+   "reproduced": true,
+   "real": false,
+   "intended": true,
+   "worth_doing": "no",
+   "why": "The count is right: 7,173 of 10,189 recharge lines (70.4%) in my 1,100 quarters carry the suffix, because src/game/actions.js:149 mentions the bonus from 0.15 of a 0 to 0.5 roll. But nothing is wrong. The approved copydeck sets both the word and the condition: section 4, row act.recharge, 'Took a break.{napSuffix} | `nap` positive: “ Exceptional nap (+{nap}%).”'; the game is already stricter than 'positive' (from +15%). The adjective is the house joke stated in the deck's first rule, 'an absolutely ordinary corporation run by people who think it is exceptional'. The number in brackets is true and is the only thing that explains why the energy chip reads +43 instead of +35; a cut at 35 would hide a real bonus on four recharges in ten. The hint's 'A rare great nap approves a trip' is about the separate 20% trip roll, which has its own line. Word-choice preference against approved copy.",
+   "smallest_fix": "leave alone",
+   "regression_risk": "If done anyway: departs from the deck's stated condition (needs the editor), hides true information from the line, and rewords 47 of the 58 golden replays."
+  },
+  {
+   "title": "The no-repeat check is blind when only an account name or a source label differs",
+   "reproduced": true,
+   "real": true,
+   "intended": true,
+   "worth_doing": "no",
+   "why": "Confirmed in src/game/log.js:36 (lastText is the previous line's whole sentence) and by count: 170 of 1,987 consecutive close.nobody pairs (8.6%) have the same wording under another label, 138 of them the plain line; 38 same-Friday ghost pairs share a template in 1,100 quarters (count-repeat.mjs). But this is the check the deck specified: 'avoid consecutive duplicate … with explicit nonrepeat check based on resolved text' (section 5), and the promise the documents make, 'never repeat twice running' for the same sentence (CHANGELOG.md:29 and :104, QA report row E copy), holds. For close.nobody the 'repeat' is mostly the base row, which is meant to be the usual line, and the two are normally lines or weeks apart (my first four examples: weeks 6 and 12, 11 and 13, 8 and 9, 6 and 9). Two accounts going quiet on one Friday in the same words reads as a list. A stronger promise than anyone made, for a negligible gain.",
+   "smallest_fix": "leave alone",
+   "regression_risk": "If done anyway: a change in src/game/log.js (or render()'s contract) that rewords most seeded runs, so the golden 'full' digests regenerate wholesale; it would also start rotating the plain close.nobody line away more often, moving it further from the deck's 60%."
+  },
+  {
+   "title": "The last Friday still quotes next week's signing odds",
+   "reproduced": true,
+   "real": true,
+   "intended": false,
+   "worth_doing": "no",
+   "why": "Confirmed: 407 of 437 completed quarters (93%) write a week-13 line whose chip ends 'next week'; src/game/week.js:49-52 runs before the QBR at :126. Played in the release build (balanced seed 3, final End Week; test-results/audit/check-prooflog/final-1440.png): 'Parts of your funnel have been declared a nature reserve. −6 pp signing odds next week' sits four lines above the verdict, dimmed behind an ending dialog whose only button is New run. The chip is true to what the rules did (the effect is recorded and never used). The auditor's own advice is to leave it; I agree.",
+   "smallest_fix": "leave alone",
+   "regression_risk": "If done anyway: rewords 23 of the 58 golden replays for a line nobody reads, and makes four lines week-aware for no other reason."
+  }
+ ],
+ "missed": [
+  {
+   "title": "With reduced motion, the ending's announcer line never reaches the ending dialog; on a phone it is not shown anywhere",
+   "where": "src/engine/scenes/player.js:368-372 with :234 (under reduced motion the scene runs its cues at once, including the say cue, as it mounts); src/ui/primitives.jsx:46-51 (Modal takes `since` in an effect that runs after that, so the line is not counted as the dialog's); src/styles/app.css:252 (on touch screens .pa-cap is hidden while any dialog is open, 'a dialog shows the announcer's line itself').",
+   "evidence": "Frozen release build, the final End Week of two real runs (balanced seed 3, missed; idle seed 1, fired), four passes each: test-results/audit/check-prooflog/endcap.cjs with save-final.json and save-fired.json. Motion on, 1440x900 and 390x844 touch: 'PA Badge access renewed. Forecast call, Monday.' and 'HR Thank you for joining us. Today is your last day.' appear under the ending's title once the scene reaches them (endcap-390x844-motion.png). prefers-reduced-motion, 1440x900: the line is drawn in the top bar behind the dialog's backdrop for about five seconds and never in the dialog (final-1440.png, top centre, dimmed). prefers-reduced-motion, 390x844 touch: the caption element is visibility:hidden for its whole life (measured at +0.6 s, +1.5 s and +3 s, gone by +6 s) and the dialog shows an empty row between 'Terminated' and the summary where HR's line goes (endcap-390x844-reduced.png). So a player with reduced motion and no voice (sound off, announcer off, or a browser without speech) never gets HR's line, against CHANGELOG.md:126: 'Every line the office announcer or HR gets to say is shown on screen: in the top bar on the main screen, under the title of whatever dialog is open. With the sound off, the caption is the announcement.' The QA report's reduced-motion check (TTST_2.1_QA_REPORT.md:389) looked at the description and the card, not the caption. The outcome itself is still stated by the dialog's title and summary, so this is a lost line, not a lost result.",
+   "proposal": "Smallest candidates, both needing the caption tests re-run (test/e2e/firstday.cjs, confirm.cjs, the matrix's reduced-motion endings): in src/engine/scenes/player.js, hand the still scene's say cue over one tick later, so it arrives once the dialog is open and is drawn under its title like any other line; or in Modal, take `since` when the dialog first renders open instead of in the later effect (the top bar must then stay quiet for that line). It touches caption routing shared by every dialog and sits on the border with the endings audit, so if that is more than this pass allows, record it as a known limitation for reduced-motion players rather than leave it unlisted."
+  }
+ ]
+}

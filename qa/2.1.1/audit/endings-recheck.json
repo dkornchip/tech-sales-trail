@@ -1,0 +1,98 @@
+{
+ "verdicts": [
+  {
+   "title": "Barely missed: the cutscene rounds the share of quota up (it can say QUOTA 100%), the card floors it",
+   "reproduced": true,
+   "real": true,
+   "intended": false,
+   "worth_doing": "yes",
+   "why": "Could not refute. Release build, finished run at $159,600 (99.75%): the bar reads 'QUOTA 100%' over a blinking STALLED, beside the '| 100%' goal marker, on an ending titled Barely missed; on the finished card the shop sign '100% OFF' sits directly above the tile '99% of quota' (test-results/audit/check-endings/f1-bar-159600.png, f1-card-159600.png). $159,200: 100 against 99. $151,200: 95 against 94. $112,800: 71 against 70. $151,199 and $152,000 agree. Over every dollar from $112,000 to $159,999 the two disagree for 24,000 of 48,000 amounts and 800 of them say 100% (recomputed in node). Closed totals are arbitrary dollars (the golden replays hold totals like 103,141), so about half of all Barely missed endings show two different numbers side by side. Not intended: CHANGELOG.md:15 says 'Percentages are floored.' and the log's own line floors too (src/game/quarter.js:23, 'Q1 final: 99% of quota.'). I applied the proposed change to a scratch copy of the frozen build (check-endings/patched-release.html): bar, sign and tile then agree in all seven cases tried (99/99/99, 94/94/94, 70/70/70, 95/95/95).",
+   "smallest_fix": "src/ui/Game.jsx:199, in meta: pct: s.quota>0 ? Math.floor(100*s.closedWon/s.quota)/100 : 0. Do not change Math.round in src/engine/scenes/defs/missed.js.",
+   "regression_risk": "The number in the Barely missed scene drops by one for half of such runs, and the stalled bar is one cell (of 40) shorter for 10% of amounts (4,800 of 48,000: shares just above a 2.5% step with a fraction of .5 or more); the auditor only mentioned the 99% case. Only missed.js reads meta.pct. The scene gate feeds its own meta (test/parity/scenes.cjs:54-56) and its frozen frames for 'missed: 99.9%' say 100%, which is why the fix belongs in the interface and not in the engine. No test reads the scene's number by play; no copy string, save field or seeded behaviour is involved."
+  },
+  {
+   "title": "Ascension: the card's quad-shot count leaves out the shot that ended the run",
+   "reproduced": true,
+   "real": true,
+   "intended": false,
+   "worth_doing": "yes",
+   "why": "Could not refute. Test build, three quad shots in week 4 with the third heart roll scripted to fail: the scene's caption says 'Shot #3', the log says 'Quad shot #3. Your departure velocity exceeded expectations.', the chip behind the dialog says '3 quad shots', and the card's tile says 'Quad shots 2' (test-results/audit/check-endings/f2-A.png; saved run: coffeesThisWeek 3, story.n.shots 2). Four shots on file plus two more, the second fatal: the note reads '5 quad shots. Facilities unplugged the machine.' after six. A certain first shot with nothing signed shows no Quad shots tile at all. Cause as described: src/game/actions.js:167-171 logs end.ascension and returns before coffee.shot, the only tag src/game/story.js:8 counts. Scope is narrower than 'every Ascension': the tile shows only while no deal has been signed (Largest deal takes its place otherwise, src/ui/Ending.jsx:22-28) and the note only from 5. But the no-deal Ascension is the one a curious new player finds by pressing Quad shot three times in week 1, and there the card contradicts the caption above it. Nothing in the copydeck (section 11, 'Quad shots' label and the shots.ascension row) or the changelog records leaving the fatal shot out. On a scratch copy of the frozen test build with the proposed line: 'Quad shots 3', '6 quad shots. Facilities unplugged the machine.', 'Quad shots 1'; the saved story is unchanged (2, 5, 0).",
+   "smallest_fix": "src/game/selectors.js:84: shots: st ? (st.n.shots || 0) + (s.endCause === \"caffeine\" ? 1 : 0) : null (leave hails, lunches, cadences, lost on k()). Do not add end.ascension to COUNTS in src/game/story.js.",
+   "regression_risk": "Display only. On an Ascension the 'N quad shots' note appears one shot sooner (5 including the fatal one) and a first-shot Ascension with nothing signed gains 'Quad shots 1'. test/engine/actions.test.mjs:117 asserts story.n.shots in the state after three survivable shots and is unaffected; test/engine/rng.test.mjs:91 only checks runFacts draws no dice. The alternative in story.js changes saved state, so it would move the golden replay hashes (test/engine/golden/replay.json) and any state-for-state comparison with the frozen 2.1 engine. No copy string changes, so the copydeck gate is untouched."
+  },
+  {
+   "title": "1366x768: the finished card is taller than the window, so the scroll to the paperwork slices the first line or takes the title off screen",
+   "reproduced": true,
+   "real": true,
+   "intended": true,
+   "worth_doing": "marginal",
+   "why": "The measurements hold: release build at 1366x768 and 1024x768, finished runs with two notes: club, missed, repo and meltdown need 766px of 742 and are scrolled 24px with 'Week 13 of 13' and the announcer's line cut through; fired needs 787 (scrolled 45, title cut); Ascension 826 (scrolled 84, title gone, company line sliced) (test-results/audit/check-endings/f3-1366x768-club.png, f3-1366x768-ascension.png). It is a 2.1 side effect at this height: the frozen v2.0.1 baseline shows the same runs whole at 1366x768 (707px, no scroll); the 760px threshold dates from 2.0.1 (commit a90c949) and 2.1's verdict and distinctions outgrew it. But the mechanism is the recorded design, CHANGELOG.md:77: 'when the paperwork is out the dialog scrolls to it, so the notes are not left under the buttons', and it already cut the top of the dialog in the approved 2.0.1 wherever the window was shorter than the card: at 1366x657, which is what a 1366x768 laptop really gives a browser, 2.0.1 scrolled 37px and 2.1 scrolls 95 to 156px with the title off screen. The proposal changes nothing there; it helps only windows 760 to 859px tall. On a scratch copy with the threshold at 860: at 768 four cards show whole, fired is scrolled 6px (nothing cut), Ascension is still scrolled 45px with its title sliced; at 1440x820 all six are whole. Real but slight, partial, and it trades scene size for it.",
+   "smallest_fix": "Leave alone. If the 768px case is wanted back as in 2.0.1: src/ui/Ending.jsx:63, h>=760 ? 16 : 14 becomes h>=860 ? 16 : 14.",
+   "regression_risk": "Every window 760 to 859px tall and wider than about 700px gets the scene at 14px type (538px instead of 614px wide) for the whole ending, including windows from 790px where four of the six cards fit at 16px today. The brief's 1024x768 size changes its look; the committed QA pictures (1440x900, 768x1024, 390x844) do not. No test asserts the scene's type size (test/e2e/offline.cjs checks only that it fits). Upright phones are unchanged (9.2px at 390x844 on the patched copy)."
+  },
+  {
+   "title": "Quad-shot confirmation to Ascension: the dashboard flashes at full brightness between the two dialogs",
+   "reproduced": true,
+   "real": true,
+   "intended": false,
+   "worth_doing": "marginal",
+   "why": "Could not refute. Test build, 1366x768, every animation frame sampled after 'Drink it anyway', three runs: the confirmation with full dim at 4 ms, no dialog at 15 ms, the ending open at opacity 0 with no dim from 30 to 49 ms, dim 0.10 at 65 ms, 0.54 at 103 ms, full at 204 ms; less than half dimmed for 70 to 85 ms (5 or 6 frames). Screencast frames at 20 ms and 53 ms show the whole desk bright with no dialog (test-results/audit/check-endings/f4-coffee-00-20ms.jpg, f4-coffee-01-53ms.jpg). The first Hail Mary's confirmation into a meltdown does the same (6 frames). A plain End week only dims. It is a blink of about a tenth of a second on two paths, at the moment the run ends; nobody is misled and many will not see it. With the proposed rule injected into the frozen build the gap is one frame (14 ms) and the dim is back by 28 to 36 ms, as the auditor says.",
+   "smallest_fix": "src/styles/dialogs.css, after line 7: dialog.ending::backdrop{animation:none}",
+   "regression_risk": "On every ending the dim behind the dialog arrives at once instead of fading in over 0.16 s (the dialog itself still fades in); one undimmed frame remains. The rule carries no colour, size or media query, so the CSS lint has nothing to say. No test reads the backdrop."
+  },
+  {
+   "title": "Reduced motion: the ending opens already scrolled to its end, so on a phone or a 768px window the title and the company's line are never shown",
+   "reproduced": true,
+   "real": true,
+   "intended": false,
+   "worth_doing": "yes",
+   "why": "Could not refute, and it is wider than the title says. Release build with reduced motion, finished runs with two notes: 390x844 club scrolled 39px, missed 60, fired 81, Ascension 140; 375x667 208 to 309; 1366x768 51 to 131; and at 1366x657 (a 1366x768 laptop's real viewport) 123 to 203: the dialog opens with no 'Week 9 of 13', no 'Terminated', no company line or reason on file, and the still cut at the top (test-results/audit/check-endings/f5-375x667-fired.png, f5-1366x657-reduced-fired.png). With motion the same scroll comes only after the 7 to 9 s scene, with the title on screen meanwhile. It goes against the house rule in CHANGELOG.md:82, 'a dialog taller than the screen opens at its first line instead of scrolled down to its button' (asserted for the memo at test/e2e/phone.cjs:202); the QA report (section 4) only says the card is 'there at once'. On a scratch copy with the guard the ending opens at its first line at every size tried (patched-f5-375x667-fired.png), and with motion the scroll after the scene still happens (390x844: 13 to 73px).",
+   "smallest_fix": "src/ui/Ending.jsx:95 (the second of the two identical guards, in the scroll effect): if(!done || !over || !cardRef.current || REDUCED_MOTION)return; The 'or there is no scene engine' half of the proposal is not needed: the engine is always in the single file.",
+   "regression_risk": "With reduced motion the lower part of the paperwork starts under the pinned buttons in a small window: on a phone the footer has its edge; at 1366x768 the last note is cut by the footer (check-endings/fix5-1366x768-club.png); on a phone held sideways the still shows first with the verdict peeking under it. The matrix's reduced-motion checks (card in, description shown, New run pressable; test/e2e/matrix.cjs:197-203) do not read the scroll position, and phone.cjs's 'the paperwork is brought into view' runs with motion. On phones it uncovers the two lines the header keeps for the announcer's line, which stay empty under reduced motion (the next finding)."
+  },
+  {
+   "title": "Reduced motion: the announcer's ending line is captioned behind the dialog on a desktop and not at all on a phone",
+   "reproduced": true,
+   "real": true,
+   "intended": false,
+   "worth_doing": "marginal",
+   "why": "Could not refute. Release build, reduced motion, four endings at four sizes: the ending's header never shows the line. At 1366x768 and 1440x900 the top bar behind the backdrop shows 'PA President's Club. Please retain your boarding pass.' or 'HR As of today, your position with Shitcorp has ended.' (test-results/audit/check-endings/f5-1440x900-club.png); at 390x844 and 375x667 the same line sits in the bottom notice with visibility hidden and is never seen. Cause as described: the scene's effect fires the key cues before the Modal's effect has opened the dialog (src/ui/primitives.jsx:51-56, src/ui/captions.js:11). It falls short of CHANGELOG.md:126 ('Every line the office announcer or HR gets to say is shown on screen ... under the title of whatever dialog is open'), but nobody misses a line they never saw; it becomes a visible gap (two empty lines under the title on a phone) only once the previous finding is fixed. On a scratch copy with the cues one tick later the line is in the header at all four sizes, and the boot screen under reduced motion still boots with its own line and no errors (check-endings/boot-reduced.cjs).",
+   "smallest_fix": "src/engine/scenes/player.js:375: later(function(){ cues.forEach(function(cu){ if(cu.key) fire(cu); }); },0); Worth taking only together with the reduced-motion scroll guard; alone, leave alone.",
+   "regression_risk": "It is in the scene player, which the boot screen shares: under reduced motion the key sounds and the announcer's line fire one tick later. stop() clears the timer and the cues still come before onDone. No picture changes (the scene gate compares art), and no test exercises the still path (grep of test/)."
+  },
+  {
+   "title": "A small phone on its side (667x375): the card's numbers are cut with an ellipsis ('$171,3...')",
+   "reproduced": true,
+   "real": true,
+   "intended": false,
+   "worth_doing": "yes",
+   "why": "Could not refute, but the proposed rule cannot ship as written. Release build, 667x375 touch: tiles are 102px; '$171,300' needs 77px and has 70, '107% of quota' needs 88, 'Quasar Laundry' 98 (test-results/audit/check-endings/f7-667x375-club.png). So Closed is cut on every Club and Barely missed card (any total of $100,000 or more) and '% of quota' on every card that has four tiles, at one of the eight sizes of the QA matrix. CHANGELOG.md:75 says 'Nothing is cut off' and the QA report (section 4) 'no text in it is cut off sideways'; the matrix did not meet this because its check compares an element's box with its parent (an ellipsis inside the element's own box is invisible to it) and its fixtures have two tiles. 740x360 cuts only the account name. The rule as proposed fails the release gate: (max-width:800px) is not in the CSS lint's allowed set (scripts/lint-css.mjs:35-41); run on a scratch copy of dialogs.css it reports 'not allowed: (max-width:800px)' and exits 1. With (max-width:1024px), which is allowed, the lint passes and, injected into the frozen build, nothing is cut at 667x375, 844x390, 932x430 or 1024x500 (check-endings/f7b-844x390-1024rule.png).",
+   "smallest_fix": "src/styles/dialogs.css, after the sideways block (line 106): @media (max-height:600px) and (orientation:landscape) and (max-width:1024px){ .end-fact{flex:1 1 50%} .end-fact dd.end-sub{white-space:normal} }",
+   "regression_risk": "Every phone on its side (up to 1024px wide, not only up to 800) gets two rows of tiles: the card is 67px taller inside a body that already scrolls. After the scroll all four tiles are still in view from 667 to 1024px wide, except an Ascension with two notes and a distinction at 667x375 (the top row scrolls off, as it already does at 568x320). test/e2e/phone.cjs's sideways check (750x342, the end-club fixture) passes with the rule injected, and the matrix's fixtures have two tiles, which stay on one row. Upright phones and desktop windows are untouched."
+  },
+  {
+   "title": "Desktop: the announcer's caption from the move before the fatal one stays in the top bar behind the ending",
+   "reproduced": true,
+   "real": true,
+   "intended": false,
+   "worth_doing": "no",
+   "why": "It is there, and it does not matter. Test build, 1366x768: a CRM cleanup, then a conference at -$700: 'PA Pipeline hygiene is everyone's responsibility.' is still in the dimmed top bar 0.5, 1.5 and 3 s into Jacket repo'd, gone by 4.5 s, and the scene's own line is in the header by 6.5 s (test-results/audit/check-endings/f8-1366x768.png). At 390x844 it is hidden. It is dim, outside the dialog, says nothing false and expires by itself; the same thing happens behind any other dialog that opens within a few seconds of an announcement. The rule at src/styles/app.css:252 sits in the phone block on purpose: there the caption is a floating notice (CHANGELOG.md:76). Moving it would change every dialog on a desktop: a caption would vanish when the handbook or a Friday choice opens and pop back when it closes. Negligible improvement for a wider change.",
+   "smallest_fix": "leave alone",
+   "regression_risk": "None if left. If the rule were moved out of the phone block, captions on a desktop would hide under every dialog and reappear on close when their time is not up."
+  }
+ ],
+ "missed": [
+  {
+   "title": "Reduced motion: a second Enter after the Enter that ended the week starts a new run, so the ending is never seen and its autosave is overwritten",
+   "where": "src/ui/Ending.jsx:112-117 (with reduced motion New run is the only action and takes the focus; the 'Skip to the end' button that absorbs a stray key exists only with motion, as the comment at :81-82 intends) and src/ui/primitives.jsx:91 (the first action is focused)",
+   "evidence": "Frozen release and test builds, 1366x768, reduced motion, a run in week 13 over quota with the focus on End week: Enter opens President's Club with the card in and the focus on New run; a second, separate Enter 250, 400 or 600 ms later leaves no ending, the desk at Week 1, and an autosave with week 1 and $0 closed. No question is asked (the ending's own New run never asks). With motion the same second Enter only skips the scene: the ending stays and the save keeps week 13 and $171,300. Scripts: test-results/audit/check-endings/m1-double-enter.cjs and m1-double-enter-release.cjs. The auditor saw the focus and listed the double press under not_checked.",
+   "proposal": "In src/ui/Ending.jsx only: stamp the time the ending opens (a ref set in the effect keyed on `key`) and, under REDUCED_MOTION, ignore New run for the first 700 ms or so: onClick:()=>{ if(REDUCED_MOTION && performance.now()-openedAt.current<700)return; onNew(); }. Not tried in a build. Risk: a test that presses New run within 0.7 s of a reduced-motion ending opening (test/e2e/matrix.cjs only checks that it is pressable)."
+  },
+  {
+   "title": "844x390, a phone on its side: the two longest account names are cut on the Largest deal tile",
+   "where": "src/styles/dialogs.css:67 (nowrap with ellipsis) inside the sideways layout at :96-106; src/copy/names.js (Velvet Switchboard and Caffeine Cathedral, 18 characters)",
+   "evidence": "Frozen release build, 844x390 touch, a Club card whose largest deal is 'Velvet Switchboard': the name needs 119px and has 114; 'Caffeine Cathedral' needs 115 of 114. Both are whole at 932x430, 1440x900, 1024x768, 768x1024, 390x844 and 320x568 (test-results/audit/check-endings/longname.cjs). The auditor's 'nothing is cut at 844x390' was measured with shorter names (their longest was 14 characters).",
+   "proposal": "Nothing of its own: it is covered if the sideways tile rule from the 667x375 finding is written with (max-width:1024px), which the CSS lint requires anyway. Otherwise leave alone (2 of 57 names, by 1 to 5px)."
+  }
+ ]
+}

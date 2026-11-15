@@ -97,11 +97,13 @@ It runs these in order and stops at the first that fails.
   nine desktop sizes (two of them short: 1366×657 and 1280×620, a laptop with the browser's toolbars showing) and a
   phone, with nothing covered or cut off, clAInk's ad showing all of itself (on an empty board and beside ten
   deals), and clAInk's window taking only the room the deal list and the log do not need.
-- **actions** (`test/e2e/actions.cjs`, on the release build): what an action card says is what the press does.
+- **actions** (`test/e2e/actions.cjs`, on the release build): what the page says a press will do is what it does.
   Crafted boards are opened, the cards are read, the rules are asked about the same run, the card is pressed and
   the run the page saves is compared with the run before: the count of eligible deals, `skill only`, `no deals`, a
-  card that is off, a press that would end the run (marked, said, confirmed; "no" changes nothing), the hint after
-  a press, the change chips with reduced motion, and that no hint is taller than the hint bar.
+  card that is off, a press that would end the run (marked, said, confirmed; "no" changes nothing), a Friday that
+  would end it, the hint after a press, the change chips with reduced motion, the quota label at the lines that
+  decide the quarter, that no hint is taller than the hint bar, clAInk's workspace following a run to its result
+  and Friday's invoice being what was previewed, and an ending shown as it is with reduced motion.
 - **matrix** (`test/e2e/matrix.cjs`): eight screen sizes (1440×900 down to 320×568, a phone on its side, 200% zoom)
   × thirteen states (a new player's first screen, the main screen, clAInk's offer open and minimized, a Friday
   choice, a clAInk incident, the handbook, six endings), from `file://` with the network refused. `--shots <dir>`

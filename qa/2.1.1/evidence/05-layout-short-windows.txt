@@ -1,0 +1,470 @@
+$ node test/e2e/layout.cjs <the 2.1 test build> --viewport 1366x657,1280x620
+layout: (the 2.1 test build)
+
+page-no-scroll  1366x657  1280x620  390x844
+  fresh-ad      FAIL      FAIL
+  ad-board      FAIL      FAIL
+  midrun        FAIL      FAIL
+  board-24      FAIL      FAIL
+  ck-report     FAIL      FAIL
+  ck-early      FAIL      FAIL
+  ck-cancel     FAIL      FAIL
+  event-dialog  FAIL      FAIL
+  rules         FAIL      FAIL
+  ending        FAIL      FAIL
+
+controls-in-viewport  1366x657  1280x620  390x844
+  fresh-ad            FAIL      FAIL
+  ad-board            FAIL      FAIL
+  midrun              FAIL      FAIL
+  board-24            FAIL      FAIL
+  ck-report           FAIL      FAIL
+  ck-early            FAIL      FAIL
+  ck-cancel           FAIL      FAIL
+  event-dialog        FAIL      FAIL
+  rules               FAIL      FAIL
+  ending              FAIL      FAIL
+
+log-not-covered  1366x657  1280x620  390x844
+  fresh-ad       ok        ok
+  ad-board       ok        ok
+  midrun         ok        ok
+  board-24       ok        ok
+  ck-report      ok        ok
+  ck-early       ok        ok
+  ck-cancel      ok        ok
+  event-dialog   -         -
+  rules          -         -
+  ending         -         -
+
+deals-not-covered  1366x657  1280x620  390x844
+  fresh-ad         ok        ok
+  ad-board         ok        ok
+  midrun           ok        ok
+  board-24         ok        ok
+  ck-report        ok        ok
+  ck-early         ok        ok
+  ck-cancel        ok        ok
+  event-dialog     -         -
+  rules            -         -
+  ending           -         -
+
+dialog-in-viewport  1366x657  1280x620  390x844
+  fresh-ad          -         -
+  ad-board          -         -
+  midrun            -         -
+  board-24          -         -
+  ck-report         -         -
+  ck-early          -         -
+  ck-cancel         -         -
+  event-dialog      ok        ok
+  rules             ok        ok
+  ending            ok        ok
+
+text-not-clipped  1366x657  1280x620  390x844
+  fresh-ad        FAIL      FAIL
+  ad-board        FAIL      FAIL
+  midrun          FAIL      FAIL
+  board-24        FAIL      FAIL
+  ck-report       FAIL      FAIL
+  ck-early        FAIL      FAIL
+  ck-cancel       FAIL      FAIL
+  event-dialog    FAIL      FAIL
+  rules           FAIL      FAIL
+  ending          FAIL      FAIL
+
+min-font        1366x657  1280x620  390x844
+  fresh-ad      info      info
+  ad-board      info      info
+  midrun        info      info
+  board-24      info      info
+  ck-report     info      info
+  ck-early      info      info
+  ck-cancel     info      info
+  event-dialog  info      info
+  rules         info      info
+  ending        info      info
+
+no-infinite-animation  1366x657  1280x620  390x844
+  fresh-ad             ok        ok
+  ad-board             ok        ok
+  midrun               ok        ok
+  board-24             ok        ok
+  ck-report            ok        ok
+  ck-early             ok        ok
+  ck-cancel            ok        ok
+  event-dialog         ok        ok
+  rules                ok        ok
+  ending               ok        ok
+
+dock-whole      1366x657  1280x620  390x844
+  fresh-ad      ok        ok
+  ad-board      ok        ok
+  midrun        -         -
+  board-24      -         -
+  ck-report     -         -
+  ck-early      -         -
+  ck-cancel     -         -
+  event-dialog  -         -
+  rules         ok        ok
+  ending        -         -
+
+dock-fair       1366x657  1280x620  390x844
+  fresh-ad      ok        ok
+  ad-board      ok        ok
+  midrun        -         -
+  board-24      ok        ok
+  ck-report     ok        ok
+  ck-early      ok        ok
+  ck-cancel     ok        ok
+  event-dialog  -         -
+  rules         ok        ok
+  ending        -         -
+
+dock-question-seen  1366x657  1280x620  390x844
+  fresh-ad          -         -
+  ad-board          -         -
+  midrun            -         -
+  board-24          -         -
+  ck-report         -         -
+  ck-early          -         -
+  ck-cancel         ok        ok
+  event-dialog      -         -
+  rules             -         -
+  ending            -         -
+
+mobile-no-hscroll  1366x657  1280x620  390x844
+  fresh-ad                             ok
+  midrun                               ok
+  board-24                             ok
+
+mobile-end-reachable  1366x657  1280x620  390x844
+  fresh-ad                                ok
+  midrun                                  ok
+  board-24                                ok
+
+smallest rendered font size outside ASCII art: 13px  (<span.sep> “/”, in fresh-ad at 1366x657)   not enforced (pass --min-font 13)
+  by fixture: fresh-ad 13px, ad-board 13px, midrun 13px, board-24 13px, ck-report 13px, ck-early 13px, ck-cancel 13px, event-dialog 13px, rules 13px, ending 13px
+
+UNEXPECTED FAILURES (60 results)
+  page-no-scroll@fresh-ad   at 1366x657
+      the page scrolls inside <body>: 717px of content in a 657px box
+  controls-in-viewport@fresh-ad   at 1366x657
+      end: outside the viewport (box 661,681.1 to 793,717.1; viewport 1366x657)
+  text-not-clipped@fresh-ad   at 1366x657
+      “Hail Mary” in <button.btn> is cut off by the viewport (50.3px)
+      “End week” in <button.btn.primary> is cut off by the viewport (50.3px)
+  page-no-scroll@fresh-ad   at 1280x620
+      the page scrolls inside <body>: 717px of content in a 620px box
+  controls-in-viewport@fresh-ad   at 1280x620
+      end: outside the viewport (box 609.4,681.1 to 741.4,717.1; viewport 1280x620)
+  text-not-clipped@fresh-ad   at 1280x620
+      “Prospect blitz” in <strong> is cut off by the viewport (35px)
+      “Cold calls. Usually 1–4 new leads; occas” in <span> is cut off by the viewport (35px)
+      “1” in <kbd> is cut off by the viewport (35.1px)
+      “Hail Mary” in <button.btn> is cut off by the viewport (87.3px)
+      “End week” in <button.btn.primary> is cut off by the viewport (87.3px)
+  page-no-scroll@ad-board   at 1366x657
+      the page scrolls inside <body>: 717px of content in a 657px box
+  controls-in-viewport@ad-board   at 1366x657
+      end: outside the viewport (box 661,681.1 to 793,717.1; viewport 1366x657)
+  text-not-clipped@ad-board   at 1366x657
+      “Hail Mary” in <button.btn> is cut off by the viewport (50.3px)
+      “End week” in <button.btn.primary> is cut off by the viewport (50.3px)
+  page-no-scroll@ad-board   at 1280x620
+      the page scrolls inside <body>: 717px of content in a 620px box
+  controls-in-viewport@ad-board   at 1280x620
+      end: outside the viewport (box 609.4,681.1 to 741.4,717.1; viewport 1280x620)
+  text-not-clipped@ad-board   at 1280x620
+      “Prospect blitz” in <strong> is cut off by the viewport (35px)
+      “Cold calls. Usually 1–4 new leads; occas” in <span> is cut off by the viewport (35px)
+      “1” in <kbd> is cut off by the viewport (35.1px)
+      “Hail Mary” in <button.btn> is cut off by the viewport (87.3px)
+      “End week” in <button.btn.primary> is cut off by the viewport (87.3px)
+  page-no-scroll@midrun   at 1366x657
+      the page scrolls inside <body>: 717px of content in a 657px box
+  controls-in-viewport@midrun   at 1366x657
+      end: outside the viewport (box 661,681.1 to 793,717.1; viewport 1366x657)
+  text-not-clipped@midrun   at 1366x657
+      “Close odds −6 pp · this week” in <span.chip.warn> is cut off by the viewport (50px)
+      “Hail Mary” in <button.btn> is cut off by the viewport (50.3px)
+      “End week” in <button.btn.primary> is cut off by the viewport (50.3px)
+  page-no-scroll@midrun   at 1280x620
+      the page scrolls inside <body>: 717px of content in a 620px box
+  controls-in-viewport@midrun   at 1280x620
+      end: outside the viewport (box 609.4,681.1 to 741.4,717.1; viewport 1280x620)
+  text-not-clipped@midrun   at 1280x620
+      “Prospect blitz” in <strong> is cut off by the viewport (35px)
+      “Cold calls. Usually 1–4 new leads; occas” in <span> is cut off by the viewport (35px)
+      “1” in <kbd> is cut off by the viewport (35.1px)
+      “Close odds −6 pp · this week” in <span.chip.warn> is cut off by the viewport (87px)
+      “Hail Mary” in <button.btn> is cut off by the viewport (87.3px)
+      “End week” in <button.btn.primary> is cut off by the viewport (87.3px)
+  page-no-scroll@board-24   at 1366x657
+      the page scrolls inside <body>: 717px of content in a 657px box
+  controls-in-viewport@board-24   at 1366x657
+      end: outside the viewport (box 661,681.1 to 793,717.1; viewport 1366x657)
+  text-not-clipped@board-24   at 1366x657
+      “Close odds +12 pp · 2 weeks left” in <span.chip.good> is cut off by the viewport (50px)
+      “+” in <span.chip.more> is cut off by the viewport (50px)
+      “Hail Mary” in <button.btn> is cut off by the viewport (50.3px)
+      “End week” in <button.btn.primary> is cut off by the viewport (50.3px)
+  page-no-scroll@board-24   at 1280x620
+      the page scrolls inside <body>: 717px of content in a 620px box
+  controls-in-viewport@board-24   at 1280x620
+      end: outside the viewport (box 609.4,681.1 to 741.4,717.1; viewport 1280x620)
+  text-not-clipped@board-24   at 1280x620
+      “Prospect blitz” in <strong> is cut off by the viewport (35px)
+      “Cold calls. Usually 1–4 new leads; occas” in <span> is cut off by the viewport (35px)
+      “1” in <kbd> is cut off by the viewport (35.1px)
+      “Close odds +12 pp · 2 weeks left” in <span.chip.good> is cut off by the viewport (87px)
+      “+” in <span.chip.more> is cut off by the viewport (87px)
+      “Hail Mary” in <button.btn> is cut off by the viewport (87.3px)
+      ... and 1 more
+  page-no-scroll@ck-report   at 1366x657
+      the page scrolls inside <body>: 717px of content in a 657px box
+  controls-in-viewport@ck-report   at 1366x657
+      end: outside the viewport (box 661,681.1 to 793,717.1; viewport 1366x657)
+  text-not-clipped@ck-report   at 1366x657
+      “Hail Mary” in <button.btn> is cut off by the viewport (50.3px)
+      “End week” in <button.btn.primary> is cut off by the viewport (50.3px)
+  page-no-scroll@ck-report   at 1280x620
+      the page scrolls inside <body>: 717px of content in a 620px box
+  controls-in-viewport@ck-report   at 1280x620
+      end: outside the viewport (box 609.4,681.1 to 741.4,717.1; viewport 1280x620)
+  text-not-clipped@ck-report   at 1280x620
+      “Prospect blitz” in <strong> is cut off by the viewport (35px)
+      “Cold calls. Usually 1–4 new leads; occas” in <span> is cut off by the viewport (35px)
+      “1” in <kbd> is cut off by the viewport (35.1px)
+      “Hail Mary” in <button.btn> is cut off by the viewport (87.3px)
+      “End week” in <button.btn.primary> is cut off by the viewport (87.3px)
+  page-no-scroll@ck-early   at 1366x657
+      the page scrolls inside <body>: 717px of content in a 657px box
+  controls-in-viewport@ck-early   at 1366x657
+      end: outside the viewport (box 661,681.1 to 793,717.1; viewport 1366x657)
+  text-not-clipped@ck-early   at 1366x657
+      “Hail Mary” in <button.btn> is cut off by the viewport (50.3px)
+      “End week” in <button.btn.primary> is cut off by the viewport (50.3px)
+  page-no-scroll@ck-early   at 1280x620
+      the page scrolls inside <body>: 717px of content in a 620px box
+  controls-in-viewport@ck-early   at 1280x620
+      end: outside the viewport (box 609.4,681.1 to 741.4,717.1; viewport 1280x620)
+  text-not-clipped@ck-early   at 1280x620
+      “Prospect blitz” in <strong> is cut off by the viewport (35px)
+      “Cold calls. Usually 1–4 new leads; occas” in <span> is cut off by the viewport (35px)
+      “1” in <kbd> is cut off by the viewport (35.1px)
+      “Hail Mary” in <button.btn> is cut off by the viewport (87.3px)
+      “End week” in <button.btn.primary> is cut off by the viewport (87.3px)
+  page-no-scroll@ck-cancel   at 1366x657
+      the page scrolls inside <body>: 717px of content in a 657px box
+  controls-in-viewport@ck-cancel   at 1366x657
+      end: outside the viewport (box 661,681.1 to 793,717.1; viewport 1366x657)
+  text-not-clipped@ck-cancel   at 1366x657
+      “Hail Mary” in <button.btn> is cut off by the viewport (50.3px)
+      “End week” in <button.btn.primary> is cut off by the viewport (50.3px)
+  page-no-scroll@ck-cancel   at 1280x620
+      the page scrolls inside <body>: 717px of content in a 620px box
+  controls-in-viewport@ck-cancel   at 1280x620
+      end: outside the viewport (box 609.4,681.1 to 741.4,717.1; viewport 1280x620)
+  text-not-clipped@ck-cancel   at 1280x620
+      “2 deals ready for a close attempt.” in <span> is cut off by the viewport (35px)
+      “Hail Mary” in <button.btn> is cut off by the viewport (87.3px)
+      “End week” in <button.btn.primary> is cut off by the viewport (87.3px)
+  page-no-scroll@event-dialog   at 1366x657
+      the page scrolls inside <body>: 717px of content in a 657px box
+  controls-in-viewport@event-dialog   at 1366x657
+      end: outside the viewport (box 661,681.1 to 793,717.1; viewport 1366x657)
+  text-not-clipped@event-dialog   at 1366x657
+      “Close odds −6 pp · this week” in <span.chip.warn> is cut off by the viewport (50px)
+      “Hail Mary” in <button.btn> is cut off by the viewport (50.3px)
+      “End week” in <button.btn.primary> is cut off by the viewport (50.3px)
+  page-no-scroll@event-dialog   at 1280x620
+      the page scrolls inside <body>: 717px of content in a 620px box
+  controls-in-viewport@event-dialog   at 1280x620
+      end: outside the viewport (box 609.4,681.1 to 741.4,717.1; viewport 1280x620)
+  text-not-clipped@event-dialog   at 1280x620
+      “1 deal ready for a close attempt.” in <span> is cut off by the viewport (35px)
+      “Close odds −6 pp · this week” in <span.chip.warn> is cut off by the viewport (87px)
+      “Hail Mary” in <button.btn> is cut off by the viewport (87.3px)
+      “End week” in <button.btn.primary> is cut off by the viewport (87.3px)
+  page-no-scroll@rules   at 1366x657
+      the page scrolls inside <body>: 717px of content in a 657px box
+  controls-in-viewport@rules   at 1366x657
+      end: outside the viewport (box 661,681.1 to 793,717.1; viewport 1366x657)
+  text-not-clipped@rules   at 1366x657
+      “Hail Mary” in <button.btn> is cut off by the viewport (50.3px)
+      “End week” in <button.btn.primary> is cut off by the viewport (50.3px)
+  page-no-scroll@rules   at 1280x620
+      the page scrolls inside <body>: 717px of content in a 620px box
+  controls-in-viewport@rules   at 1280x620
+      end: outside the viewport (box 609.4,681.1 to 741.4,717.1; viewport 1280x620)
+  text-not-clipped@rules   at 1280x620
+      “No leads. Prospect or ask for referrals.” in <span> is cut off by the viewport (35px)
+      “Hail Mary” in <button.btn> is cut off by the viewport (87.3px)
+      “End week” in <button.btn.primary> is cut off by the viewport (87.3px)
+  page-no-scroll@ending   at 1366x657
+      the page scrolls inside <body>: 717px of content in a 657px box
+  controls-in-viewport@ending   at 1366x657
+      end: outside the viewport (box 661,681.1 to 793,717.1; viewport 1366x657)
+  text-not-clipped@ending   at 1366x657
+      “Hail Mary” in <button.btn> is cut off by the viewport (50.3px)
+      “End week” in <button.btn.primary> is cut off by the viewport (50.3px)
+  page-no-scroll@ending   at 1280x620
+      the page scrolls inside <body>: 717px of content in a 620px box
+  controls-in-viewport@ending   at 1280x620
+      end: outside the viewport (box 609.4,681.1 to 741.4,717.1; viewport 1280x620)
+  text-not-clipped@ending   at 1280x620
+      “Hail Mary” in <button.btn> is cut off by the viewport (87.3px)
+      “End week” in <button.btn.primary> is cut off by the viewport (87.3px)
+
+LAYOUT FAILED: (the 2.1 test build), 10 fixtures x 2 viewports + phone: 82 ok, 0 known failures, 60 unexpected failures, 0 stale entries, 19.3 s
+
+$ node test/e2e/layout.cjs dist-test/index.html --viewport 1366x657,1280x620
+layout: dist-test/index.html
+
+page-no-scroll  1366x657  1280x620  390x844
+  fresh-ad      ok        ok
+  ad-board      ok        ok
+  midrun        ok        ok
+  board-24      ok        ok
+  ck-report     ok        ok
+  ck-early      ok        ok
+  ck-cancel     ok        ok
+  event-dialog  ok        ok
+  rules         ok        ok
+  ending        ok        ok
+
+controls-in-viewport  1366x657  1280x620  390x844
+  fresh-ad            ok        ok
+  ad-board            ok        ok
+  midrun              ok        ok
+  board-24            ok        ok
+  ck-report           ok        ok
+  ck-early            ok        ok
+  ck-cancel           ok        ok
+  event-dialog        ok        ok
+  rules               ok        ok
+  ending              ok        ok
+
+log-not-covered  1366x657  1280x620  390x844
+  fresh-ad       ok        ok
+  ad-board       ok        ok
+  midrun         ok        ok
+  board-24       ok        ok
+  ck-report      ok        ok
+  ck-early       ok        ok
+  ck-cancel      ok        ok
+  event-dialog   -         -
+  rules          -         -
+  ending         -         -
+
+deals-not-covered  1366x657  1280x620  390x844
+  fresh-ad         ok        ok
+  ad-board         ok        ok
+  midrun           ok        ok
+  board-24         ok        ok
+  ck-report        ok        ok
+  ck-early         ok        ok
+  ck-cancel        ok        ok
+  event-dialog     -         -
+  rules            -         -
+  ending           -         -
+
+dialog-in-viewport  1366x657  1280x620  390x844
+  fresh-ad          -         -
+  ad-board          -         -
+  midrun            -         -
+  board-24          -         -
+  ck-report         -         -
+  ck-early          -         -
+  ck-cancel         -         -
+  event-dialog      ok        ok
+  rules             ok        ok
+  ending            ok        ok
+
+text-not-clipped  1366x657  1280x620  390x844
+  fresh-ad        ok        ok
+  ad-board        ok        ok
+  midrun          ok        ok
+  board-24        ok        ok
+  ck-report       ok        ok
+  ck-early        ok        ok
+  ck-cancel       ok        ok
+  event-dialog    ok        ok
+  rules           ok        ok
+  ending          ok        ok
+
+min-font        1366x657  1280x620  390x844
+  fresh-ad      info      info
+  ad-board      info      info
+  midrun        info      info
+  board-24      info      info
+  ck-report     info      info
+  ck-early      info      info
+  ck-cancel     info      info
+  event-dialog  info      info
+  rules         info      info
+  ending        info      info
+
+no-infinite-animation  1366x657  1280x620  390x844
+  fresh-ad             ok        ok
+  ad-board             ok        ok
+  midrun               ok        ok
+  board-24             ok        ok
+  ck-report            ok        ok
+  ck-early             ok        ok
+  ck-cancel            ok        ok
+  event-dialog         ok        ok
+  rules                ok        ok
+  ending               ok        ok
+
+dock-whole      1366x657  1280x620  390x844
+  fresh-ad      ok        ok
+  ad-board      ok        ok
+  midrun        -         -
+  board-24      -         -
+  ck-report     -         -
+  ck-early      -         -
+  ck-cancel     -         -
+  event-dialog  -         -
+  rules         ok        ok
+  ending        -         -
+
+dock-fair       1366x657  1280x620  390x844
+  fresh-ad      ok        ok
+  ad-board      ok        ok
+  midrun        -         -
+  board-24      ok        ok
+  ck-report     ok        ok
+  ck-early      ok        ok
+  ck-cancel     ok        ok
+  event-dialog  -         -
+  rules         ok        ok
+  ending        -         -
+
+dock-question-seen  1366x657  1280x620  390x844
+  fresh-ad          -         -
+  ad-board          -         -
+  midrun            -         -
+  board-24          -         -
+  ck-report         -         -
+  ck-early          -         -
+  ck-cancel         ok        ok
+  event-dialog      -         -
+  rules             -         -
+  ending            -         -
+
+mobile-no-hscroll  1366x657  1280x620  390x844
+  fresh-ad                             ok
+  midrun                               ok
+  board-24                             ok
+
+mobile-end-reachable  1366x657  1280x620  390x844
+  fresh-ad                                ok
+  midrun                                  ok
+  board-24                                ok
+
+smallest rendered font size outside ASCII art: 13px  (<span.sep> “/”, in fresh-ad at 1366x657)   not enforced (pass --min-font 13)
+  by fixture: fresh-ad 13px, ad-board 13px, midrun 13px, board-24 13px, ck-report 13px, ck-early 13px, ck-cancel 13px, event-dialog 13px, rules 13px, ending 13px
+
+LAYOUT OK: dist-test/index.html, 10 fixtures x 2 viewports + phone: 142 ok, 0 known failures, 0 unexpected failures, 0 stale entries, 19.5 s

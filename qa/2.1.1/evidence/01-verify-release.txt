@@ -1,0 +1,64 @@
+verify: dist/index.html (release) and dist-test/index.html (test hooks)   (build, build-test, lint-rng, lint-copy, lint-css, copy-check, copy-render, copy-deck, fonts, notices, releases, engine, audio, sim-smoke, equivalence, scenes, fixtures, saves, release, offline, firstday, confirm, actions, resilience, phone, keyboard, layout, matrix, released)
+  ok     build          0.2 s
+  ok     build-test     0.2 s
+  ok     lint-rng       0.5 s
+  ok     lint-copy      0.1 s
+  ok     lint-css       0.1 s
+  ok     copy-check     0.8 s
+  ok     copy-render    0.1 s
+  ok     copy-deck      0.5 s
+  ok     fonts          1.1 s
+  ok     notices        0.0 s
+  ok     releases       0.1 s
+  ok     engine         5.5 s
+  ok     audio          0.4 s
+  ok     sim-smoke     21.1 s
+  ok     equivalence   21.5 s
+  ok     scenes         8.0 s
+  ok     fixtures      33.4 s
+  ok     saves         46.6 s
+  ok     release       32.6 s
+  ok     offline        3.6 s
+  ok     firstday      12.7 s
+  ok     confirm       27.7 s
+  ok     actions      142.0 s
+  ok     resilience    35.8 s
+  ok     phone         52.3 s
+  ok     keyboard       3.1 s
+  ok     layout        42.2 s
+  ok     matrix       171.0 s
+  ok     released       0.2 s
+
+  step         result    time      
+  build        ok           0.2 s  dist/index.html 555 KB raw, 213 KB gzip
+  build-test   ok           0.2 s  dist-test/index.html 556 KB raw, 214 KB gzip
+  lint-rng     ok           0.5 s  LINT-RNG OK: 86 files under src (1 may read Math.random), 0 offenders
+  lint-copy    ok           0.1 s  LINT-COPY OK: 0 violations
+  lint-css     ok           0.1 s  LINT-CSS OK: 0 findings
+  copy-check   ok           0.8 s  COPY CHECK OK
+  copy-render  ok           0.1 s  15360 renderings, 0 bad; 202 distinct sentences across 96 tags
+  copy-deck    ok           0.5 s  COPY COVERAGE OK: 357 rows applied as written, 23 noted with a reason, 0 open
+  fonts        ok           1.1 s  src/assets/fonts is up to date
+  notices      ok           0.0 s  THIRD-PARTY-NOTICES.md is up to date
+  releases     ok           0.1 s  RELEASES OK: 2.1, 2.0.1, 1.21 are the files that shipped; index.html is 2.1
+  engine       ok           5.5 s  ENGINE TESTS OK: 120 tests passed in 12 files, 5.4 s
+  audio        ok           0.4 s  AUDIO TESTS OK: 15 tests passed in 1 files, 0.4 s
+  sim-smoke    ok          21.1 s  SIM SMOKE OK: all 12 checks passed, 21.1 s [automated heuristics, not human play]
+  equivalence  ok          21.5 s  EQUIVALENCE OK: every move the working tree allows does what it did in v2.1, and every move it no longer allows is a decided correction
+  scenes       ok           8.0 s  SCENES OK
+  fixtures     ok          33.4 s  25 generated fixtures are exactly what the baseline writes.
+  saves        ok          46.6 s  SAVES OK in 46.3 s
+  release      ok          32.6 s  RELEASE OK: all 27 checks passed
+  offline      ok           3.6 s  all 44 checks passed (dist/index.html, 555 KB)
+  firstday     ok          12.7 s  FIRST DAY OK: all 27 checks passed
+  confirm      ok          27.7 s  CONFIRM OK: all 37 checks passed
+  actions      ok         142.0 s  ACTIONS OK: all 104 checks passed
+  resilience   ok          35.8 s  RESILIENCE OK: all 80 checks passed
+  phone        ok          52.3 s  PHONE OK: all 55 checks passed
+  keyboard     ok           3.1 s  KEYBOARD OK: dist-test/index.html, 8/8 stages, 98 key presses (84 of them Tab or Shift+Tab), 0 known findings, 0 unexpected, 0 stale entries
+  layout       ok          42.2 s  LAYOUT OK: dist-test/index.html, 10 fixtures x 9 viewports + phone: 708 ok, 0 known failures, 0 unexpected failures, 0 stale entries, 41.7 s
+  matrix       ok         171.0 s  MATRIX OK: all 1120 checks passed at 8 sizes, 170.5 s
+  released     ok           0.2 s  Tech_Sales_Trail_2.1.1.html is up to date (555 KB raw, 213 KB gzip)
+
+VERIFY OK: 29/29 steps passed, 663.1 s   (layout: 0 known-failure patterns, listed in scripts/verify.mjs)
+exit 0

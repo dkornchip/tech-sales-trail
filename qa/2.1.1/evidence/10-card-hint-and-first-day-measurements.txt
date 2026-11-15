@@ -1,0 +1,41 @@
+$ node qa/2.1.1/tools/card-fit.cjs Tech_Sales_Trail_2.1.1.html .
+1025x620   idle bar  38.4 | two-line: bar  38.4 text 36.4 space above    1 | row  43.4 | End week inside card by -32.9 | End week moved -21 | page scroll 0
+1025x657   idle bar  38.4 | two-line: bar  38.4 text 36.4 space above    1 | row  43.4 | End week inside card by    -7 | End week moved 0 | page scroll 0
+1025x768   idle bar  38.4 | two-line: bar  38.4 text 36.4 space above    1 | row  53.6 | End week inside card by   4.3 | End week moved 0 | page scroll 0
+1100x657   idle bar  38.4 | two-line: bar  38.4 text 36.4 space above    1 | row  43.4 | End week inside card by    -7 | End week moved 0 | page scroll 0
+1100x768   idle bar  38.4 | two-line: bar  38.4 text 36.4 space above    1 | row  53.6 | End week inside card by   4.3 | End week moved 0 | page scroll 0
+1180x657   idle bar  38.4 | two-line: bar  38.4 text 36.4 space above    1 | row  43.4 | End week inside card by   9.9 | End week moved 0 | page scroll 0
+1180x768   idle bar  38.4 | two-line: bar  38.4 text 36.4 space above    1 | row  54.6 | End week inside card by    17 | End week moved 0 | page scroll 0
+1212x768   idle bar  46.4 | two-line: bar  46.4 text 36.4 space above    5 | row  56.9 | End week inside card by    17 | End week moved 0 | page scroll 0
+1280x620   idle bar  38.4 | two-line: bar  38.4 text 36.4 space above    1 | row  43.4 | End week inside card by   0.9 | End week moved 0 | page scroll 0
+1280x720   idle bar  46.4 | two-line: bar  46.4 text 36.4 space above    5 | row  49.7 | End week inside card by    15 | End week moved 0 | page scroll 0
+1366x620   idle bar  38.4 | two-line: bar  38.4 text 36.4 space above    1 | row  43.4 | End week inside card by   0.9 | End week moved 0 | page scroll 0
+1366x641   idle bar  46.4 | two-line: bar  46.4 text 36.4 space above    5 | row  44.5 | End week inside card by   9.1 | End week moved 0 | page scroll 0
+1366x657   idle bar  46.4 | two-line: bar  46.4 text 36.4 space above    5 | row  45.5 | End week inside card by  10.3 | End week moved 0 | page scroll 0
+1366x700   idle bar  46.4 | two-line: bar  46.4 text 36.4 space above    5 | row  48.4 | End week inside card by  13.5 | End week moved 0 | page scroll 0
+1366x746   idle bar  46.4 | two-line: bar  46.4 text 36.4 space above    5 | row  51.5 | End week inside card by  16.3 | End week moved 0 | page scroll 0
+1366x768   idle bar  46.4 | two-line: bar  46.4 text 36.4 space above    5 | row  56.9 | End week inside card by    17 | End week moved 0 | page scroll 0
+1440x900   idle bar  46.4 | two-line: bar  46.4 text 36.4 space above    5 | row    80 | End week inside card by    17 | End week moved 0 | page scroll 0
+1536x864   idle bar  46.4 | two-line: bar  46.4 text 36.4 space above    5 | row    80 | End week inside card by    17 | End week moved 0 | page scroll 0
+1920x1080  idle bar  49.2 | two-line: bar  49.2 text 19.6 space above 14.8 | row    88 | End week inside card by    17 | End week moved 0 | page scroll 0
+
+$ node qa/2.1.1/tools/card-fit.cjs Tech_Sales_Trail_2.1.html .      (2.1, for comparison)
+1025x657   idle bar    36 | two-line: bar    36 text 36.4 space above -0.2 | row    54 | End week inside card by -105.9 | End week moved -94 | page scroll 0
+1025x768   idle bar    36 | two-line: bar    36 text 36.4 space above -0.2 | row    54 | End week inside card by   5.1 | End week moved 0 | page scroll 0
+1180x657   idle bar    36 | two-line: bar    36 text 36.4 space above -0.2 | row    54 | End week inside card by   -89 | End week moved -77 | page scroll 0
+1280x620   idle bar    36 | two-line: bar    36 text 36.4 space above -0.2 | row    54 | End week inside card by -109.1 | End week moved -97 | page scroll 0
+1280x720   idle bar    36 | two-line: bar    36 text 36.4 space above -0.2 | row    54 | End week inside card by  -9.1 | End week moved 0 | page scroll 0
+1366x657   idle bar    36 | two-line: bar    36 text 36.4 space above -0.2 | row    54 | End week inside card by -72.1 | End week moved -60 | page scroll 0
+1366x700   idle bar    36 | two-line: bar    36 text 36.4 space above -0.2 | row    54 | End week inside card by -29.1 | End week moved -17 | page scroll 0
+1366x768   idle bar    36 | two-line: bar    36 text 36.4 space above -0.2 | row  59.5 | End week inside card by    17 | End week moved 0 | page scroll 0
+1440x900   idle bar    36 | two-line: bar  38.4 text 36.4 space above    1 | row    80 | End week inside card by    17 | End week moved 0 | page scroll 0
+
+$ node qa/2.1.1/tools/hint-lines.cjs Tech_Sales_Trail_2.1.1.html .
+480 hints; lines: {"1":283,"2":197} | most lines: 2
+
+$ node qa/2.1.1/tools/first-day-short.cjs Tech_Sales_Trail_2.1.1.html
+1366x768 memo {"dialog":640,"top":64,"bottom":704,"scrolls":0,"footerPinned":"sticky","coveredByFooter":[]} | tour stops [[0,0,0,[369,434]],[0,0,0,[74,100]],[0,0,0,[699,743]]] | after {"body":0,"html":0,"topbar":0,"end":739,"vh":768}
+1366x657 memo {"dialog":633,"top":12,"bottom":645,"scrolls":7,"footerPinned":"sticky","coveredByFooter":[]} | tour stops [[0,0,0,[329,382]],[0,0,0,[67,93]],[0,0,0,[595,639]]] | after {"body":0,"html":0,"topbar":0,"end":635,"vh":657}
+1366x625 memo {"dialog":601,"top":12,"bottom":613,"scrolls":39,"footerPinned":"sticky","coveredByFooter":[]} | tour stops [[0,0,0,[321,373]],[0,0,0,[66,92]],[0,0,0,[567,611]]] | after {"body":0,"html":0,"topbar":0,"end":607,"vh":625}
+1280x620 memo {"dialog":596,"top":12,"bottom":608,"scrolls":44,"footerPinned":"sticky","coveredByFooter":[]} | tour stops [[0,0,0,[321,373]],[0,0,0,[66,92]],[0,0,0,[567,611]]] | after {"body":0,"html":0,"topbar":0,"end":607,"vh":620}
+1280x720 memo {"dialog":640,"top":40,"bottom":680,"scrolls":0,"footerPinned":"sticky","coveredByFooter":[]} | tour stops [[0,0,0,[357,415]],[0,0,0,[72,98]],[0,0,0,[653,697]]] | after {"body":0,"html":0,"topbar":0,"end":693,"vh":720}
