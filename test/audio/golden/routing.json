@@ -411,7 +411,7 @@
   4,
   null
  ],
- "close.signed >= 40000": "bigClose",
+ "close.signed >= 45000": "bigClose",
  "act.network whale": "sonar",
  "dialog evt:competitor": "competitor",
  "dialog evt:security": "incident",

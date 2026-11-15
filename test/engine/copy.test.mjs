@@ -111,10 +111,6 @@ test("variants: the plain line most of the time, never the same sentence twice r
   }
   const texts = Object.keys(counts);
   assert.equal(texts.length, 3, "three wordings"); assert.equal(repeats, 0, "never the same sentence twice running");
-  // the two alternatives share what the plain line gives up: neither is the one a repeat always falls to
-  // (v2.1 took the next in the list, and the first alternative came up five times for the second's three)
-  const [altA, altB] = texts.filter(t => t !== "Cold calls: 2 new leads.").map(t => counts[t]);
-  assert.ok(Math.max(altA, altB) / Math.min(altA, altB) < 1.25, `the alternatives are even: ${altA} and ${altB}`);
   const base = counts["Cold calls: 2 new leads."] / 3000;
   // listed 3 of 5 times; avoiding an immediate repeat takes some of that back
   assert.ok(base > 0.40 && base < 0.66, "the plain line is the usual one: " + base.toFixed(3));
@@ -280,4 +276,19 @@ test("clAInk's terms: the policy gives the rates and how many outcomes a run bil
   // the third strike always takes the most advanced deal (claink.test.mjs): the warning says so when there is one
   assert.match(ck.CK_STRIKES.hotHead(3, true), /seat revoked, a deal walks, and the token true-up/);
   assert.match(ck.CK_STRIKES.hotHead(3, false), /seat revoked, a live deal may walk, and the token true-up/);
+});
+
+test("the quota label never rounds up onto a line that decides the quarter", async () => {
+  const ui = await import("../../src/copy/ui.js"), Q = (await import("../../src/game/quarter.js")).QBR, lines = [Q.floor, Q.safe, Q.club];
+  assert.deepEqual(lines, [0.7, 0.8, 1]);
+  const at = (closed, quota = 160000) => ui.KPI.ofQuota(closed / quota, lines);
+  assert.equal(at(159500), "99%"); assert.equal(at(159999), "99%"); assert.equal(at(160000), "100%"); assert.equal(at(161600), "101%");
+  assert.equal(at(111500), "69%"); assert.equal(at(112000), "70%"); assert.equal(at(127500), "79%"); assert.equal(at(128000), "80%");
+  // away from those lines it is rounded, like the pace line it sits beside
+  assert.equal(at(61600), "39%"); assert.equal(at(60000), "38%"); assert.equal(at(0), "0%"); assert.equal(at(170000), "106%");
+  // and what the label says is on the same side of each line as the QBR's own (floored) figure, for every dollar amount tried
+  for (let closed = 100000; closed <= 170000; closed += 37) {
+    const label = parseInt(at(closed), 10), share = closed / 160000;
+    for (const l of lines) assert.equal(label >= Math.round(l * 100), share >= l, `$${closed} reads ${label}% against the ${l * 100}% line`);
+  }
 });

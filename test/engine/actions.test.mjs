@@ -172,6 +172,21 @@ test("what the interface is told before a press that money would end: a purchase
   const END = { t: "end" }, short = await craft({ week: 5, cash: -900 }), just = await craft({ week: 5, cash: -899 });
   assert.equal(withDice([0.99], 0.99, () => eng.run.step(short, END)).state.repo, true);
   assert.ok(!withDice([0.99], 0.99, () => eng.run.step(just, END)).state.repo);
+  // Friday's coffee crash: 13 a shot, and nothing on a Friday lowers stress in a week with shots. At 74 with two
+  // shots it reaches 100, which ends the run whatever the dice say; one point lower it is a roll
+  const ui = await import("../../src/copy/ui.js"), plain = t => t.replace(/\u2060/g, "");
+  f = S.fridayPreview(await craft({ week: 6, stress: 74, coffeesThisWeek: 2 })); assert.deepEqual([f.stress, f.melt], [26, true]);
+  assert.equal(plain(ui.HINT.endWeek(f)), "Friday: salary +$1,000. The coffee crash adds 26 stress. That reaches 100 and ends the run.");
+  f = S.fridayPreview(await craft({ week: 6, stress: 73, coffeesThisWeek: 2 })); assert.equal(f.melt, false); assert.match(ui.HINT.endWeek(f), /stress \+26\. Friday events/);
+  assert.equal(S.fridayPreview(await craft({ week: 6, stress: 99 })).melt, false, "no shots: Friday eases stress");
+  assert.equal(S.fridayPreview(await craft({ week: 6, stress: 87, coffeesThisWeek: 1 })).melt, true);
+  const wired = await craft({ week: 6, stress: 74, coffeesThisWeek: 2 });
+  for (const rest of [0, 0.5, 0.999999]) {
+    const done = withDice([], rest, () => eng.run.step(wired, END)).state;
+    assert.ok(done.burnedOut && eng.log.isRunOver(done), "74 stress and two shots ends on Friday with every roll at " + rest);
+  }
+  // (Collections comes first on a Friday: when both are certain the hint names that one)
+  assert.match(ui.HINT.endWeek(S.fridayPreview(await craft({ week: 5, cash: -900, stress: 90, coffeesThisWeek: 2 }))), /Collections ends the run/);
 });
 
 test("Recharge: 35 energy and 12 relief, up to half as much again on the luck roll; coffee eats the relief; once a week", async () => {

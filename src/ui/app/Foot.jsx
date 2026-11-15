@@ -59,11 +59,11 @@ export const HintBar = ({ hint, s }) => {
 // second chip for a discount it carries.
 const chips = s => {
   const out = [];
-  if (s.pip) out.push({ id: "pip", icon: "file-warning", kind: "warn", text: CHIP.pip(s.pipLevel || 1) });     // first: what does not fit folds from the end
   for (const e of effectChips(s)) {
     if (e.conv) out.push({ id: "odds-" + e.src, icon: e.conv > 0 ? "trending-up" : "trending-down", kind: e.conv > 0 ? "good" : "warn", text: CHIP.closeOdds(e.conv, e.weeksLeft) });
     if (e.disc > 0) out.push({ id: "discount-" + e.src, icon: "receipt", kind: "warn", text: CHIP.discount(e.disc, e.weeksLeft) });
   }
+  if (s.pip) out.push({ id: "pip", icon: "file-warning", kind: "warn", text: CHIP.pip(s.pipLevel || 1) });
   if (s.coffeesThisWeek > 0) out.push({ id: "shots", icon: "coffee", kind: "", text: CHIP.shots(s.coffeesThisWeek) });
   if (s.trip) out.push({ id: "trip", icon: "plane", kind: "", text: CHIP.trip(s.trip) });
   if (s.restedThisWeek) out.push({ id: "rested", icon: "battery-charging", kind: "", text: CHIP.rested });
@@ -122,13 +122,17 @@ export const Foot = ({ s, onHail, onEndWeek, onHint, onBlocked }) => {
   const over = isRunOver(s);
   // no pointer to follow (a touch screen): the hint stays until the next tap, so a blocked button can say why
   const leave = () => { if (!noHover()) onHint(null); };
+  // ...and there a hint is raised by the press itself (a blocked button says why), never by the focus a tap brings
+  // first: on a phone the hint is three or four lines, the bar grew, the button moved from under the finger between
+  // press and release, and the first tap on End week or the Hail Mary did nothing (v2.1; v2.0.1's hint was shorter).
+  const point = show => () => { if (!noHover()) show(); };
   return (
     <div className="foot">
       <Chips list={chips(s)} onHint={onHint} />
       <button type="button" className="btn" data-ui="hail" aria-disabled={hailBlocked ? "true" : undefined} onClick={() => { if (hailBlocked) { hailHint(); if (onBlocked && noHover()) onBlocked({ title: UI.hail, text: hailText }); return; } onHail(); if (noHover()) onHint(null); }}
-        onMouseEnter={hailHint} onFocus={hailHint} onMouseLeave={leave} onBlur={leave}><Icon name="dices" />{UI.hail}</button>
+        onMouseEnter={point(hailHint)} onFocus={point(hailHint)} onMouseLeave={leave} onBlur={leave}><Icon name="dices" />{UI.hail}</button>
       <button type="button" className="btn primary" data-ui="end" aria-disabled={over ? "true" : undefined} onClick={() => { if (over) return; onEndWeek(); if (noHover()) onHint(null); }}
-        onMouseEnter={endHint} onFocus={endHint} onMouseLeave={leave} onBlur={leave}>{UI.endWeek}<Icon name="arrow-right" /></button>
+        onMouseEnter={point(endHint)} onFocus={point(endHint)} onMouseLeave={leave} onBlur={leave}>{UI.endWeek}<Icon name="arrow-right" /></button>
     </div>
   );
 };

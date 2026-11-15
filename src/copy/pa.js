@@ -61,7 +61,6 @@ export var LINES = {
   strike:["Governance Council, conference room B.", "Strike recorded."],
   clainkRevoked:["Your agents have been offboarded."],
   chatgdp:["Always on Chat GDP, huh?"],
-  chatgdpNice:["Nice week. Chat GDP do that?"],          // the same dialog after a run that worked (copy/claink.js, CK_QUIP)
   yoink:["Manager taking over the account. Observe."],
   repoClaink:["Collections thanks you for your digital transformation."]
 };

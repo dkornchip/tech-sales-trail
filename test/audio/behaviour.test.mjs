@@ -80,13 +80,13 @@ test("a batch of lines: a big close is announced, a small one is not; a clAInk r
   a.reset();
   a.T.onLogs([line("close.signed", { src: "close", n: 1, won: 12000, keep: 1440 })], {}); a.tick(4000);
   assert.deepEqual(sounds(a), ["cash"]); assert.equal(a.speech.said.length, 0);
-  // the line is drawn at $40,000: a quarter of quota is announced, a dollar less is not
-  assert.equal(map.BIG_CLOSE, 40000);
+  // the line is where it has been since v1.14: $45,000 is announced, a dollar less is not
+  assert.equal(map.BIG_CLOSE, 45000);
   a.reset();
-  a.T.onLogs([line("close.signed", { src: "close", n: 1, won: 40000, keep: 4800 })], {}); a.tick(4000);
+  a.T.onLogs([line("close.signed", { src: "close", n: 1, won: 45000, keep: 5400 })], {}); a.tick(4000);
   assert.deepEqual(sounds(a), ["cash"]); assert.ok(LINES.bigClose.includes(a.speech.said[0].text));
   a.reset();
-  a.T.onLogs([line("close.signed", { src: "close", n: 1, won: 39999, keep: 4800 })], {}); a.tick(4000);
+  a.T.onLogs([line("close.signed", { src: "close", n: 1, won: 44999, keep: 5400 })], {}); a.tick(4000);
   assert.deepEqual(sounds(a), ["cash"]); assert.equal(a.speech.said.length, 0);
   a.reset();
   a.T.onLogs([line("ck.run", { n: 3, tokens: 1 }), line("ck.strike", { n: 1, of: 3, who: "Finance", line: "x" }), line("pay.repoWarn"), line("ck.mgr.warning", { miracle: false, hit: 9 })], {}); a.tick(4000);
@@ -214,11 +214,12 @@ test("a dialog opening plays its cue and its line", async () => {
     assert.ok(a.plays.some(p => p.name === "modal"), id);
     assert.ok(LINES[key].includes(a.speech.said[0].text), `${id} says ${key}`);
   }
-  // the manager's dialog has two openings (copy/claink.js, CK_QUIP): after a run that worked the voice says the one
-  // the dialog shows, not the other (v2.1 said "Always on Chat GDP, huh?" over a dialog that began "Nice week.")
+  // the manager's dialog has two openings (copy/claink.js, CK_QUIP) and the announcer's one line is the opening for
+  // a run that failed: after a run that worked the cue plays and nothing is said or captioned over the dialog's own
+  // words (v2.1 said "Always on Chat GDP, huh?" over a dialog that began "Nice week. ChatGDP do that?")
   const { CK_QUIP } = await import("../../src/copy/claink.js"), spoken = t => t.replace("ChatGDP", "Chat GDP");
   a.reset(); a.T.onModal("ck:warning", { miracle: true }); a.tick(900);
-  assert.equal(a.speech.said[0].text, spoken(CK_QUIP(true))); assert.deepEqual(LINES.chatgdpNice, [spoken(CK_QUIP(true))]);
+  assert.ok(a.plays.some(p => p.name === "modal")); assert.equal(a.speech.said.length, 0);
   a.reset(); a.T.onModal("ck:warning", { miracle: false }); a.tick(900);
   assert.equal(a.speech.said[0].text, spoken(CK_QUIP(false))); assert.deepEqual(LINES.chatgdp, [spoken(CK_QUIP(false))]);
 });

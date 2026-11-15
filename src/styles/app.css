@@ -112,14 +112,11 @@
 .chip.warn{color:var(--warn);border-color:transparent;background:var(--warn-weak)} .chip.warn .icon{color:var(--warn)}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--sp-3);height:36px;padding:0 var(--sp-5);border-radius:var(--r-2);border:1px solid var(--border-strong);background:transparent;font-weight:500;cursor:pointer;white-space:nowrap;transition:background .12s var(--ease)}
 .btn:hover{background:var(--surface-2)}
-.btn:active{background:var(--surface-3)}                       /* a press is felt, as on an action card */
 .btn:not(.primary)[aria-disabled="true"]{color:var(--text-3);border-color:var(--border);cursor:not-allowed}
 .btn:not(.primary)[aria-disabled="true"]:hover{background:transparent}
 .btn:not(.primary)[aria-disabled="true"] .icon{color:var(--text-3)}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--text-on-accent);min-width:132px}
 .btn.primary:hover{background:var(--accent-hover);border-color:var(--accent-hover)}
-.btn.primary:active{background:var(--accent);border-color:var(--accent)}
-.btn:not(.primary)[aria-disabled="true"]:active{background:transparent}
 .btn.primary .icon{color:var(--text-on-accent)}
 .btn .cost{font-family:var(--mono);font-size:var(--fs-1);color:var(--text-3);display:inline-flex;align-items:center;gap:3px}
 .btn .cost .icon{width:12px;height:12px;color:var(--text-3)}
@@ -140,7 +137,7 @@
 .deal .acct{font-size:var(--fs-2);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .deal .stage{display:flex;align-items:center;gap:var(--sp-3);color:var(--text-2)}
 .pips{display:flex;gap:2px}
-.pips i{width:5px;height:10px;border-radius:1px;background:var(--surface-3);box-shadow:inset 0 0 0 1px var(--border);transition:background .24s var(--ease)}   /* a deal that moves up a stage lights its next pip, as a week does on the strip */
+.pips i{width:5px;height:10px;border-radius:1px;background:var(--surface-3);box-shadow:inset 0 0 0 1px var(--border)}
 .pips i.on{background:var(--text-2);box-shadow:none}
 .deal.late .pips i.on{background:var(--text)}
 .mood{display:inline-flex;align-items:center;gap:6px;color:var(--text-2)}
@@ -232,6 +229,11 @@
   .activity{flex:0 0 auto}
   .activity .scroll{max-height:360px}
   .topbar:has(.pa-cap) .crumbs{display:none}   /* a caption gets the room the breadcrumbs had */
+  /* ...and more lines when one is not enough (a tablet upright: two; a phone on its side: the longest take three,
+     which the 48px bar just holds). The line used to be cut with an ellipsis, punchline first, and with the sound
+     off the caption is the announcement. */
+  .pa-cap{white-space:normal;line-height:1.2}
+  .pa-text{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3}
 }
 /* a finger, on any screen that stacks (a phone either way up, a tablet): controls a thumb can hit */
 @media (pointer:coarse) and (max-width:1024px), (pointer:coarse) and (max-height:619px){
@@ -276,7 +278,7 @@
      just did (.peek) sits above it when both are up. */
   .pa-line{position:fixed;z-index:36;left:var(--sp-4);right:var(--sp-4);bottom:calc(var(--sp-4) + env(safe-area-inset-bottom,0px));flex:none;overflow:visible;pointer-events:none}
   .pa-cap{max-width:100%;padding:var(--sp-3) var(--sp-4);background:var(--surface-3);border:1px solid var(--border-strong);border-radius:var(--r-3);box-shadow:var(--shadow-overlay);color:var(--text);white-space:normal}
-  .pa-text{overflow:visible}
+  .pa-text{display:block;overflow:visible;-webkit-line-clamp:none}
   .app:has(.pa-cap) .peek{--peek-cap:60px}
   html:has(dialog[open]) .pa-cap{visibility:hidden}   /* a dialog shows the announcer's line itself; not dimmed under it as well */
   .btn{height:44px}

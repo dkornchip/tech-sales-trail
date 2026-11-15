@@ -19,7 +19,8 @@
 //      the run as the rules say; one point or one dollar short of certain, none of that:
 //        money    the conference or a quad shot that would take cash to Collections
 //        stress   Prospect blitz, Internal politics, the conference or the Hail Mary that would reach 100 stress
-//      and a Friday whose rent would take cash to Collections says so on the cash card and on End week
+//      and a Friday whose rent would take cash to Collections says so on the cash card and on End week; one
+//      whose coffee crash is certain to reach 100 stress says so on the stress card and on End week
 //   5. the Hail Mary says what it costs (its energy, as the cards do; a throw takes a slot like any action)
 //      and CRM cleanup says what its "dead leads" are worth, which is what the press removes
 //   6. the hint under the pointer is about the run as it is: after a press, with the pointer still on the card, the
@@ -150,7 +151,7 @@ const stored = async page => JSON.stringify(await page.evaluate(readRun));
           detail = `no deals: deals ${dealsSame ? "untouched" : "CHANGED"}, no skill, the week marked: "${hint}"; then off ("${offNow.cost}") and a second press ${still ? "changed nothing" : "CHANGED THE RUN"}: "${hint2}"`;
         } else if (n === 0) {
           const [skill, up] = SKILL[id];
-          ok = dealsSame && spent && after.skills[skill] === before.skills[skill] + up && after.closedWon === before.closedWon && /only train/.test(hint) && JSON.stringify(after.rng) === JSON.stringify(before.rng);
+          ok = dealsSame && spent && after.skills[skill] === before.skills[skill] + up && after.closedWon === before.closedWon && /You would still spend a slot and energy\. Trains (discovery|demos|negotiation)\.$/.test(hint) && JSON.stringify(after.rng) === JSON.stringify(before.rng);
           detail = `skill only: ${skill} ${before.skills[skill]} -> ${after.skills[skill]}, deals ${dealsSame ? "untouched" : "CHANGED"}, ${spent ? "one slot and " + cost.energy + " energy" : "COST WRONG"}, no roll: "${hint}"`;
         } else if (id === "close") {
           // each of the N late deals was put to a roll: it signed or walked (gone), or it stayed with this attempt's note on it
@@ -246,6 +247,19 @@ const stored = async page => JSON.stringify(await page.evaluate(readRun));
       await context.close();
     }
 
+    // Friday's coffee crash: 13 a shot, and nothing on a Friday lowers stress in such a week. When it is certain to
+    // reach 100 the stress card and End week say so; one point lower, the card still gives the crash's size
+    for (const [stress, melt] of [[74, true], [73, false]]) {
+      ({ context, page, errors } = await open(browser, save({ week: 6, cash: 3000, stress, coffeesThisWeek: 2 })));
+      const s = rules(await page.evaluate(readRun)), f = S.fridayPreview(s);
+      const sub = plain(await page.evaluate(() => { const e = document.querySelector('[data-kpi="stress"] .sub'); return e.textContent + "|" + e.className; }));
+      await page.locator('[data-ui="end"]').hover(); await page.waitForTimeout(150);
+      hint = await hintOf(page);
+      check(melt ? "a Friday whose coffee crash is certain to reach 100 stress says so on the stress card and on End week" : "one point lower, the stress card still gives the crash and End week says what it always said",
+        f.melt === melt && sub === `${COPY.KPI.stressCrash(26)}|sub ${melt ? "bad" : "warn"}` && hint === plain(COPY.UI.endWeek + ". " + H.endWeek(f)) && /reaches 100 and ends the run/.test(hint) === melt && !errors.length, `stress card: "${sub}"; End week: "${hint}"`);
+      await context.close();
+    }
+
     /* ---------- 5. the Hail Mary says what it costs ---------- */
     ({ context, page, errors } = await open(browser, save({ week: 3, cash: 3000, deals: LATE })));
     await page.locator('[data-ui="hail"]').hover(); await page.waitForTimeout(150);
@@ -285,7 +299,7 @@ const stored = async page => JSON.stringify(await page.evaluate(readRun));
     await over("Proposals with no demoed deal, pressed: the bar now says there is nothing to gain", save({ week: 3, cash: 3000, deals: [D(0, 6000)] }), '[data-act="propose"]',
       s => T.propose.title + ". " + (R.actBlock(s, "propose") ? H.blocked.none() : H.propose(S.stageCount(s, 2), S.PROPOSE_CHANCE)));
     await over("Close deals on the only late deal, pressed: the bar counts the late deals there are now, and says whether the week's work is counted", save({ week: 3, cash: 3000, deals: [D(4, 21000, "happy")] }), '[data-act="close"]',
-      s => T.close.title + ". " + H.close(S.lateDeals(s).length, !(s.used.propose || s.used.close)), false);
+      s => T.close.title + ". " + H.close(S.lateDeals(s).length), false);
 
     /* ---------- 7. what a press changed is shown ---------- */
     for (const reduced of [false, true]) {
@@ -307,8 +321,8 @@ const stored = async page => JSON.stringify(await page.evaluate(readRun));
     const QUOTA = STATE.newGame ? rules(save({})).quota : 0;
     for (const [what, closed, want] of [["at quota", QUOTA, true], ["one dollar short of quota", QUOTA - 1, false]]) {
       ({ context, page, errors } = await open(browser, save({ week: 9, cash: 3000, closedQuarter: closed, closedWon: closed })));
-      const meter = await page.evaluate(() => { const m = document.querySelector('[data-kpi="closed"] .meter'); return m ? { good: m.classList.contains("good"), width: m.querySelector("i").style.width } : null; });
-      check(`${what}: the quota meter is ${want ? "marked" : "not marked"}`, QUOTA > 0 && !!meter && meter.good === want && !errors.length, JSON.stringify(meter) + ` at $${closed} of $${QUOTA}`);
+      const meter = await page.evaluate(() => { const m = document.querySelector('[data-kpi="closed"] .meter'); return m ? { good: m.classList.contains("good"), width: m.querySelector("i").style.width, label: document.querySelector('[data-kpi="closed"] .value small').textContent } : null; });
+      check(`${what}: the quota meter is ${want ? "marked" : "not marked"}, and the label reads ${want ? "100%" : "99%, not 100%"}`, QUOTA > 0 && !!meter && meter.good === want && meter.label === (want ? "100%" : "99%") && !errors.length, JSON.stringify(meter) + ` at $${closed} of $${QUOTA}`);
       await context.close();
     }
 
@@ -345,7 +359,8 @@ const stored = async page => JSON.stringify(await page.evaluate(readRun));
       const el = document.querySelector(".claink-console"); if (!el) return null;
       const r = el.getBoundingClientRect(), bar = el.querySelector(".claink-titlebar").getBoundingClientRect();
       const whole = q => { const e = el.querySelector(q); if (!e) return null; const b = e.getBoundingClientRect(); return b.top >= bar.bottom - 1 && b.bottom <= r.bottom + 1; };
-      return { result: whole(".claink-strike, .claink-clear"), usage: whole(".claink-usage"), cancel: whole(".claink-cancel-link"), top: Math.round(el.scrollTop), scrolls: el.scrollHeight > el.clientHeight + 1 };
+      const head = q => { const e = el.querySelector(q); if (!e) return null; const b = e.getBoundingClientRect(); return b.top >= bar.bottom - 1 && b.top + 18 <= r.bottom + 1; };
+      return { result: whole(".claink-strike, .claink-clear"), resultTop: head(".claink-strike, .claink-clear"), usage: whole(".claink-usage"), cancel: whole(".claink-cancel-link"), top: Math.round(el.scrollTop), scrolls: el.scrollHeight > el.clientHeight + 1 };
     };
     const answer = async () => { for (let i = 0; i < 6; i++) { const d = await dialogOf(page); if (!d || /^end/.test(d)) return d; await page.locator("dialog[open] .d-footer button, dialog[open] button").first().click({ force: true }); await page.waitForTimeout(450); } return dialogOf(page); };
     const endHint = async () => { await page.mouse.move(4, 4); await page.locator('[data-ui="end"]').hover(); await page.waitForTimeout(150); return hintOf(page); };
@@ -364,6 +379,13 @@ const stored = async page => JSON.stringify(await page.evaluate(readRun));
       check(`${w}x${h}: Friday charged what was previewed (more only if an agent looped), and the workspace is back at its top`, !!ended || (!!inv && (inv.d.total === due || (inv.d.looped && inv.d.total > due)) && at === 0 && !errors.length), ended ? "the run ended on Friday: " + ended : `previewed $${due}, charged $${inv && inv.d.total}${inv && inv.d.looped ? " (looped)" : ""}; scrollTop ${at}`);
       await context.close();
     }
+    // a window as short as a small laptop's browser leaves: the result may be taller than the room under the title
+    // bar; then its heading is what must be in sight
+    ({ context, page, errors } = await open(browser, fixture("ck-active-0-strikes"), { viewport: { width: 1366, height: 650 } }));
+    await page.locator(".claink-deploy").click(); await page.waitForTimeout(4300);
+    const low = await page.evaluate(inSight);
+    check("1366x650: after Run agents the result's heading is in sight, and all of it when it fits", !!low && low.resultTop !== false && (low.result !== false || low.usage === false || low.cancel === false) && !errors.length, JSON.stringify(low));
+    await context.close();
     ({ context, page, errors } = await open(browser, fixture("ck-active-2-strikes"), { viewport: { width: 1366, height: 768 } }));
     const hot = rules(await page.evaluate(readRun)), note = plain(await page.evaluate(() => { const n = document.querySelector(".claink-strikes .note"); return n ? n.textContent : ""; }));
     check("at two strikes the warning under Run agents says a deal walks when there is one on the board", hot.claink.strikes === 2 && hot.deals.length > 0 && note.includes("seat revoked, a deal walks, and the token true-up") && !errors.length, `${hot.deals.length} deals: "${note}"`);

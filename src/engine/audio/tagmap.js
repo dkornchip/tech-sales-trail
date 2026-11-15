@@ -49,9 +49,8 @@ export var TAG_SOUND = {
 
 // Deals signing is cash, whoever closed them. `close` marks the rule so the director can check the amount (below).
 export var CLOSE_TAGS = { "close.signed":1, "ck.signed":1 };
-// a batch of closes worth this much or more gets the "big close" announcer line (v2.1.1: was 45000; a $40,000
-// signing is a quarter of quota and should not pass with less ceremony than a CRM cleanup, which has a line)
-export var BIG_CLOSE = 40000;
+// a batch of closes worth this much or more gets the "big close" announcer line
+export var BIG_CLOSE = 45000;
 
 // The log lines a clAInk run writes. The agent workspace voices a run itself, beat by beat (see ClainkConsole), so the
 // director leaves these alone; and a run owns its whole batch (see onLogs). ruleFor still maps them (tests).

@@ -20,10 +20,10 @@ export const describe = (a, s) => {
   const used = a.id === "crm" ? !!u.crm : a.id === "recharge" ? !!s.restedThisWeek : false;
   const block = actBlock(s, a.id), fatal = block ? null : fatalPress(s, a.id);
   let count = null, hint = "", cost = a.id === "coffee" ? "" : copy.cost(a);
-  if (a.id === "discovery") { count = stageCount(s, 0); hint = HINT.discovery(count, qualifyChance(s), !u.discovery); }
-  else if (a.id === "demo") { count = stageCount(s, 1); hint = HINT.demo(count, demoChance(s), !u.demo); }
+  if (a.id === "discovery") { count = stageCount(s, 0); hint = HINT.discovery(count, qualifyChance(s)); }
+  else if (a.id === "demo") { count = stageCount(s, 1); hint = HINT.demo(count, demoChance(s)); }
   else if (a.id === "propose") { count = stageCount(s, 2); hint = HINT.propose(count, PROPOSE_CHANCE); }
-  else if (a.id === "close") { count = lateDeals(s).length; hint = HINT.close(count, !(u.propose || u.close)); }
+  else if (a.id === "close") { count = lateDeals(s).length; hint = HINT.close(count); }
   else if (a.id === "prospect") hint = HINT.prospect(a, STRESS_COST.prospect);
   else if (a.id === "crm") { const c = crmPreview(s); hint = HINT.crm(c.pruned, c.gain, c.nuke, c.value); }
   else if (a.id === "recharge") hint = HINT.recharge(rechargeRange(s));

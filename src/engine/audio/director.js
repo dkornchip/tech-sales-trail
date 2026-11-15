@@ -32,9 +32,11 @@ export function onLogs(entries,info){
   if(speech && !runBatch) say(speech.say,{cooldown: speech.sfx === "week" ? 9000 : 6000});
 }
 // id: the dialog's id (the keys of EVENTS in src/game/events.js). params: what the dialog was opened with, when it
-// has any: the line that is spoken is the one the dialog shows (the manager has two openings, voice.js).
+// has any. The manager's warning has two openings (copy/claink.js, CK_QUIP) and the announcer has one line for it,
+// the opening for a run that failed: after a run that worked the dialog speaks for itself. (v2.1 said and captioned
+// "Always on ChatGDP, huh?" over a dialog that began "Nice week. ChatGDP do that?")
 export function onModal(id, params){
   play("modal");
   var line = modalSay(id);
-  if(line) say(line,{cooldown:4000, meta:params || undefined});
+  if(line && !(id === "ck:warning" && params && params.miracle)) say(line,{cooldown:4000});
 }

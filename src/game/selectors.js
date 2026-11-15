@@ -62,10 +62,13 @@ export const crmPreview = s => {
 // `claink`: what an active seat will be invoiced this Friday (claink.js, billClaink): what is already due if the
 // agents ran this week, or the idle range if they did not; null with no seat, and in week 13, which is not billed.
 // (An overage may be added on top; it is not in `cash` or `bust`, which are about salary and rent alone.)
+// `melt`: this week's quad shots crash on Friday (week.js) and nothing on a Friday lowers stress in such a week, so
+// a crash that takes stress to 100 is certain to end the run there.
 export const fridayPreview = s => {
   const shots = s.coffeesThisWeek || 0, rent = rentDueThisWeek(s) ? PAY.rent : 0, cash = s.cash + PAY.salary - rent;
   const c = s.claink, seat = c && c.status === "active" && !clainkFrozen(s) ? (c.deployed ? { due: c.due } : { idle: CLAINK.IDLE.slice() }) : null;
-  return { salary: PAY.salary, rent, energy: FRIDAY.energy, stress: shots > 0 ? CRASH_PER_SHOT * shots : -FRIDAY.relief, cash, bust: cash <= CASH.repoAt, repoAt: CASH.repoAt, claink: seat };
+  return { salary: PAY.salary, rent, energy: FRIDAY.energy, stress: shots > 0 ? CRASH_PER_SHOT * shots : -FRIDAY.relief, cash, bust: cash <= CASH.repoAt, repoAt: CASH.repoAt, claink: seat,
+    melt: shots > 0 && s.stress + CRASH_PER_SHOT * shots >= 100 };
 };
 // An action that costs cash (the conference, a quad shot) is charged at once, and Collections is asked at once
 // (actions.js): what paying for it would leave, when that is at or under the line that ends the run. Otherwise null.

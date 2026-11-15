@@ -352,6 +352,8 @@ export const ClainkConsole=({s,ui,setUi,focusOnMount,onDeploy,onCancel,onHide,on
   // laptop-height window) it scrolls itself, never the page, as each beat lands, so the newest line and then the
   // strike card, the week's estimate under it and "Cancel seat" are in sight. (v2.1 stayed at the top: at 1280x720
   // the card that says what the run took, and what Friday will charge for it, landed wholly below the fold.)
+  // When the report is done it rests with the result card's top in sight: on a window so short that the card, the
+  // manager's note, the estimate and "Cancel seat" do not all fit under it, the card's heading wins over the foot.
   // When the week turns it goes back to the top, where Run agents and the strike boxes are. A reload starts there.
   const follow=useRef(false);
   const[,setSettled]=useState(0);     // drawn once more when a report ends, so its foot is followed too
@@ -419,7 +421,13 @@ export const ClainkConsole=({s,ui,setUi,focusOnMount,onDeploy,onCancel,onHide,on
   useLayoutEffect(()=>{
     const el=ref.current;
     if(!follow.current || !el)return;
-    if(!mini && el.scrollHeight>el.clientHeight+1) el.scrollTop=el.scrollHeight;
+    if(!mini && el.scrollHeight>el.clientHeight+1){
+      const foot=el.scrollHeight-el.clientHeight, card=beat>=99 ? el.querySelector(".claink-strike, .claink-clear") : null;
+      if(card){
+        const bar=el.querySelector(".claink-titlebar"), under=bar ? bar.getBoundingClientRect().bottom : el.getBoundingClientRect().top;
+        el.scrollTop=Math.min(foot,Math.max(0,el.scrollTop+card.getBoundingClientRect().top-under-6));
+      }else el.scrollTop=foot;
+    }
     if(beat>=99 && !reveal.current.live) follow.current=false;   // the report has had its say: the player has the scroll back
   });
   useLayoutEffect(()=>{ const el=ref.current; if(el && !follow.current) el.scrollTop=0; },[s.week,s.runId]);

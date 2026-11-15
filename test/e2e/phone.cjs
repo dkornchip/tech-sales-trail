@@ -10,6 +10,9 @@
 //   7. a stored run that cannot be opened is not played: a dialog says so, fits the phone, and leaves it where it was
 //   8. a 320px screen: the wordmark makes way for the top bar's buttons; a tall dialog opens at its first line
 //   9. turned on its side: the chips are measured again, and settle (they used to be redrawn on every frame)
+//  10. v2.1.1: a tap near the top edge of End week ends the week (in v2.1 the hint grew under the finger and the tap
+//      was lost); the recovery dialog's buttons stay on a 320px screen; a caption that does not fit one line of the
+//      top bar is shown whole on a tablet and on a phone held sideways
 // Every screen here is a touch screen (no hover, a coarse pointer). Exits 1 if any check fails.
 // (CommonJS on purpose: Playwright only resolves through require() here.)
 "use strict";
@@ -26,20 +29,22 @@ const rows = [];
 const check = (name, ok, detail) => { rows.push(!!ok); console.log("  " + (ok ? "ok  " : "FAIL") + "  " + name + (detail ? "  (" + detail + ")" : "")); return !!ok; };
 const SMALL = { width: 360, height: 640 }, PHONE = { width: 390, height: 664 }, SIDEWAYS = { width: 750, height: 342 };
 
-// o: { viewport, save (raw text for the autosave), first (a brand-new player: the first day is shown) }
+// o: { viewport, save (raw text for the autosave), first (a brand-new player: the first day is shown), extra (more
+// storage keys, set with the save) }
 async function open(browser, o) {
   const context = await browser.newContext({ viewport: o.viewport, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
-  await context.addInitScript(([save, first, key, flag]) => {
+  await context.addInitScript(([save, first, key, flag, extra]) => {
     try {
       window.sessionStorage.setItem("tst-booted", "1");
       if (window.name !== "tst-seeded" && !window.sessionStorage.getItem("__seeded")) {   // once per tab (the tab's name survives a reload)
         window.name = "tst-seeded";
         if (!first) window.localStorage.setItem(flag, "1");
         if (save !== null) window.localStorage.setItem(key, save);
+        for (const k of Object.keys(extra)) window.localStorage.setItem(k, extra[k]);
         window.sessionStorage.setItem("__seeded", "1");
       }
     } catch (e) {}
-  }, [o.save === undefined ? null : o.save, !!o.first, AUTOSAVE, FLAG]);
+  }, [o.save === undefined ? null : o.save, !!o.first, AUTOSAVE, FLAG, o.extra || {}]);
   const page = await context.newPage();
   const errors = [];
   page.on("pageerror", e => errors.push(String(e).slice(0, 200)));
@@ -113,6 +118,14 @@ const wide = page => page.evaluate(() => ({ page: document.documentElement.scrol
     check("when the week turns the page goes back to the top, where the new week is", turned.y <= 2 && turned.week === "Week " + (now.week + 1) && !turned.strip, JSON.stringify(turned));
     const friday = await text(page, ".peek");
     check("and what Friday did is shown, wherever End week was on the screen when it was pressed", !!friday && friday.length > 3, friday);
+    // a tap near the top edge of the button: the tap brings the focus first, and in v2.1 the focus raised a
+    // three-line hint, the bar grew, and the button had moved from under the finger by the time it lifted
+    await page.waitForTimeout(3500);                              // the notice has gone
+    await page.evaluate(() => document.querySelector('[data-ui="end"]').scrollIntoView({ block: "center" })); await page.waitForTimeout(400);
+    const edge = await page.evaluate(() => { const r = document.querySelector('[data-ui="end"]').getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height * 0.15, week: document.querySelector(".quarter-head h2").innerText, hint: Math.round(document.querySelector(".hint").getBoundingClientRect().height) }; });
+    await page.touchscreen.tap(edge.x, edge.y); await page.waitForTimeout(1200);
+    const afterEdge = await page.evaluate(() => document.querySelector(".quarter-head h2").innerText);
+    check("a tap near the top edge of End week ends the week", afterEdge === "Week " + (Number(edge.week.replace(/\D/g, "")) + 1), edge.week + " -> " + afterEdge);
     // a week that ends in a choice: nothing is shown under the dialog, and the week's lines are shown once it is made
     await page.evaluate(() => { window.__TST_RNG = () => 0.1; });
     await page.waitForTimeout(5200);                           // the last notice has gone
@@ -206,6 +219,27 @@ const wide = page => page.evaluate(() => ({ page: document.documentElement.scrol
     check("at 320px the wordmark does not run under the top bar's buttons, and nothing is wider than the screen", names.brandRight <= names.rulesLeft && names.page <= names.screen, JSON.stringify(names));
     check("no errors", errors.length === 0, errors.join(" | "));
     await context.close();
+
+    /* ---------- 10. the recovery dialog's buttons, and captions that need two lines ---------- */
+    const old = fixture("midrun-seeded");
+    for (const size of [{ width: 320, height: 568 }, { width: 375, height: 667 }]) {
+      ({ context, page, errors } = await open(browser, { viewport: size, save: old, extra: { "tst-save-v4-3": old, "tst-autosave-v5": "{not json" } }));
+      await page.waitForTimeout(300);
+      const btns = await page.evaluate(() => [...document.querySelectorAll('dialog[open][data-dialog="recovery"] .d-footer .btn')].map(b => { const r = b.getBoundingClientRect(); return { text: b.innerText.replace(/\s+/g, " "), left: Math.round(r.left), right: Math.round(r.right), cut: b.scrollWidth > b.clientWidth + 1 }; }));
+      check(`a damaged run beside two from an earlier version, at ${size.width}px: every button of the dialog is on the screen with its whole label`, btns.length === 3 && btns.every(b => b.left >= 0 && b.right <= size.width && !b.cut) && btns.filter(b => /earlier version/.test(b.text)).length === 2 && !errors.length, JSON.stringify(btns));
+      await context.close();
+    }
+    for (const size of [{ width: 768, height: 1024 }, { width: 740, height: 360 }, { width: 667, height: 375 }]) {
+      ({ context, page, errors } = await open(browser, { viewport: size, save: fixture("midrun-seeded") }));
+      const cut = [];
+      for (const key of ["meetings", "whale", "sqlStorm", "freeze", "hygiene"]) {
+        await page.evaluate(k => window.TST_AUDIO.say(k, { force: true }), key); await page.waitForTimeout(450);
+        const c = await page.evaluate(() => { const t = document.querySelector(".pa-text"), bar = document.querySelector(".topbar"); if (!t) return null; const r = t.getBoundingClientRect(), b = bar.getBoundingClientRect(); return { text: t.textContent, cut: t.scrollWidth > t.clientWidth + 1 || t.scrollHeight > t.clientHeight + 1, inBar: r.top >= b.top && r.bottom <= b.bottom, bar: Math.round(b.height) }; });
+        if (!c || c.cut || !c.inBar || c.bar !== 48) cut.push(key + ": " + JSON.stringify(c));
+      }
+      check(`${size.width}x${size.height}: the announcer's longest lines are shown whole in the top bar, on as many lines as they need`, !cut.length && !errors.length, cut.join(" ; "));
+      await context.close();
+    }
 
     /* ---------- 9. turned on its side ---------- */
     ({ context, page, errors } = await open(browser, { viewport: { width: 390, height: 844 }, save: fixture("board-24-deals") }));

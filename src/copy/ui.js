@@ -55,7 +55,10 @@ export const KPI = {
   rentLater: w => `Rent due in week\u00A0${w}`,          // a no-break space: the number stays with "week"
   rentDone: "Rent is paid up",
   collections: at => `Collections at ${usd(at)} cash`,
-  ofQuota: share => pc(share),
+  // lines: the shares that decide the quarter (70%, 80%, 100%: quarter.js, QBR). The label is rounded like the pace
+  // line beside it, but never up onto one of those lines: at $159,500 of $160,000 it used to say 100%, and the QBR,
+  // which does not round up, then said 99% and ended the run on that.
+  ofQuota: (share, lines = []) => { let p = Math.round(share * 100); for (const l of lines) if (share < l && p >= Math.round(l * 100)) p = Math.round(l * 100) - 1; return `${p}%`; },
   onPace: "On pace",
   ahead: pts => `${n(pts, "percentage point")} ahead of\u00A0pace`,
   behind: pts => `${n(pts, "percentage point")} behind\u00A0pace`,
@@ -93,28 +96,27 @@ export const CARD = { skillOnly: "skill only", none: "no deals", fatal: "Ends th
 // The hint bar: what a button would do with the numbers as they stand. Factual first. Every number here is handed
 // in by the interface from the rules (src/game/selectors.js), so a hint cannot promise what the button will not do.
 // An action that would find nothing to work on says so, and says that it would still cost what it costs.
-// What a press with nothing to work on would still buy: its skill, a mark toward a full-funnel week (week.js: the
-// first press of its kind in a week), or both.
-const only = (skill, tick) => (skill && tick ? `It would only train ${skill} and count toward a full-funnel week.` : skill ? `It would only train ${skill}.` : "It would only count toward a full-funnel week.");
 const fifths = p => { const k = Math.round(p * 5); return Math.abs(p * 5 - k) < 1e-9 && k > 0 && k < 5 ? `${["", "One time", "Two times", "Three times", "Four times"][k]} in five` : `${pc(p)} of the time`; };
 export const HINT = {
   prospect: (c, stress) => `Cold calls. Usually ${to(1, 4)} new leads; occasionally a fifth. Costs time and energy. +${stress} stress.`,
   cadence: () => `${to(0, 3)} warmer leads. A week of emails without calls costs manager approval.`,
   // whale: the chance each introduction is a whale
   network: (c, whale) => `${to(1, 2)} introductions, usually small. Each has roughly ${aPc(whale)} chance of being a whale.`,
-  // With nothing waiting, a press still costs what it costs, and the hint says what it would buy. tick: it would be
-  // this week's first press of its kind, which counts toward a full-funnel week. Proposals trains no skill, so that
-  // mark is all it can buy; once the mark is there it buys nothing and is not on offer (blocked.none, below).
-  discovery: (c, p, tick) => (c ? `${n(c, "lead")} waiting. Each has ${aPc(p)} chance to qualify. Trains discovery.` : `No eligible deals. You would still spend a slot and energy. ${only("discovery", tick)}`),
-  demo: (c, p, tick) => (c ? `${n(c, "qualified deal")} waiting. Each has ${aPc(p)} chance to advance. Trains demos.` : `No eligible deals. You would still spend a slot and energy. ${only("demos", tick)}`),
-  propose: (c, p) => (c ? `${n(c, "demoed deal")} waiting. Each has ${aPc(p)} chance to reach Proposal.` : `No eligible deals. You would still spend a slot and energy. ${only(null, true)}`),
-  close: (c, tick) => (c ? `${n(c, "eligible deal")}; each has its own signing odds. Failed attempts may lose deals.` : `No deals are ready to sign. You would still spend a slot and energy. ${only("negotiation", tick)}`),
+  // With nothing waiting, a press still costs what it costs (the deck's sentence), and an action that trains a
+  // skill keeps its training note, as the deck asks ("only if the action actually trains skill"). Proposals trains
+  // nothing: all an empty press can buy is the week's mark toward a full-funnel week, so its hint says that, and
+  // once the mark is there it buys nothing and is not on offer (blocked.none, below).
+  discovery: (c, p) => (c ? `${n(c, "lead")} waiting. Each has ${aPc(p)} chance to qualify. Trains discovery.` : "No eligible deals. You would still spend a slot and energy. Trains discovery."),
+  demo: (c, p) => (c ? `${n(c, "qualified deal")} waiting. Each has ${aPc(p)} chance to advance. Trains demos.` : "No eligible deals. You would still spend a slot and energy. Trains demos."),
+  propose: (c, p) => (c ? `${n(c, "demoed deal")} waiting. Each has ${aPc(p)} chance to reach Proposal.` : "No eligible deals. You would still spend a slot and energy. It would only count toward a full-funnel week."),
+  close: c => (c ? `${n(c, "eligible deal")}; each has its own signing odds. Failed attempts may lose deals.` : "No deals are ready to sign. You would still spend a slot and energy. Trains negotiation."),
   // buzz: the chance it also lifts signing odds; lift: by how much (a fraction), this week only
   conference: (c, stress, buzz, lift) => `${to(3, 8)} warm leads; some are large. ${n(c.slots, "slot")}, ${c.energy} energy, ${usd(c.cash)}, +${stress} stress. ${pc(buzz)} chance of +${Math.round(lift * 100)} pp signing odds this week.`,
   // (value: what the leads it would remove are worth; v2.1 gave the count only, and a count of 2 could be $180,000)
   crm: (pruned, gain, nuke, value) => `Removes ${n(pruned, "dead lead")}${pruned && value ? ` (${usd(value)})` : ""}: +${gain} manager. Once per week.` + (nuke ? ` Your manager may remove a live deal while he’s in the CRM (${pc(nuke)}).` : ""),
-  // (both take one of the week's slots, which their cards have no room to say)
-  recharge: r => `Takes a slot. +${to(r.energy[0], r.energy[1])} energy` + (r.relief[1] > 0 ? `, −${to(r.relief[0], r.relief[1])} stress` : ", no stress relief") + ". Once per week. Coffee reduces relief. A rare great nap approves a trip.",
+  // (a quad shot takes one of the week's slots, which its card has no room to say: bought with the last slot to
+  // power another action, it ends the week instead. Recharge's slot is in the tour.)
+  recharge: r => `+${to(r.energy[0], r.energy[1])} energy` + (r.relief[1] > 0 ? `, −${to(r.relief[0], r.relief[1])} stress` : ", no stress relief") + ". Once per week. Coffee reduces relief. A rare great nap approves a trip.",
   coffee: (shot) => `Takes a slot. Shot ${shot.n}: +${shot.energy} energy, +${shot.stress} stress now, +${shot.crash} more on Friday.` + (shot.risk >= 1 ? " This shot reaches 100 stress and ends the run." : shot.risk > 0 ? ` ${pc(shot.risk)} chance it ends the run.` : " Later shots give less and risk more."),
   politics: () => "Lunch with leadership. +8 manager · +3 product · −4 reputation · +2 stress.",
   // blast: the chance nobody walks; walk: the chance each late deal left walks otherwise; cost: what the throw takes
@@ -124,8 +126,9 @@ export const HINT = {
   // bust: salary and rent together would leave cash at or under the line where Collections ends the run
   // claink: the invoice an active seat will get this Friday, as certain as rent (v2.1 left it out of the preview)
   endWeek: f => `Friday: salary +${usd(f.salary)}` + (f.rent ? `, rent −\u2060${usd(f.rent)}` : "")
-    + (f.claink && !f.bust ? `, clAInk −\u2060${f.claink.idle ? to(usd(f.claink.idle[0]), usd(f.claink.idle[1])) : usd(f.claink.due)}` : "")
+    + (f.claink && !f.bust && !f.melt ? `, clAInk −\u2060${f.claink.idle ? to(usd(f.claink.idle[0]), usd(f.claink.idle[1])) : usd(f.claink.due)}` : "")
     + (f.bust ? `. That would leave ${usd(f.cash)} cash. Collections ends the run at ${usd(f.repoAt)}.`
+      : f.melt ? `. The coffee crash adds ${f.stress} stress. That reaches 100 and ends the run.`
       : `, energy +${f.energy}, stress ${f.stress < 0 ? "−" + -f.stress : "+" + f.stress}. Friday events and collections may change this.`),
   // A press that is certain to end the run says so, and says nothing else (f: selectors.js, fatalPress): the stress
   // it adds reaches 100, or the cash it costs reaches the line where Collections ends the run.
@@ -203,7 +206,9 @@ export const NAMES = { week: "Your week", desk: "Your deals and activity", sound
 // other stored run that does open. slot: "autosave" or "save"; legacy: stored by an earlier version of the game.
 export const RECOVERY = {
   title: "This saved run could not be opened",
-  body: (status, others) => `${status === "newer" ? "It was saved by a newer version of the game." : "The run stored in this browser is damaged."} ${others ? "Start a new run or return to a valid saved run." : "Start a new run."} It will be kept aside, not deleted.`,
+  // (what is kept aside is the run that could not be opened: said before the instruction, so "it" cannot be read
+  // as the new run or the valid one)
+  body: (status, others) => `${status === "newer" ? "It was saved by a newer version of the game." : "The run stored in this browser is damaged."} It will be kept aside, not deleted. ${others ? "Start a new run or return to a valid saved run." : "Start a new run."}`,
   newRun: "Start a new run",
   open: (slot, week, legacy) => `Open ${slot === "save" ? "your saved run" : "the autosave"} · week ${week}${legacy ? " (earlier version)" : ""}`
 };
@@ -222,9 +227,9 @@ export const MOOD = { skeptical: "skeptical", neutral: "neutral", curious: "curi
 // (BOOT.brand is the badge on the housing, in the company's capitals; UI.peekMore names the Activity panel.)
 export const lint = { exempt: { "sentence-case": ["BOOT.brand", "UI.peekMore"] }, params: {
   "HINT.network": [{ args: [0, 0.03] }], "HINT.prospect": [{ args: [0, 2] }],
-  "HINT.discovery": [{ args: [0, 0.6, true] }, { args: [0, 0.6, false] }, { args: [1, 0.6] }, { args: [3, 0.85] }], "HINT.demo": [{ args: [0, 0.5, true] }, { args: [0, 0.5, false] }, { args: [1, 0.5] }, { args: [3, 0.8] }],
-  "HINT.propose": [{ args: [0, 0.55] }, { args: [1, 0.55] }, { args: [3, 0.55] }], "HINT.close": [{ args: [0, true] }, { args: [0, false] }, { args: [1] }, { args: [4] }],
-  "HINT.endWeek": [{ salary: 1000, rent: 0, energy: 15, stress: -4, cash: 1500, bust: false, repoAt: -1500 }, { salary: 1000, rent: 1600, energy: 15, stress: 26, cash: -300, bust: false, repoAt: -1500 }, { salary: 1000, rent: 1600, energy: 15, stress: -4, cash: -1550, bust: true, repoAt: -1500 }],
+  "HINT.discovery": [{ args: [0, 0.6] }, { args: [1, 0.6] }, { args: [3, 0.85] }], "HINT.demo": [{ args: [0, 0.5] }, { args: [1, 0.5] }, { args: [3, 0.8] }],
+  "HINT.propose": [{ args: [0, 0.55] }, { args: [1, 0.55] }, { args: [3, 0.55] }], "HINT.close": [{ args: [0] }, { args: [1] }, { args: [4] }],
+  "KPI.ofQuota": [{ args: [0.385, [0.7, 0.8, 1]] }, { args: [0.9997, [0.7, 0.8, 1]] }], "HINT.endWeek": [{ salary: 1000, rent: 0, energy: 15, stress: 26, cash: 1500, bust: false, melt: true, repoAt: -1500 }, { salary: 1000, rent: 0, energy: 15, stress: -4, cash: 1500, bust: false, repoAt: -1500, claink: { idle: [150, 300] } }, { salary: 1000, rent: 0, energy: 15, stress: -4, cash: 1500, bust: false, repoAt: -1500 }, { salary: 1000, rent: 1600, energy: 15, stress: 26, cash: -300, bust: false, repoAt: -1500 }, { salary: 1000, rent: 1600, energy: 15, stress: -4, cash: -1550, bust: true, repoAt: -1500 }],
   "HINT.ends": [{ why: "cash", cash: -1600, repoAt: -1500 }, { why: "stress", add: 2 }, { why: "stress", add: 4, atLeast: true }], "CARD.eligible": [1, 3],
   "HINT.conference": [{ args: [{ energy: 40, slots: 2, cash: 800 }, 5, 0.3, 0.08] }],
   "HINT.crm": [{ args: [2, 7, 0.15, 180000] }, { args: [1, 6, 0, 6000] }, { args: [0, 5, 0.25, 0] }],
