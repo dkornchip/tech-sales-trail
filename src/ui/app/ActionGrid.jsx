@@ -25,7 +25,7 @@ export const describe = (a, s) => {
   else if (a.id === "propose") { count = stageCount(s, 2); hint = HINT.propose(count, PROPOSE_CHANCE); }
   else if (a.id === "close") { count = lateDeals(s).length; hint = HINT.close(count, !(u.propose || u.close)); }
   else if (a.id === "prospect") hint = HINT.prospect(a, STRESS_COST.prospect);
-  else if (a.id === "crm") { const c = crmPreview(s); hint = HINT.crm(c.pruned, c.gain, c.nuke); }
+  else if (a.id === "crm") { const c = crmPreview(s); hint = HINT.crm(c.pruned, c.gain, c.nuke, c.value); }
   else if (a.id === "recharge") hint = HINT.recharge(rechargeRange(s));
   else if (a.id === "coffee") { const shot = nextShot(s); hint = HINT.coffee(shot); cost = shot.risk > 0 ? copy.risk(a, shot.risk) : copy.cost(a, shot.stress, shot.crash); }
   else if (a.id === "network") hint = HINT.network(a, REFERRAL.whale);

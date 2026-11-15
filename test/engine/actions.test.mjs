@@ -233,7 +233,15 @@ test("CRM cleanup: prunes dead leads, pleases the manager, shields this week's r
   x = await first(s, "crm", [0.15]); assert.equal(x.all.length, 1); assert.equal(x.s.deals.length, 4);
   x = await first({ ...s, manager: 39 }, "crm", [0.2499]); assert.equal(x.all.length, 2, "25% under 40"); assert.ok(!(await first({ ...s, manager: 39 }, "crm", [0.25])).all[1]);
   assert.deepEqual([R.crmGain(0), R.crmGain(4), R.crmGain(5), R.crmGain(50)], [5, 9, 10, 10]);
-  assert.deepEqual(eng.selectors.crmPreview(s), { pruned: 2, gain: 7, nuke: 0.15 });
+  assert.deepEqual(eng.selectors.crmPreview(s), { pruned: 2, value: 3000, gain: 7, nuke: 0.15 });
+  // the hint says what is going, in dollars: "dead" is skeptical or five weeks old, whatever the deal is worth
+  const ui = await import("../../src/copy/ui.js"), big = await craft({ manager: 50, deals: [[1, 150000, "happy", 5, "OldWhale"], [1, 30000, "skeptical", 0, "Doubter"], [2, 14000, "skeptical", 0, "Demoed"], [0, 6000, "neutral", 0, "Fresh"]] });
+  const pv = eng.selectors.crmPreview(big);
+  assert.deepEqual([pv.pruned, pv.value], [2, 180000]);
+  assert.ok(ui.HINT.crm(pv.pruned, pv.gain, pv.nuke, pv.value).replace(/\u2060/g, "").startsWith("Removes 2 dead leads ($180,000): +7 manager."));
+  const after = (await first(big, "crm", [0.99])).s;
+  assert.equal(big.deals.reduce((t, d) => t + d.value, 0) - after.deals.reduce((t, d) => t + d.value, 0), pv.value, "and that is what the press removes");
+  assert.equal(ui.HINT.crm(0, 5, 0, 0), "Removes 0 dead leads: +5 manager. Once per week.");
   // nothing dead, nothing at risk: no roll, a different line, and still once a week
   const clean = await craft({ manager: 98 });
   x = await first(clean, "crm", []); assert.equal(x.l.tag, "act.crm.clean"); assert.deepEqual(x.l.d, { mgr: 5, fx: { energy: -15, manager: 2 } }); assert.deepEqual(eng.run.step(clean, act("crm")).state.rng, clean.rng);

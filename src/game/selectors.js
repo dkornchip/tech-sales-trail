@@ -49,10 +49,12 @@ export const rechargeRange = s => {
   return { energy: [RECHARGE_ENERGY, rechargeMax(RECHARGE_ENERGY)], relief: [relief, rechargeMax(relief)] };
 };
 // actCrm: how many leads it would clear, what the manager makes of it, and the risk he clears a live one too
+// (value: what the dead leads are worth. A lead or qualified deal is "dead" when it is skeptical or five weeks old,
+// whatever its size: the cleanup can take a large deal with it, and the hint has to say how much is going.)
 export const crmPreview = s => {
-  const pruned = s.deals.filter(isDeadLead).length;
+  const dead = s.deals.filter(isDeadLead), pruned = dead.length;
   const atRisk = s.deals.some(d => !isDeadLead(d) && (d.stage === 1 || d.stage === 2));
-  return { pruned, gain: crmGain(pruned), nuke: atRisk ? crmNukeOdds(s.manager) : 0 };
+  return { pruned, value: dead.reduce((sum, d) => sum + d.value, 0), gain: crmGain(pruned), nuke: atRisk ? crmNukeOdds(s.manager) : 0 };
 };
 // endWeek: the parts of Friday that are certain. `cash` is what salary and rent leave, before anything else Friday
 // does (a Friday signing pays its commission first; clAInk's invoice comes last); `bust` says that it is at or

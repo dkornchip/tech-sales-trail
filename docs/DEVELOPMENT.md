@@ -10,7 +10,7 @@ npm install              # esbuild, React, the fonts, the icons
 npm run build            # src/ -> dist/index.html, the release build: no test hooks in it
 npm run build:test       # src/ -> dist-test/index.html, the same game with the hooks the tests script it through
 npm run verify           # both builds, then every check below
-npm run release          # src/ -> ./Tech_Sales_Trail_<major.minor>.html
+npm run release          # src/ -> ./Tech_Sales_Trail_<version>.html (2.1.1; a .0 patch is left off: 2.1)
 npm run verify:release   # verify, and that the committed release file is exactly what the source builds
 ```
 
@@ -22,12 +22,19 @@ Install it once beside the project: `npm install --no-save playwright && npx pla
 The build puts everything (React, the game, the styles, two fonts, the icons) into one HTML file that makes no
 network requests.
 
-- A release is written as `Tech_Sales_Trail_<major.minor>.html` by `npm run release`.
+- A release is written as `Tech_Sales_Trail_<version>.html` by `npm run release` (the version in `package.json`).
 - `index.html` at the root is the file GitHub Pages serves. It is a byte-for-byte copy of the release the owner
   has promoted (today: `Tech_Sales_Trail_2.1.html`). The build never writes it; promoting a release is the owner's
   call.
-- Earlier releases are kept as shipped under `test/baseline/` (`v2.0.1`, and `v1.21`, which the scene and save
-  tests still compare against).
+- Earlier releases are kept as shipped: `Tech_Sales_Trail_2.1.html` at the root, and `v2.0.1` and `v1.21` under
+  `test/baseline/` (the scene and save tests still compare against v1.21). `test/baseline/releases.json` records
+  each one's size and SHA-256 and which one is promoted; the `releases` step of `npm run verify` fails if any of
+  them, or `index.html`, is no longer that file.
+- A release candidate (today: `Tech_Sales_Trail_2.1.1.html`) is not in that record until it is promoted.
+
+To promote a release, on the owner's instruction only: copy its file over `index.html`; add it to
+`test/baseline/releases.json` with its size and SHA-256 and set `"promoted"`; bring the README's "what's new" and
+its two sentences about confirmations up to date; run `npm run verify:release`.
 
 ## Where things live
 
@@ -64,9 +71,17 @@ It runs these in order and stops at the first that fails.
 - **audio** (`test/audio/`, Node): what the sound engine decides, against a fake speaker: which log line makes
   which sound, what a batch plays, that the announcer never talks over itself, that a line that matters cuts off
   filler, captions, mute.
+- **releases** (`scripts/check-releases.mjs`): every earlier release kept in the repository is the file that
+  shipped, and `index.html` is the one the owner promoted.
 - **sim-smoke** (`test/sim/`): the simulation kit plays whole quarters with policy bots on the frozen balance
-  baseline (`test/baseline/checkpoint-engine`) and on the working tree. `npm run sim -- --seeds 1000` prints the
-  balance tables. The bots are heuristics; they are not playtests.
+  baseline (`test/baseline/checkpoint-engine`) and on the working tree, and the frozen engines are intact.
+  `npm run sim -- --seeds 1000` prints the balance tables. The bots are heuristics; they are not playtests.
+- **equivalence** (`test/engine/tools/equivalence.mjs`): the frozen 2.1 rules (`test/baseline/v2.1-engine`) and
+  the working tree are played side by side from the same seeds by every policy bot. After every move the two runs
+  must be the same run (every meter, deal, flag, counter, effect, pending choice, the log's tags in order and the
+  position of both dice streams; words are not compared). A move 2.1 allowed and the tree refuses must be a
+  correction listed in that file, and is proven there to have been worth nothing in 2.1. A patch release that is
+  meant to be presentation-only passes this unchanged.
 - **scenes**: every frame of every ASCII scene's picture is exactly v1.21's. (v2.1 rewrote the captions under them;
   the copy lint and the copydeck gate hold those.)
 - **fixtures** and **saves** (`test/saves/`): saves from every state and ending of v1.21, and older, load, show
@@ -79,8 +94,14 @@ It runs these in order and stops at the first that fails.
   network and the bundled fonts in use; the onboarding memo and tour; the four confirmations by real clicks and key
   presses (a "no" must leave the run exactly as it was); reloads, damaged saves, duplicate names and an ending whose
   cutscene cannot play; a touch screen at phone sizes and on its side; a whole run on the keyboard; one screen at
-  seven desktop sizes and a phone, with nothing covered or cut off, clAInk's ad showing all of itself (on an empty
-  board and beside ten deals), and clAInk's window taking only the room the deal list and the log do not need.
+  nine desktop sizes (two of them short: 1366×657 and 1280×620, a laptop with the browser's toolbars showing) and a
+  phone, with nothing covered or cut off, clAInk's ad showing all of itself (on an empty board and beside ten
+  deals), and clAInk's window taking only the room the deal list and the log do not need.
+- **actions** (`test/e2e/actions.cjs`, on the release build): what an action card says is what the press does.
+  Crafted boards are opened, the cards are read, the rules are asked about the same run, the card is pressed and
+  the run the page saves is compared with the run before: the count of eligible deals, `skill only`, `no deals`, a
+  card that is off, a press that would end the run (marked, said, confirmed; "no" changes nothing), the hint after
+  a press, the change chips with reduced motion, and that no hint is taller than the hint bar.
 - **matrix** (`test/e2e/matrix.cjs`): eight screen sizes (1440×900 down to 320×568, a phone on its side, 200% zoom)
   × thirteen states (a new player's first screen, the main screen, clAInk's offer open and minimized, a Friday
   choice, a clAInk incident, the handbook, six endings), from `file://` with the network refused. `--shots <dir>`
@@ -98,6 +119,10 @@ the engine tests fail to catch.
   over the shipped defaults (`TUNING_DEFAULTS` in `src/game/rules.js`).
 - `node test/engine/tools/integrity-diff.mjs` plays the frozen 2.0.1 rules and the working tree side by side and
   sorts every difference into the 2.1 fixes that explain it, or "anything else".
+- `node test/engine/tools/equivalence.mjs --seeds 1000` is the `equivalence` step at full size: the frozen 2.1
+  rules against the working tree, 22 policies, every move.
+- `node test/e2e/tools/shot.cjs --out <file> --state '<json>' --size 1366x657 --do hover:'[data-act="close"]'`
+  takes one picture of the game in any state at any size, for looking at a change before and after it.
 - Up to v2.0.1 the build was also held move for move, and sound for sound, to the frozen v1.21 file
   (`test/parity/run.cjs`). v2.1 changes rules on purpose, so that comparison ended at the last commit where it held;
   the evidence is in `qa/2.1/evidence/`. The harness stays, because the scene, save and browser tests are built on

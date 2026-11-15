@@ -111,7 +111,8 @@ export const HINT = {
   close: (c, tick) => (c ? `${n(c, "eligible deal")}; each has its own signing odds. Failed attempts may lose deals.` : `No deals are ready to sign. You would still spend a slot and energy. ${only("negotiation", tick)}`),
   // buzz: the chance it also lifts signing odds; lift: by how much (a fraction), this week only
   conference: (c, stress, buzz, lift) => `${to(3, 8)} warm leads; some are large. ${n(c.slots, "slot")}, ${c.energy} energy, ${usd(c.cash)}, +${stress} stress. ${pc(buzz)} chance of +${Math.round(lift * 100)} pp signing odds this week.`,
-  crm: (pruned, gain, nuke) => `Removes ${n(pruned, "dead lead")}: +${gain} manager. Once per week.` + (nuke ? ` Your manager may remove a live deal while he’s in the CRM (${pc(nuke)}).` : ""),
+  // (value: what the leads it would remove are worth; v2.1 gave the count only, and a count of 2 could be $180,000)
+  crm: (pruned, gain, nuke, value) => `Removes ${n(pruned, "dead lead")}${pruned && value ? ` (${usd(value)})` : ""}: +${gain} manager. Once per week.` + (nuke ? ` Your manager may remove a live deal while he’s in the CRM (${pc(nuke)}).` : ""),
   // (both take one of the week's slots, which their cards have no room to say)
   recharge: r => `Takes a slot. +${to(r.energy[0], r.energy[1])} energy` + (r.relief[1] > 0 ? `, −${to(r.relief[0], r.relief[1])} stress` : ", no stress relief") + ". Once per week. Coffee reduces relief. A rare great nap approves a trip.",
   coffee: (shot) => `Takes a slot. Shot ${shot.n}: +${shot.energy} energy, +${shot.stress} stress now, +${shot.crash} more on Friday.` + (shot.risk >= 1 ? " This shot reaches 100 stress and ends the run." : shot.risk > 0 ? ` ${pc(shot.risk)} chance it ends the run.` : " Later shots give less and risk more."),
@@ -224,6 +225,7 @@ export const lint = { exempt: { "sentence-case": ["BOOT.brand", "UI.peekMore"] }
   "HINT.endWeek": [{ salary: 1000, rent: 0, energy: 15, stress: -4, cash: 1500, bust: false, repoAt: -1500 }, { salary: 1000, rent: 1600, energy: 15, stress: 26, cash: -300, bust: false, repoAt: -1500 }, { salary: 1000, rent: 1600, energy: 15, stress: -4, cash: -1550, bust: true, repoAt: -1500 }],
   "HINT.ends": [{ why: "cash", cash: -1600, repoAt: -1500 }, { why: "stress", add: 2 }, { why: "stress", add: 4, atLeast: true }], "CARD.eligible": [1, 3],
   "HINT.conference": [{ args: [{ energy: 40, slots: 2, cash: 800 }, 5, 0.3, 0.08] }],
+  "HINT.crm": [{ args: [2, 7, 0.15, 180000] }, { args: [1, 6, 0, 6000] }, { args: [0, 5, 0.25, 0] }],
   "HINT.hail": [{ args: [2, 0.2, 0.55, { energy: 10, slots: 1 }] }, { args: [0, 0.2, 0.55, { energy: 10, slots: 1 }] }, { args: [1, 0.25, 0.5, { energy: 10, slots: 1 }] }],
   "KPI.collections": [{ args: [-1500] }],
   "CHIP.closeOdds": [{ args: [0.12, 1] }, { args: [-0.15, 2] }],

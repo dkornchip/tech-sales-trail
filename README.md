@@ -234,6 +234,8 @@ clAInk is a gamble, not a strategy. You can cancel the seat for $250 plus whatev
 
 More: [release notes](TTST_2.1_RELEASE_NOTES.md) · [what was changed, measured and tested](TTST_2.1_QA_REPORT.md) · [full history](CHANGELOG.md)
 
+**Next: v2.1.1, “Operation Gold Master.”** A last polish pass is built and waiting for sign-off as [`Tech_Sales_Trail_2.1.1.html`](Tech_Sales_Trail_2.1.1.html): action cards that say what a press would buy, a screen that fits a short laptop window, and a proofread. The rules and the balance are the same. [Release notes](TTST_2.1.1_RELEASE_NOTES.md) · [QA report](TTST_2.1.1_QA_REPORT.md)
+
 ---
 
 ## For developers

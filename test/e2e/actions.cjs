@@ -21,6 +21,7 @@
 //        stress   Prospect blitz, Internal politics, the conference or the Hail Mary that would reach 100 stress
 //      and a Friday whose rent would take cash to Collections says so on the cash card and on End week
 //   5. the Hail Mary says what it costs (its energy, as the cards do; a throw takes a slot like any action)
+//      and CRM cleanup says what its "dead leads" are worth, which is what the press removes
 //   6. the hint under the pointer is about the run as it is: after a press, with the pointer still on the card, the
 //      bar says what the card would do now, not what it did (v2.1 kept the words from before the press)
 //   7. what a press changed is shown: the change chip on a stat card can be seen, with reduced motion too (v2.1
@@ -249,6 +250,17 @@ const stored = async page => JSON.stringify(await page.evaluate(readRun));
     await press(page, '[data-ui="hail"]'); await press(page, '[data-ui="confirm-yes"]'); await page.waitForTimeout(500);
     const thrown = rules(await page.evaluate(readRun));
     check("the Hail Mary's hint gives its cost, and that is what the throw takes", hint === plain(COPY.UI.hail + ". " + H.hail(1, RULES.HAIL.blast, RULES.HAIL.walk, c)) && hint.includes(` ${c.energy} energy.`) && thrown.slots === before.slots - c.slots && Math.round(thrown.energy) === Math.round(before.energy - c.energy) && !errors.length, `"${hint}"; slots ${before.slots} -> ${thrown.slots}, energy ${Math.round(before.energy)} -> ${Math.round(thrown.energy)}`);
+    await context.close();
+
+    // CRM cleanup: a "dead lead" is a lead or qualified deal that is skeptical or five weeks old, whatever its size
+    ({ context, page, errors } = await open(browser, save({ week: 6, cash: 3000, deals: [D(1, 150000, "happy", 5), D(1, 30000, "skeptical"), D(2, 14000, "skeptical"), D(0, 6000)] })));
+    const crmBefore = rules(await page.evaluate(readRun)), pv = S.crmPreview(crmBefore);
+    await page.locator('[data-act="crm"]').hover(); await page.waitForTimeout(150);
+    hint = await hintOf(page);
+    await press(page, '[data-act="crm"]');
+    const crmAfter = rules(await page.evaluate(readRun)), sum = run => run.deals.reduce((t, d) => t + d.value, 0);
+    const nuked = crmAfter.logs.find(e => e.tag === "act.crm.nuked"), gone = sum(crmBefore) - sum(crmAfter) - (nuked ? nuked.d.value : 0);
+    check("CRM cleanup's hint says what the dead leads are worth, and that is what the press removes", pv.pruned === 2 && pv.value === 180000 && hint === plain(COPY.ACTION.crm.title + ". " + H.crm(pv.pruned, pv.gain, pv.nuke, pv.value)) && hint.includes("2 dead leads ($180,000)") && gone === pv.value && !errors.length, `"${hint}"; removed $${gone}${nuked ? " (and the manager closed out a live deal worth $" + nuked.d.value + ")" : ""}`);
     await context.close();
 
     /* ---------- 6. the hint under the pointer is about the run as it is ---------- */

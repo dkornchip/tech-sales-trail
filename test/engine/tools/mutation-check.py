@@ -8,7 +8,7 @@ M=[
  ("src/game/week.js","if(rnd()<FRIDAY_CLOSE){","if(rnd()<=FRIDAY_CLOSE){"),
  ("src/game/week.js","ns=expireEffects(ns);","/*ns=expireEffects(ns);*/"),
  ("src/game/week.js","if(motionsHit>=3){","if(motionsHit>=2){"),
- ("src/game/week.js","if(d.stage===0 && rnd()<0.20){lost++;return false;}","if(d.stage===0 && rnd()<0.25){lost++;return false;}"),
+ ("src/game/week.js","if(d.stage===0 && rnd()<STALE.p){lost++;return false;}","if(d.stage===0 && rnd()<STALE.p+0.05){lost++;return false;}"),
  ("src/game/quarter.js","}else if(perfQ>=QBR.floor){","}else if(perfQ>QBR.floor){"),
  ("src/game/quarter.js","if(!s.fired && perfQ>=QBR.club && mgr<QBR.politicsBelow && rnd()<QBR.politics){","if(!s.fired && perfQ>=QBR.club && mgr<=QBR.politicsBelow && rnd()<QBR.politics){"),
  ("src/game/quarter.js","if(shielded) fireChance-=0.06;","if(shielded) fireChance-=0.05;"),
@@ -59,6 +59,13 @@ M=[
  ("src/game/selectors.js","s.closedWon >= s.quota) out.push(\"americanDream\")","s.closedWon > 0) out.push(\"americanDream\")"),
  ("src/game/claink.js","incident:r.kind","incident:rKind"),
  ("src/game/story.js","p.incident === \"churn\"","p.incident"),
+ # v2.1.1: Proposals with nothing to send and nothing left to count is refused; what a press would end
+ ("src/game/actions.js","  if(proposeIdle(s))return null;\n","  \n"),
+ ("src/game/actions.js","!!(s.used && (s.used.propose || s.used.close))","!!(s.used && s.used.propose)"),
+ ("src/game/actions.js","!s.deals.some(d=>d.stage===2) && !!(s.used","!s.deals.some(d=>d.stage===3) && !!(s.used"),
+ ("src/game/run.js","(id === \"propose\" && proposeIdle(s) ? { why: \"none\" } : null)","null"),
+ ("src/game/selectors.js","s.stress + add >= 100","s.stress + add > 100"),
+ ("src/game/selectors.js","return id === \"coffee\" ? stress || cash : cash || stress;","return stress || cash;"),
 ]
 caught=0; missed=[]
 for i,(f,a,b) in enumerate(M):

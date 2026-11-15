@@ -1,5 +1,73 @@
 # Changelog
 
+## v2.1.1 — "Operation Gold Master" (release candidate, not promoted)
+
+A final polish pass on 2.1. Built as `Tech_Sales_Trail_2.1.1.html`; `index.html` is still 2.1 and stays so until
+the owner promotes this. Player-facing notes: `TTST_2.1.1_RELEASE_NOTES.md`. What was changed, verified, left
+alone and turned down: `TTST_2.1.1_QA_REPORT.md`, with the evidence under `qa/2.1.1/`.
+
+The rules play as they did: the frozen 2.1 rules (`test/baseline/v2.1-engine`) and this tree are the same run
+after every move from the same seeds (`npm run verify`, step `equivalence`), with one decided correction below.
+No balance number, probability, reward or save format changed.
+
+### What a press would buy
+- The four pipeline actions show how many deals they would work on. With none, the card says what is left to buy:
+  `skill only` (Discovery, Demo marathon, Close deals train their skill) or `no deals` (Proposals trains nothing).
+- **The one rule correction.** Proposals with no demoed deal, in a week whose proposal-or-close work is already
+  counted, took a slot and 25 energy and gave nothing back: no deal, no skill, no credit toward a full-funnel week.
+  It is now refused, and the card says why. The same press earlier in the week still counts toward a full-funnel
+  week, as before, and is still allowed. (`src/game/actions.js`, `proposeIdle`.)
+- A press that is certain to end the run is marked `Ends the run`, says so in the hint, and asks first: stress that
+  would reach 100 (Prospect blitz, Internal politics, the conference, the Hail Mary) or a purchase that would take
+  cash to Collections. A Friday whose rent would do the same is said on the cash card and on End week.
+- Hints say what they left out: the Hail Mary's energy, Prospect blitz's stress, that Recharge and a quad shot take
+  a slot. The handbook names what counts toward a full-funnel week (a conference does not) and when stale leads and
+  a backlog of qualified deals cost you.
+- The line under the actions no longer suggests work there is no energy for, and a number key on an action that is
+  off goes to its card, which says why.
+- The hint bar reads its words from the run as it is. It used to keep the words from before the press: after the
+  last deal signed it went on saying "1 eligible deal" under a card that said none.
+
+### The screen
+- **A short window no longer loses End week.** In a desktop window 620 to about 750px tall (a 1366×768 laptop with
+  the browser's toolbars showing) the week's card was taller than the window and the page does not scroll: End
+  week and the Hail Mary hung out of the card or off the screen. The card now closes up in proportion.
+- The hint bar is two lines tall whatever it says, so a two-line hint is no longer pressed against its borders and
+  nothing under it moves.
+- The unfilled part of a stat card's meter can be seen; the quota meter turns green from 100%; the cash card's
+  second line sits level with its neighbours; End week and the Hail Mary answer a press; the PIP chip is first in
+  its row; a minus sign stays with its amount and a range stays in one piece.
+
+### Feedback
+- A signing reads as one: its log line is toned good (green icon), and the announcer's large-sale line starts at
+  $40,000 (was $45,000).
+- With reduced motion the change chips on the stat cards were drawn at opacity 0 for their whole life. They show.
+- A deal that moves up a stage fades its next pip in.
+- On a phone the notice no longer announces a clAInk run's result two seconds before the workspace's own report
+  lands, or sits on it.
+
+### clAInk
+- The policy step states the recurring costs before you accept: the weekly retainer, the price per outcome, the
+  idle-week charge, possible overages, what the true-up takes and what cancelling costs. (They were stated nowhere
+  before purchase.) No clAInk number changed.
+
+### Proofreading
+- After a clAInk run that worked, the manager's dialog opens "Nice week. ChatGDP do that?" while the announcer
+  said and captioned his other opening. The voice says the one shown.
+- "1 introduction. One of them is a whale." is now "It is a whale."; "1 of your largest deal" is "deals".
+- A sentence is still never said twice running, but the wording taken instead is chosen among all the others
+  rather than always the next in the list, so a line's first alternative no longer returns every other time.
+- The chips under a log line are each kept whole when the row wraps.
+
+### Distribution
+- The handbook carries the statement that the game is an independent fictional satire, not affiliated with or
+  endorsed by any employer or technology vendor. The README carries it too.
+
+### Tests
+- New gates: `releases` (every kept release is the file that shipped, and `index.html` is the promoted one),
+  `equivalence` (above) and `actions` (what a card says is what the press does: 85 checks by real presses).
+- The layout gate also measures 1366×657 and 1280×620.
+
 ## v2.1 — "Operation Final Coat"
 
 `index.html` is v2.1: a byte-for-byte copy of `Tech_Sales_Trail_2.1.html`, promoted on the owner's instruction.
