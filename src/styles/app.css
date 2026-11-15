@@ -189,6 +189,15 @@
   .left{align-self:stretch;justify-content:space-between}
   .actions{flex:0 1 auto;grid-auto-rows:minmax(54px,1fr);height:100%;max-height:calc(4 * 80px + 3 * var(--sp-3))}
   .action{height:auto}
+  /* A short window (a laptop with the browser's toolbars showing: 620 to about 750px tall) has less height than
+     the week's card wants, and this page does not scroll: End week used to slide off the bottom of the screen.
+     Instead the card closes up. Its gaps, its padding and the rows of actions ease from their full size at 746px
+     of window height to their smallest at 640px, each in proportion (--short is how far under 746px the window
+     is). At 746px and above nothing changes. */
+  .left{--short:calc(746px - 100dvh);padding-block:clamp(var(--sp-3),calc(var(--sp-5) - var(--short) * .0755),var(--sp-5));gap:clamp(var(--sp-3),calc(var(--sp-5) - var(--short) * .0755),var(--sp-5))}
+  .actions{row-gap:clamp(6px,calc(var(--sp-3) - var(--short) * .0189),var(--sp-3));grid-auto-rows:minmax(clamp(44px,calc(54px - var(--short) * .0943),54px),1fr)}
+  .kpi{padding-block:clamp(var(--sp-3),calc(var(--sp-4) - var(--short) * .0377),var(--sp-4))}
+  .quarter,.stats{gap:clamp(var(--sp-2),calc(var(--sp-3) - var(--short) * .0377),var(--sp-3))}
 }
 @media (min-width:1500px) and (min-height:900px){ .actions{grid-auto-rows:minmax(62px,1fr);max-height:calc(4 * 88px + 3 * var(--sp-3))} }
 /* stacked: one column, the page scrolls */

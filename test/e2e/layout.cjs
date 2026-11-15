@@ -19,7 +19,8 @@
  *   --selftest            break the page on purpose, one check at a time, and require each check to notice
  *   --list                print the check ids, fixtures and viewports and stop
  *
- * Desktop: at 1920x1080, 1920x950, 1536x864, 1366x768, 1280x720, 1280x800 and 1200x800, on ten states
+ * Desktop: at 1920x1080, 1920x950, 1536x864, 1366x768, 1280x720, 1280x800, 1200x800 and two short windows
+ * (1366x657: a 1366x768 laptop with the browser's toolbars showing; 1280x620: the shortest two-column window), on ten states
  * (lib/fixtures.cjs: the plain main screen and nine worst cases), each loaded fresh at that size:
  *   page-no-scroll          documentElement.scrollHeight === innerHeight, no horizontal overflow, and no box that
  *                           stands in for the page (<body>, or any box End Week sits in) scrolls instead

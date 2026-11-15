@@ -57,7 +57,9 @@ const FIXTURES = [
     storage: autosave(readRaw('fixtures/generated/end-club.json')), steps: [], rounds: 6, expect: { dialog: 'end:club' } }
 ];
 
-const VIEWPORTS = ['1920x1080', '1920x950', '1536x864', '1366x768', '1280x720', '1280x800', '1200x800'];
+// (The last two are short windows: a 1366x768 laptop with the browser's toolbars showing, and the shortest window
+// that still gets the two-column page. End week used to be off the bottom of both.)
+const VIEWPORTS = ['1920x1080', '1920x950', '1536x864', '1366x768', '1280x720', '1280x800', '1200x800', '1366x657', '1280x620'];
 const PHONE = '390x844';
 const size = v => { const m = /^(\d+)x(\d+)$/.exec(v); if (!m) throw new Error(`bad viewport ${v}`); return { width: Number(m[1]), height: Number(m[2]) }; };
 
