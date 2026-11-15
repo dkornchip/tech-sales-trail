@@ -2,7 +2,7 @@ import React from "react";
 import { UI } from "../../copy/ui.js";
 import { isPhone } from "../env.js";
 import { Icon } from "./Icon.jsx";
-import { iconFor, legacyText } from "./logLook.js";
+import { iconFor, legacyText, toneFor } from "./logLook.js";
 
 const { useState, useEffect, useLayoutEffect, useRef } = React;
 const showFor = lines => 2600 + 600 * lines;   // long enough to read: 3.2 s for one line
@@ -93,7 +93,7 @@ export const LogPeek = ({ s, note }) => {
         {peek.note ? (
           <li className="line warn"><Icon name="info" /><div className="body"><p><strong>{peek.note.title}.</strong> {peek.note.text}</p></div></li>
         ) : peek.list.map(e => {
-          const kind = e.kind === "bad" || e.kind === "warn" ? " " + e.kind : "";
+          const tone = toneFor(e), kind = tone ? " " + tone : "";
           return (
             <li className={"line" + kind} key={e.id}>
               <Icon name={iconFor(e)} />

@@ -1,11 +1,11 @@
 import React from "react";
 import { UI } from "../../copy/ui.js";
 import { Icon } from "./Icon.jsx";
-import { iconFor, legacyText } from "./logLook.js";
+import { iconFor, legacyText, toneFor } from "./logLook.js";
 import { useOverflowFade } from "./useOverflowFade.js";
 
 const Line = ({ e }) => {
-  const kind = e.kind === "bad" || e.kind === "warn" ? e.kind : "";
+  const kind = toneFor(e);
   return (
     <li className={"line" + (kind ? " " + kind : "")} data-tag={e.tag || undefined}>
       <Icon name={iconFor(e)} />

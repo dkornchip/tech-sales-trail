@@ -129,7 +129,7 @@
 .deal .acct{font-size:var(--fs-2);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .deal .stage{display:flex;align-items:center;gap:var(--sp-3);color:var(--text-2)}
 .pips{display:flex;gap:2px}
-.pips i{width:5px;height:10px;border-radius:1px;background:var(--surface-3);box-shadow:inset 0 0 0 1px var(--border)}
+.pips i{width:5px;height:10px;border-radius:1px;background:var(--surface-3);box-shadow:inset 0 0 0 1px var(--border);transition:background .24s var(--ease)}   /* a deal that moves up a stage lights its next pip, as a week does on the strip */
 .pips i.on{background:var(--text-2);box-shadow:none}
 .deal.late .pips i.on{background:var(--text)}
 .mood{display:inline-flex;align-items:center;gap:6px;color:var(--text-2)}

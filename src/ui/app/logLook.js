@@ -15,5 +15,11 @@ export const iconFor = e => {
   return e.kind === "bad" || e.kind === "warn" ? "triangle-alert" : FALLBACK.icon;
 };
 
+// How a line is toned: the rules mark what went wrong (bad) and what to watch (warn). Revenue that was recognised
+// is the one thing the log marks as good: a signature, whoever got it. (The rules call those lines plain "info":
+// the tone is how the page shows them, not a rule.)
+const GOOD = { "close.signed": 1, "ck.signed": 1, "ck.miracle": 1 };
+export const toneFor = e => (e.kind === "bad" || e.kind === "warn" ? e.kind : e.tag && Object.prototype.hasOwnProperty.call(GOOD, e.tag) ? "good" : "");
+
 // "📞 Blitz: +3 lead(s)." -> "Blitz: +3 lead(s)."  (render only; a save is never rewritten)
 export const legacyText = msg => String(msg || "").replace(/^(?:[\p{Extended_Pictographic}\p{Emoji_Presentation}‍️⃣]|\p{Emoji_Modifier})+\s*/u, "");

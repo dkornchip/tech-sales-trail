@@ -5,6 +5,8 @@ import { effectChips, fatalPress, fridayPreview, lateDeals, stageCount } from ".
 import { COST, HAIL as HAIL_ODDS } from "../../game/rules.js";
 import { CHIP, HINT, UI } from "../../copy/ui.js";
 import { isPhone, noHover } from "../env.js";
+import { describe } from "./ActionGrid.jsx";
+import { ACTIONS } from "./actionList.js";
 import { Icon } from "./Icon.jsx";
 
 // The one thing worth knowing next, for when nothing is under the pointer: the furthest-along stage with a deal in
@@ -23,13 +25,35 @@ export const idleHint = s => {
   return block && block.why === "energy" ? `${text} ${HINT.blocked.energy(block)}` : text;
 };
 
-export const HintBar = ({ hint, s }) => (
-  <div className="hint" role="status" aria-live="polite">
-    <Icon name="info" className="sm" />
-    <span>{hint ? <><strong>{hint.title}.</strong> {hint.text}</> : idleHint(s)}</span>
-    {hint && hint.key ? <kbd>{hint.key}</kbd> : null}
-  </div>
-);
+// Why the Hail Mary cannot be thrown, whether it would end the run, and what the bar says about it.
+const hailWords = s => {
+  const block = hailBlock(s), fatal = block ? null : fatalPress(s, "hail");       // fatal: its least stress would already reach 100
+  return { block, text: block && block.why !== "none" ? HINT.blocked[block.why](block) : fatal ? HINT.ends(fatal) : HINT.hail(lateDeals(s).length, HAIL_ODDS.blast, HAIL_ODDS.walk, COST.hail) };
+};
+const endWords = s => (isRunOver(s) ? HINT.blocked.over() : HINT.endWeek(fridayPreview(s)));
+
+// A hint names what is under the pointer (an action, the Hail Mary, End week), and its words are read from the run
+// as it is now, not as it was when the pointer arrived: a press changes what its own button would do next, and the
+// pointer is still on it. (v2.1 kept the words it was given: after the last deal was signed the bar went on saying
+// "1 eligible deal" under a card that said there were none.)
+export const hintWords = (hint, s) => {
+  if (!hint) return null;
+  if (hint.act) { const d = describe(ACTIONS.find(a => a.id === hint.act), s); return { title: d.title, text: d.hint, key: hint.key }; }
+  if (hint.ui === "hail") return { title: UI.hail, text: hailWords(s).text, key: "H" };
+  if (hint.ui === "end") return { title: UI.endWeek, text: endWords(s), key: "E" };
+  return hint;
+};
+
+export const HintBar = ({ hint, s }) => {
+  const h = hintWords(hint, s);
+  return (
+    <div className="hint" role="status" aria-live="polite">
+      <Icon name="info" className="sm" />
+      <span>{h ? <><strong>{h.title}.</strong> {h.text}</> : idleHint(s)}</span>
+      {h && h.key ? <kbd>{h.key}</kbd> : null}
+    </div>
+  );
+};
 
 // One chip per effect in force, each with its own clock (game/effects.js): what it does to the signing odds, and a
 // second chip for a discount it carries.
@@ -92,12 +116,9 @@ const Chips = ({ list, onHint }) => {
 export { hailBlock };
 
 export const Foot = ({ s, onHail, onEndWeek, onHint, onBlocked }) => {
-  const late = lateDeals(s).length;
-  const hailBlocked = hailBlock(s);
-  const hailFatal = hailBlocked ? null : fatalPress(s, "hail");       // its least stress would already reach 100
-  const hailText = hailBlocked && hailBlocked.why !== "none" ? HINT.blocked[hailBlocked.why](hailBlocked) : hailFatal ? HINT.ends(hailFatal) : HINT.hail(late, HAIL_ODDS.blast, HAIL_ODDS.walk, COST.hail);
-  const hailHint = () => onHint({ title: UI.hail, text: hailText, key: "H" });
-  const endHint = () => onHint({ title: UI.endWeek, text: isRunOver(s) ? HINT.blocked.over() : HINT.endWeek(fridayPreview(s)), key: "E" });
+  const { block: hailBlocked, text: hailText } = hailWords(s);
+  const hailHint = () => onHint({ ui: "hail" });
+  const endHint = () => onHint({ ui: "end" });
   const over = isRunOver(s);
   // no pointer to follow (a touch screen): the hint stays until the next tap, so a blocked button can say why
   const leave = () => { if (!noHover()) onHint(null); };

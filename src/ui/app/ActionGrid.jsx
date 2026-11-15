@@ -44,7 +44,7 @@ export const ActionGrid = ({ s, onAct, onHint, onBlocked }) => (
   <div className="actions">
     {ACTIONS.map((a, i) => {
       const d = describe(a, s);
-      const show = () => onHint({ title: d.title, text: d.hint, key: ACTION_KEYS[i] });
+      const show = () => onHint({ act: a.id, key: ACTION_KEYS[i] });        // the bar reads the words from the run as it is (Foot.jsx, hintWords)
       // With no pointer to follow (a touch screen) a hint stays until the next tap: a blocked action says why, and
       // after an action runs the bar goes back to what to do next.
       const leave = () => { if (!noHover()) onHint(null); };

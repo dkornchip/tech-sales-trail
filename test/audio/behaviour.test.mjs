@@ -21,7 +21,7 @@ const sounds = a => a.plays.map(p => p.name).filter(n => n !== "pa" && n !== "cl
 test("routing: every log tag sounds the way the routing table on file says", () => {
   const now = {};
   for (const tag of Object.keys(LOG)) { const r = map.ruleFor(tag, {}); now[tag] = r ? [r.sfx, r.prio, r.say || null] : null; }
-  now["close.signed >= 45000"] = "bigClose"; now["act.network whale"] = map.ruleFor("act.network", { size: "whale" }).sfx;
+  now["close.signed >= " + map.BIG_CLOSE] = "bigClose"; now["act.network whale"] = map.ruleFor("act.network", { size: "whale" }).sfx;
   for (const [id, key] of Object.entries(map.MODAL_SAY)) now["dialog " + id] = key;
   if (process.env.TST_GOLDEN === "update") { fs.mkdirSync(path.dirname(GOLDEN), { recursive: true }); fs.writeFileSync(GOLDEN, JSON.stringify(now, null, 1) + "\n"); return; }
   assert.deepEqual(now, JSON.parse(fs.readFileSync(GOLDEN, "utf8")), "the sound routing changed: if that was meant, TST_GOLDEN=update");
@@ -79,6 +79,14 @@ test("a batch of lines: a big close is announced, a small one is not; a clAInk r
   assert.deepEqual(sounds(a), ["cash"]); assert.ok(LINES.bigClose.includes(a.speech.said[0].text));
   a.reset();
   a.T.onLogs([line("close.signed", { src: "close", n: 1, won: 12000, keep: 1440 })], {}); a.tick(4000);
+  assert.deepEqual(sounds(a), ["cash"]); assert.equal(a.speech.said.length, 0);
+  // the line is drawn at $40,000: a quarter of quota is announced, a dollar less is not
+  assert.equal(map.BIG_CLOSE, 40000);
+  a.reset();
+  a.T.onLogs([line("close.signed", { src: "close", n: 1, won: 40000, keep: 4800 })], {}); a.tick(4000);
+  assert.deepEqual(sounds(a), ["cash"]); assert.ok(LINES.bigClose.includes(a.speech.said[0].text));
+  a.reset();
+  a.T.onLogs([line("close.signed", { src: "close", n: 1, won: 39999, keep: 4800 })], {}); a.tick(4000);
   assert.deepEqual(sounds(a), ["cash"]); assert.equal(a.speech.said.length, 0);
   a.reset();
   a.T.onLogs([line("ck.run", { n: 3, tokens: 1 }), line("ck.strike", { n: 1, of: 3, who: "Finance", line: "x" }), line("pay.repoWarn"), line("ck.mgr.warning", { miracle: false, hit: 9 })], {}); a.tick(4000);

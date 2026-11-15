@@ -21,6 +21,8 @@
 //        stress   Prospect blitz, Internal politics, the conference or the Hail Mary that would reach 100 stress
 //      and a Friday whose rent would take cash to Collections says so on the cash card and on End week
 //   5. the Hail Mary says what it costs
+//   6. the hint under the pointer is about the run as it is: after a press, with the pointer still on the card, the
+//      bar says what the card would do now, not what it did (v2.1 kept the words from before the press)
 // The release build rolls its own dice, so nothing here depends on a roll. Exits 1 if any check fails.
 // (CommonJS on purpose: Playwright only resolves through require() here.)
 "use strict";
@@ -243,6 +245,24 @@ const stored = async page => JSON.stringify(await page.evaluate(readRun));
     const thrown = rules(await page.evaluate(readRun));
     check("the Hail Mary's hint gives its cost, and that is what the throw takes", hint === plain(COPY.UI.hail + ". " + H.hail(1, RULES.HAIL.blast, RULES.HAIL.walk, c)) && hint.includes(`${c.slots} slot, ${c.energy} energy`) && thrown.slots === before.slots - c.slots && Math.round(thrown.energy) === Math.round(before.energy - c.energy) && !errors.length, `"${hint}"; slots ${before.slots} -> ${thrown.slots}, energy ${Math.round(before.energy)} -> ${Math.round(thrown.energy)}`);
     await context.close();
+
+    /* ---------- 6. the hint under the pointer is about the run as it is ---------- */
+    const over = async (what, crafted, sel, want) => {
+      ({ context, page, errors } = await open(browser, crafted));
+      await page.locator(sel).hover(); await page.waitForTimeout(150);
+      const was = await hintOf(page), wantWas = plain(want(rules(await page.evaluate(readRun))));
+      await page.locator(sel).click({ force: true }); await page.waitForTimeout(600);       // the pointer stays where it is
+      const now = await hintOf(page), wantNow = plain(want(rules(await page.evaluate(readRun))));
+      check(what, was === wantWas && now === wantNow && now !== was && !(await dialogOf(page)) && !errors.length, `before: "${was}"; after: "${now}"`);
+      await context.close();
+    };
+    const T = COPY.ACTION;
+    await over("Recharge, pressed with the pointer on it: the bar now says this week's recharge is used", save({ week: 3, cash: 3000, energy: 40 }), '[data-act="recharge"]',
+      s => T.recharge.title + ". " + (R.actBlock(s, "recharge") ? H.blocked.rested() : H.recharge(S.rechargeRange(s))));
+    await over("Proposals with no demoed deal, pressed: the bar now says there is nothing to gain", save({ week: 3, cash: 3000, deals: [D(0, 6000)] }), '[data-act="propose"]',
+      s => T.propose.title + ". " + (R.actBlock(s, "propose") ? H.blocked.none() : H.propose(S.stageCount(s, 2), S.PROPOSE_CHANCE)));
+    await over("Close deals on the only late deal, pressed: the bar counts the late deals there are now, and says whether the week's work is counted", save({ week: 3, cash: 3000, deals: [D(4, 21000, "happy")] }), '[data-act="close"]',
+      s => T.close.title + ". " + H.close(S.lateDeals(s).length, !(s.used.propose || s.used.close)));
   } finally { await browser.close(); }
   const bad = rows.filter(ok => !ok).length;
   console.log(bad ? `\nACTIONS FAILED: ${bad} of ${rows.length} checks` : `\nACTIONS OK: all ${rows.length} checks passed`);
