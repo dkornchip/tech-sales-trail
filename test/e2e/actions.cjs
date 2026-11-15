@@ -448,6 +448,15 @@ const stored = async page => JSON.stringify(await page.evaluate(readRun));
     const low = await page.evaluate(inSight);
     check("1366x650: after Run agents the result's heading is in sight, and all of it when it fits", !!low && low.resultTop !== false && (low.result !== false || low.usage === false || low.cancel === false) && !errors.length, JSON.stringify(low));
     await context.close();
+    // the policy step, the one the player accepts, in the narrowest and shortest desktop windows: its terms are long, and
+    // Accept and Not now must still be in sight in the ad (v2.1.1 first left Accept below it at 1025x640)
+    for (const [w, h] of [[1025, 620], [1025, 640], [1050, 660], [1280, 620]]) {
+      ({ context, page, errors } = await open(browser, fixture("ck-ad-week-3"), { viewport: { width: w, height: h } }));
+      await page.locator(".claink-cta").click(); await page.waitForTimeout(400);
+      const seen = await page.evaluate(() => { const ad = document.querySelector(".claink-ad"), r = ad.getBoundingClientRect(), inside = q => { const e = ad.querySelector(q); if (!e) return null; const b = e.getBoundingClientRect(); return b.top >= r.top && b.bottom <= r.bottom + 0.5 && b.bottom <= innerHeight; }; return { accept: inside(".claink-confirm"), notNow: inside(".claink-notnow"), terms: ad.querySelectorAll(".claink-policy li").length, fit: ad.getAttribute("data-fit") }; });
+      check(`${w}x${h}: clAInk's policy step shows its five terms, Accept and Not now in the ad`, seen.accept && seen.notNow && seen.terms === 5 && !errors.length, JSON.stringify(seen));
+      await context.close();
+    }
     ({ context, page, errors } = await open(browser, fixture("ck-active-2-strikes"), { viewport: { width: 1366, height: 768 } }));
     const hot = rules(await page.evaluate(readRun)), note = plain(await page.evaluate(() => { const n = document.querySelector(".claink-strikes .note"); return n ? n.textContent : ""; }));
     check("at two strikes the warning under Run agents says a deal walks when there is one on the board", hot.claink.strikes === 2 && hot.deals.length > 0 && note.includes("seat revoked, a deal walks, and the token true-up") && !errors.length, `${hot.deals.length} deals: "${note}"`);

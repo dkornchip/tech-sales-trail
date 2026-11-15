@@ -207,8 +207,9 @@
   .left{--short:calc(746px - 100dvh);padding-block:clamp(var(--sp-3),calc(var(--sp-5) - var(--short) * .0755),var(--sp-5));gap:clamp(var(--sp-3),calc(var(--sp-5) - var(--short) * .0755),var(--sp-5))}
   .actions{row-gap:clamp(6px,calc(var(--sp-3) - var(--short) * .0189),var(--sp-3));grid-auto-rows:minmax(clamp(43.4px,calc(54px - (var(--short) + 26px) * .0943),54px),1fr)}
   /* The hint bar is two lines tall whatever it says, so a hint that needs both lines (more than a third do at 1280
-     wide) is not pressed against the bar's edges, and nothing under it moves when the hint changes. No hint needs
-     a third line at any width of this layout (test/e2e/actions.cjs, section 8, holds that). The rows of actions make the room:
+     wide) is not pressed against the bar's edges, and nothing under it moves when the hint changes. No hint of an
+     action, the Hail Mary or End week needs a third line at any width of this layout (test/e2e/actions.cjs, section
+     8, holds that). The "+N" chip's list of folded chips can, in the narrowest windows with many chips (as in 2.1). The rows of actions make the room:
      they start to close up 26px of window height sooner than the rest. Where there is none to make (windows under
      641px tall, or under about 1200px wide, where the stat cards wrap and stand taller) the bar is two lines with
      nothing to spare. */
@@ -280,6 +281,7 @@
   .pa-line{position:fixed;z-index:36;left:var(--sp-4);right:var(--sp-4);bottom:calc(var(--sp-4) + env(safe-area-inset-bottom,0px));flex:none;overflow:visible;pointer-events:none}
   .pa-cap{max-width:100%;padding:var(--sp-3) var(--sp-4);background:var(--surface-3);border:1px solid var(--border-strong);border-radius:var(--r-3);box-shadow:var(--shadow-overlay);color:var(--text);white-space:normal}
   .pa-text{display:block;overflow:visible;-webkit-line-clamp:none}
+  .pa-cap{line-height:1.4}   /* (the notice's own spacing: the stacked tier's tighter one is for the top bar) */
   .app:has(.pa-cap) .peek{--peek-cap:60px}
   html:has(dialog[open]) .pa-cap{visibility:hidden}   /* a dialog shows the announcer's line itself; not dimmed under it as well */
   .btn{height:44px}

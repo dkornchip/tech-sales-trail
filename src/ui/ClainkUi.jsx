@@ -131,7 +131,9 @@ const dockRoom=el=>{
 // height it never overflows, so nothing is ever dropped there.
 // (The last step, the headline, is taken only on the policy step, where the pitch has already stepped back and the
 // terms and their two buttons are what must be in sight: on a short window they would not all fit otherwise.)
-const AD_DROP=["announce","chips","badges","proof","headline"];
+// (headline and brand only ever drop on the policy step: its terms are long, and in a window about 1,025px wide and
+// 620 to 660px tall they and Accept would not fit under the pitch's headline and wordmark)
+const AD_DROP=["announce","chips","badges","proof","headline","brand"];
 const fitAd=el=>{
   if(!el)return;
   const over=()=>el.scrollHeight>el.clientHeight+1;

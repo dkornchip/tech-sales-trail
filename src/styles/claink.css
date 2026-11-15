@@ -232,6 +232,7 @@
 .claink-ad[data-fit~="badges"] .claink-badges{display:none}
 .claink-ad[data-fit~="proof"] .claink-proof{display:none}
 .claink-ad.confirming[data-fit~="headline"] .claink-headline{display:none}
+.claink-ad.confirming[data-fit~="brand"] .claink-ad-brand{display:none}
 .claink-ad[data-fit~="tight"] .claink-policy{margin-bottom:6px;padding:6px 10px}
 .claink-ad[data-fit~="tight"] .claink-policy li{margin:1px 0}
 /* Beside the game the button is part of the ad's page, not pinned over it. (Pinned, it sat on top of whatever the

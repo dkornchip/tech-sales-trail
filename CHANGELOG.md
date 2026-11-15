@@ -1,10 +1,11 @@
 # Changelog
 
-## v2.1.1 — "Operation Gold Master" (release candidate, not promoted)
+## v2.1.1 — "Operation Gold Master"
 
-A final polish pass on 2.1. Built as `Tech_Sales_Trail_2.1.1.html`; `index.html` is still 2.1 and stays so until
-the owner promotes this. Player-facing notes: `TTST_2.1.1_RELEASE_NOTES.md`. What was changed, verified, left
-alone and turned down: `TTST_2.1.1_QA_REPORT.md`, with the evidence under `qa/2.1.1/`.
+A final polish pass on 2.1. `index.html` is v2.1.1: a byte-for-byte copy of `Tech_Sales_Trail_2.1.1.html`, promoted
+on the owner's instruction. v2.1 is kept as shipped at `Tech_Sales_Trail_2.1.html`. Player-facing notes:
+`TTST_2.1.1_RELEASE_NOTES.md`. What was changed, verified, left alone and turned down: `TTST_2.1.1_QA_REPORT.md`,
+with the evidence under `qa/2.1.1/`.
 
 The rules play as they did: the frozen 2.1 rules (`test/baseline/v2.1-engine`) and this tree are the same run
 after every move from the same seeds (`npm run verify`, step `equivalence`), with one decided correction below.
@@ -12,21 +13,26 @@ No balance number, probability, reward or save format changed.
 
 The 2.1 build was first audited by nine independent reviewers, one per area of the brief, and every finding was
 then re-checked by a second reviewer told to doubt it (`qa/2.1.1/audit/`). Several changes made on the first
-reading were withdrawn on the second.
+reading were withdrawn on the second. The finished diff was then reviewed again the same way, and what that found
+is fixed below.
 
 ### What a press would buy
 - With nothing to work on, a pipeline card says what the press is still good for: `skill only` (Discovery, Demo
   marathon, Close deals train their skill) or `no deals` (Proposals trains nothing).
 - **The one rule correction.** Proposals with no demoed deal, in a week whose proposal-or-close work is already
   counted, took a slot and 25 energy and gave nothing back. It is now refused, and the card says why. The same
-  press earlier in the week still counts toward a full-funnel week and is still allowed. (`src/game/actions.js`,
-  `proposeIdle`.)
-- A press that is certain to end the run is marked `Ends the run`, says so in the hint, and asks first: stress that
-  would reach 100 (Prospect blitz, Internal politics, the conference, the Hail Mary) or a purchase that would take
-  cash to Collections.
-- A Friday that is certain to end the run says so before End week is pressed: rent that would trigger Collections
-  (on the cash card and in the hint) and a coffee crash that would reach 100 stress (on the stress card, which now
-  keeps the crash's line from 80 stress, and in the hint). End week's preview also lists the clAInk invoice.
+  press earlier in the week still counts toward a full-funnel week and is still allowed; in the three states where
+  that count can no longer change Friday (the week already full-funnel, week 13, the last slot with nothing else
+  worked) it stays on offer and the hint says it would be for nothing. (`src/game/actions.js`, `proposeIdle`;
+  `src/game/selectors.js`, `proposeNothing`.)
+- A press that is certain to end the run is marked `Ends the run` (the Hail Mary's button in the risk colour), says
+  so in the hint, and asks first: stress that would reach 100 (Prospect blitz, Internal politics, the conference,
+  the Hail Mary) or a purchase that would take cash to Collections.
+- A Friday that would end the run says so before End week is pressed, in the order Friday comes to it: rent, or
+  clAInk's invoice at its least, that would take cash to Collections (on the cash card and in the hint), then a
+  coffee crash that would reach 100 stress (on the stress card, which now keeps the crash's line from 80 stress,
+  and in the hint). Collections is certain unless a Proposal or Closing deal is on the board, whose Friday close
+  attempt comes before the rent; the hint then says so. End week's preview also lists the clAInk invoice.
 - Hints say what they left out: the Hail Mary's energy, Prospect blitz's stress, that a quad shot takes a slot,
   what the "dead leads" CRM cleanup would remove are worth. The handbook names what counts toward a full-funnel
   week (a conference does not), says when stale leads and a backlog of qualified deals cost you, and says that
@@ -53,14 +59,15 @@ reading were withdrawn on the second.
   press and release and the tap was lost.
 - A caption that does not fit one line of the top bar (a tablet upright, a phone on its side) is shown whole. It
   used to be cut with an ellipsis, punchline first.
-- On a phone the notice no longer announces a clAInk run's result before the workspace's own report reaches it.
+- On a phone the notice no longer announces a clAInk run's result before the workspace's own report reaches it;
+  once the report is done, it tells the result if the result landed off the screen.
 
 ### clAInk
 - The policy the player accepts states the recurring costs: the fee per run, the price per outcome and how many a
   run bills, the idle-week charge, possible overages, what the true-up takes and what cancelling costs. No clAInk
   number changed.
 - The workspace follows a run to its result. On a laptop-height window the strike card, the week's estimate and
-  "Cancel seat" used to land below its fold. It returns to its top when the week turns.
+  "Cancel seat" used to land below its fold. It returns to its top when the week turns, even mid-report.
 - At two strikes the warning says a deal walks when there is one on the board (the third strike always takes the
   most advanced one).
 - When the workspace scrolls, its scrollbar is in its own colours.
@@ -92,10 +99,11 @@ reading were withdrawn on the second.
 
 ### Tests
 - New gates: `releases` (every kept release is the file that shipped, and `index.html` is the promoted one),
-  `equivalence` (above) and `actions` (what the page says a press will do is what it does: 104 checks by real
-  presses on the release build).
+  `equivalence` (above) and `actions` (what the page says a press will do is what it does, by real presses on
+  the release build).
 - The layout gate also measures 1366×657 and 1280×620; the phone gate taps End week near its edge, opens the
-  recovery dialog at 320px and reads captions on a tablet and a sideways phone.
+  recovery dialog at 320px, reads captions on a tablet and a sideways phone, and taps Run agents from below End
+  week to check that the run's result is told.
 
 ## v2.1 — "Operation Final Coat"
 

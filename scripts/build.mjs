@@ -130,7 +130,11 @@ function notices(packages, iconNames){
     // handed on by itself.
     const feather = /derived from the Feather project:\s*\n\s*\n([\s\S]*?)\n\s*\n[\s\S]*?^(Copyright .+)$/m.exec(licence);
     const derived = feather ? new Set(feather[1].split(",").map(s => s.trim()).filter(Boolean)) : new Set();
-    const ours = iconNames.filter(n => derived.has(n));
+    // (the list uses the names the icons had then; some have been renamed since, and lucide-static still ships the
+    // old name as a copy of the same drawing, so an icon counts when its drawing is a listed icon's)
+    const drawing = name => { const f = path.join(dir, "icons", name + ".svg"); return fs.existsSync(f) ? fs.readFileSync(f, "utf8").replace(/\sclass="[^"]*"/g, "").replace(/<!--[\s\S]*?-->/g, "").trim() : null; };
+    const derivedDrawings = new Set([...derived].map(drawing).filter(Boolean));
+    const ours = iconNames.filter(n => derived.has(n) || derivedDrawings.has(drawing(n)));
     if(/Feather/.test(licence) && !feather) fail("lucide-static's LICENSE mentions Feather in a form this script does not read; update scripts/build.mjs");
     lines.push("Lucide " + pkg.version + " (" + iconNames.length + " icons). " + copyright.replace(/\.$/, "") + ". ISC License."
       + (ours.length ? " " + ours.length + " of them derived from Feather. " + feather[2].trim().replace(/\.$/, "") + ". MIT License." : ""));

@@ -20,13 +20,15 @@ the save format is the same.
 - **One press that bought nothing is now refused.** Proposals with no demoed deal, in a week where your
   proposal-or-close work was already counted, used to take a slot and 25 energy and give nothing back. The card is
   now off and says why. (Earlier in the week the same press still counts toward a full-funnel week, and is still
-  allowed.) This is the only change to what the rules allow.
+  allowed; in the few states where that count can no longer change anything, the hint says the press would be for
+  nothing.) This is the only change to what the rules allow.
 - **A press that would end the run says so and asks first.** If the stress an action adds would reach 100, or what
-  it costs would take your cash to Collections, the card reads `Ends the run`, the hint says exactly why, and a
-  confirmation stands between you and it. "No" changes nothing.
-- **A Friday that would end the run says so before you press End week:** rent that would trigger Collections, or a
-  coffee crash that would take your stress to 100. End week's preview also lists the clAInk invoice, which it used
-  to leave out.
+  it costs would take your cash to Collections, the card reads `Ends the run` (the Hail Mary's button turns red),
+  the hint says exactly why, and a confirmation stands between you and it. "No" changes nothing.
+- **A Friday that would end the run says so before you press End week:** rent, or clAInk's bill, that would
+  trigger Collections, or a coffee crash that would take your stress to 100. If a deal of yours is at Proposal or
+  Closing, Friday's own close attempt comes first and might still pay you enough; the hint says so. End week's
+  preview also lists the clAInk invoice, which it used to leave out.
 - **The quota number is exact where it matters.** At $159,500 of $160,000 the card used to say 100%, and the
   quarterly review then said 99%. The card no longer rounds up onto 70%, 80% or 100%.
 - **Hints say what they used to leave out:** what the Hail Mary costs, that a Prospect blitz adds stress, that a
@@ -57,7 +59,7 @@ the save format is the same.
 - If a saved run cannot be opened, the dialog's buttons now fit a small phone, and it says first that the damaged
   run is kept aside, then what you can do.
 - The notice at the bottom of the screen no longer gives away the result of a clAInk run two seconds before
-  clAInk's own report gets there.
+  clAInk's own report gets there. Once the report is done, the notice tells the result if it landed off the screen.
 
 ### Good news looks like good news
 - A signed deal's line in the log is marked in green, as a lost deal's is in red.

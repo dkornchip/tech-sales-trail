@@ -24,13 +24,15 @@ network requests.
 
 - A release is written as `Tech_Sales_Trail_<version>.html` by `npm run release` (the version in `package.json`).
 - `index.html` at the root is the file GitHub Pages serves. It is a byte-for-byte copy of the release the owner
-  has promoted (today: `Tech_Sales_Trail_2.1.html`). The build never writes it; promoting a release is the owner's
+  has promoted (today: `Tech_Sales_Trail_2.1.1.html`). The build never writes it; promoting a release is the owner's
   call.
-- Earlier releases are kept as shipped: `Tech_Sales_Trail_2.1.html` at the root, and `v2.0.1` and `v1.21` under
-  `test/baseline/` (the scene and save tests still compare against v1.21). `test/baseline/releases.json` records
-  each one's size and SHA-256 and which one is promoted; the `releases` step of `npm run verify` fails if any of
-  them, or `index.html`, is no longer that file.
-- A release candidate (today: `Tech_Sales_Trail_2.1.1.html`) is not in that record until it is promoted.
+- Releases are kept as shipped: `Tech_Sales_Trail_2.1.1.html` and `Tech_Sales_Trail_2.1.html` at the root, and
+  `v2.0.1` and `v1.21` under `test/baseline/` (the scene and save tests still compare against v1.21).
+  `test/baseline/releases.json` records each one's size and SHA-256 and which one is promoted; the `releases` step
+  of `npm run verify` fails if any of them, or `index.html`, is no longer that file.
+- A release candidate is not in that record until it is promoted. While the version in `package.json` is that of
+  a promoted release, the release file is held twice: by its record here, and by the `released` step (it must be
+  what the source builds). A change to the source after a promotion therefore starts with a new version number.
 
 To promote a release, on the owner's instruction only: copy its file over `index.html`; add it to
 `test/baseline/releases.json` with its size and SHA-256 and set `"promoted"`; bring the README's "what's new" and
