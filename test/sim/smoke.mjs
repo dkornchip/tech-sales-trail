@@ -14,7 +14,7 @@ import { fileURLToPath } from "node:url";
 import { loadEngine, playRun } from "./lib/harness.mjs";
 import { CORE, POLICIES } from "./lib/policies.mjs";
 import { summarise, strategyDistance } from "./lib/stats.mjs";
-import { checkBaseline } from "./check-baseline.mjs";
+import { FROZEN, checkBaseline } from "./check-baseline.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 const at = process.argv.indexOf("--seeds");
@@ -27,8 +27,10 @@ const rows = [];
 const check = (name, ok, detail) => { rows.push(!!ok); console.log("  " + (ok ? "ok  " : "FAIL") + "  " + name + (detail ? "  (" + detail + ")" : "")); return !!ok; };
 const t0 = Date.now();
 
-const base = checkBaseline();
-check("the frozen baseline is intact", base.problems.length === 0, base.problems.length ? base.problems.join("; ") : base.files + " files");
+for (const name of FROZEN) {
+  const base = checkBaseline(name);
+  check(`the frozen ${name === "checkpoint-engine" ? "baseline" : "v2.1 rules"} (test/baseline/${name}) ${name === "checkpoint-engine" ? "is" : "are"} intact`, base.problems.length === 0, base.problems.length ? base.problems.join("; ") : base.files + " files");
+}
 
 const engines = [await loadEngine(path.join(ROOT, "test/baseline/checkpoint-engine"), "baseline"), await loadEngine(ROOT, "working tree")];
 for (const E of engines) {

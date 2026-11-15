@@ -5,7 +5,7 @@ import { isRunOver } from "./log.js";
 import { CLAINK } from "./claink.js";
 import { EFFECT } from "./effects.js";
 import { QBR } from "./quarter.js";
-import { CASH, COST, FIRING_FROM, HAIL, TUNING } from "./rules.js";
+import { BACKLOG, CASH, CONFERENCE_STRESS, COST, FIRING_FROM, HAIL, STALE, STRESS_COST, TUNING } from "./rules.js";
 import { STRESS_DANGER } from "./stress.js";
 import { FRIDAY, PACE_GRACE, PAY, PROPOSE_ODDS, RENT_WEEKS, REVIEWS_FROM, closeOdds, crmGain, crmNukeOdds, demoOdds, expectedAttainment, isDeadLead, paceGap, qualifyOdds } from "./rules.js";
 export { RENT_WEEKS, REVIEWS_FROM };
@@ -54,11 +54,32 @@ export const crmPreview = s => {
   const atRisk = s.deals.some(d => !isDeadLead(d) && (d.stage === 1 || d.stage === 2));
   return { pruned, gain: crmGain(pruned), nuke: atRisk ? crmNukeOdds(s.manager) : 0 };
 };
-// endWeek: the parts of Friday that are certain
+// endWeek: the parts of Friday that are certain. `cash` is what salary and rent leave, before anything else Friday
+// does (a Friday signing pays its commission first; clAInk's invoice comes last); `bust` says that it is at or
+// under the line where Collections ends the run (quarter.js, salaryAndBills; deals.js, checkRepo).
 export const fridayPreview = s => {
-  const shots = s.coffeesThisWeek || 0;
-  return { salary: PAY.salary, rent: rentDueThisWeek(s) ? PAY.rent : 0, energy: FRIDAY.energy, stress: shots > 0 ? CRASH_PER_SHOT * shots : -FRIDAY.relief };
+  const shots = s.coffeesThisWeek || 0, rent = rentDueThisWeek(s) ? PAY.rent : 0, cash = s.cash + PAY.salary - rent;
+  return { salary: PAY.salary, rent, energy: FRIDAY.energy, stress: shots > 0 ? CRASH_PER_SHOT * shots : -FRIDAY.relief, cash, bust: cash <= CASH.repoAt, repoAt: CASH.repoAt };
 };
+// An action that costs cash (the conference, a quad shot) is charged at once, and Collections is asked at once
+// (actions.js): what paying for it would leave, when that is at or under the line that ends the run. Otherwise null.
+export const purchaseBust = (s, id) => {
+  const price = (COST[id] && COST[id].cash) || 0, cash = s.cash - price;
+  return price > 0 && cash <= CASH.repoAt ? { cash, repoAt: CASH.repoAt } : null;
+};
+// The stress a press is certain to add (the Hail Mary: at least), and whether that reaches 100, where the run ends
+// on the spot (stress.js, checkBurnout; a quad shot ends it itself). id: an action, or "hail".
+export const stressCost = (s, id) => (id === "coffee" ? coffeeStress(s.coffeesThisWeek || 0) : id === "conference" ? CONFERENCE_STRESS : STRESS_COST[id] || 0);
+// A press that is certain to end the run, and why, or null: { why: "stress", add } or { why: "cash", cash, repoAt }.
+// (When both would, the one the rules reach first: a quad shot's heart before its bill, any other bill before the
+// stress check that follows the action.)
+export const fatalPress = (s, id) => {
+  const add = stressCost(s, id), stress = add > 0 && s.stress + add >= 100 ? { why: "stress", add, atLeast: id === "hail" } : null;
+  const bust = purchaseBust(s, id), cash = bust ? { why: "cash", ...bust } : null;
+  return id === "coffee" ? stress || cash : cash || stress;
+};
+// the same press as the rules see it: Proposals with nothing to send and nothing left to count (actions.js)
+export { proposeIdle } from "./actions.js";
 
 // cost(): why an action can't be taken right now, or null. Same order of checks as the rule.
 export const blocked = (s, { energy = 0, slots = 1, used = false } = {}) => {
@@ -116,6 +137,6 @@ export const handbookFacts = s => ({
   salary: PAY.salary, commission: PAY.commission, rent: PAY.rent, rentWeeks: RENT_WEEKS, repoAt: CASH.repoAt,
   fullFunnel: EFFECT.fullFunnel.conv, neglect: EFFECT.neglect.conv, hailBlast: HAIL.blast, hailWalk: HAIL.walk,
   fridayEnergy: FRIDAY.energy, rechargeEnergy: [RECHARGE_ENERGY, rechargeMax(RECHARGE_ENERGY)], rechargeRelief: [rechargeRelief(0), rechargeMax(rechargeRelief(0))],
-  stressDanger: STRESS_DANGER, crash: CRASH_PER_SHOT,
+  stressDanger: STRESS_DANGER, crash: CRASH_PER_SHOT, staleLeads: STALE.leads, backlogQualified: BACKLOG.qualified,
   offerWeek: CLAINK.OFFER_LAST_WEEK, seat: CLAINK.INSTALL, miracle: CLAINK.MIRACLE_P, strikes: CLAINK.STRIKES, trueUpLo: CLAINK.TRUEUP_OVER[0], trueUpHi: CLAINK.TRUEUP_OVER[1], cancelFee: CLAINK.CANCEL
 });

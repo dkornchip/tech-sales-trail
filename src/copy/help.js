@@ -23,6 +23,8 @@ const list = ws => (ws.length > 1 ? ws.slice(0, -1).join(", ") + " and " + ws[ws
 export const HELP_TITLE = "How it works";
 export const HELP_OK = "Got it";
 export const HELP_MEMO = "Read the memo again";
+// What the game is, said once and plainly, at the foot of the handbook.
+export const HELP_ABOUT = "Tech Sales Trail is an independently developed fictional satire of the technology sales industry. It is not affiliated with or endorsed by any employer or technology vendor.";
 // The handbook comes in sections; each section is a heading and its paragraphs.
 export const HELP = [
   { title: "The quarter", rows: [
@@ -32,8 +34,9 @@ export const HELP = [
     { term: "Cash.", body: v => ` ${usd(v.salary)} salary on Friday; ${pc(v.commission)} commission on closed sales; rent ${usd(v.rent)} weeks ${list(v.rentWeeks)}. Collections take the jacket when cash reaches ${usd(v.repoAt)} or lower.` }
   ] },
   { title: "The funnel", rows: [
-    { term: "Pipeline.", body: () => ` Total value of live deals. Move leads through discovery, demo, proposal and a signing attempt. Proposal/Closing deals are eligible for signing; mood, stats and modifiers affect odds. Late-stage deals can walk.` },
-    { term: "Full-funnel week.", body: v => ` Work at least three of four categories (lead generation, discovery, demo, proposal/close) for ${pts(v.fullFunnel)} pp signing odds next week. One or none while holding pipeline gives ${pts(v.neglect)} pp next week.` },
+    { term: "Pipeline.", body: v => ` Total value of live deals. Move leads through discovery, demo, proposal and a signing attempt. Proposal/Closing deals are eligible for signing; mood, stats and modifiers affect odds. Late-stage deals can walk. A week with ${word(v.staleLeads)} or more leads and no discovery loses some; ${word(v.backlogQualified)} or more qualified deals and no demo, and some slide back.` },
+    // (the first category is named by its three actions: a conference finds leads too, and does not count)
+    { term: "Full-funnel week.", body: v => ` Work at least three of four categories (prospecting, email cadence or referrals; discovery; demo; proposal/close) for ${pts(v.fullFunnel)} pp signing odds next week. One or none while holding pipeline gives ${pts(v.neglect)} pp next week. A conference does not count.` },
     { term: "Skills.", body: () => ` Improve matching action and contribute to close odds where applicable. Some unsuccessful actions still develop skill.` },
     { term: "Reputation.", body: () => ` Influences deal sizes and close odds.` },
     { term: "Product.", body: () => ` Affects demo and close success. Outages and incidents can lower it.` },
@@ -59,5 +62,5 @@ export const HELP = [
 // For the copy lint: the numbers a handbook row is given.
 const V = { quota: 160000, weeks: 13, slots: 5, conferenceSlots: 2, qbr: { club: 1, safe: 0.8, floor: 0.7 }, reviewsFrom: 5, firingFrom: 6, relief: true, salary: 1000, commission: 0.12, rent: 1600, rentWeeks: [1, 5, 9],
   repoAt: -1500, fullFunnel: 0.06, neglect: -0.06, hailBlast: 0.2, hailWalk: 0.55, fridayEnergy: 15, rechargeEnergy: [35, 52], rechargeRelief: [12, 18], stressDanger: 80, crash: 13, offerWeek: 3, seat: 500, miracle: 0.2,
-  strikes: 3, trueUpLo: 200, trueUpHi: 1800, cancelFee: 250 };
+  strikes: 3, trueUpLo: 200, trueUpHi: 1800, cancelFee: 250, staleLeads: 6, backlogQualified: 5 };
 export const lint = { params: Object.fromEntries(HELP.flatMap((sec, i) => sec.rows.map((_, k) => [`HELP[${i}].rows[${k}].body`, [V, { ...V, relief: false }]]))) };

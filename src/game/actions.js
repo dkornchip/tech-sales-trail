@@ -2,7 +2,7 @@ import { TRIPS } from "../copy/names.js";
 import { checkRepo, cost, killDeals, makeDeal, makeReferral, tryCloseSome, withDeals } from "./deals.js";
 import { addEffect } from "./effects.js";
 import { log, snap } from "./log.js";
-import { CONFERENCE_BUZZ, CONFERENCE_STRESS, COST, HAIL, PROPOSE_ODDS, crmGain, crmNukeOdds, demoOdds, isDeadLead, qualifyOdds } from "./rules.js";
+import { CONFERENCE_BUZZ, CONFERENCE_STRESS, COST, HAIL, PROPOSE_ODDS, STRESS_COST, crmGain, crmNukeOdds, demoOdds, isDeadLead, qualifyOdds } from "./rules.js";
 import { RECHARGE_ENERGY, RECHARGE_LUCK, TRIP_AT, checkBurnout, coffeeEnergy, coffeeRisk, coffeeStress, rechargeRelief } from "./stress.js";
 import { choice, clamp, pct, randi } from "./util.js";
 import { rnd } from "./rng.js";
@@ -19,7 +19,7 @@ export const actProspect=(s)=>{
   ns.used.prospect=true;
   ns.meetings=(ns.meetings||0)+randi(0,n);
   ns.skills.prospect=clamp(ns.skills.prospect+1,0,100);
-  ns.stress=clamp(ns.stress+2,0,100);
+  ns.stress=clamp(ns.stress+STRESS_COST.prospect,0,100);
   ns.deals=withDeals(ns.deals,adds);
   ns.pipeline=ns.deals.reduce((sum,d)=>sum+d.value,0);
   ns=log(ns,"act.prospect",{n:adds.length},"info",b);
@@ -80,7 +80,14 @@ export const actDemo=(s)=>{
   return ns;
 };
 
+// A proposal goes to a deal that has had its demo. With none, Proposals moves nothing and trains nothing; all it
+// does is mark this week's proposal-or-close work as done (week.js counts that toward a full-funnel week). Once
+// that mark is already there, by Proposals or by Close deals, the press would take a slot and energy and change
+// nothing else at all, so it is refused (the front door never offers it), like a Hail Mary with nothing to throw at.
+// Discovery, Demo marathon and Close deals stay legal on an empty stage: each still trains its skill.
+export const proposeIdle=(s)=>!s.deals.some(d=>d.stage===2) && !!(s.used && (s.used.propose || s.used.close));
 export const actPropose=(s)=>{
+  if(proposeIdle(s))return null;
   const b=snap(s);
   let[ns,ok]=cost(s,COST.propose);
   if(!ok)return null;
@@ -210,7 +217,7 @@ export const actPolitics=(s)=>{
   ns.manager=clamp(ns.manager+8,0,100);
   ns.product=clamp(ns.product+3,0,100);
   ns.reputation=clamp(ns.reputation-4,0,100);
-  ns.stress=clamp(ns.stress+2,0,100);
+  ns.stress=clamp(ns.stress+STRESS_COST.politics,0,100);
   ns=log(ns,"act.politics",null,"info",b);
   return ns;
 };

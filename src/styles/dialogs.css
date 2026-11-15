@@ -116,8 +116,14 @@ dialog.help{width:min(960px,94vw)}
 .rules section{break-inside:avoid;margin-bottom:var(--sp-5)}
 .rules h3{margin:0 0 var(--sp-3);font-size:var(--fs-1);font-weight:500;color:var(--text-3)}
 dialog .d-body .rules p{margin:0 0 var(--sp-3);font-size:var(--fs-1);line-height:1.5;color:var(--text-2)}
+/* What the game is: one quiet line. At the foot of the handbook, beside the memo link, where there is room for it
+   (so the reference card is no taller for it); under the rules where there is not (a narrow window, a phone). */
+dialog.help .d-aside{flex:1 1 0;min-width:0;gap:var(--sp-5)}
+dialog.help .d-aside .linkbtn{flex:none}
+dialog.help .d-aside .about{flex:1 1 0;min-width:0;font-size:var(--fs-1);line-height:1.4;color:var(--text-3);text-wrap:balance}
+dialog .d-body .about{display:none;margin:0;padding-top:var(--sp-4);border-top:1px solid var(--border);font-size:var(--fs-1);line-height:1.5;color:var(--text-3)}
 dialog .d-footer .d-aside{margin-right:auto;margin-left:calc(-1 * var(--sp-3));display:flex;align-items:center}
-@media (max-width:1024px){ .rules{columns:1} dialog.help{width:min(600px,94vw)} }
+@media (max-width:1024px){ .rules{columns:1} dialog.help{width:min(600px,94vw)} dialog.help .d-aside{flex:0 1 auto} dialog.help .d-aside .about{display:none} dialog .d-body .about{display:block} }
 /* phone: the memo link and Got it share one row, so the pinned footer stays short */
 @media (max-width:640px){ dialog.help .d-footer{flex-wrap:nowrap} dialog.help .d-footer .btn{flex:0 0 auto} }
 

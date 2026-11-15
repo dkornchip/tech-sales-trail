@@ -24,14 +24,15 @@ test("the numbers are the brief's: what every action costs", async () => {
 
 test("every action takes its energy and slots, and is refused without them", async () => {
   const eng = await E(), { COST } = eng.rules;
+  const BOARD = [[0, 1000], [1, 1000], [2, 1000], [3, 1000]];      // a deal at every stage: every action has something to act on
   for (const id of Object.keys(eng.run.ACTS)) {
-    const s = await craft({ cash: 5000 });
+    const s = await craft({ cash: 5000, deals: BOARD });
     const r = await go(s, id, [], 0.5);
     assert.equal(r.refused, null, id); assert.equal(r.state.slots, 5 - COST[id].slots, id + " slots");
     if (id !== "recharge" && id !== "coffee") assert.equal(r.state.energy, 95 - COST[id].energy, id + " energy");
-    if (COST[id].energy > 0) { const tired = await craft({ energy: COST[id].energy - 1 }); const x = await move(tired, act(id)); assert.equal(x.refused, "illegal", id + " without energy"); assert.equal(x.state, tired); }
-    const exact = await craft({ energy: COST[id].energy, cash: 5000 }); assert.equal((await go(exact, id, [], 0.5)).refused, null, id + " with exactly enough energy");
-    const busy = await craft({ slots: COST[id].slots - 1 }); assert.equal((await move(busy, act(id))).refused, "illegal", id + " without slots");
+    if (COST[id].energy > 0) { const tired = await craft({ energy: COST[id].energy - 1, deals: BOARD }); const x = await move(tired, act(id)); assert.equal(x.refused, "illegal", id + " without energy"); assert.equal(x.state, tired); }
+    const exact = await craft({ energy: COST[id].energy, cash: 5000, deals: BOARD }); assert.equal((await go(exact, id, [], 0.5)).refused, null, id + " with exactly enough energy");
+    const busy = await craft({ slots: COST[id].slots - 1, deals: BOARD }); assert.equal((await move(busy, act(id))).refused, "illegal", id + " without slots");
     assert.equal((await move(await craft({ fired: true, endCause: "review" }), act(id))).refused, "over");
   }
 });
@@ -82,6 +83,95 @@ test("Discovery, Demos and Proposals: each waiting deal moves up on a roll under
   const empty = await craft({});
   x = await first(empty, "discovery", []); assert.deepEqual(x.l.d, { n: 0, of: 0, fx: { energy: -22 } }); assert.deepEqual([x.s.slots, x.s.energy, x.s.skills.discovery], [4, 73, 37]);
   assert.deepEqual(eng.run.step(empty, act("discovery")).state.rng, empty.rng, "and no dice are rolled");
+});
+
+test("an empty stage: Discovery, Demos and Close deals still train; Proposals only marks the week, and is refused once that is done", async () => {
+  const eng = await E(), R = eng.run, legal = st => R.legalMoves(st).filter(m => m.t === "act").map(m => m.id);
+  // a board with leads and one deal at Proposal: nothing qualified, nothing demoed
+  const s = await craft({ deals: [[0, 6000], [0, 7000], [3, 21000, "happy"]] });
+  // Demo marathon has nobody to demo to: it costs what it costs, trains demos by 2, counts as this week's demo
+  // motion, moves no deal and rolls nothing
+  let x = await first(s, "demo", []);
+  assert.deepEqual([x.s.slots, x.s.energy, x.s.skills.demo, x.s.used.demo], [4, 95 - 28, 32, true]); assert.deepEqual(x.l.d, { n: 0, of: 0, fx: { energy: -28 } });
+  assert.deepEqual(x.s.deals, s.deals); assert.deepEqual(x.s.rng, s.rng);
+  // Close deals with nothing at Proposal or Closing: negotiation +1, the late motion, no signing roll
+  const early = await craft({ deals: [[0, 6000], [1, 7000]] });
+  x = await first(early, "close", []);
+  assert.deepEqual([x.s.slots, x.s.energy, x.s.skills.negotiate, x.s.used.close, x.s.closedWon], [4, 95 - 28, 26, true, 0]); assert.deepEqual(x.s.deals, early.deals); assert.deepEqual(x.s.rng, early.rng);
+  assert.equal(x.all[0].tag, "close.none");
+  // Proposals with no demoed deal moves nothing and trains nothing. The first such press of a week still does one
+  // thing: it marks the week's proposal-or-close work as done (week.js counts that toward a full-funnel week). So
+  // it stays a move, exactly as it was in v2.1.
+  assert.equal(R.actBlock(s, "propose"), null); assert.ok(legal(s).includes("propose"));
+  x = await first(s, "propose", []);
+  assert.deepEqual([x.s.slots, x.s.energy, x.s.used.propose], [4, 95 - 25, true]); assert.deepEqual(x.l.d, { n: 0, of: 0, fx: { energy: -25 } });
+  assert.deepEqual([x.s.deals, x.s.skills, x.s.rng], [s.deals, s.skills, s.rng]);
+  // Once the mark is there, the same press would take a slot and 25 energy and change nothing else: it is not a
+  // move. The page shows the card off for the same reason (ActionGrid.jsx reads actBlock).
+  const marked = x.s;
+  assert.deepEqual(R.actBlock(marked, "propose"), { why: "none" }); assert.ok(!legal(marked).includes("propose")); assert.equal(eng.selectors.proposeIdle(marked), true);
+  const r = await move(marked, act("propose")); assert.equal(r.refused, "illegal"); assert.equal(r.state, marked, "the run is untouched");
+  assert.equal(eng.run.ACTS.propose(marked), null, "and the rule itself does nothing");
+  // Close deals leaves the same mark, so an empty Proposals after any Close deals this week is refused too
+  const closed = (await first(s, "close", [0.99, 0.99])).s;
+  assert.equal(closed.used.close, true); assert.deepEqual(R.actBlock(closed, "propose"), { why: "none" }); assert.equal((await move(closed, act("propose"))).refused, "illegal");
+  // the three that train a skill are never refused for an empty stage, marked or not
+  for (const st of [s, marked, closed, early, await craft({})]) for (const id of ["discovery", "demo", "close"]) assert.ok(legal(st).includes(id), id);
+  // one demoed deal is enough, marked week or not, and what the press does then is what it always did
+  const one = await craft({ deals: [[2, 9000, "curious"]], used: { propose: true, close: true } });
+  assert.equal(R.actBlock(one, "propose"), null); assert.ok(legal(one).includes("propose"));
+  x = await first(one, "propose", [0.3799]); assert.deepEqual(x.s.deals.map(d => [d.stage, d.mood]), [[3, "happy"]]);
+  // the reasons come in the rule's order: slots, then energy, then nothing to gain
+  assert.equal(R.actBlock({ ...marked, slots: 0 }, "propose").why, "slots"); assert.equal(R.actBlock({ ...marked, energy: 10 }, "propose").why, "energy");
+  // a new week clears the mark: an empty Proposals is a move again
+  const next = withDice([], 0.99, () => R.step(marked, { t: "end" })).state;
+  assert.equal(next.used.propose, false); assert.equal(R.actBlock({ ...next, energy: 60 }, "propose"), null);
+});
+
+test("the stress an action is certain to add, and the press that would reach 100", async () => {
+  const eng = await E(), S = eng.selectors, { STRESS_COST, CONFERENCE_STRESS } = eng.rules;
+  assert.deepEqual(STRESS_COST, { prospect: 2, politics: 2, hail: 4 });
+  // what the interface quotes is what the action adds
+  for (const [id, add] of [["prospect", 2], ["politics", 2], ["conference", CONFERENCE_STRESS]]) {
+    const s = await craft({ stress: 40, cash: 5000 }); assert.equal(S.stressCost(s, id), add, id); assert.equal((await go(s, id, [], 0.5)).state.stress, 40 + add, id);
+  }
+  assert.equal(S.stressCost(await craft({ coffeesThisWeek: 2 }), "coffee"), 12 + 3 * 2);
+  for (const id of ["cadence", "network", "discovery", "demo", "propose", "close", "crm", "recharge"]) assert.equal(S.stressCost(await craft({}), id), 0, id);
+  // the Hail Mary adds at least its figure, however it goes (blast and signed, blast and nothing, lean and signed, lean and nothing)
+  const awaitCraft = { board: await craft({ stress: 40, deals: [[3, 20000, "happy"], [4, 30000, "happy"]] }) };
+  for (const dice of [[0.1, 0, 0], [0.1, 0.99, 0.99, 0.99, 0.99], [0.9, 0, 0, 0.99, 0.99], [0.9, 0.99, 0.99, 0.99, 0.99, 0.99, 0.99]]) {
+    const r = withDice(dice, 0.99, () => eng.run.step({ ...awaitCraft.board }, { t: "hail" }));
+    assert.ok(r.state.stress >= 40 + STRESS_COST.hail, `a Hail Mary added ${r.state.stress - 40}`);
+  }
+  // fatalPress: one point short is not fatal; at the line it is, and the press then ends the run on the spot
+  for (const [id, add] of [["prospect", 2], ["politics", 2], ["conference", CONFERENCE_STRESS]]) {
+    const safe = await craft({ stress: 99 - add, cash: 5000 }), dead = await craft({ stress: 100 - add, cash: 5000 });
+    assert.equal(S.fatalPress(safe, id), null, id); assert.deepEqual(S.fatalPress(dead, id), { why: "stress", add, atLeast: false }, id);
+    assert.ok(!(await go(safe, id, [], 0.5)).state.burnedOut, id); const end = (await go(dead, id, [], 0.5)).state; assert.equal(end.burnedOut, true, id); assert.equal(end.endCause, "stress", id);
+  }
+  assert.deepEqual(S.fatalPress(await craft({ stress: 96, deals: [[3, 20000]] }), "hail"), { why: "stress", add: 4, atLeast: true }); assert.equal(S.fatalPress(await craft({ stress: 95, deals: [[3, 20000]] }), "hail"), null);
+  // cash: the conference's bill comes before the stress check that follows it; a quad shot's heart comes before its bill
+  assert.equal(S.fatalPress(await craft({ cash: -700, stress: 99 }), "conference").why, "cash"); assert.equal(S.fatalPress(await craft({ cash: -1494, stress: 90 }), "coffee").why, "stress");
+  assert.equal(S.fatalPress(await craft({ cash: -1494, stress: 20 }), "coffee").why, "cash"); assert.equal(S.fatalPress(await craft({ cash: 5000, stress: 20 }), "coffee"), null);
+});
+
+test("what the interface is told before a press that money would end: a purchase, and Friday's rent", async () => {
+  const eng = await E(), S = eng.selectors, { CASH, COST, PAY } = eng.rules;
+  // a conference at -$700: 800 more is exactly the line; one dollar richer and it is not
+  assert.deepEqual(S.purchaseBust(await craft({ cash: -700 }), "conference"), { cash: -1500, repoAt: CASH.repoAt });
+  assert.equal(S.purchaseBust(await craft({ cash: -699 }), "conference"), null);
+  assert.deepEqual(S.purchaseBust(await craft({ cash: -1494 }), "coffee"), { cash: -1500, repoAt: -1500 }); assert.equal(S.purchaseBust(await craft({ cash: -1493 }), "coffee"), null);
+  for (const id of Object.keys(COST)) if (!COST[id].cash) assert.equal(S.purchaseBust(await craft({ cash: -1499 }), id), null, id + " costs no cash");
+  // and it is what happens: the conference at -$700 ends the run, at -$699 it does not
+  assert.equal((await go(await craft({ cash: -700 }), "conference", [], 0.5)).state.repo, true); assert.ok(!(await go(await craft({ cash: -699 }), "conference", [], 0.5)).state.repo);
+  // Friday: salary, then rent in a rent week, then Collections is asked
+  let f = S.fridayPreview(await craft({ week: 5, cash: -900 })); assert.deepEqual([f.rent, f.cash, f.bust], [PAY.rent, -1500, true]);
+  f = S.fridayPreview(await craft({ week: 5, cash: -899 })); assert.deepEqual([f.cash, f.bust], [-1499, false]);
+  f = S.fridayPreview(await craft({ week: 6, cash: -1400 })); assert.deepEqual([f.rent, f.cash, f.bust], [0, -400, false]);
+  // and it is what happens when no Friday signing comes first (the first roll of End Week is that chance)
+  const END = { t: "end" }, short = await craft({ week: 5, cash: -900 }), just = await craft({ week: 5, cash: -899 });
+  assert.equal(withDice([0.99], 0.99, () => eng.run.step(short, END)).state.repo, true);
+  assert.ok(!withDice([0.99], 0.99, () => eng.run.step(just, END)).state.repo);
 });
 
 test("Recharge: 35 energy and 12 relief, up to half as much again on the luck roll; coffee eats the relief; once a week", async () => {

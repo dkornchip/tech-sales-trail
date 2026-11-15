@@ -39,8 +39,22 @@ test("the action hints quote the rules: lunch with leadership, the Hail Mary, th
   for (const [k, v] of Object.entries(want)) assert.equal(r.state[k] - s[k], v, "politics " + k);
   // the Hail Mary: "Four times in five ... 55%"
   assert.equal(R.HAIL.blast, 0.2); assert.equal(R.HAIL.walk, 0.55);
-  assert.match(ui.HINT.hail(2, R.HAIL.blast, R.HAIL.walk), /Four times in five, each remaining late deal then has a 55% chance to walk\./);
-  assert.equal(ui.HINT.hail(0, R.HAIL.blast, R.HAIL.walk), "No late-stage deals to rescue.");
+  assert.match(ui.HINT.hail(2, R.HAIL.blast, R.HAIL.walk, R.COST.hail), /Four times in five, each remaining late deal then has a 55% chance to walk\./);
+  assert.equal(ui.HINT.hail(0, R.HAIL.blast, R.HAIL.walk, R.COST.hail), "No late-stage deals to rescue.");
+  // and what a throw costs, which v2.1 said nowhere: the hint's own numbers are the rule's
+  assert.ok(ui.HINT.hail(2, R.HAIL.blast, R.HAIL.walk, R.COST.hail).includes(`${R.COST.hail.slots} slot, ${R.COST.hail.energy} energy.`));
+  const late = await craft({ deals: [[3, 20000]] }), thrown = withDice([0.1, 0.99], 0.99, () => eng.run.step(late, { t: "hail" })).state;
+  assert.deepEqual([late.slots - thrown.slots, late.energy - thrown.energy], [R.COST.hail.slots, R.COST.hail.energy]);
+  // Prospect blitz: the stress the hint names is the stress the action adds
+  assert.ok(ui.HINT.prospect(R.COST.prospect, R.STRESS_COST.prospect).endsWith(`+${R.STRESS_COST.prospect} stress.`));
+  // the article before a percentage
+  assert.match(ui.HINT.discovery(2, 0.85), /Each has an 85% chance/); assert.match(ui.HINT.discovery(2, 0.52), /Each has a 52% chance/); assert.match(ui.HINT.demo(1, 0.8), /has an 80% chance/);
+  assert.match(ui.HINT.propose(1, 0.11), /an 11% chance/); assert.match(ui.HINT.propose(1, 0.38), /a 38% chance/); assert.match(ui.HINT.demo(1, 0.18), /an 18% chance/); assert.match(ui.HINT.demo(1, 0.08), /an 8% chance/);
+  // the handbook's two queue rules are the thresholds End Week uses
+  const help = await import("../../src/copy/help.js"), facts = eng.selectors.handbookFacts(late);
+  assert.deepEqual([facts.staleLeads, facts.backlogQualified], [R.STALE.leads, R.BACKLOG.qualified]);
+  const pipeline = help.HELP.flatMap(sec => sec.rows).find(row => row.term === "Pipeline.").body(facts);
+  assert.ok(pipeline.includes("six or more leads and no discovery") && pipeline.includes("five or more qualified deals and no demo"), pipeline);
   // referrals: the whale chance
   assert.match(ui.HINT.network(0, R.REFERRAL.whale), /roughly a 3% chance of being a whale/);
   // conference: its real cost, and the real chance and size of the bonus

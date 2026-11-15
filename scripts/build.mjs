@@ -1,6 +1,6 @@
 // Builds the whole game into one self-contained index.html that makes no network requests.
 //   node scripts/build.mjs             -> dist/index.html (or $TST_OUT/index.html): the release build
-//   node scripts/build.mjs --release   -> also writes ./Tech_Sales_Trail_<major.minor>.html (the release file)
+//   node scripts/build.mjs --release   -> also writes ./Tech_Sales_Trail_<version>.html (the release file)
 //   node scripts/build.mjs --check     -> fails if that release file is not what the source builds to
 //   node scripts/build.mjs --test      -> dist-test/index.html: the same game with its test hooks compiled in
 //                                         (a seed for a new run, scripted dice, pinned cosmetic rolls, engine
@@ -233,8 +233,10 @@ const kb = n => (n / 1024).toFixed(0) + " KB";
 const sizes = kb(raw) + " raw, " + kb(gzip) + " gzip";
 if(!dev && raw > MAX_RAW) fail("the output is " + sizes + "; the limit is " + kb(MAX_RAW) + " raw");
 
-// The release file: Tech_Sales_Trail_2.1.html for version 2.1.x.
-const RELEASE_FILE = "Tech_Sales_Trail_" + readJSON("package.json").version.split(".").slice(0, 2).join(".") + ".html";
+// The release file: Tech_Sales_Trail_2.1.html for version 2.1.0, Tech_Sales_Trail_2.1.1.html for 2.1.1. A patch
+// release has a file of its own, so the release before it stays in the repository exactly as it shipped
+// (scripts/check-releases.mjs holds that, and that ./index.html is still the release the owner promoted).
+const RELEASE_FILE = "Tech_Sales_Trail_" + readJSON("package.json").version.replace(/\.0$/, "") + ".html";
 if(args.has("--check")){
   if(PREVIEW) fail("--check compares the game, not a preview: unset TST_ENTRY, TST_CSS and TST_TEMPLATE");
   if(hooks) fail("--check compares the release build: drop --test and --dev");

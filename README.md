@@ -254,4 +254,6 @@ npm run verify       # builds, then runs every check
 
 The game is built on [React](https://react.dev) (MIT), set in [Inter](https://rsms.me/inter/) and [JetBrains Mono](https://www.jetbrains.com/lp/mono/) (both SIL Open Font License 1.1), and drawn with [Lucide](https://lucide.dev) icons (ISC). All four are bundled into `index.html`; their licences are in [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
 
-*Tech Sales Trail is satire. Shitcorp, Scheisskorp, clAInk and every customer in the game are made up. Any resemblance to your actual quarter is a coincidence, and we are sorry.*
+Tech Sales Trail is an independently developed fictional satire of the technology sales industry. It is not affiliated with or endorsed by any employer or technology vendor.
+
+*Shitcorp, Scheisskorp, clAInk and every customer in the game are made up. Any resemblance to your actual quarter is a coincidence, and we are sorry.*

@@ -45,7 +45,9 @@ export const Kpis = ({ s }) => {
   const friday = fridayPreview(s), p = pace(s), points = Math.round(Math.abs(p.gap) * 100);
   const rentWeek = nextRentWeek(s);
   const stressSub = s.stress >= STRESS_DANGER ? [KPI.stressDanger, "bad"] : friday.stress > 0 ? [KPI.stressCrash(friday.stress), "warn"] : [KPI.stressEases(-friday.stress), ""];
-  const cashSub = s.cash < 0 ? [KPI.collections(CASH.repoAt), s.cash <= CASH.warnAt ? "bad" : "warn"]
+  // (first: a Friday whose salary and rent would leave cash at or under the line where Collections ends the run)
+  const cashSub = friday.bust ? [KPI.rentBust(), "bad"]
+    : s.cash < 0 ? [KPI.collections(CASH.repoAt), s.cash <= CASH.warnAt ? "bad" : "warn"]
     : rentDueThisWeek(s) ? [KPI.rentThisWeek(friday.rent), "warn"]
     : rentWeek ? [KPI.rentLater(rentWeek), ""] : [KPI.rentDone, ""];
   // where the run stands against what this Friday expects: the words say it, the colour only repeats it. Before

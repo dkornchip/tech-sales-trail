@@ -1,0 +1,27 @@
+{
+  "about": "Every release kept in this repository, as it shipped, and the one ./index.html is a copy of. Checked by scripts/check-releases.mjs (the 'releases' step of npm run verify). A release candidate is not listed until the owner promotes it.",
+  "promoted": "2.1",
+  "releases": [
+    {
+      "version": "2.1",
+      "file": "Tech_Sales_Trail_2.1.html",
+      "bytes": 559646,
+      "sha256": "5c495f1168f2610754163f8653708ae80e968a3a19fc12a0c5cd33db406dae0e",
+      "note": "Operation Final Coat, with the clAInk desktop fix and the week-13 cancel rule. Promoted on the owner's instruction."
+    },
+    {
+      "version": "2.0.1",
+      "file": "test/baseline/v2.0.1/index.html",
+      "bytes": 518108,
+      "sha256": "0272acc61921043ebf30c6b2881aea8286fe839992aff587343381dc4c293644",
+      "note": "The release before 2.1. Its rules are also kept as source in test/baseline/checkpoint-engine."
+    },
+    {
+      "version": "1.21",
+      "file": "test/baseline/v1.21/index.html",
+      "bytes": 336934,
+      "sha256": "e268fbd3323b045579dc03b2e71179c218f10b0140321ecbef94fd181026a56a",
+      "note": "The last release of the original line: the scene and save tests still compare against it."
+    }
+  ]
+}

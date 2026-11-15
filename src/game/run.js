@@ -25,7 +25,7 @@
 //
 // step is a pure function of its arguments: the dice are part of the state (rng.js), so the same state and the same
 // move always give the same result.
-import { actCadence, actClose, actCoffee, actConference, actCrm, actDemo, actDiscovery, actNetwork, actPolitics, actPropose, actProspect, actRecharge, hailMary } from "./actions.js";
+import { actCadence, actClose, actCoffee, actConference, actCrm, actDemo, actDiscovery, actNetwork, actPolitics, actPropose, actProspect, actRecharge, hailMary, proposeIdle } from "./actions.js";
 import { CLAINK, buyClaink, cancelClaink, clainkCanCancel, clainkCanDeploy, clainkCanInstall, deployClaink, dismissClaink, hideClainkCard } from "./claink.js";
 import { EVENTS, queueChoice } from "./events.js";
 import { isRunOver } from "./log.js";
@@ -50,7 +50,8 @@ export const waiting = s => (isRunOver(s) ? null : pendingOf(s)[0] || null);
 export const actBlock = (s, id) => {
   if (!own(ACTS, id)) return { why: "unknown" };
   const used = id === "crm" ? !!(s.used && s.used.crm) : id === "recharge" ? !!s.restedThisWeek : false;
-  return blocked(s, { energy: COST[id].energy, slots: COST[id].slots || 1, used });
+  return blocked(s, { energy: COST[id].energy, slots: COST[id].slots || 1, used })
+    || (id === "propose" && proposeIdle(s) ? { why: "none" } : null);    // nothing to send, nothing learned, nothing left to count
 };
 // Why the Hail Mary cannot be thrown right now, or null.
 export const hailBlock = s => blocked(s, { energy: COST.hail.energy, slots: COST.hail.slots || 1 }) || (lateDeals(s).length ? null : { why: "none" });

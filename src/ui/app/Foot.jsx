@@ -1,22 +1,26 @@
 import React from "react";
 import { isRunOver } from "../../game/log.js";
-import { hailBlock } from "../../game/run.js";
-import { effectChips, fridayPreview, lateDeals, stageCount } from "../../game/selectors.js";
-import { HAIL as HAIL_ODDS } from "../../game/rules.js";
+import { ACTS, actBlock, hailBlock } from "../../game/run.js";
+import { effectChips, fatalPress, fridayPreview, lateDeals, stageCount } from "../../game/selectors.js";
+import { COST, HAIL as HAIL_ODDS } from "../../game/rules.js";
 import { CHIP, HINT, UI } from "../../copy/ui.js";
 import { isPhone, noHover } from "../env.js";
 import { Icon } from "./Icon.jsx";
 
-// The one thing worth doing next, for when nothing is under the pointer.
+// The one thing worth knowing next, for when nothing is under the pointer: the furthest-along stage with a deal in
+// it. It states what is on the board and never what to do about it; and it does not speak of work as if it could
+// be done when it cannot: with no action that costs energy in reach it says that, and when the stage it names is
+// out of reach for lack of energy it says what that takes.
+const WORK = Object.keys(ACTS).filter(id => COST[id].energy > 0);
 export const idleHint = s => {
   if (isRunOver(s)) return HINT.idle.over();
   if (s.slots <= 0) return HINT.idle.noSlots();
+  if (!WORK.some(id => !actBlock(s, id))) return HINT.idle.tired();
   const late = lateDeals(s).length, demoed = stageCount(s, 2), qualified = stageCount(s, 1), leads = stageCount(s, 0);
-  if (late) return HINT.idle.close(late);
-  if (demoed) return HINT.idle.propose(demoed);
-  if (qualified) return HINT.idle.demo(qualified);
-  if (leads) return HINT.idle.discovery(leads);
-  return HINT.idle.start();
+  const [text, id] = late ? [HINT.idle.close(late), "close"] : demoed ? [HINT.idle.propose(demoed), "propose"] : qualified ? [HINT.idle.demo(qualified), "demo"]
+    : leads ? [HINT.idle.discovery(leads), "discovery"] : [HINT.idle.start(), "network"];      // (no leads: the cheaper of the two ways to find some)
+  const block = actBlock(s, id);
+  return block && block.why === "energy" ? `${text} ${HINT.blocked.energy(block)}` : text;
 };
 
 export const HintBar = ({ hint, s }) => (
@@ -90,7 +94,8 @@ export { hailBlock };
 export const Foot = ({ s, onHail, onEndWeek, onHint, onBlocked }) => {
   const late = lateDeals(s).length;
   const hailBlocked = hailBlock(s);
-  const hailText = hailBlocked && hailBlocked.why !== "none" ? HINT.blocked[hailBlocked.why](hailBlocked) : HINT.hail(late, HAIL_ODDS.blast, HAIL_ODDS.walk);
+  const hailFatal = hailBlocked ? null : fatalPress(s, "hail");       // its least stress would already reach 100
+  const hailText = hailBlocked && hailBlocked.why !== "none" ? HINT.blocked[hailBlocked.why](hailBlocked) : hailFatal ? HINT.ends(hailFatal) : HINT.hail(late, HAIL_ODDS.blast, HAIL_ODDS.walk, COST.hail);
   const hailHint = () => onHint({ title: UI.hail, text: hailText, key: "H" });
   const endHint = () => onHint({ title: UI.endWeek, text: isRunOver(s) ? HINT.blocked.over() : HINT.endWeek(fridayPreview(s)), key: "E" });
   const over = isRunOver(s);
