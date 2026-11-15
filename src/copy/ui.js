@@ -2,6 +2,8 @@
 // The hint bar tells you what a button will do with the numbers as they stand, or why it can't.
 const n = (count, one, many) => `${count} ${count === 1 ? one : many || one + "s"}`;
 const pc = p => `${Math.round(p * 100)}%`;
+// a range of numbers, kept in one piece when a line wraps (word joiners around the dash)
+const to = (lo, hi) => `${lo}\u2060–\u2060${hi}`;
 // "a 52% chance", "an 85% chance": the article a percentage is said with (eight, eleven, eighteen and the eighties)
 const aPc = p => { const k = Math.round(p * 100); return `${k === 8 || k === 11 || k === 18 || (k >= 80 && k <= 89) ? "an" : "a"} ${k}%`; };
 const usd = v => (v < 0 ? "−\u2060$" : "$") + Math.abs(Math.round(v)).toLocaleString("en-US");   // (a word joiner: the sign never ends a line without its amount)
@@ -96,10 +98,10 @@ export const CARD = { skillOnly: "skill only", none: "no deals", fatal: "Ends th
 const only = (skill, tick) => (skill && tick ? `It would only train ${skill} and count toward a full-funnel week.` : skill ? `It would only train ${skill}.` : "It would only count toward a full-funnel week.");
 const fifths = p => { const k = Math.round(p * 5); return Math.abs(p * 5 - k) < 1e-9 && k > 0 && k < 5 ? `${["", "One time", "Two times", "Three times", "Four times"][k]} in five` : `${pc(p)} of the time`; };
 export const HINT = {
-  prospect: (c, stress) => `Cold calls. Usually 1–4 new leads; occasionally a fifth. Costs time and energy. +${stress} stress.`,
-  cadence: () => "0–3 warmer leads. A week of emails without calls costs manager approval.",
+  prospect: (c, stress) => `Cold calls. Usually ${to(1, 4)} new leads; occasionally a fifth. Costs time and energy. +${stress} stress.`,
+  cadence: () => `${to(0, 3)} warmer leads. A week of emails without calls costs manager approval.`,
   // whale: the chance each introduction is a whale
-  network: (c, whale) => `1–2 introductions, usually small. Each has roughly ${aPc(whale)} chance of being a whale.`,
+  network: (c, whale) => `${to(1, 2)} introductions, usually small. Each has roughly ${aPc(whale)} chance of being a whale.`,
   // With nothing waiting, a press still costs what it costs, and the hint says what it would buy. tick: it would be
   // this week's first press of its kind, which counts toward a full-funnel week. Proposals trains no skill, so that
   // mark is all it can buy; once the mark is there it buys nothing and is not on offer (blocked.none, below).
@@ -108,10 +110,10 @@ export const HINT = {
   propose: (c, p) => (c ? `${n(c, "demoed deal")} waiting. Each has ${aPc(p)} chance to reach Proposal.` : `No eligible deals. You would still spend a slot and energy. ${only(null, true)}`),
   close: (c, tick) => (c ? `${n(c, "eligible deal")}; each has its own signing odds. Failed attempts may lose deals.` : `No deals are ready to sign. You would still spend a slot and energy. ${only("negotiation", tick)}`),
   // buzz: the chance it also lifts signing odds; lift: by how much (a fraction), this week only
-  conference: (c, stress, buzz, lift) => `3–8 warm leads; some are large. ${n(c.slots, "slot")}, ${c.energy} energy, ${usd(c.cash)}, +${stress} stress. ${pc(buzz)} chance of +${Math.round(lift * 100)} pp signing odds this week.`,
+  conference: (c, stress, buzz, lift) => `${to(3, 8)} warm leads; some are large. ${n(c.slots, "slot")}, ${c.energy} energy, ${usd(c.cash)}, +${stress} stress. ${pc(buzz)} chance of +${Math.round(lift * 100)} pp signing odds this week.`,
   crm: (pruned, gain, nuke) => `Removes ${n(pruned, "dead lead")}: +${gain} manager. Once per week.` + (nuke ? ` Your manager may remove a live deal while he’s in the CRM (${pc(nuke)}).` : ""),
   // (both take one of the week's slots, which their cards have no room to say)
-  recharge: r => `Takes a slot. +${r.energy[0]}–${r.energy[1]} energy` + (r.relief[1] > 0 ? `, −${r.relief[0]}–${r.relief[1]} stress` : ", no stress relief") + ". Once per week. Coffee reduces relief. A rare great nap approves a trip.",
+  recharge: r => `Takes a slot. +${to(r.energy[0], r.energy[1])} energy` + (r.relief[1] > 0 ? `, −${to(r.relief[0], r.relief[1])} stress` : ", no stress relief") + ". Once per week. Coffee reduces relief. A rare great nap approves a trip.",
   coffee: (shot) => `Takes a slot. Shot ${shot.n}: +${shot.energy} energy, +${shot.stress} stress now, +${shot.crash} more on Friday.` + (shot.risk >= 1 ? " This shot reaches 100 stress and ends the run." : shot.risk > 0 ? ` ${pc(shot.risk)} chance it ends the run.` : " Later shots give less and risk more."),
   politics: () => "Lunch with leadership. +8 manager · +3 product · −4 reputation · +2 stress.",
   // blast: the chance nobody walks; walk: the chance each late deal left walks otherwise; cost: what the throw takes

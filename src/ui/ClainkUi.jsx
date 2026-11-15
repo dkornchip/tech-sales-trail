@@ -129,7 +129,9 @@ const dockRoom=el=>{
 // done and the stylesheet does it (claink.css, "the ad fits its dock"). If even the plainest layout is taller than
 // the room to spare, the ad has what that layout needs and the deal list gives way. Where nothing limits the ad's
 // height it never overflows, so nothing is ever dropped there.
-const AD_DROP=["announce","chips","badges","proof"];
+// (The last step, the headline, is taken only on the policy step, where the pitch has already stepped back and the
+// terms and their two buttons are what must be in sight: on a short window they would not all fit otherwise.)
+const AD_DROP=["announce","chips","badges","proof","headline"];
 const fitAd=el=>{
   if(!el)return;
   const over=()=>el.scrollHeight>el.clientHeight+1;
@@ -235,7 +237,7 @@ export const ClainkAd=({s,mini,onToggle,onInstall,onDismiss})=>{
             : <>
                 <div className="claink-policy" id={policyId} role="group" aria-labelledby={policyId+"-hd"}>
                   <div className="hd" id={policyId+"-hd"}>{CK_AD.policyTitle} <span>{CK_AD.policyVersion}</span></div>
-                  <ul>{CK_AD.policy(CLAINK.STRIKES).map((t,i)=><li key={i}>{t}</li>)}</ul>
+                  <ul>{CK_AD.policy(CLAINK.STRIKES,{retainer:CLAINK.RETAINER,perOutcome:CLAINK.PER_OUTCOME,idle:CLAINK.IDLE,overage:CLAINK.OVERAGE,trueUp:CLAINK.TRUEUP_OVER,cancel:CLAINK.CANCEL}).map((t,i)=><li key={i}>{t}</li>)}</ul>
                 </div>
                 <div className="claink-confirm-row">
                   <button type="button" className="claink-confirm" disabled={!can} onClick={onInstall} aria-describedby={policyId}>{CK_AD.accept(CLAINK.INSTALL)}</button>

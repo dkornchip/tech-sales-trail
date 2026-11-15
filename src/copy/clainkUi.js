@@ -5,6 +5,7 @@ import { fmtTok, money } from "../game/util.js";
 // Amounts arrive as numbers and are formatted here.
 // The word joiner keeps a minus sign on the same line as its amount (the panel is narrow on a phone).
 const usd = v => money(v).replace("-", "−\u2060");
+const span = (lo, hi) => `${usd(lo)}\u2060–\u2060${usd(hi)}`;      // a range of amounts, kept in one piece when a line wraps
 
 export const CK_AD = {
   label: mini => "Sponsored: clAInk Enterprise" + (mini ? " (minimized)" : ""),
@@ -30,10 +31,14 @@ export const CK_AD = {
   declined: "Activation unavailable · insufficient cash",
   policyTitle: "Shitcorp AI Acceptable Use Policy",
   policyVersion: "v3 (final) (2)",
-  policy: strikes => [
+  // The policy is where the terms are, for a player who reads before accepting: the three approved lines, and with
+  // them the rates the marketing leaves out (t: the real numbers, from CLAINK in src/game/claink.js).
+  policy: (strikes, t) => [
     "Seat and usage charges are deducted from your cash.",
+    `Usage is billed on Fridays: ${usd(t.retainer)} plus ${span(t.perOutcome[0], t.perOutcome[1])} per outcome for a week with a run, ${span(t.idle[0], t.idle[1])} for an idle week. Overages of ${span(t.overage[0], t.overage[1])} may apply.`,
     "Every run without closed revenue earns an AI Governance Council strike.",
-    `Strike ${strikes}: seat revoked, final token true-up charged. A live deal may also be lost.`
+    `Strike ${strikes}: seat revoked, final token true-up charged. A live deal may also be lost.`,
+    `The true-up takes your cash and ${span(t.trueUp[0], t.trueUp[1])} more. Cancelling early costs ${usd(t.cancel)} plus usage due.`
   ],
   accept: cost => `Accept · ${usd(cost)}`,
   notNow: "Not now",
@@ -94,7 +99,7 @@ export const CK_WORKSPACE = {
   usageFrozen: billed => `Quarter-end freeze: no new charges. Total charged back ${usd(billed)}.`,
   // an estimate: Friday can add an overage on top (CLAINK.OVERAGE_P)
   usageRan: (due, tokens, billed) => ["Estimated this week: ", usd(due), ` (${fmtTok(tokens)} tokens), billed Friday; overages possible. Charged back so far ${usd(billed)}.`],
-  usageIdle: (lo, hi, billed) => `Idle weeks still bill ${usd(lo)}–${usd(hi)}, plus possible overages. Charged back so far ${usd(billed)}.`,
+  usageIdle: (lo, hi, billed) => `Idle weeks still bill ${span(lo, hi)}, plus possible overages. Charged back so far ${usd(billed)}.`,
   cancel: "Cancel seat",
   cancelLabel: "Cancel clAInk seat",
   cancelCost: (cost, fee) => `Early termination: ${usd(cost)} (${usd(fee)} fee + usage already due).`,
@@ -108,4 +113,4 @@ export const CK_WORKSPACE = {
 
 // For the copy lint: a customer's title, a certification and the vendor's product name keep their own capitals.
 export const lint = { exempt: { "sentence-case": ["CK_AD.proofBy", "CK_AD.badges", "CK_WORKSPACE.title"] },
-  params: { "CK_AD.fine": [{ args: [3, 5] }] } };
+  params: { "CK_AD.fine": [{ args: [3, 5] }], "CK_AD.policy": [{ args: [3, { retainer: 249, perOutcome: [140, 280], idle: [150, 300], overage: [200, 600], trueUp: [200, 1800], cancel: 250 }] }] } };

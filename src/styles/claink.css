@@ -89,7 +89,8 @@
 .claink-policy{margin:0 0 9px;padding:8px 10px 8px;border-radius:11px;background:#100e2a;border:1px solid var(--ck-line);font-size:13px;color:#dcd7fb}
 .claink-policy .hd{display:flex;justify-content:space-between;gap:6px;margin-bottom:3px;font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#c4b5fd}
 .claink-policy .hd span{font-weight:600;letter-spacing:0;text-transform:none;color:var(--ck-mut)}
-.claink-policy ul{margin:0;padding-left:16px}
+.claink-policy ul{margin:0;padding-left:16px;list-style:disc}     /* (the page's reset takes list markers away; five terms need them) */
+.claink-policy li::marker{color:var(--ck-mut)}
 .claink-policy li{margin:2px 0}
 .claink-confirm-row{display:grid;grid-template-columns:2fr 3fr;gap:8px}
 .claink-confirm{padding:11px 8px;border-radius:12px;background:linear-gradient(100deg,var(--ck-v),var(--ck-c))}
@@ -230,6 +231,9 @@
 .claink-ad[data-fit~="chips"] .claink-chips{display:none}
 .claink-ad[data-fit~="badges"] .claink-badges{display:none}
 .claink-ad[data-fit~="proof"] .claink-proof{display:none}
+.claink-ad.confirming[data-fit~="headline"] .claink-headline{display:none}
+.claink-ad[data-fit~="tight"] .claink-policy{margin-bottom:6px;padding:6px 10px}
+.claink-ad[data-fit~="tight"] .claink-policy li{margin:1px 0}
 /* Beside the game the button is part of the ad's page, not pinned over it. (Pinned, it sat on top of whatever the
    ad had scrolled under it: the pricing line, the badges.) If a window is too short even for the plainest layout,
    the ad scrolls like any panel and the button is at its end. */
