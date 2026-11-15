@@ -56,19 +56,25 @@ export const crmPreview = s => {
   const atRisk = s.deals.some(d => !isDeadLead(d) && (d.stage === 1 || d.stage === 2));
   return { pruned, value: dead.reduce((sum, d) => sum + d.value, 0), gain: crmGain(pruned), nuke: atRisk ? crmNukeOdds(s.manager) : 0 };
 };
-// endWeek: the parts of Friday that are certain. `cash` is what salary and rent leave, before anything else Friday
-// does (a Friday signing pays its commission first; clAInk's invoice comes last); `bust` says that it is at or
-// under the line where Collections ends the run (quarter.js, salaryAndBills; deals.js, checkRepo).
-// `claink`: what an active seat will be invoiced this Friday (claink.js, billClaink): what is already due if the
-// agents ran this week, or the idle range if they did not; null with no seat, and in week 13, which is not billed.
-// (An overage may be added on top; it is not in `cash` or `bust`, which are about salary and rent alone.)
-// `melt`: this week's quad shots crash on Friday (week.js) and nothing on a Friday lowers stress in such a week, so
-// a crash that takes stress to 100 is certain to end the run there.
+// End week, in the order Friday does things (week.js, endWeek): a chance of a close attempt on the late deals, whose
+// commission is paid at once; salary and rent, then Collections is asked; then the coffee crash; last, clAInk's
+// invoice, then Collections again. Nothing between the rent and the invoice changes cash.
+//   cash      what salary and rent leave. `bust`: that is at or under the line where Collections ends the run.
+//   claink    what an active seat will be invoiced (claink.js, billClaink): what is already due if the agents ran this
+//             week, or the idle range if they did not; null with no seat, and in week 13, which is not billed. An
+//             overage may come on top, which only makes it worse.
+//   billCash  what the invoice leaves, at the least it can be (`billBust`: at or under the line, when the rent is not).
+//   melt      this week's quad shots crash on Friday and nothing on a Friday lowers stress in such a week, so a crash
+//             that takes stress to 100 ends the run there.
+//   mayClose  a late deal is on the board: Friday's close attempt (a chance, before the rent) may sign it and pay its
+//             commission first. Then neither bust is certain; the melt still is.
 export const fridayPreview = s => {
   const shots = s.coffeesThisWeek || 0, rent = rentDueThisWeek(s) ? PAY.rent : 0, cash = s.cash + PAY.salary - rent;
   const c = s.claink, seat = c && c.status === "active" && !clainkFrozen(s) ? (c.deployed ? { due: c.due } : { idle: CLAINK.IDLE.slice() }) : null;
-  return { salary: PAY.salary, rent, energy: FRIDAY.energy, stress: shots > 0 ? CRASH_PER_SHOT * shots : -FRIDAY.relief, cash, bust: cash <= CASH.repoAt, repoAt: CASH.repoAt, claink: seat,
-    melt: shots > 0 && s.stress + CRASH_PER_SHOT * shots >= 100 };
+  const bust = cash <= CASH.repoAt, billCash = seat ? cash - (seat.idle ? seat.idle[0] : seat.due) : cash;
+  return { salary: PAY.salary, rent, energy: FRIDAY.energy, stress: shots > 0 ? CRASH_PER_SHOT * shots : -FRIDAY.relief, cash, bust, repoAt: CASH.repoAt, claink: seat,
+    billCash, billBust: !bust && !!seat && billCash <= CASH.repoAt,
+    melt: shots > 0 && s.stress + CRASH_PER_SHOT * shots >= 100, mayClose: lateDeals(s).length > 0 };
 };
 // An action that costs cash (the conference, a quad shot) is charged at once, and Collections is asked at once
 // (actions.js): what paying for it would leave, when that is at or under the line that ends the run. Otherwise null.
@@ -89,6 +95,17 @@ export const fatalPress = (s, id) => {
 };
 // the same press as the rules see it: Proposals with nothing to send and nothing left to count (actions.js)
 export { proposeIdle } from "./actions.js";
+// Proposals with nothing demoed is still on offer while the week's proposal-or-close work is not counted: that mark
+// is all it buys (week.js: three of the four categories make a full-funnel week, one or none with pipeline is a
+// neglected one). In three states the mark cannot change Friday, and the hint says so:
+//   "full"   the other three categories are already worked this week: the bonus is earned without it
+//   "last"   week 13: the quarter ends on Friday, and both the bonus and the penalty are for next week
+//   "alone"  its last slot, and no other category worked: one category or none, the same week either way
+// null: the mark may still matter. (The press is not refused in these states: that would be a second rule change.)
+export const proposeNothing = s => {
+  const u = s.used || {}, others = [u.prospect || u.cadence || u.network, u.discovery, u.demo].filter(Boolean).length;
+  return others >= 3 ? "full" : weekOf(s) >= QUARTER_WEEKS ? "last" : s.slots === 1 && others === 0 ? "alone" : null;
+};
 
 // cost(): why an action can't be taken right now, or null. Same order of checks as the rule.
 export const blocked = (s, { energy = 0, slots = 1, used = false } = {}) => {

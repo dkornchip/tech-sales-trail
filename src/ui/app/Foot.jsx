@@ -3,7 +3,7 @@ import { isRunOver } from "../../game/log.js";
 import { ACTS, actBlock, hailBlock } from "../../game/run.js";
 import { effectChips, fatalPress, fridayPreview, lateDeals, stageCount } from "../../game/selectors.js";
 import { COST, HAIL as HAIL_ODDS } from "../../game/rules.js";
-import { CHIP, HINT, UI } from "../../copy/ui.js";
+import { CARD, CHIP, HINT, UI } from "../../copy/ui.js";
 import { isPhone, noHover } from "../env.js";
 import { describe } from "./ActionGrid.jsx";
 import { ACTIONS } from "./actionList.js";
@@ -28,7 +28,7 @@ export const idleHint = s => {
 // Why the Hail Mary cannot be thrown, whether it would end the run, and what the bar says about it.
 const hailWords = s => {
   const block = hailBlock(s), fatal = block ? null : fatalPress(s, "hail");       // fatal: its least stress would already reach 100
-  return { block, text: block && block.why !== "none" ? HINT.blocked[block.why](block) : fatal ? HINT.ends(fatal) : HINT.hail(lateDeals(s).length, HAIL_ODDS.blast, HAIL_ODDS.walk, COST.hail) };
+  return { block, fatal, text: block && block.why !== "none" ? HINT.blocked[block.why](block) : fatal ? HINT.ends(fatal) : HINT.hail(lateDeals(s).length, HAIL_ODDS.blast, HAIL_ODDS.walk, COST.hail) };
 };
 const endWords = s => (isRunOver(s) ? HINT.blocked.over() : HINT.endWeek(fridayPreview(s)));
 
@@ -116,7 +116,7 @@ const Chips = ({ list, onHint }) => {
 export { hailBlock };
 
 export const Foot = ({ s, onHail, onEndWeek, onHint, onBlocked }) => {
-  const { block: hailBlocked, text: hailText } = hailWords(s);
+  const { block: hailBlocked, fatal: hailFatal, text: hailText } = hailWords(s);
   const hailHint = () => onHint({ ui: "hail" });
   const endHint = () => onHint({ ui: "end" });
   const over = isRunOver(s);
@@ -129,8 +129,9 @@ export const Foot = ({ s, onHail, onEndWeek, onHint, onBlocked }) => {
   return (
     <div className="foot">
       <Chips list={chips(s)} onHint={onHint} />
-      <button type="button" className="btn" data-ui="hail" aria-disabled={hailBlocked ? "true" : undefined} onClick={() => { if (hailBlocked) { hailHint(); if (onBlocked && noHover()) onBlocked({ title: UI.hail, text: hailText }); return; } onHail(); if (noHover()) onHint(null); }}
-        onMouseEnter={point(hailHint)} onFocus={point(hailHint)} onMouseLeave={leave} onBlur={leave}><Icon name="dices" />{UI.hail}</button>
+      {/* (a throw that is certain to end the run is marked as an action card is: in the risk colour, and said) */}
+      <button type="button" className={"btn" + (hailFatal ? " risk" : "")} data-ui="hail" aria-disabled={hailBlocked ? "true" : undefined} onClick={() => { if (hailBlocked) { hailHint(); if (onBlocked && noHover()) onBlocked({ title: UI.hail, text: hailText }); return; } onHail(); if (noHover()) onHint(null); }}
+        onMouseEnter={point(hailHint)} onFocus={point(hailHint)} onMouseLeave={leave} onBlur={leave}><Icon name="dices" />{UI.hail}{hailFatal ? <span className="sr-only">, {CARD.fatal}</span> : null}</button>
       <button type="button" className="btn primary" data-ui="end" aria-disabled={over ? "true" : undefined} onClick={() => { if (over) return; onEndWeek(); if (noHover()) onHint(null); }}
         onMouseEnter={point(endHint)} onFocus={point(endHint)} onMouseLeave={leave} onBlur={leave}>{UI.endWeek}<Icon name="arrow-right" /></button>
     </div>

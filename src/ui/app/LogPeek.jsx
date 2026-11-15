@@ -15,6 +15,11 @@ const ROUTINE = { "pay.salary": true, "pay.rent": true };
 const BIG = /^(close\.signed|ck\.signed|ck\.strike|ck\.revoked|qbr\.|end\.)/;
 const weight = e => (ROUTINE[e.tag] ? 3 : e.kind === "bad" || BIG.test(e.tag || "") ? 0 : e.kind === "warn" ? 1 : 2);
 const onScreen = (el, top) => { if (!el) return false; const r = el.getBoundingClientRect(); return r.top < window.innerHeight - 48 && r.bottom > (top || 0) + 48; };
+// wholly in view, below the strip (for a small thing such as a run's result card or its last line)
+const inView = (el, top) => { if (!el) return false; const r = el.getBoundingClientRect(); return r.height > 0 && r.top >= (top || 0) && r.bottom <= window.innerHeight; };
+// what a clAInk run came to, as its workspace shows it once the report is done: the card, else the closing line
+const RESULT = ".claink-console:not(.is-mini) .claink-strike, .claink-console:not(.is-mini) .claink-clear, .claink-console:not(.is-mini) .claink-revoked";
+const resultEl = () => document.querySelector(RESULT) || document.querySelector(".claink-console:not(.is-mini) .claink-report .net");
 const stripHeight = () => (document.querySelector(".strip.on") ? 40 : 0);
 
 // What just happened, where you are looking. On a phone the page is one long column and the log is a scroll away
@@ -23,16 +28,17 @@ const stripHeight = () => (document.querySelector(".strip.on") ? 40 : 0);
 //   - Not under a dialog: lines written while one is open (End week that opens an event) wait until it closes and
 //     are then shown together with what the choice wrote. An ending never closes, so its lines are never shown.
 //   - It is a notice and not a control: taps go through it, and it moves up if it would sit on End week.
-//   - Not what clAInk's workspace is itself reporting: a run's lines are told there, beat by beat, and the notice
-//     would announce the strike two seconds before its card lands (and sit on it). The sound leaves a run to the
-//     workspace for the same reason (engine/audio/tagmap.js, RUN_TAGS). With the workspace minimized or off the
-//     screen, the notice speaks as before.
+//   - Not ahead of what clAInk's workspace is itself reporting: a run's lines are told there, beat by beat, and the
+//     notice used to announce the strike two seconds before its card landed (and sit on it). A run's lines wait
+//     until the report has had its say, and are then shown only if the result is not in view in the workspace (on a
+//     phone the report often lands below the screen's edge). The sound leaves a run to the workspace for the same
+//     reason (engine/audio/tagmap.js, RUN_TAGS).
 //   - A screen reader already hears the log and the hint bar, so it is hidden from one.
 // note: {id, title, text}, the reason a blocked button gave when it was tapped; shown here when the hint bar that
 // carries it is off the screen.
 export const LogPeek = ({ s, note }) => {
   const [peek, setPeek] = useState(null);
-  const seen = useRef(null), timer = useRef(0), wait = useRef(0), held = useRef([]), box = useRef(null);
+  const seen = useRef(null), timer = useRef(0), wait = useRef(0), held = useRef([]), box = useRef(null), run = useRef(false), tries = useRef(0);
   const top = s.logs.length ? s.logs[0].id : null;
   const raise = useRef(null);
   raise.current = next => {
@@ -43,8 +49,13 @@ export const LogPeek = ({ s, note }) => {
   const flush = useRef(null);
   flush.current = () => {
     if (document.querySelector("dialog[open]")) return;            // its close event brings us back here
-    const fresh = held.current; held.current = [];
+    // a run's report still playing: wait for it (a reload, reduced motion or a minimized workspace plays none)
+    if (run.current && document.querySelector(".claink-console[data-reporting]") && tries.current++ < 40) {
+      clearTimeout(wait.current); wait.current = setTimeout(() => flush.current(), 150); return;
+    }
+    const fresh = held.current, wasRun = run.current; held.current = []; run.current = false; tries.current = 0;
     if (!fresh.length || onScreen(document.querySelector(".activity"), stripHeight())) return;
+    if (wasRun && inView(resultEl(), stripHeight())) return;       // the workspace shows what the run came to
     const max = isPhone() && fresh.length > 2 ? 2 : 3;             // a small screen has less to spare
     const list = fresh.map((e, i) => ({ e, i })).sort((a, b) => weight(a.e) - weight(b.e) || a.i - b.i).slice(0, max)
       .sort((a, b) => a.i - b.i).map(x => x.e);
@@ -56,15 +67,15 @@ export const LogPeek = ({ s, note }) => {
     seen.current = { runId: s.runId, top };
     if (!was) return;                                               // the first look
     if (was.runId !== s.runId) {                                    // another run: nothing of the last one stays up
-      held.current = []; clearTimeout(timer.current); clearTimeout(wait.current); setPeek(null);
+      held.current = []; run.current = false; tries.current = 0; clearTimeout(timer.current); clearTimeout(wait.current); setPeek(null);
       return;
     }
     if (was.top === top) return;
     const fresh = [];
     let found = was.top === null;
-    const told = onScreen(document.querySelector(".claink-console:not(.is-mini)"), stripHeight());      // the workspace is telling its own run
-    for (const e of s.logs) { if (e.id === was.top) { found = true; break; } if ((!e.tag || e.msg) && !(told && e.tag && RUN_TAGS[e.tag])) fresh.push(e); }
+    for (const e of s.logs) { if (e.id === was.top) { found = true; break; } if (!e.tag || e.msg) fresh.push(e); }
     if (!found || !fresh.length) return;                            // a loaded save is not news
+    if (fresh.some(e => e.tag && RUN_TAGS[e.tag])) run.current = true;   // a clAInk run: its workspace speaks first
     fresh.reverse();                                                // in the order they happened
     held.current = held.current.concat(fresh);
     // a moment later: by then a dialog this step opens is open, and the page has moved if the week turned

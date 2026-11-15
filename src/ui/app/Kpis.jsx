@@ -49,8 +49,9 @@ export const Kpis = ({ s }) => {
   // stress "Dangerous stress level" used to take its place, on a touch screen the only place it was written)
   const stressSub = friday.stress > 0 ? [KPI.stressCrash(friday.stress), friday.melt || s.stress >= STRESS_DANGER ? "bad" : "warn"]
     : s.stress >= STRESS_DANGER ? [KPI.stressDanger, "bad"] : [KPI.stressEases(-friday.stress), ""];
-  // (first: a Friday whose salary and rent would leave cash at or under the line where Collections ends the run)
-  const cashSub = friday.bust ? [KPI.rentBust(), "bad"]
+  // (first: a Friday whose salary and rent, or with them clAInk's invoice, would leave cash at or under the line where
+  // Collections ends the run)
+  const cashSub = friday.bust ? [KPI.rentBust(), "bad"] : friday.billBust ? [KPI.billBust(), "bad"]
     : s.cash < 0 ? [KPI.collections(CASH.repoAt), s.cash <= CASH.warnAt ? "bad" : "warn"]
     : rentDueThisWeek(s) ? [KPI.rentThisWeek(friday.rent), "warn"]
     : rentWeek ? [KPI.rentLater(rentWeek), ""] : [KPI.rentDone, ""];

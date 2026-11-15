@@ -430,7 +430,9 @@ export const ClainkConsole=({s,ui,setUi,focusOnMount,onDeploy,onCancel,onHide,on
     }
     if(beat>=99 && !reveal.current.live) follow.current=false;   // the report has had its say: the player has the scroll back
   });
-  useLayoutEffect(()=>{ const el=ref.current; if(el && !follow.current) el.scrollTop=0; },[s.week,s.runId]);
+  // (a week that turns ends the follow, even mid-report: End week pressed while a report was still playing used to
+  // leave the next week's workspace scrolled away from Run agents)
+  useLayoutEffect(()=>{ follow.current=false; const el=ref.current; if(el) el.scrollTop=0; },[s.week,s.runId]);
   // closed mid-report (the end card's × finishes it first; an unmount here means New Game or Load, and the page drops it)
   useEffect(()=>()=>{ const r=reveal.current; r.timers.forEach(clearTimeout); r.timers=[]; handOver(); },[]);
   // focus follows the control that replaced the one you used (never back to <body>)
@@ -478,7 +480,7 @@ export const ClainkConsole=({s,ui,setUi,focusOnMount,onDeploy,onCancel,onHide,on
   const style=hold ? {minHeight:hold+"px"} : undefined;
   const skip=beat<99 ? finishReveal : null;
   return(
-    <aside ref={ref} style={style} onKeyDown={onKeyDown} aria-label={CK_WORKSPACE.label}
+    <aside ref={ref} style={style} onKeyDown={onKeyDown} aria-label={CK_WORKSPACE.label} data-reporting={beat<99 ? "true" : undefined}
       className={"claink-console"+(mini?" is-mini":"")+(end?" is-end":"")}>
       <div className="claink-titlebar">
         <ClainkMark size={16}/>

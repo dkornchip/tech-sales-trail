@@ -118,6 +118,7 @@
 .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--text-on-accent);min-width:132px}
 .btn.primary:hover{background:var(--accent-hover);border-color:var(--accent-hover)}
 .btn.primary .icon{color:var(--text-on-accent)}
+.btn.risk{color:var(--bad);border-color:var(--bad)} .btn.risk .icon{color:var(--bad)}
 .btn .cost{font-family:var(--mono);font-size:var(--fs-1);color:var(--text-3);display:inline-flex;align-items:center;gap:3px}
 .btn .cost .icon{width:12px;height:12px;color:var(--text-3)}
 

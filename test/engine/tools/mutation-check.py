@@ -66,6 +66,13 @@ M=[
  ("src/game/run.js","(id === \"propose\" && proposeIdle(s) ? { why: \"none\" } : null)","null"),
  ("src/game/selectors.js","s.stress + add >= 100","s.stress + add > 100"),
  ("src/game/selectors.js","return id === \"coffee\" ? stress || cash : cash || stress;","return stress || cash;"),
+ # v2.1.1, after the final review: the ending card's shot count; Friday's preview with clAInk's invoice and a late
+ # deal; the states where an empty Proposals press is on offer and buys nothing
+ ("src/game/selectors.js","(s.endCause === \"caffeine\" ? 1 : 0)","(s.burnedOut ? 1 : 0)"),
+ ("src/game/selectors.js","billBust: !bust && !!seat && billCash <= CASH.repoAt","billBust: !bust && !!seat && billCash < CASH.repoAt"),
+ ("src/game/selectors.js","mayClose: lateDeals(s).length > 0","mayClose: false"),
+ ("src/game/selectors.js","others >= 3 ? \"full\"","others >= 2 ? \"full\""),
+ ("src/game/selectors.js","s.slots === 1 && others === 0 ? \"alone\"","s.slots <= 2 && others === 0 ? \"alone\""),
 ]
 caught=0; missed=[]
 for i,(f,a,b) in enumerate(M):

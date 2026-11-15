@@ -1,7 +1,7 @@
 // The twelve actions (src/game/actions.js): what each costs, does, trains and reports, and when it is refused.
 import test from "node:test";
 import assert from "node:assert/strict";
-import { E, craft, move, act, withDice, lines, tags, start } from "./lib/kit.mjs";
+import { E, craft, move, act, withDice, lines, tags, start, mulberry, fnv, mechanical } from "./lib/kit.mjs";
 
 const go = async (s, id, dice = [], rest = 0.99) => { const eng = await E(); return withDice(dice, rest, () => eng.run.step(s, act(id))); };
 const first = async (s, id, dice, rest) => { const r = await go(s, id, dice, rest); return { s: r.state, l: lines(s, r.state)[0], all: lines(s, r.state), r }; };
@@ -229,6 +229,14 @@ test("Quad shot: less energy and more stress each time, a heart roll from the th
   // the shot that ended the run is a shot: the ending card counts it (the story does not: it is logged as the ending)
   assert.equal(eng.selectors.runFacts(x.s).shots, (two.story ? two.story.n.shots || 0 : 0) + 1, "the card's count includes the fatal shot");
   assert.equal(eng.selectors.runFacts(two).shots, two.story ? two.story.n.shots || 0 : null, "and adds nothing to a run a quad shot did not end");
+  // ...nor to a run that ended any other way after shots were drunk: by stress, by Friday's crash, by Collections
+  const drank = { v: 2, signed: 0, top: null, took: null, tookLargest: false, reversed: false, n: { shots: 2 } };
+  const byStress = (await first(await craft({ stress: 98, story: drank }), "prospect", [])).s;
+  assert.ok(byStress.burnedOut && byStress.endCause === "stress"); assert.equal(eng.selectors.runFacts(byStress).shots, 2);
+  const byCrash = withDice([0.99], 0.99, () => eng.run.step(withDice([], 0.99, () => eng.run.step(withDice([], 0.99, () => eng.run.step({ ...two, stress: 70, story: drank, coffeesThisWeek: 0 }, act("coffee"))).state, act("coffee"))).state, { t: "end" })).state;
+  assert.ok(byCrash.burnedOut && byCrash.endCause === "stress", "two shots from 70 crash to 100 on Friday"); assert.equal(eng.selectors.runFacts(byCrash).shots, 4);
+  const byRepo = (await first(await craft({ cash: -700, story: drank }), "conference", [], 0.5)).s;
+  assert.ok(byRepo.repo && byRepo.endCause !== "caffeine"); assert.equal(eng.selectors.runFacts(byRepo).shots, 2);
   assert.ok(!(await first(two, "coffee", [0.20])).s.burnedOut);
   // a shot that takes stress to 100 ends the run whatever the roll, and the preview says it is certain
   const hot = await craft({ stress: 88 });
@@ -295,4 +303,70 @@ test("an action that pushes stress to 100 ends the run on the spot, and one that
   x = await first(await craft({ stress: 68 }), "prospect", [0, 0.99], 0);
   assert.deepEqual(x.all.map(l => l.tag), ["act.prospect", "stress.warn"]); assert.equal(x.all[1].d.stress, 70); assert.equal(x.s.stressWarned, true);
   const again = await first(x.s, "politics", []); assert.deepEqual(again.all.map(l => l.tag), ["act.politics"]);
+});
+
+test("End week's preview: what it calls certain ends the run with every roll; with a late deal on the board it says what may still save it", async () => {
+  const eng = await E(), S = eng.selectors, ui = await import("../../src/copy/ui.js"), plain = t => t.replace(/\u2060/g, "");
+  // Friday played with 300 different sets of rolls (each a seeded stream), from the same state
+  const fridays = (s, n = 300) => Array.from({ length: n }, (_, k) => { const r = mulberry(fnv("friday:" + k)); return withDice([], () => r(), () => eng.run.step(s, { t: "end" })).state; });
+  const ends = list => list.filter(x => eng.log.isRunOver(x)).length;
+  const seat = (over = {}) => ({ status: "active", deployed: false, due: 0, ...over });
+  const cases = [
+    // [what, state, what the preview must say, outcome]
+    ["rent: salary and rent leave -$1,500", { week: 5, cash: -900 }, { bust: true, mayClose: false }, "all"],
+    ["clAInk's invoice after a run: -$1,569", { week: 5, cash: -300, claink: seat({ deployed: true, due: 669 }) }, { bust: false, billBust: true, billCash: -1569, mayClose: false }, "all"],
+    ["an idle seat's least charge lands on the line", { week: 9, cash: -750, claink: seat() }, { billBust: true, billCash: -1500 }, "all"],
+    ["one dollar richer, the idle seat is not certain", { week: 9, cash: -749, claink: seat() }, { bust: false, billBust: false }, null],
+    ["the coffee crash reaches 100", { week: 6, cash: 2000, stress: 74, coffeesThisWeek: 2 }, { melt: true }, "all"],
+    ["the crash and a Closing deal: the deal cannot lower stress", { week: 6, cash: 2000, stress: 74, coffeesThisWeek: 2, deals: [[4, 30000, "happy"]] }, { melt: true, mayClose: true }, "all"],
+    ["rent with three happy late deals: a Friday signing may pay first", { week: 5, cash: -900, deals: [[4, 30000, "happy"], [3, 22000, "happy"], [3, 18000, "curious"]] }, { bust: true, mayClose: true }, "some"],
+    ["the invoice with a late deal", { week: 5, cash: -300, claink: seat({ deployed: true, due: 669 }), deals: [[4, 30000, "happy"], [3, 22000, "happy"]] }, { billBust: true, mayClose: true }, "some"]
+  ];
+  for (const [what, over, want, outcome] of cases) {
+    const s = await craft(over), f = S.fridayPreview(s);
+    for (const k of Object.keys(want)) assert.equal(f[k], want[k], `${what}: ${k}`);
+    const hint = plain(ui.HINT.endWeek(f));
+    if (f.bust || f.billBust) assert.match(hint, /Collections ends the run at −\$1,500(, unless a deal signs on Friday first)?\.$/, what);
+    assert.equal(/unless a deal signs on Friday first/.test(hint), (f.bust || (f.billBust && !f.melt)) && f.mayClose, `${what}: the caveat`);
+    if (!outcome) continue;
+    const n = ends(fridays(s));
+    if (outcome === "all") assert.equal(n, 300, `${what}: the run ends on Friday with every roll`);
+    else assert.ok(n > 150 && n < 300, `${what}: usually ends, but not always (${n} of 300)`);
+  }
+  // the cash card names what would trigger Collections
+  assert.equal(ui.KPI.billBust(), "Friday’s clAInk invoice would trigger Collections");
+});
+
+test("Proposals with nothing demoed: in the three states where the press is on offer and buys nothing, the hint says so; elsewhere it counts", async () => {
+  const eng = await E(), S = eng.selectors, ui = await import("../../src/copy/ui.js");
+  const LEADS = [[0, 6000], [0, 7000], [1, 8000]];
+  const states = [
+    ["full", { week: 6, slots: 3, used: { prospect: true, discovery: true, demo: true }, deals: LEADS }],
+    ["last", { week: 13, slots: 3, used: { prospect: true }, deals: LEADS }],
+    ["alone", { week: 6, slots: 1, deals: LEADS }],
+    [null, { week: 6, slots: 3, used: { prospect: true, discovery: true }, deals: LEADS }],
+    [null, { week: 6, slots: 1, used: { prospect: true }, deals: LEADS }]
+  ];
+  // the Friday after the press and the Friday without it, with the same rolls, compared on everything Friday decides.
+  // (Week 13's Friday ends the run at the QBR. A bonus or a penalty it sets is dated week 14, which never comes, and is
+  // left out: so is its log line.)
+  const keep = m => { const { energy, slots, used, logs, said, effects, ...rest } = m; return JSON.stringify({ ...rest, effects: (effects || []).filter(e => e.from <= 13) }); };
+  for (const [why, over] of states) {
+    const s = await craft(over);
+    assert.equal(S.proposeNothing(s), why, JSON.stringify(over.used || {}) + " week " + over.week);
+    assert.ok(!S.proposeIdle(s) && !eng.run.actBlock(s, "propose"), "on offer");
+    const pressed = eng.run.step(s, act("propose")).state;
+    let alike = 0;
+    for (let k = 0; k < 40; k++) {
+      const r1 = mulberry(fnv("p:" + k)), r2 = mulberry(fnv("p:" + k));
+      const a = withDice([], () => r1(), () => eng.run.step(s, { t: "end" })).state, b = withDice([], () => r2(), () => eng.run.step(pressed, { t: "end" })).state;
+      if (keep(mechanical(a)) === keep(mechanical(b))) alike++;
+      if (why === "last") assert.ok(eng.log.isRunOver(a) && eng.log.isRunOver(b), "week 13's Friday ends the run");
+    }
+    if (why) assert.equal(alike, 40, `${why}: the press changes nothing Friday decides`);
+    else assert.ok(alike < 40, "the mark may still matter here, and does");
+    const text = ui.HINT.propose(0, 0.38, why);
+    assert.ok(text.startsWith("No eligible deals. You would still spend a slot and energy"));
+    assert.equal(/for nothing/.test(text), !!why); assert.equal(/count toward a full-funnel week/.test(text), !why);
+  }
 });

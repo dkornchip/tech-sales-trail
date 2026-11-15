@@ -52,6 +52,7 @@ export const KPI = {
   stressDanger: "Dangerous stress level",
   rentThisWeek: () => "Rent is due Friday",
   rentBust: () => "Friday’s rent would trigger Collections",   // salary and rent together would leave cash at or under the line
+  billBust: () => "Friday’s clAInk invoice would trigger Collections",   // ...and with the invoice at its least, when the rent alone would not
   rentLater: w => `Rent due in week\u00A0${w}`,          // a no-break space: the number stays with "week"
   rentDone: "Rent is paid up",
   collections: at => `Collections at ${usd(at)} cash`,
@@ -108,7 +109,11 @@ export const HINT = {
   // once the mark is there it buys nothing and is not on offer (blocked.none, below).
   discovery: (c, p) => (c ? `${n(c, "lead")} waiting. Each has ${aPc(p)} chance to qualify. Trains discovery.` : "No eligible deals. You would still spend a slot and energy. Trains discovery."),
   demo: (c, p) => (c ? `${n(c, "qualified deal")} waiting. Each has ${aPc(p)} chance to advance. Trains demos.` : "No eligible deals. You would still spend a slot and energy. Trains demos."),
-  propose: (c, p) => (c ? `${n(c, "demoed deal")} waiting. Each has ${aPc(p)} chance to reach Proposal.` : "No eligible deals. You would still spend a slot and energy. It would only count toward a full-funnel week."),
+  // nothing: why the press would buy nothing even though it is on offer (selectors.js, proposeNothing)
+  propose: (c, p, nothing) => (c ? `${n(c, "demoed deal")} waiting. Each has ${aPc(p)} chance to reach Proposal.`
+    : "No eligible deals. You would still spend a slot and energy" + (nothing === "full" ? ", for nothing: this week is already full-funnel."
+      : nothing === "last" ? ", for nothing: the quarter ends on Friday." : nothing === "alone" ? ", for nothing: on your last slot the week cannot reach three categories."
+      : ". It would only count toward a full-funnel week.")),
   close: c => (c ? `${n(c, "eligible deal")}; each has its own signing odds. Failed attempts may lose deals.` : "No deals are ready to sign. You would still spend a slot and energy. Trains negotiation."),
   // buzz: the chance it also lifts signing odds; lift: by how much (a fraction), this week only
   conference: (c, stress, buzz, lift) => `${to(3, 8)} warm leads; some are large. ${n(c.slots, "slot")}, ${c.energy} energy, ${usd(c.cash)}, +${stress} stress. ${pc(buzz)} chance of +${Math.round(lift * 100)} pp signing odds this week.`,
@@ -125,11 +130,17 @@ export const HINT = {
   hail: (c, blast, walk, cost) => (c ? `One close attempt against all proposal/closing deals. ${cost.energy} energy. ${fifths(1 - blast)}, each remaining late deal then has ${aPc(walk)} chance to walk.` : "No late-stage deals to rescue."),
   // bust: salary and rent together would leave cash at or under the line where Collections ends the run
   // claink: the invoice an active seat will get this Friday, as certain as rent (v2.1 left it out of the preview)
-  endWeek: f => `Friday: salary +${usd(f.salary)}` + (f.rent ? `, rent −\u2060${usd(f.rent)}` : "")
-    + (f.claink && !f.bust && !f.melt ? `, clAInk −\u2060${f.claink.idle ? to(usd(f.claink.idle[0]), usd(f.claink.idle[1])) : usd(f.claink.due)}` : "")
-    + (f.bust ? `. That would leave ${usd(f.cash)} cash. Collections ends the run at ${usd(f.repoAt)}.`
-      : f.melt ? `. The coffee crash adds ${f.stress} stress. That reaches 100 and ends the run.`
-      : `, energy +${f.energy}, stress ${f.stress < 0 ? "−" + -f.stress : "+" + f.stress}. Friday events and collections may change this.`),
+  // In the order Friday comes to them (selectors.js, fridayPreview): the rent, the coffee crash, clAInk's invoice. The
+  // first that would end the run is the one said. Collections is certain unless a late deal may sign first (mayClose).
+  endWeek: f => {
+    const bill = f.claink ? `, clAInk −\u2060${f.claink.idle ? to(usd(f.claink.idle[0]), usd(f.claink.idle[1])) : usd(f.claink.due)}` : "";
+    const unless = f.mayClose ? ", unless a deal signs on Friday first" : "";
+    return `Friday: salary +${usd(f.salary)}` + (f.rent ? `, rent −\u2060${usd(f.rent)}` : "")
+      + (f.bust ? `. That would leave ${usd(f.cash)} cash. Collections ends the run at ${usd(f.repoAt)}${unless}.`
+        : f.melt ? `. The coffee crash adds ${f.stress} stress. That reaches 100 and ends the run.`
+        : f.billBust ? `${bill}. That would leave ${usd(f.billCash)} cash${f.claink.idle ? " or less" : ""}. Collections ends the run at ${usd(f.repoAt)}${unless}.`
+        : `${bill}, energy +${f.energy}, stress ${f.stress < 0 ? "−" + -f.stress : "+" + f.stress}. Friday events and collections may change this.`);
+  },
   // A press that is certain to end the run says so, and says nothing else (f: selectors.js, fatalPress): the stress
   // it adds reaches 100, or the cash it costs reaches the line where Collections ends the run.
   ends: f => (f.why === "stress" ? `This adds ${f.atLeast ? "at least " : ""}${f.add} stress. That reaches 100 and ends the run.`
@@ -228,8 +239,8 @@ export const MOOD = { skeptical: "skeptical", neutral: "neutral", curious: "curi
 export const lint = { exempt: { "sentence-case": ["BOOT.brand", "UI.peekMore"] }, params: {
   "HINT.network": [{ args: [0, 0.03] }], "HINT.prospect": [{ args: [0, 2] }],
   "HINT.discovery": [{ args: [0, 0.6] }, { args: [1, 0.6] }, { args: [3, 0.85] }], "HINT.demo": [{ args: [0, 0.5] }, { args: [1, 0.5] }, { args: [3, 0.8] }],
-  "HINT.propose": [{ args: [0, 0.55] }, { args: [1, 0.55] }, { args: [3, 0.55] }], "HINT.close": [{ args: [0] }, { args: [1] }, { args: [4] }],
-  "KPI.ofQuota": [{ args: [0.385, [0.7, 0.8, 1]] }, { args: [0.9997, [0.7, 0.8, 1]] }], "HINT.endWeek": [{ salary: 1000, rent: 0, energy: 15, stress: 26, cash: 1500, bust: false, melt: true, repoAt: -1500 }, { salary: 1000, rent: 0, energy: 15, stress: -4, cash: 1500, bust: false, repoAt: -1500, claink: { idle: [150, 300] } }, { salary: 1000, rent: 0, energy: 15, stress: -4, cash: 1500, bust: false, repoAt: -1500 }, { salary: 1000, rent: 1600, energy: 15, stress: 26, cash: -300, bust: false, repoAt: -1500 }, { salary: 1000, rent: 1600, energy: 15, stress: -4, cash: -1550, bust: true, repoAt: -1500 }],
+  "HINT.propose": [{ args: [0, 0.55] }, { args: [0, 0.55, "full"] }, { args: [0, 0.55, "last"] }, { args: [0, 0.55, "alone"] }, { args: [1, 0.55] }, { args: [3, 0.55] }], "HINT.close": [{ args: [0] }, { args: [1] }, { args: [4] }],
+  "KPI.ofQuota": [{ args: [0.385, [0.7, 0.8, 1]] }, { args: [0.9997, [0.7, 0.8, 1]] }], "HINT.endWeek": [{ salary: 1000, rent: 0, energy: 15, stress: 26, cash: 1500, bust: false, melt: true, repoAt: -1500 }, { salary: 1000, rent: 0, energy: 15, stress: -4, cash: 1500, bust: false, repoAt: -1500, claink: { idle: [150, 300] } }, { salary: 1000, rent: 0, energy: 15, stress: -4, cash: 1500, bust: false, repoAt: -1500 }, { salary: 1000, rent: 1600, energy: 15, stress: 26, cash: -300, bust: false, repoAt: -1500 }, { salary: 1000, rent: 1600, energy: 15, stress: -4, cash: -1550, bust: true, repoAt: -1500 }, { salary: 1000, rent: 1600, energy: 15, stress: -4, cash: -1550, bust: true, mayClose: true, repoAt: -1500 }, { salary: 1000, rent: 1600, energy: 15, stress: -4, cash: -1300, bust: false, repoAt: -1500, claink: { due: 669 }, billCash: -1969, billBust: true }, { salary: 1000, rent: 0, energy: 15, stress: -4, cash: -1400, bust: false, repoAt: -1500, claink: { idle: [150, 300] }, billCash: -1550, billBust: true, mayClose: true }],
   "HINT.ends": [{ why: "cash", cash: -1600, repoAt: -1500 }, { why: "stress", add: 2 }, { why: "stress", add: 4, atLeast: true }], "CARD.eligible": [1, 3],
   "HINT.conference": [{ args: [{ energy: 40, slots: 2, cash: 800 }, 5, 0.3, 0.08] }],
   "HINT.crm": [{ args: [2, 7, 0.15, 180000] }, { args: [1, 6, 0, 6000] }, { args: [0, 5, 0.25, 0] }],

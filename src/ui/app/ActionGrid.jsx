@@ -1,5 +1,5 @@
 import React from "react";
-import { PROPOSE_CHANCE, crmPreview, demoChance, fatalPress, lateDeals, nextShot, qualifyChance, rechargeRange, stageCount } from "../../game/selectors.js";
+import { PROPOSE_CHANCE, crmPreview, proposeNothing, demoChance, fatalPress, lateDeals, nextShot, qualifyChance, rechargeRange, stageCount } from "../../game/selectors.js";
 import { actBlock } from "../../game/run.js";
 import { EFFECT } from "../../game/effects.js";
 import { CONFERENCE_BUZZ, CONFERENCE_STRESS, REFERRAL, STRESS_COST } from "../../game/rules.js";
@@ -22,7 +22,7 @@ export const describe = (a, s) => {
   let count = null, hint = "", cost = a.id === "coffee" ? "" : copy.cost(a);
   if (a.id === "discovery") { count = stageCount(s, 0); hint = HINT.discovery(count, qualifyChance(s)); }
   else if (a.id === "demo") { count = stageCount(s, 1); hint = HINT.demo(count, demoChance(s)); }
-  else if (a.id === "propose") { count = stageCount(s, 2); hint = HINT.propose(count, PROPOSE_CHANCE); }
+  else if (a.id === "propose") { count = stageCount(s, 2); hint = HINT.propose(count, PROPOSE_CHANCE, count ? null : proposeNothing(s)); }
   else if (a.id === "close") { count = lateDeals(s).length; hint = HINT.close(count); }
   else if (a.id === "prospect") hint = HINT.prospect(a, STRESS_COST.prospect);
   else if (a.id === "crm") { const c = crmPreview(s); hint = HINT.crm(c.pruned, c.gain, c.nuke, c.value); }

@@ -19,7 +19,9 @@
 //      the run as the rules say; one point or one dollar short of certain, none of that:
 //        money    the conference or a quad shot that would take cash to Collections
 //        stress   Prospect blitz, Internal politics, the conference or the Hail Mary that would reach 100 stress
-//      and a Friday whose rent would take cash to Collections says so on the cash card and on End week; one
+//      and a Friday whose rent or clAInk's invoice would take cash to Collections says so on the cash card and on
+//      End week (with a late deal on the board, that a signing may still save it); a Hail Mary that would reach 100
+//      stress is marked on its button; one
 //      whose coffee crash is certain to reach 100 stress says so on the stress card and on End week
 //   5. the Hail Mary says what it costs (its energy, as the cards do; a throw takes a slot like any action)
 //      and CRM cleanup says what its "dead leads" are worth, which is what the press removes
@@ -27,7 +29,8 @@
 //      bar says what the card would do now, not what it did (v2.1 kept the words from before the press)
 //   7. what a press changed is shown: the change chip on a stat card can be seen, with reduced motion too (v2.1
 //      drew it at opacity 0 for a player who asked for less motion), and the quota meter is marked from 100%
-//   9. clAInk: a run the player presses is followed to its result (the strike card, the week's estimate and
+//   9. clAInk: a run the player presses is followed to its result (and End week pressed mid-report leaves the next
+//      week's workspace at its top) (the strike card, the week's estimate and
 //      "Cancel seat" are in sight in the workspace at laptop sizes; v2.1 left them below its fold), the workspace is
 //      back at its top when the week turns, End week names Friday's invoice, and the two-strike warning says a deal
 //      walks when there is one
@@ -264,6 +267,41 @@ const stored = async page => JSON.stringify(await page.evaluate(readRun));
       await context.close();
     }
 
+    // clAInk's invoice, the last thing Friday does: when its least would take cash to Collections, that is said too,
+    // and pressing End week ends the run there
+    {
+      const seat = { status: "active", deployed: true, due: 669, deploys: 1, strikes: 0, billed: 500, tokens: 0, weekTokens: 0, claims: 0, strikeLog: [], last: null };
+      ({ context, page, errors } = await open(browser, save({ week: 5, cash: -300, claink: seat })));
+      const s = rules(await page.evaluate(readRun)), f = S.fridayPreview(s);
+      const sub = plain(await page.evaluate(() => document.querySelector('[data-kpi="cash"] .sub').textContent));
+      await page.locator('[data-ui="end"]').hover(); await page.waitForTimeout(150);
+      hint = await hintOf(page);
+      await press(page, '[data-ui="end"]'); await page.waitForTimeout(600);
+      const after = rules(await page.evaluate(readRun));
+      check("a Friday whose clAInk invoice would take cash to Collections says so on the cash card and on End week, and ends the run there",
+        f.billBust && sub === plain(COPY.KPI.billBust()) && hint === plain(COPY.UI.endWeek + ". " + H.endWeek(f)) && hint.includes("clAInk −$669. That would leave −$1,569 cash.") && after.repo && !errors.length,
+        `cash card: "${sub}"; End week: "${hint}"; after: ${after.repo ? "Collections" : "the run went on"}`);
+      await context.close();
+    }
+    // a late deal on the board: Friday's close attempt comes before the rent and may pay a commission first
+    ({ context, page, errors } = await open(browser, save({ week: 5, cash: -900, deals: [D(4, 30000, "happy")] })));
+    {
+      const f = S.fridayPreview(rules(await page.evaluate(readRun)));
+      await page.locator('[data-ui="end"]').hover(); await page.waitForTimeout(150);
+      hint = await hintOf(page);
+      check("with a late deal on the board, the rent warning says what may still save the run", f.bust && f.mayClose && hint === plain(COPY.UI.endWeek + ". " + H.endWeek(f)) && hint.endsWith("Collections ends the run at −$1,500, unless a deal signs on Friday first.") && !errors.length, `"${hint}"`);
+      await context.close();
+    }
+    // the Hail Mary is marked as the cards are when its least stress would reach 100; one point lower it is not
+    for (const [stress, fatal] of [[96, true], [95, false]]) {
+      ({ context, page, errors } = await open(browser, save({ week: 3, cash: 3000, stress, deals: LATE })));
+      const btn = await page.evaluate(() => { const b = document.querySelector('[data-ui="hail"]'); return { risk: b.classList.contains("risk"), name: b.textContent.replace(/\s+/g, " ").trim(), colour: getComputedStyle(b).color, plain: getComputedStyle(document.querySelector('[data-ui="end"]')).color }; });
+      const s = rules(await page.evaluate(readRun)), f = S.fatalPress(s, "hail");
+      check(fatal ? "a Hail Mary whose least stress would reach 100 is marked on its button, in the risk colour and in words" : "one point lower, the Hail Mary's button is as it always is",
+        !!f === fatal && btn.risk === fatal && (fatal ? /Ends the run/.test(btn.name) : btn.name === COPY.UI.hail) && !errors.length, JSON.stringify(btn));
+      await context.close();
+    }
+
     /* ---------- 5. the Hail Mary says what it costs ---------- */
     ({ context, page, errors } = await open(browser, save({ week: 3, cash: 3000, deals: LATE })));
     await page.locator('[data-ui="hail"]').hover(); await page.waitForTimeout(150);
@@ -382,6 +420,26 @@ const stored = async page => JSON.stringify(await page.evaluate(readRun));
       const next = rules(await page.evaluate(readRun)), inv = next.logs.find(e => e.tag === "ck.invoice"), at = await page.evaluate(() => { const el = document.querySelector(".claink-console"); return el ? Math.round(el.scrollTop) : null; });
       check(`${w}x${h}: Friday charged what was previewed (more only if an agent looped), and the workspace is back at its top`, !!ended || (!!inv && (inv.d.total === due || (inv.d.looped && inv.d.total > due)) && at === 0 && !errors.length), ended ? "the run ended on Friday: " + ended : `previewed $${due}, charged $${inv && inv.d.total}${inv && inv.d.looped ? " (looped)" : ""}; scrollTop ${at}`);
       await context.close();
+    }
+    // End week pressed while the report is still playing (Run agents is free, so it is a natural last press): when the
+    // week turns, the workspace is back at its top, where Run agents and the strike boxes are
+    {
+      let counted = 0, bad = [];
+      for (let k = 0; k < 6 && counted < 2; k++) {
+        ({ context, page, errors } = await open(browser, fixture("ck-active-0-strikes"), { viewport: { width: 1280, height: 720 } }));
+        const wk = rules(await page.evaluate(readRun)).week;
+        await page.locator(".claink-deploy").click(); await page.waitForTimeout(300);
+        await page.keyboard.press("e"); await page.waitForTimeout(900);
+        if (await dialogOf(page)) { await context.close(); continue; }          // the manager had a word: the week did not turn
+        const now = rules(await page.evaluate(readRun));
+        if (now.week !== wk + 1) { await context.close(); continue; }
+        counted++;
+        await page.waitForTimeout(2600);                                          // past the end of the report
+        const at = await page.evaluate(() => { const el = document.querySelector(".claink-console"), b = el.querySelector(".claink-deploy").getBoundingClientRect(), r = el.getBoundingClientRect(); return { top: Math.round(el.scrollTop), deploy: b.top >= r.top && b.bottom <= r.bottom }; });
+        if (at.top !== 0 || !at.deploy || errors.length) bad.push(JSON.stringify(at));
+        await context.close();
+      }
+      check("End week pressed while a report is still playing: the next week's workspace is at its top, Run agents in sight", counted > 0 && !bad.length, counted ? `${counted} weeks turned mid-report` + (bad.length ? ": " + bad.join(" ; ") : "") : "the week never turned");
     }
     // a window as short as a small laptop's browser leaves: the result may be taller than the room under the title
     // bar; then its heading is what must be in sight

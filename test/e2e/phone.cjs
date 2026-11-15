@@ -10,6 +10,8 @@
 //   7. a stored run that cannot be opened is not played: a dialog says so, fits the phone, and leaves it where it was
 //   8. a 320px screen: the wordmark makes way for the top bar's buttons; a tall dialog opens at its first line
 //   9. turned on its side: the chips are measured again, and settle (they used to be redrawn on every frame)
+//  11. v2.1.1: a clAInk run tapped from the usual place (End week mid-screen, Run agents below it): its result is told,
+//      in the workspace if that is on the screen, else in the notice; and not before the workspace's report has landed
 //  10. v2.1.1: a tap near the top edge of End week ends the week (in v2.1 the hint grew under the finger and the tap
 //      was lost); the recovery dialog's buttons stay on a 320px screen; a caption that does not fit one line of the
 //      top bar is shown whole on a tablet and on a phone held sideways
@@ -238,6 +240,33 @@ const wide = page => page.evaluate(() => ({ page: document.documentElement.scrol
         if (!c || c.cut || !c.inBar || c.bar !== 48) cut.push(key + ": " + JSON.stringify(c));
       }
       check(`${size.width}x${size.height}: the announcer's longest lines are shown whole in the top bar, on as many lines as they need`, !cut.length && !errors.length, cut.join(" ; "));
+      await context.close();
+    }
+
+    /* ---------- 11. a clAInk run's result, on a phone ---------- */
+    for (const size of [{ width: 390, height: 664 }, { width: 360, height: 640 }, { width: 412, height: 915 }]) {
+      ({ context, page, errors } = await open(browser, { viewport: size, save: fixture("ck-active-0-strikes") }));
+      await page.evaluate(() => document.querySelector('[data-ui="end"]').scrollIntoView({ block: "center" })); await page.waitForTimeout(400);
+      const btn = await page.evaluate(() => { const r = document.querySelector(".claink-deploy").getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, seen: r.top >= 0 && r.bottom <= innerHeight }; });
+      if (!btn.seen) { await page.evaluate(() => document.querySelector(".claink-deploy").scrollIntoView({ block: "end" })); await page.waitForTimeout(300); }
+      await page.locator(".claink-deploy").tap(); 
+      const RUN = /clAInk|Strike|strike|outcome|revoked|Revenue verified|signed/;
+      let early = null, told = null, inView = false;
+      for (let t = 0; t < 60; t++) {
+        await page.waitForTimeout(100);
+        const now = await page.evaluate(() => {
+          const reporting = !!document.querySelector(".claink-console[data-reporting]"), peek = document.querySelector(".peek");
+          const card = document.querySelector(".claink-console .claink-strike, .claink-console .claink-clear, .claink-console .claink-revoked") || document.querySelector(".claink-console .claink-report .net");
+          const r = card && card.getBoundingClientRect(), top = document.querySelector(".strip.on") ? 40 : 0;
+          return { reporting, peek: peek ? peek.textContent : "", card: !!card && r.height > 0 && r.top >= top && r.bottom <= innerHeight };
+        });
+        if (now.peek && RUN.test(now.peek) && now.reporting && early === null) early = now.peek.slice(0, 80);
+        if (now.peek && RUN.test(now.peek) && told === null) told = now.peek.slice(0, 100);
+        if (!now.reporting && now.card) inView = true;
+        if (!now.reporting && t > 30 && (told || inView)) break;
+      }
+      check(`${size.width}x${size.height}: a clAInk run tapped below End week is told, in the workspace or in the notice, and not before its report lands`, !early && (told !== null || inView) && !errors.length,
+        early ? "told early: " + early : told ? "notice: " + told : inView ? "the result card is on the screen" : "the result was shown nowhere");
       await context.close();
     }
 
