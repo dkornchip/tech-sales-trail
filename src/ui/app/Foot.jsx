@@ -59,11 +59,11 @@ export const HintBar = ({ hint, s }) => {
 // second chip for a discount it carries.
 const chips = s => {
   const out = [];
+  if (s.pip) out.push({ id: "pip", icon: "file-warning", kind: "warn", text: CHIP.pip(s.pipLevel || 1) });     // first: what does not fit folds from the end
   for (const e of effectChips(s)) {
     if (e.conv) out.push({ id: "odds-" + e.src, icon: e.conv > 0 ? "trending-up" : "trending-down", kind: e.conv > 0 ? "good" : "warn", text: CHIP.closeOdds(e.conv, e.weeksLeft) });
     if (e.disc > 0) out.push({ id: "discount-" + e.src, icon: "receipt", kind: "warn", text: CHIP.discount(e.disc, e.weeksLeft) });
   }
-  if (s.pip) out.push({ id: "pip", icon: "file-warning", kind: "warn", text: CHIP.pip(s.pipLevel || 1) });
   if (s.coffeesThisWeek > 0) out.push({ id: "shots", icon: "coffee", kind: "", text: CHIP.shots(s.coffeesThisWeek) });
   if (s.trip) out.push({ id: "trip", icon: "plane", kind: "", text: CHIP.trip(s.trip) });
   if (s.restedThisWeek) out.push({ id: "rested", icon: "battery-charging", kind: "", text: CHIP.rested });

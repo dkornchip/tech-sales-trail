@@ -21,7 +21,7 @@
   },
   "L91": {
     "kind": "instruction",
-    "why": "The approved sentences are rendered (HINT.hail); the rest of the row is direction. From 2.1.1 the cost is stated in the hint itself (one slot and its energy, from rules.js); 2.1 stated it nowhere, though this note said it was on the button. The no-eligible state has its own line, and the numbers come from rules.js."
+    "why": "The approved sentences are rendered (HINT.hail); the rest of the row is direction. From 2.1.1 the cost is stated in the hint itself (its energy, from rules.js, as the action cards state theirs); 2.1 stated it nowhere, though this note said it was on the button. The no-eligible state has its own line, and the numbers come from rules.js."
   },
   "L150": {
     "kind": "instruction",

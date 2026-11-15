@@ -63,6 +63,11 @@
 .meter > i{display:block;height:100%;border-radius:2px;background:var(--text-2);transition:width .18s var(--ease)}
 .meter.good > i{background:var(--good)} .meter.warn > i{background:var(--warn)} .meter.bad > i{background:var(--bad)}
 .meter .pace{position:absolute;top:-3px;bottom:-3px;width:2px;border-radius:1px;background:var(--text)}
+/* On a stat card the unfilled part of a meter has to be seen: it is how far there is to go (at 4% of quota the
+   fill and the pace mark stood on nothing). The colour the past weeks' ticks already use. */
+.kpi .meter{background:var(--border-strong)}
+/* The cash card has no meter: its line under the amount sits level with the same line in the cards beside it. */
+.kpi[data-kpi="cash"] .value{margin-bottom:8px}
 .delta{position:absolute;right:var(--sp-4);top:var(--sp-4);font-size:var(--fs-1);font-family:var(--mono);padding:1px 6px;border-radius:var(--r-1);animation:deltaFloat 1.6s var(--ease) both;pointer-events:none}
 @keyframes deltaFloat{0%{opacity:0;transform:translateY(4px)}12%{opacity:1;transform:none}75%{opacity:1}100%{opacity:0}}
 .delta.up{color:var(--good);background:var(--good-weak)} .delta.down{color:var(--bad);background:var(--bad-weak)}
@@ -107,11 +112,14 @@
 .chip.warn{color:var(--warn);border-color:transparent;background:var(--warn-weak)} .chip.warn .icon{color:var(--warn)}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--sp-3);height:36px;padding:0 var(--sp-5);border-radius:var(--r-2);border:1px solid var(--border-strong);background:transparent;font-weight:500;cursor:pointer;white-space:nowrap;transition:background .12s var(--ease)}
 .btn:hover{background:var(--surface-2)}
+.btn:active{background:var(--surface-3)}                       /* a press is felt, as on an action card */
 .btn:not(.primary)[aria-disabled="true"]{color:var(--text-3);border-color:var(--border);cursor:not-allowed}
 .btn:not(.primary)[aria-disabled="true"]:hover{background:transparent}
 .btn:not(.primary)[aria-disabled="true"] .icon{color:var(--text-3)}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--text-on-accent);min-width:132px}
 .btn.primary:hover{background:var(--accent-hover);border-color:var(--accent-hover)}
+.btn.primary:active{background:var(--accent);border-color:var(--accent)}
+.btn:not(.primary)[aria-disabled="true"]:active{background:transparent}
 .btn.primary .icon{color:var(--text-on-accent)}
 .btn .cost{font-family:var(--mono);font-size:var(--fs-1);color:var(--text-3);display:inline-flex;align-items:center;gap:3px}
 .btn .cost .icon{width:12px;height:12px;color:var(--text-3)}
