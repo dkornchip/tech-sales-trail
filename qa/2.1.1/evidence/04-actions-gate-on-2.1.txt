@@ -11,7 +11,7 @@ actions: Tech_Sales_Trail_2.1.html
   FAIL  three leads: Proposals does what its card says  (no deals: deals untouched, no skill, the week marked: "Proposals. No eligible deals. You would still spend a slot and energy."; then off ("25 energy") and a second press CHANGED THE RUN: "Proposals. No eligible deals. You would still spend a slot and energy.")
   FAIL  three leads: Close deals does what its card says  (skill only: negotiate 25 -> 26, deals untouched, one slot and 28 energy, no roll: "Close deals. No deals are ready to sign. You would still spend a slot and energy.")
   FAIL  a deal at every stage: every card is off exactly when the rules refuse the move, costs what the rules charge, and counts what the stage holds  (discovery: 1 deals to work on, the card shows 1 ("null") ; demo: 1 deals to work on, the card shows 1 ("null") ; propose: 1 deals to work on, the card shows 1 ("null") ; close: 2 deals to work on, the card shows 2 ("null"))
-  ok    a deal at every stage: Discovery does what its card says  (1 on the card, the action worked on 1 and moved 1 up)
+  ok    a deal at every stage: Discovery does what its card says  (1 on the card, the action worked on 1 and moved 0 up)
   ok    a deal at every stage: Demo marathon does what its card says  (1 on the card, the action worked on 1 and moved 1 up)
   ok    a deal at every stage: Proposals does what its card says  (1 on the card, the action worked on 1 and moved 1 up)
   ok    a deal at every stage: Close deals does what its card says  (2 on the card, 2 deals put to a signing roll, earlier deals untouched)
@@ -53,9 +53,9 @@ locator.click: Timeout 30000ms exceeded.
 Call log:
 [2m  - waiting for locator('[data-ui="confirm-no"]').first()[22m
 
-    at press (test/e2e/actions.cjs:85:70)
-    at fatal (test/e2e/actions.cjs:214:13)
-    at async test/e2e/actions.cjs:232:5 {
+    at press (test/e2e/actions.cjs:88:70)
+    at fatal (test/e2e/actions.cjs:217:13)
+    at async test/e2e/actions.cjs:235:5 {
   log: [ `  - waiting for locator('[data-ui="confirm-no"]').first()` ],
   name: 'TimeoutError'
 }

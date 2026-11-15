@@ -1,5 +1,5 @@
 $ node test/engine/tools/equivalence.mjs --seeds 1000 --from 1
-equivalence with v2.1: 22 policies x 1000 seeds (1..1000), 22000 runs, 945669 moves made on both, 1149.3 s
+equivalence with v2.1: 22 policies x 1000 seeds (1..1000), 22000 runs, 945669 moves made on both, 1060.0 s
   the same run after every move       22000 of 22000
   differs                                 0
   propose-idle: Proposals with no demoed deal, the week's proposal-or-close work already counted: v2.1 took a slot and 25 energy for it and gave nothing back; refused now
@@ -13,7 +13,7 @@ equivalence with v2.1: 22 policies x 1000 seeds (1..1000), 22000 runs, 945669 mo
 EQUIVALENCE OK: every move the working tree allows does what it did in v2.1, and every move it no longer allows is a decided correction
 
 $ node test/engine/tools/equivalence.mjs --seeds 1000 --from 5001
-equivalence with v2.1: 22 policies x 1000 seeds (5001..6000), 22000 runs, 948022 moves made on both, 1064.9 s
+equivalence with v2.1: 22 policies x 1000 seeds (5001..6000), 22000 runs, 948022 moves made on both, 1041.0 s
   the same run after every move       22000 of 22000
   differs                                 0
   propose-idle: Proposals with no demoed deal, the week's proposal-or-close work already counted: v2.1 took a slot and 25 energy for it and gave nothing back; refused now

@@ -23,7 +23,7 @@ novice: differs
 balanced: survival 53.1% -> 53.1%, President's Club 41.8% -> 41.8%, n=1000
 
 $ node test/sim/run.mjs --policies all --seeds 1000 --from 1
-2.1.1: 22 policies x 1000 seeds (1..1000), 151.7 s   [automated heuristics, not human play]
+2.1.1: 22 policies x 1000 seeds (1..1000), 140.5 s   [automated heuristics, not human play]
 policy            N  survive%   (95% CI)  club%   (95% CI)  missed  fired  melt  ascend  repo  att.med     att.IQR  loss wk  cash med  warned%
 novice         1000       1.2    0.7-2.1    0.4    0.2-1.0     0.8   96.8   2.0     0.0   0.0      0.0     0.0-3.7        9      6370     97.4
 balanced       1000      55.1  52.0-58.2   42.8  39.8-45.9    12.3   44.9   0.0     0.0   0.0     87.3  39.7-132.8       10     26123     61.7
@@ -49,7 +49,7 @@ burn           1000       0.0    0.0-0.4    0.0    0.0-0.4     0.0    0.0  39.3 
 broke          1000       0.0    0.0-0.4    0.0    0.0-0.4     0.0    0.0   0.0    17.7  82.3      0.0     0.0-0.0        1     -1506      0.0
 
 $ node test/sim/run.mjs --policies all --seeds 1000 --from 5001
-2.1.1 held-out: 22 policies x 1000 seeds (5001..6000), 144.7 s   [automated heuristics, not human play]
+2.1.1 held-out: 22 policies x 1000 seeds (5001..6000), 144.3 s   [automated heuristics, not human play]
 policy            N  survive%   (95% CI)  club%   (95% CI)  missed  fired  melt  ascend  repo  att.med     att.IQR  loss wk  cash med  warned%
 novice         1000       0.7    0.3-1.4    0.1    0.0-0.6     0.6   97.1   2.2     0.0   0.0      0.0     0.0-2.4        9      5988     97.1
 balanced       1000      53.1  50.0-56.2   41.8  38.8-44.9    11.3   46.9   0.0     0.0   0.0     83.2  40.2-132.2       10     25296     67.9

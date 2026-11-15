@@ -209,10 +209,10 @@
   /* The hint bar is two lines tall whatever it says, so a hint that needs both lines (more than a third do at 1280
      wide) is not pressed against the bar's edges, and nothing under it moves when the hint changes. No hint of an
      action, the Hail Mary or End week needs a third line at any width of this layout (test/e2e/actions.cjs, section
-     8, holds that). The "+N" chip's list of folded chips can, in the narrowest windows with many chips (as in 2.1). The rows of actions make the room:
-     they start to close up 26px of window height sooner than the rest. Where there is none to make (windows under
-     641px tall, or under about 1200px wide, where the stat cards wrap and stand taller) the bar is two lines with
-     nothing to spare. */
+     8, holds that); the "+N" chip's list of folded chips can need one in the narrowest windows when many chips are
+     folded (as in 2.1). The rows of actions make the room: they start to close up 26px of window height sooner than
+     the rest. Where there is none to make (windows under 641px tall, or under about 1200px wide, where the stat
+     cards wrap and stand taller) the bar is two lines with nothing to spare. */
   .hint{--two:calc(2.8em + 2 * var(--sp-2) + 2px);--bare:calc(2.8em + 2px);flex:none;line-height:1.4;
     height:clamp(var(--bare),min(calc(var(--two) - (var(--short) - 105px) * .5),calc(var(--bare) + (100vw - 1180px) * .25)),var(--two))}
   .kpi{padding-block:clamp(var(--sp-3),calc(var(--sp-4) - var(--short) * .0377),var(--sp-4))}

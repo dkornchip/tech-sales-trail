@@ -2,9 +2,9 @@
 
 One file: open `Tech_Sales_Trail_2.1.1.html` in a browser and play. No install, no server, no network.
 
-**This is a release candidate.** It has not been promoted: `index.html`, the file the public link serves, is still
-2.1, and stays so until the owner says otherwise. 2.1 (`Tech_Sales_Trail_2.1.html`), 2.0.1 and 1.21 are kept in the
-repository exactly as they shipped.
+**This is the promoted release.** On the owner's instruction, `index.html`, the file the public link serves, is a
+byte-for-byte copy of `Tech_Sales_Trail_2.1.1.html`. 2.1 (`Tech_Sales_Trail_2.1.html`), 2.0.1 and 1.21 are kept in
+the repository exactly as they shipped.
 
 2.1.1 is the last polish pass before public release. It changes how clearly the game speaks, not how it plays. The
 quota, the thirteen weeks, the twelve actions, every probability and reward, the pace curve, the firing rules, the
@@ -104,15 +104,17 @@ vendor.*
 - The writing, apart from the lines listed above. The approved copydeck is still the authority.
 - The six ASCII endings and the boot screen, frame for frame.
 - The office announcer's lines and when they are said, apart from the one case under "A proofread".
-- The live page.
 
 ## Known limits
 - Tested in Chromium only. Firefox, Safari and real phones were not available where this was built and are
   unverified. The announcer was not heard: the text it is given was compared with its captions.
 - No human playtest has been run on 2.1.1. The simulations are heuristics, not people.
-- In a desktop window narrower than about 1,180 pixels and shorter than about 660, the week's card can still be
-  taller than the window (the stat cards wrap there). End week stays reachable; it can hang below the card's edge.
-  Below 620 pixels of height, and at 1,024 pixels of width or less, the page stacks and scrolls as before.
+- In a desktop window narrower than about 1,200 pixels (where the stat cards wrap) and up to about 765 tall, End
+  week and the Hail Mary can hang a few pixels below the week's card; in the shortest of those windows End week is
+  partly below the screen. It stays reachable by pointer and by the E key. Below 620 pixels of height, and at 1,024
+  pixels of width or less, the page stacks and scrolls as before.
+- With classic scrollbars (as Windows draws them), in a window about 1,025 pixels wide and under about 650 tall,
+  clAInk's policy scrolls inside the ad to show its Accept button.
 - In a window under 664 pixels tall the onboarding memo scrolls inside its dialog, with its button pinned.
 - In Chrome and Edge the office announcer may be read by an online voice, which means the browser sends its lines
   to a speech service. Switching "Office announcer" off keeps everything on the device. Whether the game should

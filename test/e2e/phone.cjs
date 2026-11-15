@@ -11,7 +11,8 @@
 //   8. a 320px screen: the wordmark makes way for the top bar's buttons; a tall dialog opens at its first line
 //   9. turned on its side: the chips are measured again, and settle (they used to be redrawn on every frame)
 //  11. v2.1.1: a clAInk run tapped from the usual place (End week mid-screen, Run agents below it): its result is told,
-//      in the workspace if that is on the screen, else in the notice; and not before the workspace's report has landed
+//      in the workspace if that is on the screen, else in the notice; not before the workspace's report has landed, and
+//      not under the manager's warning when the run opens it
 //  10. v2.1.1: a tap near the top edge of End week ends the week (in v2.1 the hint grew under the finger and the tap
 //      was lost); the recovery dialog's buttons stay on a 320px screen; a caption that does not fit one line of the
 //      top bar is shown whole on a tablet and on a phone held sideways
@@ -149,6 +150,9 @@ const wide = page => page.evaluate(() => ({ page: document.documentElement.scrol
     await page.evaluate(() => window.TST_AUDIO.say("filler")); await page.waitForTimeout(500);
     const cap = await page.evaluate(() => { const c = document.querySelector(".pa-cap"); if (!c) return null; const r = c.getBoundingClientRect(); const at = u => { const b = document.querySelector('[data-ui="' + u + '"]').getBoundingClientRect(); const e = document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2); return !!e && !!e.closest('[data-ui="' + u + '"]'); }; return { top: Math.round(r.top), bottom: Math.round(r.bottom), vh: window.innerHeight, free: ["rules", "sound", "settings"].every(at) }; });
     check("the announcer's caption is at the bottom of the screen and covers none of the top bar's buttons", !!cap && cap.top > cap.vh / 2 && cap.bottom <= cap.vh && cap.free, JSON.stringify(cap));
+    // v2.1.1: the stacked tier's tighter spacing (1.2) is for a caption in the top bar; the notice keeps v2.1's 1.4
+    const spacing = await page.evaluate(() => { const c = document.querySelector(".pa-text"); if (!c) return null; const cs = getComputedStyle(c); return { lineHeight: parseFloat(cs.lineHeight), fontSize: parseFloat(cs.fontSize) }; });
+    check("the notice at the bottom keeps its line spacing (1.4, as in v2.1)", !!spacing && Math.abs(spacing.lineHeight / spacing.fontSize - 1.4) < 0.02, JSON.stringify(spacing));
     check("no errors", errors.length === 0, errors.join(" | "));
     await context.close();
 
@@ -244,31 +248,52 @@ const wide = page => page.evaluate(() => ({ page: document.documentElement.scrol
     }
 
     /* ---------- 11. a clAInk run's result, on a phone ---------- */
-    for (const size of [{ width: 390, height: 664 }, { width: 360, height: 640 }, { width: 412, height: 915 }]) {
-      ({ context, page, errors } = await open(browser, { viewport: size, save: fixture("ck-active-0-strikes") }));
-      await page.evaluate(() => document.querySelector('[data-ui="end"]').scrollIntoView({ block: "center" })); await page.waitForTimeout(400);
-      const btn = await page.evaluate(() => { const r = document.querySelector(".claink-deploy").getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, seen: r.top >= 0 && r.bottom <= innerHeight }; });
-      if (!btn.seen) { await page.evaluate(() => document.querySelector(".claink-deploy").scrollIntoView({ block: "end" })); await page.waitForTimeout(300); }
-      await page.locator(".claink-deploy").tap(); 
-      const RUN = /clAInk|Strike|strike|outcome|revoked|Revenue verified|signed/;
-      let early = null, told = null, inView = false;
-      for (let t = 0; t < 60; t++) {
+    // The dice are fixed: at 0.5 the run is a strike and nothing opens a dialog; at 0.1 it signs deals and the manager's
+    // clAInk warning opens one (the run's lines then wait for it to close, as every step's lines do under a dialog).
+    const RUN = /clAInk|Strike|strike|outcome|revoked|Revenue verified|signed/;
+    const watch = async (page, polls) => {
+      let early = null, told = null, inView = false, dialog = false;
+      for (let t = 0; t < polls; t++) {
         await page.waitForTimeout(100);
         const now = await page.evaluate(() => {
           const reporting = !!document.querySelector(".claink-console[data-reporting]"), peek = document.querySelector(".peek");
           const card = document.querySelector(".claink-console .claink-strike, .claink-console .claink-clear, .claink-console .claink-revoked") || document.querySelector(".claink-console .claink-report .net");
           const r = card && card.getBoundingClientRect(), top = document.querySelector(".strip.on") ? 40 : 0;
-          return { reporting, peek: peek ? peek.textContent : "", card: !!card && r.height > 0 && r.top >= top && r.bottom <= innerHeight };
+          return { reporting, dialog: !!document.querySelector("dialog[open]"), peek: peek ? peek.textContent : "", card: !!card && r.height > 0 && r.top >= top && r.bottom <= innerHeight };
         });
-        if (now.peek && RUN.test(now.peek) && now.reporting && early === null) early = now.peek.slice(0, 80);
+        if (now.dialog) dialog = true;
+        if (now.peek && RUN.test(now.peek) && (now.reporting || now.dialog) && early === null) early = now.peek.slice(0, 80);
         if (now.peek && RUN.test(now.peek) && told === null) told = now.peek.slice(0, 100);
-        if (!now.reporting && now.card) inView = true;
+        if (!now.reporting && !now.dialog && now.card) inView = true;
         if (!now.reporting && t > 30 && (told || inView)) break;
       }
-      check(`${size.width}x${size.height}: a clAInk run tapped below End week is told, in the workspace or in the notice, and not before its report lands`, !early && (told !== null || inView) && !errors.length,
-        early ? "told early: " + early : told ? "notice: " + told : inView ? "the result card is on the screen" : "the result was shown nowhere");
+      return { early, told, inView, dialog };
+    };
+    const runFrom = async (page, dice) => {
+      await page.evaluate(() => document.querySelector('[data-ui="end"]').scrollIntoView({ block: "center" })); await page.waitForTimeout(400);
+      const seen = await page.evaluate(() => { const r = document.querySelector(".claink-deploy").getBoundingClientRect(); return r.top >= 0 && r.bottom <= innerHeight; });
+      if (!seen) { await page.evaluate(() => document.querySelector(".claink-deploy").scrollIntoView({ block: "end" })); await page.waitForTimeout(300); }
+      await page.evaluate(v => { window.__TST_RNG = () => v; }, dice);
+      await page.locator(".claink-deploy").tap();
+    };
+    const said = r => r.early ? "told early: " + r.early : r.told ? "notice: " + r.told : r.inView ? "the result card is on the screen" : "the result was shown nowhere";
+    for (const size of [{ width: 390, height: 664 }, { width: 360, height: 640 }, { width: 412, height: 915 }]) {
+      ({ context, page, errors } = await open(browser, { viewport: size, save: fixture("ck-active-0-strikes") }));
+      await runFrom(page, 0.5);
+      const r = await watch(page, 60);
+      check(`${size.width}x${size.height}: a clAInk run tapped below End week is told, in the workspace or in the notice, and not before its report lands`, !r.early && !r.dialog && (r.told !== null || r.inView) && !errors.length, said(r));
       await context.close();
     }
+    ({ context, page, errors } = await open(browser, { viewport: SMALL, save: fixture("ck-active-0-strikes") }));
+    await runFrom(page, 0.1);
+    const underDialog = await watch(page, 40);
+    const button = page.locator('dialog[open][data-dialog="ck:warning"] .d-footer .btn').last();
+    const opened = underDialog.dialog && await button.count() > 0;
+    if (opened) await button.tap();
+    const closed = opened ? await watch(page, 40) : underDialog;
+    check("360x640: when the run opens the manager's warning, its result waits for the dialog and is told once it is closed", opened && !underDialog.told && !closed.early && (closed.told !== null || closed.inView) && !errors.length,
+      opened ? (underDialog.told ? "told under the dialog: " + underDialog.told : said(closed)) : "no warning dialog opened");
+    await context.close();
 
     /* ---------- 9. turned on its side ---------- */
     ({ context, page, errors } = await open(browser, { viewport: { width: 390, height: 844 }, save: fixture("board-24-deals") }));

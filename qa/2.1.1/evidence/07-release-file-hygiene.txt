@@ -1,5 +1,5 @@
 $ python3 qa/2.1.1/tools/hygiene.py Tech_Sales_Trail_2.1.1.html
-Tech_Sales_Trail_2.1.1.html: 568,319 bytes, sha256 7d4e1e8a05bcb2f01a6829fecce28c4d762088b7b401acc2dce2845d2c60c3d4
+Tech_Sales_Trail_2.1.1.html: 570,019 bytes, sha256 2a569fb10e6f3945e808a7188cba72eeff8679dce1a975c67c128e64e35d7614
 
 URLs anywhere in the file (distinct, with count): 5
    1x https://github.com/JetBrains/JetBrainsMono

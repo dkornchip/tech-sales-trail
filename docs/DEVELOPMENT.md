@@ -65,7 +65,8 @@ It runs these in order and stops at the first that fails.
 - **copy-deck** (`scripts/copy-coverage.mjs`): every row of the editorial copydeck (`docs/2.1`) is rendered by the
   build, or has a reason on file (`docs/2.1/copy-coverage-notes.json`).
 - **fonts and notices**: the bundled fonts are what the pinned packages generate and cover every character the
-  scenes draw; `THIRD-PARTY-NOTICES.md` is current.
+  scenes draw; `THIRD-PARTY-NOTICES.md` is current; the built page's header credits Feather for the icons it draws
+  that are Feather's (counted from the drawings, so a renamed icon still counts).
 - **engine** (`test/engine/`, Node): every rule with scripted dice (actions, closes, the Hail Mary, End Week,
   reviews, the QBR at each boundary, Friday events, effects, clAInk, saves), the dice themselves (same seed and
   moves, same run; a run saved and read back carries on exactly; nothing rolls outside a move), invariants after

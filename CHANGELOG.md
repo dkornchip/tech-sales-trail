@@ -92,7 +92,7 @@ is fixed below.
 ### Distribution
 - The handbook and the README carry the statement that the game is an independent fictional satire, not affiliated
   with or endorsed by any employer or technology vendor.
-- The release file's header credits Feather for the ten bundled icons derived from it; `THIRD-PARTY-NOTICES.md`
+- The release file's header credits Feather for the eleven bundled icons derived from it; `THIRD-PARTY-NOTICES.md`
   names scheduler.
 - The README no longer says the office PA is synthesized in the page: it is read by the browser's speech voice,
   which in Chrome and Edge can be an online one.
@@ -103,7 +103,10 @@ is fixed below.
   the release build).
 - The layout gate also measures 1366×657 and 1280×620; the phone gate taps End week near its edge, opens the
   recovery dialog at 320px, reads captions on a tablet and a sideways phone, and taps Run agents from below End
-  week to check that the run's result is told.
+  week, with the dice fixed, to check that the run's result is told: after the workspace's report, and after the
+  manager's warning when the run opens it.
+- The `notices` gate also counts the icons derived from Feather a second way, from what the built page draws, and
+  fails if the header's count differs.
 
 ## v2.1 — "Operation Final Coat"
 

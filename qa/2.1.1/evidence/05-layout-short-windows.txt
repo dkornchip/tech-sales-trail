@@ -317,7 +317,7 @@ UNEXPECTED FAILURES (60 results)
       “Hail Mary” in <button.btn> is cut off by the viewport (87.3px)
       “End week” in <button.btn.primary> is cut off by the viewport (87.3px)
 
-LAYOUT FAILED: (the 2.1 test build), 10 fixtures x 2 viewports + phone: 82 ok, 0 known failures, 60 unexpected failures, 0 stale entries, 19.3 s
+LAYOUT FAILED: (the 2.1 test build), 10 fixtures x 2 viewports + phone: 82 ok, 0 known failures, 60 unexpected failures, 0 stale entries, 17.7 s
 
 $ node test/e2e/layout.cjs dist-test/index.html --viewport 1366x657,1280x620
 layout: dist-test/index.html
@@ -467,4 +467,4 @@ mobile-end-reachable  1366x657  1280x620  390x844
 smallest rendered font size outside ASCII art: 13px  (<span.sep> “/”, in fresh-ad at 1366x657)   not enforced (pass --min-font 13)
   by fixture: fresh-ad 13px, ad-board 13px, midrun 13px, board-24 13px, ck-report 13px, ck-early 13px, ck-cancel 13px, event-dialog 13px, rules 13px, ending 13px
 
-LAYOUT OK: dist-test/index.html, 10 fixtures x 2 viewports + phone: 142 ok, 0 known failures, 0 unexpected failures, 0 stale entries, 19.5 s
+LAYOUT OK: dist-test/index.html, 10 fixtures x 2 viewports + phone: 142 ok, 0 known failures, 0 unexpected failures, 0 stale entries, 17.9 s

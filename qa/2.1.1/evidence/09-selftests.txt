@@ -1,5 +1,5 @@
 $ npm run test:selftest
-dist-test/index.html  556 KB raw, 214 KB gzip
+dist-test/index.html  558 KB raw, 214 KB gzip
 lint-copy
   ok   the passing modules pass under --strict   160 strings, 0 violations
   ok   the variant engine next to them is skipped, not called
@@ -54,7 +54,7 @@ save-compatibility selftest: the baseline against a baseline that loads saves wr
   ok   error-on-load            loading a save logs a console error
          caught by fresh / page load: [trouble] B console.error: merge: unexpected shape
 
-SAVES SELFTEST OK: 13 mutants, 32.7 s
+SAVES SELFTEST OK: 13 mutants, 25.2 s
 layout selftest on dist-test/index.html: each check on an untouched page, then on the same page broken on purpose
 
   ok   page-no-scroll         a 3000px block is added to the page (midrun at 1920x1080)
@@ -90,7 +90,7 @@ layout selftest on dist-test/index.html: each check on an untouched page, then o
   ok   mobile-end-reachable   a fixed sheet is laid over the whole screen (midrun at 390x844)
          reported: scrolled to center: it is under <div>
 
-LAYOUT SELFTEST OK: 16 checks, 29.3 s
+LAYOUT SELFTEST OK: 16 checks, 26.5 s
 keyboard selftest on dist-test/index.html: the journey on an untouched page, then on the same page broken on purpose
   untouched page: 8/8 stages, findings: none
 
@@ -105,5 +105,5 @@ keyboard selftest on dist-test/index.html: the journey on an untouched page, the
   ok   an action is made to act again on every auto-repeat
          reported: held-key@enter-on-action  holding Enter on an action made it act 3 times
 
-KEYBOARD SELFTEST OK: 5 breakages, 12.6 s
+KEYBOARD SELFTEST OK: 5 breakages, 12.1 s
 exit 0

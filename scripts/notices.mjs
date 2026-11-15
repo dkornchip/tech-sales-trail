@@ -39,7 +39,30 @@ const file = path.join(ROOT, "THIRD-PARTY-NOTICES.md");
 if (process.argv.includes("--check")) {
   const have = fs.existsSync(file) ? fs.readFileSync(file, "utf8") : "";
   if (have !== out) { console.error("THIRD-PARTY-NOTICES.md is out of date: run node scripts/notices.mjs"); process.exit(1); }
-  console.log("THIRD-PARTY-NOTICES.md is up to date");
+  // The built page's short notice (scripts/build.mjs) credits Feather for the bundled icons derived from it. Counted
+  // again here a second way, from what the page draws: a symbol is Feather's when its drawing is that of an icon on
+  // Lucide's list (an icon renamed since keeps its drawing).
+  const page = path.join(ROOT, "dist/index.html");
+  if (!fs.existsSync(page)) { console.error("dist/index.html is missing: run node scripts/build.mjs first"); process.exit(1); }
+  const html = fs.readFileSync(page, "utf8"), lucide = read("lucide-static/LICENSE");
+  const listed = (/derived from the Feather project:\s*\n\s*\n([\s\S]*?)\n\s*\n/.exec(lucide) || [, ""])[1].split(",").map(s => s.trim()).filter(Boolean);
+  const inner = name => {
+    const f = path.join(ROOT, "node_modules/lucide-static/icons", name + ".svg");
+    if (!fs.existsSync(f)) return null;
+    const raw = fs.readFileSync(f, "utf8");
+    return raw.slice(raw.indexOf(">", raw.indexOf("<svg")) + 1, raw.lastIndexOf("</svg>")).replace(/\s+/g, " ").replace(/> </g, "><").replace(/ \/>/g, "/>").trim();
+  };
+  const feather = new Set(listed.map(inner).filter(Boolean));
+  const symbols = [...html.matchAll(/<symbol id="i-([a-z0-9-]+)" viewBox="0 0 24 24">([\s\S]*?)<\/symbol>/g)];
+  const drawn = symbols.filter(m => feather.has(m[2])).map(m => m[1]);
+  const line = (/^ *Lucide .*$/m.exec(html.slice(0, html.indexOf("-->"))) || [""])[0];
+  const said = [(/\((\d+) icons\)/.exec(line) || [])[1], (/(\d+) of them derived from Feather/.exec(line) || [, "0"])[1]];
+  if (!said[0]) { console.error("dist/index.html: no Lucide notice in the header"); process.exit(1); }
+  if (+said[0] !== symbols.length || +said[1] !== drawn.length) {
+    console.error(`dist/index.html: the header credits ${said[0]} Lucide icons, ${said[1]} of them from Feather; the page draws ${symbols.length}, ${drawn.length} of them Feather's (${drawn.join(", ")})`);
+    process.exit(1);
+  }
+  console.log("THIRD-PARTY-NOTICES.md is up to date; the page's header credits Feather for the " + drawn.length + " of its " + symbols.length + " icons it draws");
 } else {
   fs.writeFileSync(file, out);
   console.log("THIRD-PARTY-NOTICES.md  " + PARTS.length + " works, " + Math.round(out.length / 1024) + " KB");

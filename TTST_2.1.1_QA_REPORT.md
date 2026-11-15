@@ -7,10 +7,10 @@ what was **checked and found sound** (§3), what is **still open** (§4) and wha
 
 | | |
 |---|---|
-| Status | **Release candidate. Not promoted.** `index.html` is still the 2.1 file (559,646 bytes, sha256 `5c495f1168f2…6dae0e`), held there by the `releases` gate. Promotion is the owner's call. |
-| Release file | `Tech_Sales_Trail_2.1.1.html`, 568,319 bytes, sha256 `7d4e1e8a05bcb2f01a6829fecce28c4d762088b7b401acc2dce2845d2c60c3d4` |
-| Earlier releases | 2.1, 2.0.1 and 1.21 are in the repository as they shipped, each checked against its recorded size and SHA-256 (`test/baseline/releases.json`) |
-| Final gate run | `npm run verify:release`: **29 of 29 steps passed**, 663 s (`qa/2.1.1/evidence/01-verify-release.txt`) |
+| Status | **Promoted on the owner's instruction.** `index.html` is a byte-for-byte copy of `Tech_Sales_Trail_2.1.1.html`, held there by the `releases` gate. 2.1 (559,646 bytes, sha256 `5c495f1168f2…6dae0e`) is kept as it shipped. |
+| Release file | `Tech_Sales_Trail_2.1.1.html`, 570,019 bytes, sha256 `2a569fb10e6f3945e808a7188cba72eeff8679dce1a975c67c128e64e35d7614` |
+| Earlier releases | 2.1, 2.0.1 and 1.21 are in the repository as they shipped, each checked against its recorded size and SHA-256 (`test/baseline/releases.json`, where 2.1.1 is now recorded too) |
+| Final gate run | `npm run verify:release` on the promoted tree: **29 of 29 steps passed**, 677 s (`qa/2.1.1/evidence/01-verify-release.txt`) |
 | Rules | The frozen 2.1 rules and this tree are the same run after every move: 44,000 seeded quarters, 1,893,691 moves, one decided correction (§2) |
 | Balance | Frozen. 21 of 22 simulated strategies come out identical to 2.1, count for count, on both seed sets (§6) |
 | Saves | Same format (schema 5). Runs played and saved by the 2.1 file open in 2.1.1 as the same run and play on |
@@ -19,19 +19,21 @@ what was **checked and found sound** (§3), what is **still open** (§4) and wha
 
 How the pass was run: the frozen 2.1 build was audited by nine independent reviewers, one per area of the brief,
 and every finding was then given to a second reviewer told to doubt it (§8). I inspected the build myself in
-parallel. Changes were made on the first reading and several were withdrawn on the second (§5).
+parallel. Changes were made on the first reading and several were withdrawn on the second (§5). Before promotion the
+finished diff was reviewed again the same way, in three slices; its thirteen findings were all confirmed and are all
+dealt with (§8, "The final review of the diff").
 
 ## 1. Implemented changes
 
-Source diff against 2.1: 23 files under `src/`, +403 −125 lines. No dependency was added, no
-save field, no rule constant changed value. Each row names the test that now holds it.
+Source diff against 2.1: 23 files under `src/`, +459 −132 lines (of which the final review's fixes: 9 files, +93 −44).
+No dependency was added, no save field, no rule constant changed value. Each row names the test that now holds it.
 
 ### Action clarity and feedback (brief §1)
 
 | # | Change | Where | Held by |
 |---|---|---|---|
 | 1 | With nothing to work on, a pipeline card says what the press is still good for: `skill only` (Discovery, Demo marathon, Close deals) or `no deals` (Proposals). The hint keeps the copydeck's sentence ("No eligible deals. You would still spend a slot and energy.") and adds the training note the deck allows where the action really trains; for Proposals, which trains nothing, it says the press would only count toward a full-funnel week. The count of eligible deals (on the card since 2.1) gained a spoken label. | `src/ui/app/ActionGrid.jsx`, `src/copy/ui.js` (`CARD`, `HINT`) | `actions` gate §1–2 (8 boards, every card against the rules, every press compared before and after) |
-| 2 | **The one rule correction**: Proposals with no demoed deal, in a week whose proposal-or-close work is already counted, is refused (§2). | `src/game/actions.js` (`proposeIdle`), `src/game/run.js` | engine `actions.test.mjs`; `equivalence` gate; `actions` gate; 4 mutants |
+| 2 | **The one rule correction**: Proposals with no demoed deal, in a week whose proposal-or-close work is already counted, is refused (§2). In three more states the same press buys nothing and stays on offer; the hint says it would be for nothing (§2). | `src/game/actions.js` (`proposeIdle`), `src/game/run.js`; `selectors.js` (`proposeNothing`) | engine `actions.test.mjs` (each of the three states' Friday, with and without the press, on the same rolls); `equivalence` gate; `actions` gate; 6 mutants |
 | 3 | A press that is certain to end the run is marked `Ends the run` (on the Hail Mary's button: the risk colour, and the words for a screen reader), explained in the hint, and confirmed first: stress that would reach 100 (Prospect blitz, Internal politics, Conference run, Hail Mary) or a purchase that would take cash to the Collections line (Conference run, Quad shot). One point or one dollar short of certain, nothing is marked. | `src/game/selectors.js` (`fatalPress`, `purchaseBust`, `stressCost`), `src/ui/Game.jsx`, `src/copy/ui.js` (`CONFIRM`) | engine `actions.test.mjs`; `actions` gate §4 (yes ends the run as the rules say, no changes nothing) |
 | 4 | A Friday that would end the run says so before End week is pressed, in the order Friday comes to it. Rent, or clAInk's invoice at its least, that would take cash to the Collections line: on the cash card ("Friday's rent would trigger Collections", "Friday's clAInk invoice would trigger Collections") and in End week's hint, with the figures. That is certain with no Proposal or Closing deal on the board; with one, Friday's close attempt comes before the rent and may pay a commission first (a run survived 3% to 13% of such Fridays in the review's measurements), and the hint says "unless a deal signs on Friday first". A coffee crash that would reach 100 stress (13 a shot; nothing on a Friday lowers stress in such a week) is certain: in End week's hint and on the stress card, which now keeps "Crash: +N on Friday" from 80 stress up (it used to be replaced by "Dangerous stress level", and on a touch screen the figure was then nowhere). | `selectors.js` (`fridayPreview`: `bust`, `billBust`, `melt`, `mayClose`), `Kpis.jsx`, `ui.js` | engine `actions.test.mjs` (300 simulated Fridays per case: what is called certain ends the run every time; with late deals some survive); `actions` gate §4 |
 | 5 | End week's preview lists the clAInk invoice with salary and rent: what is due after a run, to the dollar, or the idle range (an overage may come on top). It was left out. | `selectors.js` (`fridayPreview.claink`), `ui.js` | engine `claink.test.mjs`; `actions` gate §9 (Friday charged what was previewed) |
@@ -46,7 +48,7 @@ save field, no rule constant changed value. Each row names the test that now hol
 | # | Change | Where | Held by |
 |---|---|---|---|
 | 11 | **Short desktop windows.** From 620 to about 750px of window height the week's card was taller than the window, and that layout does not scroll: at 1280×720 End week and the Hail Mary hung 9px through the card's border, at 1366×700 End week was cut off, at 1366×657 it was entirely off the screen, and the first-day tour left the page pushed up with the top bar gone. The card's gaps, padding and action rows now ease down in proportion (fluid `clamp()` on the window height; no new media query). At 746px and above nothing moves. | `src/styles/app.css` (desktop tier) | `layout` gate, which now also measures 1366×657 and 1280×620: 2.1 fails there in 60 places (`qa/2.1.1/evidence/05-layout-short-windows.txt`) |
-| 12 | The hint bar is two lines tall whatever it says. A two-line hint (more than a third of them at 1280 wide) sat 1px from the bar's borders; now 5px, and nothing under the bar moves when the hint changes. No hint needs a third line at any width of this layout. | `app.css` | `actions` gate §8 (1025×768 and 1366×657, 180 hints) |
+| 12 | The hint bar is two lines tall whatever it says. A two-line hint (more than a third of them at 1280 wide) sat 1px from the bar's borders; now 5px, and nothing under the bar moves when the hint changes. No hint of an action, the Hail Mary or End week needs a third line at any width of this layout; the "+N" chip's list of folded chips can (§4). | `app.css` | `actions` gate §8 (1025×768 and 1366×657, 180 hints) |
 | 13 | Stat cards: the unfilled part of a meter is visible (it was 1.08:1 against the card; now the tone the past weeks' ticks use); the quota meter is green from 100%; the cash card's second line is level with its neighbours. A minus sign stays with its amount and a range stays in one piece (`−$1,500`, `$140–$280`). | `app.css`, `Kpis.jsx`, `ui.js` (`usd`, `to`) | `actions` gate §7; pictures 07, 08, 13 |
 
 ### Game feel (brief §3)
@@ -56,14 +58,14 @@ save field, no rule constant changed value. Each row names the test that now hol
 | 14 | A signing's log line is toned good (green icon) in the log and in the phone's notice, as a loss is toned bad. The style existed and nothing used it. | `src/ui/app/logLook.js` (`toneFor`) | engine `copy.test.mjs` (whole seeded runs: every signing and nothing else) |
 | 15 | **Reduced motion:** the change chips on the stat cards were in the page at opacity 0 for their whole 1.7 s (their animation ends on nothing and was cut to nothing). They are shown still. | `app.css` | `actions` gate §7, with and without reduced motion |
 | 16 | **Touch:** the first tap on End week or the Hail Mary acts. In 2.1 the tap brought the focus, the focus raised a three- or four-line hint, the bar grew, and the button had moved from under the finger before it lifted: a tap in the upper part of End week did nothing, and the Hail Mary always needed two (2.0.1's hints were shorter). On a touch screen those two hints are now raised by the press, not by the focus. Seen in Chromium's touch emulation; iPhones probably never had it. | `Foot.jsx` | `phone` gate (a tap 15% of the way down End week ends the week) |
-| 17 | A caption that does not fit one line of the top bar is shown whole, on up to three lines (a tablet upright, a phone on its side). It was cut with an ellipsis, punchline first: 5 of 54 lines at 768×1024 and 33 of 54 at 667×375. With the sound off the caption is the announcement. | `app.css` (stacked tier) | `phone` gate (768×1024, 740×360, 667×375) |
-| 18 | On a phone the bottom notice no longer announces a clAInk run before the workspace's own report has landed (it told the strike about two seconds before the strike card, and covered it). A run's lines wait for the report, then show unless the run's result is in view in the workspace: tapped from the usual place, the report lands below the screen's edge, and the notice is then where the result is told. | `src/ui/app/LogPeek.jsx`, `ClainkUi.jsx` (`data-reporting`) | `phone` gate §11 (390×664, 360×640, 412×915: told, and not early) |
+| 17 | A caption that does not fit one line of the top bar is shown whole, on up to three lines (a tablet upright, a phone on its side). It was cut with an ellipsis, punchline first: 5 of 54 lines at 768×1024 and 33 of 54 at 667×375. With the sound off the caption is the announcement. (On an upright phone the caption is the bottom notice, as before, with its own line spacing.) | `app.css` (stacked tier) | `phone` gate (768×1024, 740×360, 667×375; the notice's spacing at 390×664) |
+| 18 | On a phone the bottom notice no longer announces a clAInk run before the workspace's own report has landed (it told the strike about two seconds before the strike card, and covered it). A run's lines wait for the report, then show unless the run's result is in view in the workspace: tapped from the usual place, the report lands below the screen's edge, and the notice is then where the result is told. Under a dialog (the manager's clAInk warning) the lines wait for it to close, as every step's do. | `src/ui/app/LogPeek.jsx`, `ClainkUi.jsx` (`data-reporting`) | `phone` gate §11, dice fixed (390×664, 360×640, 412×915: told, and not early; 360×640 with the manager's warning: told once it is closed) |
 
 ### clAInk (brief §4)
 
 | # | Change | Where | Held by |
 |---|---|---|---|
-| 19 | The policy step, which is what the player accepts, states the recurring obligations in the rules' own numbers: $249 a run plus $140–$280 per outcome (two to five on a $0 run), or $150–$300 for an idle week; overages of $200–$600; a true-up that takes your cash and $200–$1,800 more; $250 plus usage due to cancel early. In 2.1 only the $500 seat price was stated before purchase, and a $0 run bills $529 to $1,649. The three approved lines are untouched; the terms are a marked list. The step still fits its corner at every gated size. | `src/copy/clainkUi.js` (`CK_AD.policy`), `src/ui/ClainkUi.jsx`, `claink.css` | engine `copy.test.mjs`; `layout` gate (`dock-whole` at 9 sizes); picture 09 |
+| 19 | The policy step, which is what the player accepts, states the recurring obligations in the rules' own numbers: $249 a run plus $140–$280 per outcome (two to five on a $0 run), or $150–$300 for an idle week; overages of $200–$600; a true-up that takes your cash and $200–$1,800 more; $250 plus usage due to cancel early. In 2.1 only the $500 seat price was stated before purchase, and a $0 run bills $529 to $1,649. The three approved lines are untouched; the terms are a marked list. The step fits its corner at every gated size, and in the narrowest and shortest desktop windows (about 1,025px wide, 620 to 660px tall), where the final review found Accept below the ad, it drops the wordmark row as a last resort (the title bar still names the vendor). With classic scrollbars a smaller band remains (§4.1). | `src/copy/clainkUi.js` (`CK_AD.policy`), `src/ui/ClainkUi.jsx`, `claink.css` | engine `copy.test.mjs`; `layout` gate (`dock-whole` at 9 sizes); `actions` gate §9 (1025×620, 1025×640, 1050×660, 1280×620); picture 09 |
 | 20 | **The workspace follows a run to its result.** On a laptop-height window the workspace is shorter than a run's report and stayed at its top: at 1280×720 the strike card (what the run took), "Closed: $0", the week's estimate and "Cancel seat" landed wholly below its fold. A run the player presses is now followed as each beat lands (the workspace's own scroll, never the page's); it rests with the result card's top in sight, and returns to its top when the week turns, even when End week is pressed while the report is still playing. | `ClainkUi.jsx` | `actions` gate §9 (1280×720, 1366×768, 1366×650; End week 0.3 s after Run agents) |
 | 21 | At two strikes the warning under Run agents says "a deal walks" when there is a deal on the board: the third strike always takes the most advanced one. The copydeck gives both wordings and keeps "a live deal may walk" for a board that can be empty; 2.1 used it always. | `clainkUi.js` (`CK_STRIKES.hotHead`) | engine `copy.test.mjs`; `actions` gate §9 |
 | 22 | When the workspace scrolls, its scrollbar is thin and in clAInk's colours instead of the browser's default (the only unstyled one in the game; headless pictures never showed it). | `claink.css` | looked at |
@@ -91,20 +93,23 @@ save field, no rule constant changed value. Each row names the test that now hol
 | # | Change | Where | Held by |
 |---|---|---|---|
 | 31 | The studio's statement is in the handbook (footer on desktop, last line of the body on narrow screens) and in the README, word for word. | `src/copy/help.js` (`HELP_ABOUT`), `Game.jsx`, `dialogs.css`, `README.md` | `qa/2.1.1/evidence/07-release-file-hygiene.txt` |
-| 32 | The release file's header credits Feather for the ten bundled icons derived from it (they stay under its MIT licence and its author's copyright; the header credited them to Lucide). `THIRD-PARTY-NOTICES.md` names scheduler, which the header already listed. | `scripts/build.mjs`, `scripts/notices.mjs` | `notices` gate |
+| 32 | The release file's header credits Feather for the eleven bundled icons derived from it (they stay under its MIT licence and its author's copyright; the header credited them to Lucide). Lucide's licence lists them by their old names: one, `triangle-alert`, is Feather's `alert-triangle` renamed, so icons are matched by drawing as well as by name. `THIRD-PARTY-NOTICES.md` names scheduler, which the header already listed. | `scripts/build.mjs`, `scripts/notices.mjs` | `notices` gate (counts them again from what the page draws) |
 | 33 | The recovery dialog's buttons wrap on a small phone. "Open your saved run · week 12 (earlier version)" ran off a 320px or 375px screen: the way back to a good run for a player coming from 2.0.1. | `dialogs.css` | `phone` gate (320px, 375px) |
-| 34 | The README no longer says the office PA is "synthesized in the page": it is read by the browser's speech voice, which in Chrome and Edge can be an online one (§4.14). | `README.md` | |
+| 34 | The README no longer says the office PA is "synthesized in the page": it is read by the browser's speech voice, which in Chrome and Edge can be an online one (§4.16). | `README.md` | |
 
 ### Tests and plumbing
 
 - **`releases` gate** (`scripts/check-releases.mjs`, `test/baseline/releases.json`): 2.1, 2.0.1 and 1.21 are the files
   that shipped, and `index.html` is the promoted one. A build cannot overwrite a kept release by accident.
 - **`equivalence` gate** (`test/engine/tools/equivalence.mjs`, `test/baseline/v2.1-engine`): §2 and §6.
-- **`actions` gate** (`test/e2e/actions.cjs`): 104 checks by real presses on the release build. Run against the 2.1
+- **`actions` gate** (`test/e2e/actions.cjs`): 113 checks by real presses on the release build. Run against the 2.1
   file it fails 30 checks and then stops at the first run-ending press, where 2.1 shows no
   confirmation (`qa/2.1.1/evidence/04-actions-gate-on-2.1.txt`).
-- The layout gate measures nine desktop sizes (was seven). The phone gate has 55 checks (was 49). Engine tests: 120
-  (was 113). The mutation list has six new mutants (58 in all).
+- The layout gate measures nine desktop sizes (was seven). The phone gate has 60 checks (was 49). Engine tests: 122
+  (was 113). The mutation list has eleven new mutants (63 in all). The `notices` gate also counts the icons derived
+  from Feather from what the built page draws.
+- The checks added for the final review's findings fail on the release candidate: notices, two engine tests, 7 of
+  the `actions` gate's checks and 4 of the `phone` gate's (`qa/2.1.1/evidence/12-final-review-checks-on-the-candidate.txt`).
 - The release file is named from the version in `package.json` (`Tech_Sales_Trail_2.1.1.html`).
 
 ## 2. The one mechanical correction
@@ -229,47 +234,59 @@ one request beyond the document itself in nine played weeks and 25 named states.
 
 Known, not fixed in this pass, each with the reason. None blocks play.
 
-1. **Narrow and short desktop windows.** Under about 1,180px of width the stat cards wrap and the week's card is
-   about 34px taller; if the window is also under about 660px tall, End week hangs below the card's edge (at
-   1025×620 it is partly cut off by the window, and still reachable by pointer and by the E key). 2.1 lost the
+1. **Narrow desktop windows.** From 1,025 to about 1,200px of width the stat cards wrap (the exact width depends on
+   what they say) and the week's card is about 34px taller. Up to about 765px of height End week and the Hail Mary
+   then hang through the card's bottom edge, by up to about 12px. At about 620px tall End week is about 33px past
+   the card and partly below the window (about 21px of its 36), still reachable by pointer and by the E key. (An
+   earlier version of this report put the band at under 660px tall; the final review measured it.) 2.1 lost the
    button entirely at those sizes. A full fix means letting the card scroll or moving the layout's breakpoints,
    both rejected for this pass (§5). Under about 1,200px the action cost lines are also cut with an ellipsis
-   ("28 energy · skill o…", "40 energy · $800 · 2…"), as cost lines already were in 2.1.
-2. **The onboarding memo needs a window 664px tall.** Below that it scrolls inside its dialog with its button
+   ("28 energy · skill o…", "40 energy · $800 · 2…"), as cost lines already were in 2.1. clAInk's policy step has a
+   smaller band of its own: with classic scrollbars (as Windows draws them), at 1,025 to about 1,030px wide and 620 to
+   about 645px tall, up to 17px of its 40px Accept button is below the ad's fold; the ad scrolls, and Tab reaches the
+   button. With overlay scrollbars, as in the gates, it is whole at every size measured. In 2.1 it was whole with
+   either; in the release candidate the band was wider (the final review, below).
+2. **Proposals with nothing demoed is still on offer in three states where it buys nothing** (§2): the week
+   already full-funnel, week 13, and the last slot with nothing else worked. The hint says the press would be for
+   nothing. Refusing it there too would be a second rule change: the owner's decision.
+3. **The "+N" chip's hint can need three lines** in the narrowest desktop windows when many status chips are
+   folded (9 chips at 1025×768, in the final review's probe); it then spills over the hint bar's borders, as it did
+   in 2.1. Every hint of an action, the Hail Mary and End week fits two lines.
+4. **The onboarding memo needs a window 664px tall.** Below that it scrolls inside its dialog with its button
    pinned; at 625px the pinned button covers a line. The button is always there. Making the memo fit means
    dropping its chapter line there, which is a design decision.
-3. **The finished ending card is 24px taller than a 768px-tall window** (Ascension more), so the scroll that
+5. **The finished ending card is 24px taller than a 768px-tall window** (Ascension more), so the scroll that
    brings the paperwork into view slices the first line. 2.1's verdict and distinctions outgrew a threshold set in
    2.0.1. The fix shrinks the scene for windows 760 to 859px tall, which trades the cinematic's size; left.
-4. **"Exceptional nap" is the usual nap.** The suffix prints for about 70% of recharges. The copydeck chose the
+6. **"Exceptional nap" is the usual nap.** The suffix prints for about 70% of recharges. The copydeck chose the
    adjective and left the condition. Where to draw the line is the editor's call.
-5. **Repetition in the log, three kinds, all left as 2.1.** A line's first alternative comes back more often than
+7. **Repetition in the log, three kinds, all left as 2.1.** A line's first alternative comes back more often than
    its second (payroll's HR joke on 36.6% of Fridays against 21.7%); a punchline can repeat under another label
    ("Close push: no signatures. Verbal enthusiasm remains strong." then "Friday closes: …", about 11% of
    consecutive pairs); the last Friday still quotes next week's signing odds. The first was fixed and then
    withdrawn (§5); the second lives in `src/game/log.js`; the third is a nit.
-6. **Feedback timing, two kinds.** When End week opens a choice, the week's change chips play dimmed under the
+8. **Feedback timing, two kinds.** When End week opens a choice, the week's change chips play dimmed under the
    dialog and are gone before it is answered. On a desktop a clAInk run's result is in the Activity log at once,
    about two seconds before the workspace's staged report reaches it (item 18 fixed the phone's notice only). And
    for about a tenth of a second between a confirmation and an ending the dashboard shows undimmed.
-7. **Things the game never spells out.** The quota in dollars is not on the main screen (it is in the memo and
+9. **Things the game never spells out.** The quota in dollars is not on the main screen (it is in the memo and
    the handbook); "QBR" and "pp" are never expanded (the README does); that strikes 1 and 2 can do real damage is
    not said before the first incident (38% do; the README says so); the Hail Mary's hint gives its energy and not
    its slot. Each is new copy outside the copydeck or has no room in the handbook at 1440×900: the owner's or the
    editor's decision.
-8. **Hints quote the rule's full amount when a meter cannot take it** ("+35–52 energy" at 98 energy; End week's
+10. **Hints quote the rule's full amount when a meter cannot take it** ("+35–52 energy" at 98 energy; End week's
    "energy +15" at 95). The log reports the real change and the handbook says "capped by actual meters": the
    choice 2.1 made.
-9. **Three one-character inconsistencies that follow the copydeck to the letter**, for the editor: a full stop
+11. **Three one-character inconsistencies that follow the copydeck to the letter**, for the editor: a full stop
    after "$0 in pipeline." and none after "$40,000 in pipeline"; "End Week advances the quarter" beside a button
    called "End week"; "Collections take the jacket" where Collections is singular everywhere else.
-10. **Line breaks left as they fall:** "true-" / "up" in the two-strike warning at 1366×768; a number parted from
+12. **Line breaks left as they fall:** "true-" / "up" in the two-strike warning at 1366×768; a number parted from
     its word in two hints on a phone; one-word last lines in three headings on a phone.
-11. **On a touch screen the hints for End week and the Hail Mary can no longer be read before the tap** (item 16;
+13. **On a touch screen the hints for End week and the Hail Mary can no longer be read before the tap** (item 16;
     it was always so for the twelve actions). What makes a Friday fatal is on the cash and stress cards.
-12. **One spoken line that simulations never reached**: the manager's "ChatGDP again? We'll circle back." case
+14. **One spoken line that simulations never reached**: the manager's "ChatGDP again? We'll circle back." case
     speaks his first opening. Not reached in 2,640 simulated quarters; not changed blind.
-13. **For the owner to judge (nothing was changed):**
+15. **For the owner to judge (nothing was changed):**
     - The player character is named "Matt". If that names a real person, consider a neutral default.
     - `docs/2.1/TTST_2.1_Claude_Code_Implementation.md` and the copydeck's header name five people with job
       titles. They read as the by-line of a brief written in a studio's voice. If they are real people, two
@@ -279,14 +296,14 @@ Known, not fixed in this pass, each with the reason. None blocks play.
     - The game has no licence or copyright line of its own (`package.json` names no author or licence), which
       means all rights reserved by default. The release file carries a name and a link for each third-party work,
       not the licence texts; those are in `THIRD-PARTY-NOTICES.md`.
-14. **The announcer's voice.** In Chrome and Edge the game prefers "Google UK English Male" and "Microsoft Aria",
+16. **The announcer's voice.** In Chrome and Edge the game prefers "Google UK English Male" and "Microsoft Aria",
     which are online voices: the browser sends the announcer's lines (fixed sentences) to its speech service. The
     page itself makes no request. Preferring a local voice is a two-line change that would alter how the announcer
     sounds for most desktop players, and nobody could hear it here, so it is left to the owner; the README now
     says what happens and how to keep everything on the device.
-15. **External links were not checked.** The build environment's network policy refuses them. The release file
+17. **External links were not checked.** The build environment's network policy refuses them. The release file
     contains five URLs, all in the licence banner; nothing in the game requests or links to them.
-16. **Environments not available here**: Firefox, WebKit/Safari, any real device, a screen reader, speech output
+18. **Environments not available here**: Firefox, WebKit/Safari, any real device, a screen reader, speech output
     (headless Chromium has no voices: the text handed to the speech engine was compared with the caption, the
     sound was not heard), and Chrome's classic scrollbars in the gates (Playwright hides them).
 
@@ -311,6 +328,7 @@ change; the re-check's argument was that it was preference, not defect.
 | Proposal | Why not |
 |---|---|
 | Refuse every Proposals press with no demoed deal | It removes the full-funnel credit that press can still earn: a mechanical reward. Narrowed to the state where nothing is left to earn (§2). |
+| Refuse Proposals with nothing demoed in the three other states where it buys nothing (found by the final review) | A second rule change. The hint says "for nothing" in each instead, and the decision is the owner's (§2, §4.2). |
 | Turn off Discovery, Demo marathon or Close deals when nothing is eligible | They train a skill. The brief: "Do not disable legitimate skill-building strategies." The card says `skill only` instead. |
 | Let the week's card scroll inside itself when it does not fit | In this layout the footer already rests in the card's bottom padding at the smallest gated sizes, so the card would scroll by a few pixels and show a scrollbar at sizes that fit today. Closing the card up was chosen instead; the residue is §4.1. |
 | Move the one-screen layout's lower bound from 620px to 720px | It would hand a whole band of laptop windows the stacked, scrolling page. Too large a change of look for this pass. |
@@ -318,13 +336,13 @@ change; the re-check's argument was that it was preference, not defect.
 | Hold the stat cards' chips while a Friday dialog is open | Changes chip timing for every week with a dialog; the audit itself called leaving it defensible. |
 | Replay the week-heading animation on a deal row whose stage changed | It would also play on every row each time the list is first drawn, and the layout gates measure boxes that would be mid-transform. |
 | A sound or a line for reaching quota | Needs a new trigger outside the log director and a line the copydeck does not have. The green meter is a state, not an effect. |
-| Prefer a local voice for the announcer | §4.14. |
-| Shrink the ending's scene in windows 760 to 859px tall; drop the fade on the ending's backdrop; drop the memo's chapter line in short windows | Each trades an approved presentation for an edge (§4.2, 4.3, 4.6). |
-| State the quota in dollars on the Closed card; spell out QBR and pp in the handbook; restore "sometimes with real damage" | New copy outside the approved copydeck, or no room in the handbook (§4.7). |
-| Print "Exceptional nap" only for the best naps | An editorial choice of threshold (§4.4). |
+| Prefer a local voice for the announcer | §4.16. |
+| Shrink the ending's scene in windows 760 to 859px tall; drop the fade on the ending's backdrop; drop the memo's chapter line in short windows | Each trades an approved presentation for an edge (§4.4, 4.5, 4.8). |
+| State the quota in dollars on the Closed card; spell out QBR and pp in the handbook; restore "sometimes with real damage" | New copy outside the approved copydeck, or no room in the handbook (§4.9). |
+| Print "Exceptional nap" only for the best naps | An editorial choice of threshold (§4.6). |
 | Spell out the Hail Mary's slot as well as its energy | The hint then needs three lines in the narrowest desktop window, where the bar has room for two. The cards give energy only; so does this hint. With no slot left the button is off and says so. |
 | No-break spaces inside the stored chip text; word joiners after hyphens | The chip text is saved in runs and read by tests, and the same result is drawn without changing a stored character (item 25). A break after a hyphen is correct typesetting. |
-| Edit the names out of the owner's documents | They are the owner's documents (§4.13). |
+| Edit the names out of the owner's documents | They are the owner's documents (§4.15). |
 | A general refactor of the hint bar, the layout tiers or the copy engine | Out of scope. Each fix above is the smallest that holds. |
 
 Nothing was added because capacity was available: no new mechanic, ending, currency, achievement, tutorial,
@@ -343,11 +361,11 @@ dependency, animation system, announcer line or save field.
 | copy-check | every log tag has words, every word has a tag, no prose in the rules | ok |
 | copy-render | every log line, every variant, every week band | 15360 renderings, 0 bad; 202 distinct sentences across 96 tags |
 | copy-deck | the copydeck row by row | 357 rows applied as written, 23 noted with a reason, 0 open |
-| fonts, notices | bundled fonts and third-party notices are current | ok |
-| releases | 2.1, 2.0.1 and 1.21 are the files that shipped; `index.html` is the promoted one | 2.1, 2.0.1, 1.21 are the files that shipped; index.html is 2.1 |
-| engine | `node --test test/engine` | 120 tests passed in 12 files, 5.4 s |
-| audio | behavioural sound tests against a fake speaker | 15 tests passed in 1 files, 0.4 s |
-| sim-smoke | bots finish every run legally on the frozen engines and the tree; invariants | all 12 checks passed, 21.1 s |
+| fonts, notices | bundled fonts and third-party notices are current; the page's header credits Feather for exactly the icons it draws that are Feather's | ok; 11 of the 56 icons |
+| releases | every kept release is the file that shipped; `index.html` is the promoted one | 2.1.1, 2.1, 2.0.1, 1.21 are the files that shipped; index.html is 2.1.1 |
+| engine | `node --test test/engine` | 122 tests passed in 12 files, 5.3 s |
+| audio | behavioural sound tests against a fake speaker | 15 tests passed in 1 files, 0.3 s |
+| sim-smoke | bots finish every run legally on the frozen engines and the tree; invariants | all 12 checks passed, 19.1 s |
 | equivalence | the frozen 2.1 rules and the tree, side by side, 22 policies × 20 seeds | the same run after every move; one decided correction |
 | scenes | every frame of every scene's picture against v1.21 | 24 cases, 1,718 frames identical |
 | fixtures | the generated save fixtures are what the baseline writes | 25 generated fixtures are exactly what the baseline writes |
@@ -356,10 +374,10 @@ dependency, animation system, announcer line or save field.
 | offline | `file://`, no requests, plays to the end | 44 checks |
 | firstday | onboarding memo and tour; nothing on the memo cut off | 27 checks |
 | confirm | the confirmations and caption clean-up, by real presses | 37 checks |
-| actions | what the page says a press will do is what it does (§1) | 104 checks |
+| actions | what the page says a press will do is what it does (§1) | 113 checks |
 | resilience | reloads, damaged saves, simultaneous choice + acknowledgement, storage denied | 80 checks |
-| phone | touch screens 320–390 wide and sideways; a tablet's captions | 55 checks |
-| keyboard | keyboard-only passes, tab order, Escape, focus | 8 stages, 98 key presses (84 of them Tab or Shift+Tab) |
+| phone | touch screens 320–412 wide and sideways; a tablet's captions; a clAInk run's result | 60 checks |
+| keyboard | keyboard-only passes, tab order, Escape, focus | 8 stages, 97 key presses (83 of them Tab or Shift+Tab) |
 | layout | one screen, nothing covered or clipped; clAInk's ad whole and its window taking only spare room; 10 states × 9 desktop sizes + phone | 708 checks, 0 failures |
 | matrix | eight sizes × thirteen states, reduced motion | 1120 checks |
 | released | the committed release file is exactly what the source builds | ok |
@@ -403,11 +421,13 @@ On both seed sets 21 of the 22 strategies are identical to 2.1 in every count th
 | The layout gate at 1366×657 and 1280×620, 2.1 against 2.1.1 | 2.1: 60 failures; 2.1.1: 0 | `evidence/05-layout-short-windows.txt` |
 | 2.1 saves in 2.1.1 | 16 of 16 checks, eight sessions | `evidence/06-v5-save-compatibility.txt` |
 | Release-file hygiene scan | §9 | `evidence/07-release-file-hygiene.txt` |
-| Mutation check: planted mistakes in the rules | 55 of 58 caught; the 3 that survive are listed with the reason each changes nothing a test can see | `evidence/08-mutation-check.txt` |
+| Mutation check: planted mistakes in the rules | 60 of 63 caught; the 3 that survive are the three of 2.1, listed with the reason each changes nothing a test can see | `evidence/08-mutation-check.txt` |
 | Self-tests: each browser gate given a planted fault | lint rules 20 of 20, 13 planted save faults, 16 layout checks and 5 keyboard breakages: every one reported | `evidence/09-selftests.txt` |
-| The week's card and the hint bar measured at a range of window sizes; every hint counted for lines; a new player's memo and tour in short windows | End week inside the card at every size from 1180×657 up; 480 hints, none over two lines; the tour never scrolls the page | `evidence/10-card-hint-and-first-day-measurements.txt` |
+| The week's card and the hint bar measured at a range of window sizes; every hint counted for lines; a new player's memo and tour in short windows | in the tool's state, End week inside the card at every size from 1180×657 up (in another state it hangs at 1180 and 1190 wide: §4.1); 480 hints of the actions, the Hail Mary and End week, none over two lines; the tour never scrolls the page | `evidence/10-card-hint-and-first-day-measurements.txt` |
 | The release file itself from `file://`: the size matrix and the offline run | matrix 1,120 checks, offline 44 checks, all passed | `evidence/11-release-file-matrix-offline.txt` |
+| The checks added for the final review, run against the release candidate | each fails there: notices; 2 engine tests; 7 `actions` checks; 4 `phone` checks | `evidence/12-final-review-checks-on-the-candidate.txt` |
 | The independent audit: every finding, its re-check and its outcome | §8 | `qa/2.1.1/audit/` |
+| The final review of the diff: three slices, each re-checked | §8 | `qa/2.1.1/audit/final-review/` |
 
 The scripts behind rows that are not gates are in `qa/2.1.1/tools/`.
 
@@ -420,9 +440,13 @@ picture below myself, at full size.
   release in the same state at the same size): 01 cards with nothing to work on; 02 and 03 a short window
   (1366×657, 1280×720); 04 a two-line hint; 05 a press that ends the run; 06 rent that would trigger Collections;
   07 and 08 the stat cards, early and at quota; 09 clAInk's policy; 10 log chips; 11 the handbook; 12 the change
-  chip with reduced motion; 13 cash below zero; 14 a phone's first screen; 15 a signed $42,000 deal.
+  chip with reduced motion; 13 cash below zero; 14 a phone's first screen; 15 a signed $42,000 deal. The "after"
+  pictures were retaken from the promoted file: 13 of 15 are pixel for pixel the release candidate's; in 12 and 15
+  the dice that the release file does not fix rolled a different recharge and chose another approved wording of
+  the signing line.
 - **The size matrix on the release file** (`qa/2.1.1/screenshots/matrix/`): thirteen states at 1440×900, 768×1024
   and 390×844.
+- **The README's four pictures** (`screenshots/`), retaken from 2.1.1 at 1440×900 and 1280×760.
 - During the pass: the six ending cards and the first-run memo and tour at 1366×768 and on a phone; clAInk's
   workspace after a run at 1280×720, 1366×768 and 1440×900; clAInk's policy on a tablet; the top bar with a long
   caption on a tablet and a sideways phone; the week's card at 1025×768.
@@ -467,6 +491,36 @@ stale hint, the minus-sign break, the Hail Mary's unstated cost).
 Every finding, its re-check and its outcome is in `qa/2.1.1/audit/README.md`; the reviewers' results as returned
 are beside it.
 
+### The final review of the diff
+
+Before promotion the whole diff against 2.1 was reviewed once more, in three slices: the rules, selectors and words;
+the interface; the layout, the build's notices and the gates. Each slice had a reviewer working read-only on the
+release candidate, pressing the real game in Chromium and probing the rules in Node, and each set of findings went to
+a second reviewer told to doubt it. All 13 findings were reproduced and confirmed real (one was found in two slices,
+so 12 are distinct). The second readers rated 10 of the 13 as needing a fix before release. None blocked play. Both
+readers also listed what they had checked and found sound, among it: the frozen 2.1 rules are really 2.1; the
+equivalence tool fails on planted differences; every press marked as ending the run ends it, at every seed tried.
+
+| Finding | Slice | Fix before release? | What was done | Held by |
+|---|---|---|---|---|
+| A Friday that clAInk's invoice makes certain to end in Collections was not flagged, though the preview quoted the invoice | rules | yes | End week's hint and the cash card flag it, counting the least the invoice can be | engine test of End week's preview (300 seeded Fridays a case); `actions` gate |
+| The report called the refused Proposals press "the one state" where a press buys nothing; there are three more | rules | yes | §2 corrected; the hint says "for nothing" in each; refusing them is the owner's call (§4.2, §5) | engine test of Proposals in the three states |
+| The rent warning was called certain while a Proposal or Closing deal could sign on Friday first and pay | rules, interface | yes | With such a deal on the board the warning adds "unless a deal signs on Friday first" | engine test of End week's preview; `actions` gate |
+| The Ascension shot-count test passed with the extra shot added to every meltdown | rules | no | Strengthened: the stress, crash and Collections endings are each checked | engine test of the quad shot |
+| On a phone, a clAInk run's result was shown nowhere when Run agents was tapped from its usual place | interface | yes | The notice waits for the workspace's report, then tells the result if it is not on the screen | `phone` gate §11 (fails on the release candidate) |
+| End week pressed while clAInk's report played left the next week's workspace scrolled away from Run agents | interface | yes | A new week opens the workspace at its top | `actions` gate |
+| A Hail Mary certain to end the run was not marked, though the report said it was | interface | yes | Marked like the cards, and named so for a screen reader | `actions` gate (marked at 96 stress, not at 95) |
+| clAInk's policy step put Accept below the ad's fold at 1,025 to 1,050px wide and 620 to 660px tall | layout | no | The policy step also drops the logo row when it must; a smaller band remains with classic scrollbars (§4.1) | `actions` gate at four sizes |
+| The file's header credited Feather for 10 icons; 11 are (`triangle-alert` is Feather's `alert-triangle` renamed) | layout | yes | The build counts an icon by its drawing as well as its name; the `notices` gate counts them again from what the page draws | `notices` gate |
+| "No hint needs a third line" was false for the "+N" chip | layout | yes | The claim is narrowed to what is measured; the chip is §4.3 | (documents) |
+| §4.1 understated where End week hangs below the week's card | layout | yes | §4.1 restated as measured | (documents) |
+| Upright phones' bottom notice had lost its line spacing to a rule meant for the top bar | layout | no | The phone tier keeps 2.1's spacing | `phone` gate |
+
+One thing the fixes themselves got wrong first: the phone check written for the clAInk result passed or failed with
+the dice, since its saved run carries none. In 12 of 40 runs from that save the manager's clAInk warning opened, and
+under a dialog the notice waits by design. The check now fixes the dice and covers that case too: the result waits for the
+dialog and is told once it is closed. The reviewers' results as returned are in `qa/2.1.1/audit/final-review/`.
+
 ## 9. Distribution hygiene
 
 Scan of `Tech_Sales_Trail_2.1.1.html` (`qa/2.1.1/tools/hygiene.py`; the hygiene audit of the 2.1 file agrees):
@@ -474,7 +528,7 @@ Scan of `Tech_Sales_Trail_2.1.1.html` (`qa/2.1.1/tools/hygiene.py`; the hygiene 
 - **Network:** no `fetch`, `XMLHttpRequest`, `WebSocket`, `EventSource`, `sendBeacon`, external script, stylesheet,
   image or font. The `offline` gate plays the file from `file://` with every request refused and counts none. The
   one thing that can leave the device is the announcer's line, when the browser reads it with an online voice
-  (§4.14).
+  (§4.16).
 - **Links:** five URLs, all in the licence banner (the two font repositories and three licence texts). The game
   has no outbound link.
 - **Test hooks:** none (`release` gate: no hook in the bundle, and one planted from outside is inert).
@@ -486,12 +540,12 @@ Scan of `Tech_Sales_Trail_2.1.1.html` (`qa/2.1.1/tools/hygiene.py`; the hygiene 
   found none.)
 - **Customer names:** none of the 57 account names is a real company's.
 - **Third-party notices:** the file's header names exactly what is bundled (React, React DOM and scheduler, MIT;
-  Inter and JetBrains Mono, OFL 1.1; Lucide, ISC, with the ten icons derived from Feather credited to it, MIT).
+  Inter and JetBrains Mono, OFL 1.1; Lucide, ISC, with the eleven icons derived from Feather credited to it, MIT).
   `THIRD-PARTY-NOTICES.md` carries the licence texts and is current (`notices` gate).
 - **The statement** asked for by the brief is in the handbook and the README.
 - **Storage:** the game reads and writes only its own `tst-` keys in the browser's local storage.
 
-Items for the owner's judgment are in §4.13 and §4.14.
+Items for the owner's judgment are in §4.15 and §4.16.
 
 ## 10. How to reproduce
 

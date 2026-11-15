@@ -345,13 +345,16 @@ test("Proposals with nothing demoed: in the three states where the press is on o
     ["last", { week: 13, slots: 3, used: { prospect: true }, deals: LEADS }],
     ["alone", { week: 6, slots: 1, deals: LEADS }],
     [null, { week: 6, slots: 3, used: { prospect: true, discovery: true }, deals: LEADS }],
-    [null, { week: 6, slots: 1, used: { prospect: true }, deals: LEADS }]
+    [null, { week: 6, slots: 1, used: { prospect: true }, deals: LEADS }],
+    // two slots and nothing worked yet: the press alone leaves the week neglected, but with one more category on the
+    // last slot it is not (a Prospect blitz here, made on the same rolls with and without the press)
+    [null, { week: 6, slots: 2, deals: LEADS }, "prospect"]
   ];
   // the Friday after the press and the Friday without it, with the same rolls, compared on everything Friday decides.
   // (Week 13's Friday ends the run at the QBR. A bonus or a penalty it sets is dated week 14, which never comes, and is
   // left out: so is its log line.)
   const keep = m => { const { energy, slots, used, logs, said, effects, ...rest } = m; return JSON.stringify({ ...rest, effects: (effects || []).filter(e => e.from <= 13) }); };
-  for (const [why, over] of states) {
+  for (const [why, over, then] of states) {
     const s = await craft(over);
     assert.equal(S.proposeNothing(s), why, JSON.stringify(over.used || {}) + " week " + over.week);
     assert.ok(!S.proposeIdle(s) && !eng.run.actBlock(s, "propose"), "on offer");
@@ -359,7 +362,8 @@ test("Proposals with nothing demoed: in the three states where the press is on o
     let alike = 0;
     for (let k = 0; k < 40; k++) {
       const r1 = mulberry(fnv("p:" + k)), r2 = mulberry(fnv("p:" + k));
-      const a = withDice([], () => r1(), () => eng.run.step(s, { t: "end" })).state, b = withDice([], () => r2(), () => eng.run.step(pressed, { t: "end" })).state;
+      const week = st => eng.run.step(then ? eng.run.step(st, act(then)).state : st, { t: "end" }).state;
+      const a = withDice([], () => r1(), () => week(s)), b = withDice([], () => r2(), () => week(pressed));
       if (keep(mechanical(a)) === keep(mechanical(b))) alike++;
       if (why === "last") assert.ok(eng.log.isRunOver(a) && eng.log.isRunOver(b), "week 13's Friday ends the run");
     }

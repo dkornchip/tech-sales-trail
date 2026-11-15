@@ -10,7 +10,7 @@ matrix: Tech_Sales_Trail_2.1.1.html  (8 sizes x 13 states, file://, network refu
   ok    1440x900-zoom200     125 checks
   ok    reduced motion       120 checks
 
-MATRIX OK: all 1120 checks passed at 8 sizes, 182.2 s
+MATRIX OK: all 1120 checks passed at 8 sizes, 175.5 s
 
 $ node test/e2e/offline.cjs Tech_Sales_Trail_2.1.1.html
   ok    one action can be played  ("Prospect blitz": energy 95 -> 65, log 0 -> 1 lines)
@@ -20,4 +20,4 @@ $ node test/e2e/offline.cjs Tech_Sales_Trail_2.1.1.html
   ok    zero console errors
   ok    zero page errors
 
-all 44 checks passed  (Tech_Sales_Trail_2.1.1.html, 555 KB)
+all 44 checks passed  (Tech_Sales_Trail_2.1.1.html, 557 KB)

@@ -228,7 +228,7 @@ clAInk is a gamble, not a strategy. You can cancel the seat for $250 plus whatev
 “Operation Gold Master” is the last polish pass before release. It changes how clearly the game speaks, not how it plays: the rules, the balance and your saves are the same as in v2.1.
 
 - **A button says what a press would buy.** With nothing to work on it says `skill only` or `no deals`. Anything that would end your run, an action, a Hail Mary or a Friday, says so before you press it, and an action or a Hail Mary asks first.
-- **It fits your laptop.** In a short browser window End week no longer falls off the bottom of the screen.
+- **It fits your laptop.** In a short browser window the week's card closes up, so End week stays within reach.
 - **clAInk tells you the bill before you sign,** and its workspace follows a run to its result instead of leaving it out of sight.
 - **Small screens and reduced motion:** the first tap on End week works, captions are shown whole, and endings open at their title.
 - **A proofread,** and the statement that the game is an independent fictional satire, now in the handbook too.

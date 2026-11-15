@@ -1,0 +1,36 @@
+# The checks added after the final review, run against the release candidate (commit 60101f9), to show that each
+# fails there. The candidate's files are its own: Tech_Sales_Trail_2.1.1.html as committed then, its test build, its source.
+
+$ node scripts/notices.mjs --check      (the final notices check, with the candidate's release build as dist/index.html)
+dist/index.html: the header credits 56 Lucide icons, 10 of them from Feather; the page draws 56, 11 of them Feather's (arrow-right, calendar, check, compass, info, loader, lock, minus, search, triangle-alert, x)
+exit 1
+
+$ node --test test/engine/actions.test.mjs      (the final engine tests, against the candidate's source)
+not ok 16 - End week's preview: what it calls certain ends the run with every roll; with a late deal on the board it says what may still save it
+not ok 17 - Proposals with nothing demoed: in the three states where the press is on offer and buys nothing, the hint says so; elsewhere it counts
+# tests 17
+# pass 15
+# fail 2
+
+$ node test/e2e/actions.cjs Tech_Sales_Trail_2.1.1.html      (the final gate, against the candidate's release file; failures only)
+  FAIL  a Friday whose clAInk invoice would take cash to Collections says so on the cash card and on End week, and ends the run there  (cash card: "Collections at −$1,500 cash"; End week: "End week. Friday: salary +$1,000, rent −$1,600, clAInk −$669, energy +15, stress −4. Friday events and collections may change this."; after: Collections)
+  FAIL  with a late deal on the board, the rent warning says what may still save the run  ("End week. Friday: salary +$1,000, rent −$1,600. That would leave −$1,500 cash. Collections ends the run at −$1,500.")
+  FAIL  a Hail Mary whose least stress would reach 100 is marked on its button, in the risk colour and in words  ({"risk":false,"name":"Hail Mary","colour":"rgb(236, 238, 241)","plain":"rgb(255, 255, 255)"})
+  FAIL  End week pressed while a report is still playing: the next week's workspace is at its top, Run agents in sight  (2 weeks turned mid-report: {"top":206,"deploy":false} ; {"top":130,"deploy":false})
+  FAIL  1025x620: clAInk's policy step shows its five terms, Accept and Not now in the ad  ({"accept":false,"notNow":false,"terms":5,"fit":"tight announce chips badges proof headline"})
+  FAIL  1025x640: clAInk's policy step shows its five terms, Accept and Not now in the ad  ({"accept":false,"notNow":false,"terms":5,"fit":"tight announce chips badges proof headline"})
+  FAIL  1050x660: clAInk's policy step shows its five terms, Accept and Not now in the ad  ({"accept":false,"notNow":false,"terms":5,"fit":"tight announce chips badges proof headline"})
+ACTIONS FAILED: 7 of 113 checks
+
+$ node test/e2e/phone.cjs dist-test/index.html      (the final gate, against the candidate's test build; failures only)
+  FAIL  the notice at the bottom keeps its line spacing (1.4, as in v2.1)  ({"lineHeight":15.6,"fontSize":13})
+  FAIL  390x664: a clAInk run tapped below End week is told, in the workspace or in the notice, and not before its report lands  (the result was shown nowhere)
+  FAIL  360x640: a clAInk run tapped below End week is told, in the workspace or in the notice, and not before its report lands  (the result was shown nowhere)
+  FAIL  360x640: when the run opens the manager's warning, its result waits for the dialog and is told once it is closed  (the result was shown nowhere)
+PHONE FAILED: 4 of 60 checks
+
+# Every one of these passes on the promoted tree (01-verify-release.txt: notices, engine 122, actions 113, phone 60).
+# On the candidate the 412x915 phone check failed in an earlier run and passed in this one. The dice fix the run's
+# outcome, not its wording, so the report's length and where its result card lands vary; on that tall screen the card
+# can land in view, and then nothing needs telling.
+# The strengthened Ascension test passes on the candidate too: its code was right and the test was weak.
