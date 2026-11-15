@@ -117,7 +117,9 @@ export const HINT = {
   coffee: (shot) => `Takes a slot. Shot ${shot.n}: +${shot.energy} energy, +${shot.stress} stress now, +${shot.crash} more on Friday.` + (shot.risk >= 1 ? " This shot reaches 100 stress and ends the run." : shot.risk > 0 ? ` ${pc(shot.risk)} chance it ends the run.` : " Later shots give less and risk more."),
   politics: () => "Lunch with leadership. +8 manager · +3 product · −4 reputation · +2 stress.",
   // blast: the chance nobody walks; walk: the chance each late deal left walks otherwise; cost: what the throw takes
-  hail: (c, blast, walk, cost) => (c ? `One close attempt against all proposal/closing deals. ${n(cost.slots, "slot")}, ${cost.energy} energy. ${fifths(1 - blast)}, each remaining late deal then has ${aPc(walk)} chance to walk.` : "No late-stage deals to rescue."),
+  // (its cost is given as the cards give theirs: the energy. With the slot spelled out as well the hint ran to three
+  // lines in the narrowest desktop window; with no slot left the button is off and says so.)
+  hail: (c, blast, walk, cost) => (c ? `One close attempt against all proposal/closing deals. ${cost.energy} energy. ${fifths(1 - blast)}, each remaining late deal then has ${aPc(walk)} chance to walk.` : "No late-stage deals to rescue."),
   // bust: salary and rent together would leave cash at or under the line where Collections ends the run
   endWeek: f => `Friday: salary +${usd(f.salary)}` + (f.rent ? `, rent −\u2060${usd(f.rent)}` : "")
     + (f.bust ? `. That would leave ${usd(f.cash)} cash. Collections ends the run at ${usd(f.repoAt)}.`

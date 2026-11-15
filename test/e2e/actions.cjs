@@ -20,11 +20,14 @@
 //        money    the conference or a quad shot that would take cash to Collections
 //        stress   Prospect blitz, Internal politics, the conference or the Hail Mary that would reach 100 stress
 //      and a Friday whose rent would take cash to Collections says so on the cash card and on End week
-//   5. the Hail Mary says what it costs
+//   5. the Hail Mary says what it costs (its energy, as the cards do; a throw takes a slot like any action)
 //   6. the hint under the pointer is about the run as it is: after a press, with the pointer still on the card, the
 //      bar says what the card would do now, not what it did (v2.1 kept the words from before the press)
 //   7. what a press changed is shown: the change chip on a stat card can be seen, with reduced motion too (v2.1
 //      drew it at opacity 0 for a player who asked for less motion), and the quota meter is marked from 100%
+//   8. the hint bar holds every hint: in the narrowest window of the one-screen layout (1025 wide) and at a common
+//      laptop size, no hint in any of six states is taller than the bar, and the bar is the same height whatever
+//      it says, so nothing under it moves
 // The release build rolls its own dice, so nothing here depends on a roll. Exits 1 if any check fails.
 // (CommonJS on purpose: Playwright only resolves through require() here.)
 "use strict";
@@ -245,17 +248,19 @@ const stored = async page => JSON.stringify(await page.evaluate(readRun));
     const c = RULES.COST.hail, before = rules(await page.evaluate(readRun));
     await press(page, '[data-ui="hail"]'); await press(page, '[data-ui="confirm-yes"]'); await page.waitForTimeout(500);
     const thrown = rules(await page.evaluate(readRun));
-    check("the Hail Mary's hint gives its cost, and that is what the throw takes", hint === plain(COPY.UI.hail + ". " + H.hail(1, RULES.HAIL.blast, RULES.HAIL.walk, c)) && hint.includes(`${c.slots} slot, ${c.energy} energy`) && thrown.slots === before.slots - c.slots && Math.round(thrown.energy) === Math.round(before.energy - c.energy) && !errors.length, `"${hint}"; slots ${before.slots} -> ${thrown.slots}, energy ${Math.round(before.energy)} -> ${Math.round(thrown.energy)}`);
+    check("the Hail Mary's hint gives its cost, and that is what the throw takes", hint === plain(COPY.UI.hail + ". " + H.hail(1, RULES.HAIL.blast, RULES.HAIL.walk, c)) && hint.includes(` ${c.energy} energy.`) && thrown.slots === before.slots - c.slots && Math.round(thrown.energy) === Math.round(before.energy - c.energy) && !errors.length, `"${hint}"; slots ${before.slots} -> ${thrown.slots}, energy ${Math.round(before.energy)} -> ${Math.round(thrown.energy)}`);
     await context.close();
 
     /* ---------- 6. the hint under the pointer is about the run as it is ---------- */
-    const over = async (what, crafted, sel, want) => {
+    // (sure: the press is certain to change what the card would do. Close deals rolls: when the deal neither signs
+    // nor walks, the same words are still the true ones.)
+    const over = async (what, crafted, sel, want, sure = true) => {
       ({ context, page, errors } = await open(browser, crafted));
       await page.locator(sel).hover(); await page.waitForTimeout(150);
       const was = await hintOf(page), wantWas = plain(want(rules(await page.evaluate(readRun))));
       await page.locator(sel).click({ force: true }); await page.waitForTimeout(600);       // the pointer stays where it is
       const now = await hintOf(page), wantNow = plain(want(rules(await page.evaluate(readRun))));
-      check(what, was === wantWas && now === wantNow && now !== was && !(await dialogOf(page)) && !errors.length, `before: "${was}"; after: "${now}"`);
+      check(what, was === wantWas && now === wantNow && (now !== was || !sure) && !(await dialogOf(page)) && !errors.length, `before: "${was}"; after: "${now}"`);
       await context.close();
     };
     const T = COPY.ACTION;
@@ -264,7 +269,7 @@ const stored = async page => JSON.stringify(await page.evaluate(readRun));
     await over("Proposals with no demoed deal, pressed: the bar now says there is nothing to gain", save({ week: 3, cash: 3000, deals: [D(0, 6000)] }), '[data-act="propose"]',
       s => T.propose.title + ". " + (R.actBlock(s, "propose") ? H.blocked.none() : H.propose(S.stageCount(s, 2), S.PROPOSE_CHANCE)));
     await over("Close deals on the only late deal, pressed: the bar counts the late deals there are now, and says whether the week's work is counted", save({ week: 3, cash: 3000, deals: [D(4, 21000, "happy")] }), '[data-act="close"]',
-      s => T.close.title + ". " + H.close(S.lateDeals(s).length, !(s.used.propose || s.used.close)));
+      s => T.close.title + ". " + H.close(S.lateDeals(s).length, !(s.used.propose || s.used.close)), false);
 
     /* ---------- 7. what a press changed is shown ---------- */
     for (const reduced of [false, true]) {
@@ -282,6 +287,33 @@ const stored = async page => JSON.stringify(await page.evaluate(readRun));
       const meter = await page.evaluate(() => { const m = document.querySelector('[data-kpi="closed"] .meter'); return m ? { good: m.classList.contains("good"), width: m.querySelector("i").style.width } : null; });
       check(`${what}: the quota meter is ${want ? "marked" : "not marked"}`, QUOTA > 0 && !!meter && meter.good === want && !errors.length, JSON.stringify(meter) + ` at $${closed} of $${QUOTA}`);
       await context.close();
+    }
+
+    /* ---------- 8. the hint bar holds every hint ---------- */
+    const STATES = [
+      ["mid-run", { week: 6, cash: 900, energy: 80, deals: [D(3, 42000, "happy"), D(2, 14000, "curious"), D(0, 6000), D(1, 9000)] }],
+      ["an empty board", { week: 2, cash: 3000 }],
+      ["tired", { week: 7, cash: 200, energy: 12, stress: 66, deals: [D(3, 42000, "happy"), D(2, 14000)] }],
+      ["one press from a meltdown, one Friday from Collections", { week: 9, cash: -950, energy: 70, stress: 97, deals: [D(4, 42000, "happy"), D(3, 126000, "happy")] }],
+      ["shots taken, recharge and CRM used", { week: 4, cash: 300, energy: 30, stress: 60, coffeesThisWeek: 2, restedThisWeek: true, used: { crm: true, close: true }, deals: [D(0, 6000)] }],
+      ["no slots left", { week: 5, cash: 2000, slots: 0, deals: [D(0, 6000), D(2, 9000)] }]
+    ];
+    for (const [w, h] of [[1025, 768], [1366, 657]]) {
+      const tall = [], bars = new Set(); let seen = 0;
+      for (const [what, over] of STATES) {
+        ({ context, page, errors } = await open(browser, save(over), { viewport: { width: w, height: h } }));
+        const targets = await page.evaluate(() => [...document.querySelectorAll("[data-act]")].map(e => `[data-act="${e.getAttribute("data-act")}"]`).concat(['[data-ui="hail"]', '[data-ui="end"]']));
+        for (const sel of [null, ...targets]) {
+          if (sel) await page.locator(sel).hover({ force: true }); else await page.mouse.move(4, 4);
+          await page.waitForTimeout(50);
+          const m = await page.evaluate(() => { const bar = document.querySelector(".hint"), text = bar.querySelector("span"); return { bar: bar.getBoundingClientRect().height, text: text.getBoundingClientRect().height, words: text.textContent }; });
+          seen++; bars.add(Math.round(m.bar * 10) / 10);
+          if (m.text > m.bar - 1.5) tall.push(`${what}, ${sel || "nothing pointed at"}: ${m.text.toFixed(1)}px of text in a ${m.bar.toFixed(1)}px bar ("${m.words.slice(0, 60)}…")`);
+        }
+        if (errors.length) tall.push(what + ": " + errors[0]);
+        await context.close();
+      }
+      check(`${w}x${h}: none of ${seen} hints is taller than the bar, and the bar is one height whatever it says`, !tall.length && bars.size === 1, tall.length ? tall.slice(0, 3).join(" ; ") : `bar ${[...bars].join("/")}px`);
     }
   } finally { await browser.close(); }
   const bad = rows.filter(ok => !ok).length;

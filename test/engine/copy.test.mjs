@@ -42,7 +42,7 @@ test("the action hints quote the rules: lunch with leadership, the Hail Mary, th
   assert.match(ui.HINT.hail(2, R.HAIL.blast, R.HAIL.walk, R.COST.hail), /Four times in five, each remaining late deal then has a 55% chance to walk\./);
   assert.equal(ui.HINT.hail(0, R.HAIL.blast, R.HAIL.walk, R.COST.hail), "No late-stage deals to rescue.");
   // and what a throw costs, which v2.1 said nowhere: the hint's own numbers are the rule's
-  assert.ok(ui.HINT.hail(2, R.HAIL.blast, R.HAIL.walk, R.COST.hail).includes(`${R.COST.hail.slots} slot, ${R.COST.hail.energy} energy.`));
+  assert.ok(ui.HINT.hail(2, R.HAIL.blast, R.HAIL.walk, R.COST.hail).includes(` ${R.COST.hail.energy} energy.`));
   const late = await craft({ deals: [[3, 20000]] }), thrown = withDice([0.1, 0.99], 0.99, () => eng.run.step(late, { t: "hail" })).state;
   assert.deepEqual([late.slots - thrown.slots, late.energy - thrown.energy], [R.COST.hail.slots, R.COST.hail.energy]);
   // Prospect blitz: the stress the hint names is the stress the action adds
