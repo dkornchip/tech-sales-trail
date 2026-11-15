@@ -214,6 +214,13 @@ test("a dialog opening plays its cue and its line", async () => {
     assert.ok(a.plays.some(p => p.name === "modal"), id);
     assert.ok(LINES[key].includes(a.speech.said[0].text), `${id} says ${key}`);
   }
+  // the manager's dialog has two openings (copy/claink.js, CK_QUIP): after a run that worked the voice says the one
+  // the dialog shows, not the other (v2.1 said "Always on Chat GDP, huh?" over a dialog that began "Nice week.")
+  const { CK_QUIP } = await import("../../src/copy/claink.js"), spoken = t => t.replace("ChatGDP", "Chat GDP");
+  a.reset(); a.T.onModal("ck:warning", { miracle: true }); a.tick(900);
+  assert.equal(a.speech.said[0].text, spoken(CK_QUIP(true))); assert.deepEqual(LINES.chatgdpNice, [spoken(CK_QUIP(true))]);
+  a.reset(); a.T.onModal("ck:warning", { miracle: false }); a.tick(900);
+  assert.equal(a.speech.said[0].text, spoken(CK_QUIP(false))); assert.deepEqual(LINES.chatgdp, [spoken(CK_QUIP(false))]);
 });
 
 test("a whole quarter of real log lines: never two lines at once, every spoken line captioned as spoken, sound on every move", async () => {

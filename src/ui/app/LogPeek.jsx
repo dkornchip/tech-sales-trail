@@ -3,6 +3,7 @@ import { UI } from "../../copy/ui.js";
 import { isPhone } from "../env.js";
 import { Icon } from "./Icon.jsx";
 import { iconFor, legacyText, toneFor } from "./logLook.js";
+import { Chips } from "./Activity.jsx";
 import { RUN_TAGS } from "../../engine/audio/tagmap.js";
 
 const { useState, useEffect, useLayoutEffect, useRef } = React;
@@ -103,7 +104,7 @@ export const LogPeek = ({ s, note }) => {
           return (
             <li className={"line" + kind} key={e.id}>
               <Icon name={iconFor(e)} />
-              <div className="body"><p>{e.tag ? e.msg : legacyText(e.msg)}</p>{e.dl ? <span className="deltas">{e.dl}</span> : null}</div>
+              <div className="body"><p>{e.tag ? e.msg : legacyText(e.msg)}</p>{e.dl ? <Chips dl={e.dl} /> : null}</div>
             </li>
           );
         })}

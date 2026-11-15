@@ -24,3 +24,6 @@ export const toneFor = e => (e.kind === "bad" || e.kind === "warn" ? e.kind : e.
 
 // "📞 Blitz: +3 lead(s)." -> "Blitz: +3 lead(s)."  (render only; a save is never rewritten)
 export const legacyText = msg => String(msg || "").replace(/^(?:[\p{Extended_Pictographic}\p{Emoji_Presentation}‍️⃣]|\p{Emoji_Modifier})+\s*/u, "");
+
+// "−20 energy · +2 stress" -> ["−20 energy", "+2 stress"]: the chips of a line, as the copy joins them (copy/log.js, fx)
+export const chipsOf = dl => String(dl).split(" · ");

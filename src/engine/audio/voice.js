@@ -94,6 +94,7 @@ export function say(key,opts){
   if(key === "fired" && opts.meta){ if(opts.meta.cause === "org") key = "firedOrg"; else if(opts.meta.cause === "review") key = "firedReview"; }
   if(key === "burnout" && opts.meta && opts.meta.cause === "caffeine") key = "burnoutCaffeine";
   if(key === "repo" && opts.meta && opts.meta.cause === "claink") key = "repoClaink";
+  if(key === "chatgdp" && opts.meta && opts.meta.miracle) key = "chatgdpNice";     // the manager's other opening: the run worked
   var bank = LINES[key], now = Date.now();
   if(!heard){
     // caption only. The line is taken in turn, not drawn: a silent page draws nothing the audible one would not.

@@ -164,7 +164,8 @@
 .line .icon{width:14px;height:14px;margin-top:2px;color:var(--text-3)}
 .line .body{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:var(--sp-4);min-width:0}
 .line p{color:var(--text);flex:1 1 60%;min-width:0}
-.line .deltas{font-family:var(--mono);color:var(--text-3);margin-left:auto}
+.line .deltas{font-family:var(--mono);color:var(--text-3);margin-left:auto;text-align:right}
+.line .deltas .d{white-space:nowrap}
 .line.warn .icon{color:var(--warn)} .line.bad .icon{color:var(--bad)} .line.good .icon{color:var(--good)}
 .line .deltas .up{color:var(--good)} .line .deltas .down{color:var(--bad)}
 /* The newest log lines, shown where you are when the log is off the screen (LogPeek.jsx). A notice, not a control. */

@@ -53,6 +53,13 @@ export function render(entry, params, ctx, seed, lastText) {
     return { text: String(out), dl: "" };
   };
   let r = say(0);
-  for (let shift = 1; shift < 8 && lastText && r.text === lastText; shift++) { const next = say(shift); if (next.text !== lastText) { r = next; break; } }
+  if (lastText && r.text === lastText) {
+    // The same sentence is not said twice running: another wording is taken, chosen among all the others by the
+    // same hash. (v2.1 took the next one in the list, so after a plain line a second plain pick always became the
+    // first alternative: that joke came back every other time and the second alternative was rare.)
+    const others = [];
+    for (let shift = 1; shift < 8; shift++) { const next = say(shift); if (next.text !== lastText && !others.some(o => o.text === next.text)) others.push(next); }
+    if (others.length) r = others[hash(seed + "|other") % others.length];
+  }
   return r;
 }

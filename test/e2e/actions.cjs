@@ -281,6 +281,13 @@ const stored = async page => JSON.stringify(await page.evaluate(readRun));
       check(`${reduced ? "with reduced motion" : "with full motion"}: the energy card shows what Recharge gave, and then lets it go`, !!chip && /^\+\d+$/.test(chip.text) && chip.opacity > 0.95 && !left && !errors.length, JSON.stringify(chip) + (left ? ", still there after 2.3 s" : ""));
       await context.close();
     }
+    // the chips under a log line: each is whole on one row, and the row's text is the stored text
+    ({ context, page, errors } = await open(browser, save({ week: 3, cash: 3000 }), { viewport: { width: 1280, height: 720 } }));
+    await page.locator('[data-act="politics"]').click(); await page.waitForTimeout(400);
+    const row = await page.evaluate(() => { const d = document.querySelector('.activity .line[data-tag="act.politics"] .deltas'); return d ? { text: d.textContent, chips: [...d.querySelectorAll(".d")].map(c => ({ t: c.textContent, rows: new Set([...c.getClientRects()].map(r => Math.round(r.top))).size })) } : null; });
+    const kept = rules(await page.evaluate(readRun)).logs.find(e => e.tag === "act.politics");
+    check("the chips under a log line are each whole on one row, and say what the run stored", !!row && !!kept && row.text === kept.dl && row.chips.length >= 2 && row.chips.every(c => c.rows === 1) && !errors.length, row ? `"${row.text}" in ${row.chips.length} chips` : "no chips");
+    await context.close();
     const QUOTA = STATE.newGame ? rules(save({})).quota : 0;
     for (const [what, closed, want] of [["at quota", QUOTA, true], ["one dollar short of quota", QUOTA - 1, false]]) {
       ({ context, page, errors } = await open(browser, save({ week: 9, cash: 3000, closedQuarter: closed, closedWon: closed })));

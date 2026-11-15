@@ -111,6 +111,10 @@ test("variants: the plain line most of the time, never the same sentence twice r
   }
   const texts = Object.keys(counts);
   assert.equal(texts.length, 3, "three wordings"); assert.equal(repeats, 0, "never the same sentence twice running");
+  // the two alternatives share what the plain line gives up: neither is the one a repeat always falls to
+  // (v2.1 took the next in the list, and the first alternative came up five times for the second's three)
+  const [altA, altB] = texts.filter(t => t !== "Cold calls: 2 new leads.").map(t => counts[t]);
+  assert.ok(Math.max(altA, altB) / Math.min(altA, altB) < 1.25, `the alternatives are even: ${altA} and ${altB}`);
   const base = counts["Cold calls: 2 new leads."] / 3000;
   // listed 3 of 5 times; avoiding an immediate repeat takes some of that back
   assert.ok(base > 0.40 && base < 0.66, "the plain line is the usual one: " + base.toFixed(3));
@@ -250,4 +254,16 @@ test("the log tones a signature good and nothing else: a loss stays bad, a warni
     }
   }
   assert.ok(good > 0, "the runs signed something");
+});
+
+test("one is one: a single introduction is not 'one of them', and one reassigned deal is still one of your largest deals", async () => {
+  const { render } = await import("../../src/copy/engine.js"), { LOG } = await import("../../src/copy/log.js");
+  const say = (tag, p) => { const r = render(LOG[tag], p, { week: 3, band: 0, n: 0 }, "x|" + tag, null); return typeof r === "string" ? r : r.text; };
+  assert.equal(say("act.network", { n: 1, size: "whale" }), "Referrals: 1 introduction. It is a whale.");
+  assert.equal(say("act.network", { n: 1, size: "big" }), "Referrals: 1 introduction. It is substantial.");
+  assert.equal(say("act.network", { n: 3, size: "whale" }), "Referrals: 3 introductions. One of them is a whale.");
+  assert.equal(say("act.network", { n: 2, size: "big" }), "Referrals: 2 introductions. One of them is substantial.");
+  assert.equal(say("act.network", { n: 1, size: "" }), "Referrals: 1 introduction.");
+  assert.match(say("evt.rebalance", { n: 1, value: 10157 }), /^Territory optimization: 1 of your largest deals, \$10,157, reassigned\.$/);
+  assert.match(say("evt.rebalance", { n: 2, value: 30000 }), /^Territory optimization: 2 of your largest deals, \$30,000, reassigned\.$/);
 });

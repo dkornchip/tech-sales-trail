@@ -31,9 +31,10 @@ export function onLogs(entries,info){
   picks.forEach(function(p,k){ play(p.sfx,{delay:k*0.17,prio:p.sfx === "week" ? 3 : undefined}); });
   if(speech && !runBatch) say(speech.say,{cooldown: speech.sfx === "week" ? 9000 : 6000});
 }
-// id: the dialog's id (the keys of EVENTS in src/game/events.js)
-export function onModal(id){
+// id: the dialog's id (the keys of EVENTS in src/game/events.js). params: what the dialog was opened with, when it
+// has any: the line that is spoken is the one the dialog shows (the manager has two openings, voice.js).
+export function onModal(id, params){
   play("modal");
   var line = modalSay(id);
-  if(line) say(line,{cooldown:4000});
+  if(line) say(line,{cooldown:4000, meta:params || undefined});
 }

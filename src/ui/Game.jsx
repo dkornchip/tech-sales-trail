@@ -167,7 +167,7 @@ export function Game({fresh}){
   const shownId=shown ? shown.id : null;
   useEffect(()=>{
     if(!shownId)return;
-    const a=AUDIO(); if(a) a.onModal(shownId);
+    const a=AUDIO(); if(a) a.onModal(shownId, shown.params);
     // an acknowledgement brings the run's result for screen readers (the report behind it is inert by now)
     const L=isAck(shown) && sRef.current.claink ? sRef.current.claink.last : null;
     if(!L || !L.announce)return;
