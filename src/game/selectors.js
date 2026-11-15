@@ -2,7 +2,7 @@
 // Each one mirrors a rule elsewhere in src/game; none of them draws from the dice or changes state.
 import { QUARTER_WEEKS } from "./constants.js";
 import { isRunOver } from "./log.js";
-import { CLAINK } from "./claink.js";
+import { CLAINK, clainkFrozen } from "./claink.js";
 import { EFFECT } from "./effects.js";
 import { QBR } from "./quarter.js";
 import { BACKLOG, CASH, CONFERENCE_STRESS, COST, FIRING_FROM, HAIL, STALE, STRESS_COST, TUNING } from "./rules.js";
@@ -59,9 +59,13 @@ export const crmPreview = s => {
 // endWeek: the parts of Friday that are certain. `cash` is what salary and rent leave, before anything else Friday
 // does (a Friday signing pays its commission first; clAInk's invoice comes last); `bust` says that it is at or
 // under the line where Collections ends the run (quarter.js, salaryAndBills; deals.js, checkRepo).
+// `claink`: what an active seat will be invoiced this Friday (claink.js, billClaink): what is already due if the
+// agents ran this week, or the idle range if they did not; null with no seat, and in week 13, which is not billed.
+// (An overage may be added on top; it is not in `cash` or `bust`, which are about salary and rent alone.)
 export const fridayPreview = s => {
   const shots = s.coffeesThisWeek || 0, rent = rentDueThisWeek(s) ? PAY.rent : 0, cash = s.cash + PAY.salary - rent;
-  return { salary: PAY.salary, rent, energy: FRIDAY.energy, stress: shots > 0 ? CRASH_PER_SHOT * shots : -FRIDAY.relief, cash, bust: cash <= CASH.repoAt, repoAt: CASH.repoAt };
+  const c = s.claink, seat = c && c.status === "active" && !clainkFrozen(s) ? (c.deployed ? { due: c.due } : { idle: CLAINK.IDLE.slice() }) : null;
+  return { salary: PAY.salary, rent, energy: FRIDAY.energy, stress: shots > 0 ? CRASH_PER_SHOT * shots : -FRIDAY.relief, cash, bust: cash <= CASH.repoAt, repoAt: CASH.repoAt, claink: seat };
 };
 // An action that costs cash (the conference, a quad shot) is charged at once, and Collections is asked at once
 // (actions.js): what paying for it would leave, when that is at or under the line that ends the run. Otherwise null.

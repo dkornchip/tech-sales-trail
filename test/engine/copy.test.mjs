@@ -267,3 +267,17 @@ test("one is one: a single introduction is not 'one of them', and one reassigned
   assert.match(say("evt.rebalance", { n: 1, value: 10157 }), /^Territory optimization: 1 of your largest deals, \$10,157, reassigned\.$/);
   assert.match(say("evt.rebalance", { n: 2, value: 30000 }), /^Territory optimization: 2 of your largest deals, \$30,000, reassigned\.$/);
 });
+
+test("clAInk's terms: the policy gives the rates and how many outcomes a run bills; at two strikes a deal walks if there is one", async () => {
+  const eng = await E(), { CLAINK } = eng.claink || (await import("../../src/game/claink.js")), ck = await import("../../src/copy/clainkUi.js"), plain = t => t.replace(/\u2060/g, "");
+  const t = { retainer: CLAINK.RETAINER, perOutcome: CLAINK.PER_OUTCOME, outcomes: CLAINK.OUTCOMES, idle: CLAINK.IDLE, overage: CLAINK.OVERAGE, trueUp: CLAINK.TRUEUP_OVER, cancel: CLAINK.CANCEL };
+  const policy = ck.CK_AD.policy(CLAINK.STRIKES, t).map(plain);
+  assert.equal(policy.length, 5);
+  assert.equal(policy[1], "Usage is billed on Fridays: $249 a run plus $140–$280 per outcome (two to five on a $0 run), or $150–$300 for an idle week. Overages of $200–$600 may apply.");
+  assert.equal(policy[4], "The true-up takes your cash and $200–$1,800 more. Cancelling early costs $250 plus usage due.");
+  // the three approved lines are untouched
+  assert.deepEqual([policy[0], policy[2], policy[3]], ["Seat and usage charges are deducted from your cash.", "Every run without closed revenue earns an AI Governance Council strike.", "Strike 3: seat revoked, final token true-up charged. A live deal may also be lost."]);
+  // the third strike always takes the most advanced deal (claink.test.mjs): the warning says so when there is one
+  assert.match(ck.CK_STRIKES.hotHead(3, true), /seat revoked, a deal walks, and the token true-up/);
+  assert.match(ck.CK_STRIKES.hotHead(3, false), /seat revoked, a live deal may walk, and the token true-up/);
+});

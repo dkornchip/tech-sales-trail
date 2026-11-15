@@ -26,6 +26,10 @@
 //      bar says what the card would do now, not what it did (v2.1 kept the words from before the press)
 //   7. what a press changed is shown: the change chip on a stat card can be seen, with reduced motion too (v2.1
 //      drew it at opacity 0 for a player who asked for less motion), and the quota meter is marked from 100%
+//   9. clAInk: a run the player presses is followed to its result (the strike card, the week's estimate and
+//      "Cancel seat" are in sight in the workspace at laptop sizes; v2.1 left them below its fold), the workspace is
+//      back at its top when the week turns, End week names Friday's invoice, and the two-strike warning says a deal
+//      walks when there is one
 //   8. the hint bar holds every hint: in the narrowest window of the one-screen layout (1025 wide) and at a common
 //      laptop size, no hint in any of six states is taller than the bar, and the bar is the same height whatever
 //      it says, so nothing under it moves
@@ -334,6 +338,36 @@ const stored = async page => JSON.stringify(await page.evaluate(readRun));
       }
       check(`${w}x${h}: none of ${seen} hints is taller than the bar, and the bar is one height whatever it says`, !tall.length && bars.size === 1, tall.length ? tall.slice(0, 3).join(" ; ") : `bar ${[...bars].join("/")}px`);
     }
+
+    /* ---------- 9. clAInk ---------- */
+    const fixture = name => JSON.parse(fs.readFileSync(path.join(ROOT, "test/saves/fixtures/generated", name + ".json"), "utf8"));
+    const inSight = () => {
+      const el = document.querySelector(".claink-console"); if (!el) return null;
+      const r = el.getBoundingClientRect(), bar = el.querySelector(".claink-titlebar").getBoundingClientRect();
+      const whole = q => { const e = el.querySelector(q); if (!e) return null; const b = e.getBoundingClientRect(); return b.top >= bar.bottom - 1 && b.bottom <= r.bottom + 1; };
+      return { result: whole(".claink-strike, .claink-clear"), usage: whole(".claink-usage"), cancel: whole(".claink-cancel-link"), top: Math.round(el.scrollTop), scrolls: el.scrollHeight > el.clientHeight + 1 };
+    };
+    const answer = async () => { for (let i = 0; i < 6; i++) { const d = await dialogOf(page); if (!d || /^end/.test(d)) return d; await page.locator("dialog[open] .d-footer button, dialog[open] button").first().click({ force: true }); await page.waitForTimeout(450); } return dialogOf(page); };
+    const endHint = async () => { await page.mouse.move(4, 4); await page.locator('[data-ui="end"]').hover(); await page.waitForTimeout(150); return hintOf(page); };
+    for (const [w, h] of [[1280, 720], [1366, 768]]) {
+      ({ context, page, errors } = await open(browser, fixture("ck-active-0-strikes"), { viewport: { width: w, height: h } }));
+      const idle = rules(await page.evaluate(readRun)), idleHint = await endHint();
+      await page.locator(".claink-deploy").click(); await page.waitForTimeout(4300);
+      const seen = await page.evaluate(inSight);
+      await answer();                                              // the manager may have a word once the report is done
+      const ran = rules(await page.evaluate(readRun)), ranHint = await endHint(), due = ran.claink.due;
+      check(`${w}x${h}: after Run agents, the result, the week's estimate and Cancel seat are in sight in the workspace`, !!seen && seen.result !== false && seen.usage === true && seen.cancel === true && !errors.length, JSON.stringify(seen));
+      check(`${w}x${h}: End week names Friday's clAInk invoice: the idle range before a run, what is due after it`,
+        idleHint === plain(COPY.UI.endWeek + ". " + H.endWeek(S.fridayPreview(idle))) && idleHint.includes("clAInk −$150–$300") && ranHint === plain(COPY.UI.endWeek + ". " + H.endWeek(S.fridayPreview(ran))) && due > 0 && ranHint.includes("clAInk −$" + due.toLocaleString("en-US") + ","), `"${idleHint}" then "${ranHint}"`);
+      await page.locator('[data-ui="end"]').click(); await page.waitForTimeout(700); const ended = await answer();
+      const next = rules(await page.evaluate(readRun)), inv = next.logs.find(e => e.tag === "ck.invoice"), at = await page.evaluate(() => { const el = document.querySelector(".claink-console"); return el ? Math.round(el.scrollTop) : null; });
+      check(`${w}x${h}: Friday charged what was previewed (more only if an agent looped), and the workspace is back at its top`, !!ended || (!!inv && (inv.d.total === due || (inv.d.looped && inv.d.total > due)) && at === 0 && !errors.length), ended ? "the run ended on Friday: " + ended : `previewed $${due}, charged $${inv && inv.d.total}${inv && inv.d.looped ? " (looped)" : ""}; scrollTop ${at}`);
+      await context.close();
+    }
+    ({ context, page, errors } = await open(browser, fixture("ck-active-2-strikes"), { viewport: { width: 1366, height: 768 } }));
+    const hot = rules(await page.evaluate(readRun)), note = plain(await page.evaluate(() => { const n = document.querySelector(".claink-strikes .note"); return n ? n.textContent : ""; }));
+    check("at two strikes the warning under Run agents says a deal walks when there is one on the board", hot.claink.strikes === 2 && hot.deals.length > 0 && note.includes("seat revoked, a deal walks, and the token true-up") && !errors.length, `${hot.deals.length} deals: "${note}"`);
+    await context.close();
   } finally { await browser.close(); }
   const bad = rows.filter(ok => !ok).length;
   console.log(bad ? `\nACTIONS FAILED: ${bad} of ${rows.length} checks` : `\nACTIONS OK: all ${rows.length} checks passed`);

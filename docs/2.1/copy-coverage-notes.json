@@ -61,7 +61,7 @@
   },
   "L368": {
     "kind": "instruction",
-    "why": "Strike counters keep their exact counts, thresholds, projected cash range and Collections warning; 'a deal walks' became 'a live deal may walk'."
+    "why": "Strike counters keep their exact counts, thresholds, projected cash range and Collections warning; The deck gives two wordings: 'a deal walks', and 'a live deal may walk' if the pipeline can be empty. 2.1 used the second always; from 2.1.1 the first is used whenever there is a deal on the board (the third strike always takes the most advanced one) and the second only when there is none."
   },
   "L375": {
     "kind": "instruction",

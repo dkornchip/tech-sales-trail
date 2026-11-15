@@ -248,7 +248,7 @@
 /* the policy step stands alone: the pitch steps back instead of scrolling behind the pinned policy */
 .claink-ad.confirming .claink-sub,.claink-ad.confirming .claink-chips,.claink-ad.confirming .claink-proof,
 .claink-ad.confirming .claink-price,.claink-ad.confirming .claink-badges,.claink-ad.confirming .claink-fine{display:none}
-.claink-console{border:0;border-top:1px solid var(--ck-line)}
+.claink-console{border:0;border-top:1px solid var(--ck-line);scrollbar-width:thin;scrollbar-color:var(--ck-line) transparent}   /* when it scrolls, a bar in its own colours, like the deal list's in the game's */
 .claink-ad.is-mini,.claink-console.is-mini{width:auto;max-width:none;max-height:none;border-radius:0 0 11px 11px}
 .claink-titlebar{cursor:default;touch-action:auto}
 @media (max-width:1024px), (max-height:619px){ .claink-ad,.claink-console{max-height:none} }

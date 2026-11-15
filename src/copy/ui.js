@@ -122,7 +122,9 @@ export const HINT = {
   // lines in the narrowest desktop window; with no slot left the button is off and says so.)
   hail: (c, blast, walk, cost) => (c ? `One close attempt against all proposal/closing deals. ${cost.energy} energy. ${fifths(1 - blast)}, each remaining late deal then has ${aPc(walk)} chance to walk.` : "No late-stage deals to rescue."),
   // bust: salary and rent together would leave cash at or under the line where Collections ends the run
+  // claink: the invoice an active seat will get this Friday, as certain as rent (v2.1 left it out of the preview)
   endWeek: f => `Friday: salary +${usd(f.salary)}` + (f.rent ? `, rent −\u2060${usd(f.rent)}` : "")
+    + (f.claink && !f.bust ? `, clAInk −\u2060${f.claink.idle ? to(usd(f.claink.idle[0]), usd(f.claink.idle[1])) : usd(f.claink.due)}` : "")
     + (f.bust ? `. That would leave ${usd(f.cash)} cash. Collections ends the run at ${usd(f.repoAt)}.`
       : `, energy +${f.energy}, stress ${f.stress < 0 ? "−" + -f.stress : "+" + f.stress}. Friday events and collections may change this.`),
   // A press that is certain to end the run says so, and says nothing else (f: selectors.js, fatalPress): the stress

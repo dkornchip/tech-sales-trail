@@ -237,7 +237,7 @@ export const ClainkAd=({s,mini,onToggle,onInstall,onDismiss})=>{
             : <>
                 <div className="claink-policy" id={policyId} role="group" aria-labelledby={policyId+"-hd"}>
                   <div className="hd" id={policyId+"-hd"}>{CK_AD.policyTitle} <span>{CK_AD.policyVersion}</span></div>
-                  <ul>{CK_AD.policy(CLAINK.STRIKES,{retainer:CLAINK.RETAINER,perOutcome:CLAINK.PER_OUTCOME,idle:CLAINK.IDLE,overage:CLAINK.OVERAGE,trueUp:CLAINK.TRUEUP_OVER,cancel:CLAINK.CANCEL}).map((t,i)=><li key={i}>{t}</li>)}</ul>
+                  <ul>{CK_AD.policy(CLAINK.STRIKES,{retainer:CLAINK.RETAINER,perOutcome:CLAINK.PER_OUTCOME,outcomes:CLAINK.OUTCOMES,idle:CLAINK.IDLE,overage:CLAINK.OVERAGE,trueUp:CLAINK.TRUEUP_OVER,cancel:CLAINK.CANCEL}).map((t,i)=><li key={i}>{t}</li>)}</ul>
                 </div>
                 <div className="claink-confirm-row">
                   <button type="button" className="claink-confirm" disabled={!can} onClick={onInstall} aria-describedby={policyId}>{CK_AD.accept(CLAINK.INSTALL)}</button>
@@ -258,14 +258,14 @@ export const ckTrueUpRange=(cash,due)=>{
   const lo=CLAINK.RETAINER+CLAINK.OUTCOMES[0]*CLAINK.PER_OUTCOME[0], hi=CLAINK.RETAINER+CLAINK.OUTCOMES[1]*CLAINK.PER_OUTCOME[1];
   return [Math.min(-CLAINK.TRUEUP_OVER[0],cash-(due+lo)), Math.min(-CLAINK.TRUEUP_OVER[1],cash-(due+hi))];
 };
-export const ClainkStrikes=({n,log,cash,due,ran})=>{
+export const ClainkStrikes=({n,log,cash,due,ran,deals})=>{
   const S=CLAINK.STRIKES, hot=n>=S-1;
   let note;
   if(!hot) note=n===0 ? CK_STRIKES.none(S) : CK_STRIKES.some(n,S);
   else{
     // after this week's run the next one waits for Friday's bill and payday, so only the usual range holds
     const [best,worst]=ran ? [-CLAINK.TRUEUP_OVER[0],-CLAINK.TRUEUP_OVER[1]] : ckTrueUpRange(cash,due);
-    const head=CK_STRIKES.hotHead(S);
+    const head=CK_STRIKES.hotHead(S,deals>0);
     note=!ran && best<=CLAINK.REPO_AT ? head+CK_STRIKES.hotCollections : head+CK_STRIKES.hotRange(best,worst,ran,CLAINK.REPO_AT);
   }
   return(
@@ -348,6 +348,13 @@ export const ClainkConsole=({s,ui,setUi,focusOnMount,onDeploy,onCancel,onHide,on
   // dock: the workspace scrolls itself to its foot so the question and its two buttons are in sight. (Only its own
   // scroll moves, never the page's; where the workspace does not scroll there is nothing to do.)
   useLayoutEffect(()=>{ const el=ref.current; if(confirmCancel && el && el.scrollHeight>el.clientHeight+1) el.scrollTop=el.scrollHeight; },[confirmCancel]);
+  // A run the player has just pressed is followed to its end. Where the workspace is shorter than its report (any
+  // laptop-height window) it scrolls itself, never the page, as each beat lands, so the newest line and then the
+  // strike card, the week's estimate under it and "Cancel seat" are in sight. (v2.1 stayed at the top: at 1280x720
+  // the card that says what the run took, and what Friday will charge for it, landed wholly below the fold.)
+  // When the week turns it goes back to the top, where Run agents and the strike boxes are. A reload starts there.
+  const follow=useRef(false);
+  const[,setSettled]=useState(0);     // drawn once more when a report ends, so its foot is followed too
   const focusNext=useRef(focusOnMount ? "status" : null);
   const bodyIdRef=useRef(null);
   if(bodyIdRef.current===null) bodyIdRef.current="claink-body-"+(++clainkMarkSeq);
@@ -370,6 +377,7 @@ export const ClainkConsole=({s,ui,setUi,focusOnMount,onDeploy,onCancel,onHide,on
     r.timers.forEach(clearTimeout); r.timers=[];
     holdH.current=0;
     setBeat(99);
+    setSettled(n=>n+1);
     handOver();
   };
   // one beat's sound and PA line; silent once an ending is playing its own score
@@ -408,6 +416,13 @@ export const ClainkConsole=({s,ui,setUi,focusOnMount,onDeploy,onCancel,onHide,on
     if(out && L.farewell) later(at(beats),()=>cue("lost"));
     later(CK_WORK_MS+beats*CK_BEAT_MS,finishReveal);
   },[c.deploys]);
+  useLayoutEffect(()=>{
+    const el=ref.current;
+    if(!follow.current || !el)return;
+    if(!mini && el.scrollHeight>el.clientHeight+1) el.scrollTop=el.scrollHeight;
+    if(beat>=99 && !reveal.current.live) follow.current=false;   // the report has had its say: the player has the scroll back
+  });
+  useLayoutEffect(()=>{ const el=ref.current; if(el && !follow.current) el.scrollTop=0; },[s.week,s.runId]);
   // closed mid-report (the end card's × finishes it first; an unmount here means New Game or Load, and the page drops it)
   useEffect(()=>()=>{ const r=reveal.current; r.timers.forEach(clearTimeout); r.timers=[]; handOver(); },[]);
   // focus follows the control that replaced the one you used (never back to <body>)
@@ -474,11 +489,11 @@ export const ClainkConsole=({s,ui,setUi,focusOnMount,onDeploy,onCancel,onHide,on
         {c.status==="active" && <>
           <div className="claink-statusline" tabIndex={-1} ref={statusRef}><i className="ck-dot" aria-hidden="true" />{frozen ? CK_WORKSPACE.status.frozen : c.deployed ? CK_WORKSPACE.status.ran : CK_WORKSPACE.status.idle}</div>
           <button type="button" className="claink-deploy" disabled={!clainkCanDeploy(s)}
-            onClick={e=>{ focusNext.current="status"; holdH.current=ref.current ? ref.current.offsetHeight : 0; shieldNextClick(e); onDeploy(); }}>
+            onClick={e=>{ focusNext.current="status"; follow.current=true; holdH.current=ref.current ? ref.current.offsetHeight : 0; shieldNextClick(e); onDeploy(); }}>
             <span>{frozen ? <Icon name="lock" /> : c.deployed ? <Icon name="check" /> : <Icon name="play" />}{frozen ? CK_WORKSPACE.run.frozen : c.deployed ? CK_WORKSPACE.run.ran : CK_WORKSPACE.run.go}</span>
             <small>{frozen ? CK_WORKSPACE.runNote.frozen : c.deployed ? (getQuarterInfo(s.week).weekInQuarter>=QUARTER_WEEKS-1 ? CK_WORKSPACE.runNote.last : CK_WORKSPACE.runNote.next) : CK_WORKSPACE.runNote.go}</small>
           </button>
-          <ClainkStrikes n={shownStrikes} log={c.strikeLog} cash={s.cash} due={c.due} ran={c.deployed}/>
+          <ClainkStrikes n={shownStrikes} log={c.strikeLog} cash={s.cash} due={c.due} ran={c.deployed} deals={s.deals.length}/>
         </>}
         {c.status==="revoked" && <div className="claink-statusline" tabIndex={-1} ref={statusRef}><i className="ck-dot" aria-hidden="true" />{endIn ? CK_WORKSPACE.status.revoked : CK_WORKSPACE.status.running}</div>}
         {L && c.status!=="cancelled" && (isRun || L.kind==="onboarded") && <ClainkReport last={L} beat={beat} workTok={workTok} onSkip={skip}/>}

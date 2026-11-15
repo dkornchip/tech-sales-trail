@@ -5,6 +5,7 @@ import { fmtTok, money } from "../game/util.js";
 // Amounts arrive as numbers and are formatted here.
 // The word joiner keeps a minus sign on the same line as its amount (the panel is narrow on a phone).
 const usd = v => money(v).replace("-", "−\u2060");
+const words = n => ["no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"][n] || String(n);
 const span = (lo, hi) => `${usd(lo)}\u2060–\u2060${usd(hi)}`;      // a range of amounts, kept in one piece when a line wraps
 
 export const CK_AD = {
@@ -35,7 +36,7 @@ export const CK_AD = {
   // them the rates the marketing leaves out (t: the real numbers, from CLAINK in src/game/claink.js).
   policy: (strikes, t) => [
     "Seat and usage charges are deducted from your cash.",
-    `Usage is billed on Fridays: ${usd(t.retainer)} plus ${span(t.perOutcome[0], t.perOutcome[1])} per outcome for a week with a run, ${span(t.idle[0], t.idle[1])} for an idle week. Overages of ${span(t.overage[0], t.overage[1])} may apply.`,
+    `Usage is billed on Fridays: ${usd(t.retainer)} a run plus ${span(t.perOutcome[0], t.perOutcome[1])} per outcome (${words(t.outcomes[0])} to ${words(t.outcomes[1])} on a $0 run), or ${span(t.idle[0], t.idle[1])} for an idle week. Overages of ${span(t.overage[0], t.overage[1])} may apply.`,
     "Every run without closed revenue earns an AI Governance Council strike.",
     `Strike ${strikes}: seat revoked, final token true-up charged. A live deal may also be lost.`,
     `The true-up takes your cash and ${span(t.trueUp[0], t.trueUp[1])} more. Cancelling early costs ${usd(t.cancel)} plus usage due.`
@@ -54,7 +55,9 @@ export const CK_STRIKES = {
   lastTip: n => `Strike ${n}: seat revoked`,
   none: of => `Every run that closes $0 is a strike. ${of} and the seat is revoked.`,
   some: (n, of) => `${n} down. Strike ${of} revokes the seat and runs the token true-up.`,
-  hotHead: of => `Next $0 run is strike ${of}: seat revoked, a live deal may walk, and the token true-up `,
+  // deals: is there a deal to lose. The third strike always takes the most advanced one (claink.js), so with a deal
+  // on the board the deck's own sentence is the true one; its "may" is for a board that can be empty (deck §8).
+  hotHead: (of, deals) => `Next $0 run is strike ${of}: seat revoked, ${deals ? "a deal walks" : "a live deal may walk"}, and the token true-up `,
   hotCollections: "sends you to Collections.",
   hotRange: (best, worst, ran, repoAt) => `leaves you around ${usd(best)} to ${usd(worst)}${ran ? ", worse if you’re in the red" : ""}. Collections comes at ${usd(repoAt)}.`,
   cardHead: (n, of) => `Strike ${n} of ${of}`,
@@ -113,4 +116,4 @@ export const CK_WORKSPACE = {
 
 // For the copy lint: a customer's title, a certification and the vendor's product name keep their own capitals.
 export const lint = { exempt: { "sentence-case": ["CK_AD.proofBy", "CK_AD.badges", "CK_WORKSPACE.title"] },
-  params: { "CK_AD.fine": [{ args: [3, 5] }], "CK_AD.policy": [{ args: [3, { retainer: 249, perOutcome: [140, 280], idle: [150, 300], overage: [200, 600], trueUp: [200, 1800], cancel: 250 }] }] } };
+  params: { "CK_AD.fine": [{ args: [3, 5] }], "CK_STRIKES.hotHead": [{ args: [3, true] }, { args: [3, false] }], "CK_AD.policy": [{ args: [3, { retainer: 249, perOutcome: [140, 280], outcomes: [2, 5], idle: [150, 300], overage: [200, 600], trueUp: [200, 1800], cancel: 250 }] }] } };
