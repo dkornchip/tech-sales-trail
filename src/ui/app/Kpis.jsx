@@ -64,7 +64,7 @@ export const Kpis = ({ s }) => {
         meter={<Meter value={s.stress} kind={s.stress < 40 ? "good" : s.stress < 70 ? "warn" : "bad"} />} sub={stressSub[0]} subKind={stressSub[1]} />
       <Kpi id="cash" label={KPI.cash} value={s.cash} runId={s.runId} format={usd} sub={cashSub[0]} subKind={cashSub[1]} />
       <Kpi id="closed" label={KPI.closed} value={s.closedQuarter} runId={s.runId} format={usd} small={KPI.ofQuota(p.done)} sub={paceSub[0]} subKind={paceSub[1]} note={KPI.expected(p.target)}
-        meter={<div className="meter" aria-hidden="true" title={KPI.expectedMark(p.target)}><i style={{ width: Math.min(100, p.done * 100) + "%" }} /><span className="pace" data-pace={Math.round(p.target * 100)} style={{ left: Math.min(100, p.target * 100) + "%" }} /></div>} />
+        meter={<div className={"meter" + (p.done >= 1 ? " good" : "")} aria-hidden="true" title={KPI.expectedMark(p.target)}><i style={{ width: Math.min(100, p.done * 100) + "%" }} /><span className="pace" data-pace={Math.round(p.target * 100)} style={{ left: Math.min(100, p.target * 100) + "%" }} /></div>} />
     </div>
   );
 };

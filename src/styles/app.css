@@ -66,6 +66,9 @@
 .delta{position:absolute;right:var(--sp-4);top:var(--sp-4);font-size:var(--fs-1);font-family:var(--mono);padding:1px 6px;border-radius:var(--r-1);animation:deltaFloat 1.6s var(--ease) both;pointer-events:none}
 @keyframes deltaFloat{0%{opacity:0;transform:translateY(4px)}12%{opacity:1;transform:none}75%{opacity:1}100%{opacity:0}}
 .delta.up{color:var(--good);background:var(--good-weak)} .delta.down{color:var(--bad);background:var(--bad-weak)}
+/* With reduced motion every animation is over at once (base.css), and this one ends on nothing: the chip was in the
+   page and never seen. It is shown still, for as long as it is there (Kpis.jsx takes it away). */
+@media (prefers-reduced-motion: reduce){ .delta{animation:none} }
 
 /* ---------- standing and skills ---------- */
 .stats{display:grid;gap:var(--sp-3)}

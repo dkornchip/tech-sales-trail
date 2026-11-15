@@ -228,3 +228,26 @@ test("the churn incident says so to the story, with the damage the rules really 
   }
   assert.ok(found, "a churn incident occurred within 200 seeds");
 });
+
+test("the log tones a signature good and nothing else: a loss stays bad, a warning stays a warning", async () => {
+  const { toneFor } = await import("../../src/ui/app/logLook.js");
+  assert.equal(toneFor({ tag: "close.signed", kind: "info" }), "good");
+  assert.equal(toneFor({ tag: "ck.signed", kind: "info" }), "good");
+  assert.equal(toneFor({ tag: "close.lost", kind: "bad" }), "bad");
+  assert.equal(toneFor({ tag: "close.signed", kind: "warn" }), "warn", "what the rules marked is not repainted");
+  assert.equal(toneFor({ tag: "act.crm", kind: "info" }), "");
+  assert.equal(toneFor({ tag: "toString", kind: "info" }), "");
+  assert.equal(toneFor({ kind: "info", msg: "a line from an old save" }), "");
+  // in whole runs: every line toned good is a signing with money in it, and every signing is toned good
+  const eng = await E(), { POLICIES } = await import("../sim/lib/policies.mjs");
+  let good = 0;
+  for (const name of ["balanced", "claink-weekly"]) for (const seed of [3, 11, 29, 47]) {
+    const s = playRun(eng, seed, POLICIES[name], { salt: name, keepState: true }).state;
+    for (const e of s.logs) {
+      const tone = toneFor(e), signing = e.tag === "close.signed" || e.tag === "ck.signed";
+      assert.equal(tone === "good", signing, `${e.tag} (${e.kind}) is toned "${tone}"`);
+      if (signing) { good++; assert.ok(e.d && e.d.won > 0, "a signing records what was won"); }
+    }
+  }
+  assert.ok(good > 0, "the runs signed something");
+});

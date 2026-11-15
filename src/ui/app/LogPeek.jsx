@@ -3,6 +3,7 @@ import { UI } from "../../copy/ui.js";
 import { isPhone } from "../env.js";
 import { Icon } from "./Icon.jsx";
 import { iconFor, legacyText, toneFor } from "./logLook.js";
+import { RUN_TAGS } from "../../engine/audio/tagmap.js";
 
 const { useState, useEffect, useLayoutEffect, useRef } = React;
 const showFor = lines => 2600 + 600 * lines;   // long enough to read: 3.2 s for one line
@@ -21,6 +22,10 @@ const stripHeight = () => (document.querySelector(".strip.on") ? 40 : 0);
 //   - Not under a dialog: lines written while one is open (End week that opens an event) wait until it closes and
 //     are then shown together with what the choice wrote. An ending never closes, so its lines are never shown.
 //   - It is a notice and not a control: taps go through it, and it moves up if it would sit on End week.
+//   - Not what clAInk's workspace is itself reporting: a run's lines are told there, beat by beat, and the notice
+//     would announce the strike two seconds before its card lands (and sit on it). The sound leaves a run to the
+//     workspace for the same reason (engine/audio/tagmap.js, RUN_TAGS). With the workspace minimized or off the
+//     screen, the notice speaks as before.
 //   - A screen reader already hears the log and the hint bar, so it is hidden from one.
 // note: {id, title, text}, the reason a blocked button gave when it was tapped; shown here when the hint bar that
 // carries it is off the screen.
@@ -56,7 +61,8 @@ export const LogPeek = ({ s, note }) => {
     if (was.top === top) return;
     const fresh = [];
     let found = was.top === null;
-    for (const e of s.logs) { if (e.id === was.top) { found = true; break; } if (!e.tag || e.msg) fresh.push(e); }
+    const told = onScreen(document.querySelector(".claink-console:not(.is-mini)"), stripHeight());      // the workspace is telling its own run
+    for (const e of s.logs) { if (e.id === was.top) { found = true; break; } if ((!e.tag || e.msg) && !(told && e.tag && RUN_TAGS[e.tag])) fresh.push(e); }
     if (!found || !fresh.length) return;                            // a loaded save is not news
     fresh.reverse();                                                // in the order they happened
     held.current = held.current.concat(fresh);

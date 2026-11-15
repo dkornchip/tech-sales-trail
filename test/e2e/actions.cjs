@@ -23,6 +23,8 @@
 //   5. the Hail Mary says what it costs
 //   6. the hint under the pointer is about the run as it is: after a press, with the pointer still on the card, the
 //      bar says what the card would do now, not what it did (v2.1 kept the words from before the press)
+//   7. what a press changed is shown: the change chip on a stat card can be seen, with reduced motion too (v2.1
+//      drew it at opacity 0 for a player who asked for less motion), and the quota meter is marked from 100%
 // The release build rolls its own dice, so nothing here depends on a roll. Exits 1 if any check fails.
 // (CommonJS on purpose: Playwright only resolves through require() here.)
 "use strict";
@@ -39,8 +41,8 @@ const LEGACY = "tst-autosave-v4-3", FLAG = "tst-onboarded-v2";       // a crafte
 const rows = [];
 const check = (name, ok, detail) => { rows.push(!!ok); console.log("  " + (ok ? "ok  " : "FAIL") + "  " + name + (detail ? "  (" + detail + ")" : "")); return !!ok; };
 
-async function open(browser, run) {
-  const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+async function open(browser, run, opts) {
+  const context = await browser.newContext(Object.assign({ viewport: { width: 1280, height: 800 } }, opts || {}));
   await context.addInitScript(([text, key, flag]) => {
     try {
       window.sessionStorage.setItem("tst-booted", "1");
@@ -61,7 +63,7 @@ async function open(browser, run) {
 const cards = page => page.evaluate(() => Object.fromEntries([...document.querySelectorAll("[data-act]")].map(b => {
   const count = b.querySelector(".count");
   return [b.getAttribute("data-act"), { off: b.getAttribute("aria-disabled") === "true", cost: b.querySelector(".cost").textContent.replace(/ /g, " ").replace(/\s+/g, " ").trim(),
-    count: count ? Number(count.querySelector("[aria-hidden]").textContent) : null, label: count ? count.getAttribute("title") : null, risk: !!b.querySelector(".cost .risk") }];
+    count: count ? Number((count.querySelector("[aria-hidden]") || count).textContent) : null, label: count ? count.getAttribute("title") : null, risk: !!b.querySelector(".cost .risk") }];
 })));
 const hintOf = page => page.evaluate(() => { const h = document.querySelector(".hint").cloneNode(true); const k = h.querySelector("kbd"); if (k) k.remove(); return h.textContent.replace(/[⁠ ]/g, m => (m === " " ? " " : "")).replace(/\s+/g, " ").trim(); });
 const plain = t => String(t).replace(/⁠/g, "").replace(/ /g, " ");
@@ -263,6 +265,24 @@ const stored = async page => JSON.stringify(await page.evaluate(readRun));
       s => T.propose.title + ". " + (R.actBlock(s, "propose") ? H.blocked.none() : H.propose(S.stageCount(s, 2), S.PROPOSE_CHANCE)));
     await over("Close deals on the only late deal, pressed: the bar counts the late deals there are now, and says whether the week's work is counted", save({ week: 3, cash: 3000, deals: [D(4, 21000, "happy")] }), '[data-act="close"]',
       s => T.close.title + ". " + H.close(S.lateDeals(s).length, !(s.used.propose || s.used.close)));
+
+    /* ---------- 7. what a press changed is shown ---------- */
+    for (const reduced of [false, true]) {
+      ({ context, page, errors } = await open(browser, save({ week: 3, cash: 3000, energy: 40 }), { reducedMotion: reduced ? "reduce" : "no-preference" }));
+      await page.locator('[data-act="recharge"]').click(); await page.waitForTimeout(450);
+      const chip = await page.evaluate(() => { const d = document.querySelector('[data-kpi="energy"] .delta'); return d ? { text: d.textContent, opacity: Number(getComputedStyle(d).opacity) } : null; });
+      await page.waitForTimeout(1900);
+      const left = await page.evaluate(() => !!document.querySelector('[data-kpi="energy"] .delta'));
+      check(`${reduced ? "with reduced motion" : "with full motion"}: the energy card shows what Recharge gave, and then lets it go`, !!chip && /^\+\d+$/.test(chip.text) && chip.opacity > 0.95 && !left && !errors.length, JSON.stringify(chip) + (left ? ", still there after 2.3 s" : ""));
+      await context.close();
+    }
+    const QUOTA = STATE.newGame ? rules(save({})).quota : 0;
+    for (const [what, closed, want] of [["at quota", QUOTA, true], ["one dollar short of quota", QUOTA - 1, false]]) {
+      ({ context, page, errors } = await open(browser, save({ week: 9, cash: 3000, closedQuarter: closed, closedWon: closed })));
+      const meter = await page.evaluate(() => { const m = document.querySelector('[data-kpi="closed"] .meter'); return m ? { good: m.classList.contains("good"), width: m.querySelector("i").style.width } : null; });
+      check(`${what}: the quota meter is ${want ? "marked" : "not marked"}`, QUOTA > 0 && !!meter && meter.good === want && !errors.length, JSON.stringify(meter) + ` at $${closed} of $${QUOTA}`);
+      await context.close();
+    }
   } finally { await browser.close(); }
   const bad = rows.filter(ok => !ok).length;
   console.log(bad ? `\nACTIONS FAILED: ${bad} of ${rows.length} checks` : `\nACTIONS OK: all ${rows.length} checks passed`);
