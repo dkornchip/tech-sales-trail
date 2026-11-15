@@ -217,7 +217,7 @@ clAInk is a gamble, not a strategy. You can cancel the seat for $250 plus whatev
 - **Settings** (the gear) holds sound, the office announcer, captions, volume, and Save, Load and New run.
 - **Saves.** The game autosaves after every move and picks up where you left off, including a choice that was waiting for an answer. Runs saved by earlier versions open and continue. A save that cannot be opened is never played or overwritten: the game says so and offers you a new run or another save.
 - **Four things ask before they happen,** because they cannot be undone: starting a new run in the middle of a quarter, your first Hail Mary of a run, a quad shot that is certain to end the run, and dismissing clAInk's offer. “No” changes nothing.
-- **Sound** is synthesized in the page: effects, a heartbeat when stress runs hot, and the office PA. Every line the announcer says is also shown as a caption, so the game plays the same with the sound off.
+- **Sound.** The effects, and the heartbeat when stress runs hot, are synthesized in the page. The office PA is read by your browser's own speech voice. In Chrome and Edge that can be an online voice, which means the browser sends the announcer's lines to its speech service; switch **Office announcer** off in Settings to keep everything on your device. Every line the announcer says is also shown as a caption, so the game plays the same with the sound off.
 - **Any screen.** On a desktop display the whole game fits the window with no page scrolling. On a phone the page stacks and scrolls: your numbers follow you in a strip at the top, and a hint stays up until your next tap.
 - **Reduced motion** is respected: if your device asks for less motion, the cutscenes show their last frame and say what happened.
 

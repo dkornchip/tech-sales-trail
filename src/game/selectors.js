@@ -111,7 +111,10 @@ export const runFacts = s => {
     cash: s.cash, discounts: s.discounts || 0, pipeline: s.pipeline || 0,
     trip: s.trip || null,
     signed: st ? st.signed : null, top: st ? st.top : null, took: st ? st.took : null,
-    shots: k("shots"), hails: k("hails"), lunches: k("lunches"), cadences: k("cadences"), lost: k("lost"),
+    // (the shot that ends a run is logged as the ending, not as a shot, so the story's count is one short of the
+    // "Shot #3" the scene and the log have just said: it is added here, where the card reads the number)
+    shots: st ? (st.n.shots || 0) + (s.endCause === "caffeine" ? 1 : 0) : null,
+    hails: k("hails"), lunches: k("lunches"), cadences: k("cadences"), lost: k("lost"),
     strikes: ck.strikes || 0, revoked: ck.status === "revoked", billed: ck.billed || 0,
     // what only a story begun under v2.1 can vouch for (null: unknown, and then nothing is said about it)
     conferences: st && st.v === 2 ? st.n.conferences || 0 : null,

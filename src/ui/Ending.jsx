@@ -67,6 +67,7 @@ const sceneFont=()=>{
 // The ending: the company's one line about Matt, the cutscene at full size, and then the paperwork.
 // The run is already over when this opens; the card only arrives after the scene so the scene gets watched.
 // New run is there from the first frame.
+export const NEW_RUN_HOLD_MS=700;
 export const Ending=({over,s,onNew})=>{
   const sceneRef=useRef(null);
   const[done,setDone]=useState(false);
@@ -80,6 +81,12 @@ export const Ending=({over,s,onNew})=>{
   },[key]);
   // The scene's own button holds the focus while the scene plays, so a key meant for the week that just ended can
   // only skip the scene. When the paperwork arrives, the focus moves on to New run (unless you have put it elsewhere).
+  // With reduced motion there is no scene and no scene button: New run has the focus the moment the ending opens,
+  // and a second press of the key that ended the week would start a new run before the ending had been seen (and
+  // write over its save). For its first moment New run does not answer.
+  const openedAt=useRef(0);
+  useEffect(()=>{ openedAt.current=over ? performance.now() : 0; },[key]);
+  const newRun=()=>{ if(REDUCED_MOTION && performance.now()-openedAt.current<NEW_RUN_HOLD_MS)return; onNew(); };
   const cardRef=useRef(null);
   useEffect(()=>{
     if(!done || !over || !cardRef.current)return;
@@ -91,8 +98,10 @@ export const Ending=({over,s,onNew})=>{
   },[done,key]);
   // On a small screen the paperwork unfolds below the fold (under the pinned buttons, or under the scene in a short
   // window). Once it has unfolded, whatever scrolls is taken to its end, so the numbers and the notes are seen.
+  // (Not with reduced motion: there the card is in at once, and the scroll took the title, the company's line and
+  // the top of the still off a phone or a laptop-height window before they were ever shown.)
   useEffect(()=>{
-    if(!done || !over || !cardRef.current)return;
+    if(!done || !over || !cardRef.current || REDUCED_MOTION)return;
     const dlg=cardRef.current.closest("dialog");
     if(!dlg)return;
     const id=setTimeout(()=>{
@@ -114,7 +123,7 @@ export const Ending=({over,s,onNew})=>{
     label:done ? RESULTS.replay : RESULTS.skip, className:"ghost", side:"start",
     onClick:()=>{ const c=sceneRef.current; if(!c)return; if(done)c.replay(); else c.skip(); }
   });
-  actions.push({label:RESULTS.newRun, className:"primary", ui:"newrun", onClick:onNew});
+  actions.push({label:RESULTS.newRun, className:"primary", ui:"newrun", onClick:newRun});
   return(
     <Modal open className="ending" dialogId={"end:"+over.id}
       title={<><span className="end-over">{RESULTS.overline(f.week,f.weeks)}</span><span className="end-title">{over.title}</span></>}

@@ -122,9 +122,18 @@ function notices(packages, iconNames){
   if(iconNames.length){
     const dir = path.join(ROOT, "node_modules/lucide-static"), pkg = JSON.parse(fs.readFileSync(path.join(dir, "package.json"), "utf8"));
     if(pkg.license !== "ISC") fail("lucide-static is now " + pkg.license + "; update its notice in scripts/build.mjs");
-    const copyright = (/^Copyright .+$/m.exec(fs.readFileSync(path.join(dir, "LICENSE"), "utf8")) || [""])[0].trim();
+    const licence = fs.readFileSync(path.join(dir, "LICENSE"), "utf8");
+    const copyright = (/^Copyright .+$/m.exec(licence) || [""])[0].trim();
     if(!copyright) fail("no copyright line found in node_modules/lucide-static/LICENSE");
-    lines.push("Lucide " + pkg.version + " (" + iconNames.length + " icons). " + copyright.replace(/\.$/, "") + ". ISC License.");
+    // Some Lucide icons are derived from Feather and stay under its MIT licence and its author's copyright (Lucide's
+    // LICENSE lists them). The ones this file carries are credited to him here, so the file is right when it is
+    // handed on by itself.
+    const feather = /derived from the Feather project:\s*\n\s*\n([\s\S]*?)\n\s*\n[\s\S]*?^(Copyright .+)$/m.exec(licence);
+    const derived = feather ? new Set(feather[1].split(",").map(s => s.trim()).filter(Boolean)) : new Set();
+    const ours = iconNames.filter(n => derived.has(n));
+    if(/Feather/.test(licence) && !feather) fail("lucide-static's LICENSE mentions Feather in a form this script does not read; update scripts/build.mjs");
+    lines.push("Lucide " + pkg.version + " (" + iconNames.length + " icons). " + copyright.replace(/\.$/, "") + ". ISC License."
+      + (ours.length ? " " + ours.length + " of them derived from Feather. " + feather[2].trim().replace(/\.$/, "") + ". MIT License." : ""));
   }
 
   const pkg = readJSON("package.json");

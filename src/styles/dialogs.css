@@ -106,6 +106,8 @@ dialog .d-footer .btn.at-start{margin-right:auto}
   dialog.ending .cutbox.crt{margin:0;padding:10px}
   dialog .d-body p.end-body{margin-bottom:var(--sp-3)}
 }
+/* ...and on a phone, where that leaves four tiles 102px wide ("$171,3…", "107% of …"), two by two as on an upright one */
+@media (max-height:600px) and (orientation:landscape) and (max-width:1024px){ .end-fact{flex:1 1 50%} .end-fact dd.end-sub{white-space:normal} }
 @media (prefers-reduced-motion:reduce){ .end-card{transition:none} }
 
 /* The first day: the memo, then the job in three lines. */

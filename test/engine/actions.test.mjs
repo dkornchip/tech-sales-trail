@@ -226,6 +226,9 @@ test("Quad shot: less energy and more stress each time, a heart roll from the th
   // the third shot's heart roll: under 20% is liftoff
   const two = await craft({ coffeesThisWeek: 2, stress: 20 });
   let x = await first(two, "coffee", [0.1999]); assert.ok(x.s.burnedOut); assert.equal(x.s.endCause, "caffeine"); assert.equal(x.l.tag, "end.ascension"); assert.equal(x.l.d.shot, 3); assert.equal(x.l.kind, "bad");
+  // the shot that ended the run is a shot: the ending card counts it (the story does not: it is logged as the ending)
+  assert.equal(eng.selectors.runFacts(x.s).shots, (two.story ? two.story.n.shots || 0 : 0) + 1, "the card's count includes the fatal shot");
+  assert.equal(eng.selectors.runFacts(two).shots, two.story ? two.story.n.shots || 0 : null, "and adds nothing to a run a quad shot did not end");
   assert.ok(!(await first(two, "coffee", [0.20])).s.burnedOut);
   // a shot that takes stress to 100 ends the run whatever the roll, and the preview says it is certain
   const hot = await craft({ stress: 88 });

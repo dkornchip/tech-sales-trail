@@ -372,7 +372,10 @@ export function play(pre,type,opts){
       ctx.sim = false; ctx.still = true; t = sc.dur; ctx.t = t;
       render();
       if(HAS_DOM && !fitted){ var tries = 0; (function refit(){ if(stopped) return; fitted = fit(pre); if(!fitted && tries++ < 40) requestAnimationFrame(refit); })(); }
-      cues.forEach(function(cu){ if(cu.key) fire(cu); });
+      // (a moment later, not as the scene mounts: the dialog it plays in counts as its own only the lines said after
+      // it has opened, so the announcer's line for an ending used to be captioned in the top bar behind the dialog,
+      // and on a phone, where that caption is hidden while a dialog is open, nowhere at all)
+      later(function(){ cues.forEach(function(cu){ if(cu.key) fire(cu); }); },80);
       if(opts.onDone) later(opts.onDone,0);
       return;
     }

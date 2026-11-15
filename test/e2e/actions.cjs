@@ -31,6 +31,9 @@
 //      "Cancel seat" are in sight in the workspace at laptop sizes; v2.1 left them below its fold), the workspace is
 //      back at its top when the week turns, End week names Friday's invoice, and the two-strike warning says a deal
 //      walks when there is one
+//  10. an ending is shown as it is: with reduced motion it opens at its first line with the announcer's line under
+//      its title, and a second press of the key that ended the week does not start a new run before it is seen;
+//      the Barely missed scene gives the share of quota the card gives; a phone on its side cuts no tile
 //   8. the hint bar holds every hint: in the narrowest window of the one-screen layout (1025 wide) and at a common
 //      laptop size, no hint in any of six states is taller than the bar, and the bar is the same height whatever
 //      it says, so nothing under it moves
@@ -41,7 +44,7 @@ const { chromium } = require("playwright");
 const fs = require("fs");
 const path = require("path");
 const { pathToFileURL } = require("url");
-const { readRun } = require("./lib/store.cjs");
+const { readRun, envelope } = require("./lib/store.cjs");
 const { save, D, CK } = require("../parity/lib/scenarios.cjs");
 
 const ROOT = path.resolve(__dirname, "..", "..");
@@ -50,6 +53,7 @@ const LEGACY = "tst-autosave-v4-3", FLAG = "tst-onboarded-v2";       // a crafte
 const rows = [];
 const check = (name, ok, detail) => { rows.push(!!ok); console.log("  " + (ok ? "ok  " : "FAIL") + "  " + name + (detail ? "  (" + detail + ")" : "")); return !!ok; };
 
+// run: a run to hand the page under the v2.0 key; or { v5: text }, a v2.1 envelope under the v2.1 key
 async function open(browser, run, opts) {
   const context = await browser.newContext(Object.assign({ viewport: { width: 1280, height: 800 } }, opts || {}));
   await context.addInitScript(([text, key, flag]) => {
@@ -57,7 +61,7 @@ async function open(browser, run, opts) {
       window.sessionStorage.setItem("tst-booted", "1");
       if (window.name !== "tst-seeded") { window.name = "tst-seeded"; window.localStorage.setItem(flag, "1"); window.localStorage.setItem(key, text); }
     } catch (e) {}
-  }, [JSON.stringify(run), LEGACY, FLAG]);
+  }, run && run.v5 ? [run.v5, "tst-autosave-v5", FLAG] : [JSON.stringify(run), LEGACY, FLAG]);
   const page = await context.newPage();
   const errors = [];
   page.on("pageerror", e => errors.push(String(e).slice(0, 200)));
@@ -390,6 +394,32 @@ const stored = async page => JSON.stringify(await page.evaluate(readRun));
     const hot = rules(await page.evaluate(readRun)), note = plain(await page.evaluate(() => { const n = document.querySelector(".claink-strikes .note"); return n ? n.textContent : ""; }));
     check("at two strikes the warning under Run agents says a deal walks when there is one on the board", hot.claink.strikes === 2 && hot.deals.length > 0 && note.includes("seat revoked, a deal walks, and the token true-up") && !errors.length, `${hot.deals.length} deals: "${note}"`);
     await context.close();
+
+    /* ---------- 10. an ending is shown as it is ---------- */
+    const nearly = save({ week: 13, cash: 3000, manager: 60, closedQuarter: 159600, closedWon: 159600 });       // 99.75% of quota
+    for (const [w, h, touch] of [[1366, 657, false], [390, 844, true]]) {
+      ({ context, page, errors } = await open(browser, nearly, { viewport: { width: w, height: h }, hasTouch: touch, isMobile: touch, reducedMotion: "reduce" }));
+      await page.locator('[data-ui="end"]').focus(); await page.keyboard.press("Enter"); await page.waitForTimeout(300); await page.keyboard.press("Enter"); await page.waitForTimeout(500);
+      const end = await page.evaluate(() => { const d = document.querySelector("dialog[open]"); if (!d) return null; const cap = d.querySelector(".d-cap"), pre = d.querySelector("pre"), tile = d.querySelector(".end-fact .end-sub"); return { dialog: d.getAttribute("data-dialog"), top: d.scrollTop, body: d.querySelector(".d-body").scrollTop, cap: cap ? cap.textContent : null, sign: (/(\d+)% OFF/.exec(pre ? pre.textContent : "") || [])[1], tile: tile ? tile.textContent : null, focus: document.activeElement && document.activeElement.getAttribute("data-ui") }; });
+      const kept = rules(await page.evaluate(readRun));
+      check(`${w}x${h}, reduced motion: a second Enter 0.3 s after the one that ended the week leaves the ending up, at its first line, with the announcer's line under its title`,
+        !!end && end.dialog === "end:missed" && end.top === 0 && end.body === 0 && /Badge access renewed/.test(end.cap || "") && kept.week === 13 && kept.closedWon === 159600 && !errors.length, JSON.stringify(end));
+      check(`${w}x${h}: the Barely missed scene gives the share of quota the card gives (99%, not 100%)`, !!end && end.sign === "99" && /^99% of quota$/.test(end.tile || ""), end ? `scene "${end.sign}% OFF", card "${end.tile}"` : "");
+      await page.waitForTimeout(900); await page.keyboard.press("Enter"); await page.waitForTimeout(700);
+      const fresh = rules(await page.evaluate(readRun));
+      check(`${w}x${h}: and once it has been up a moment, New run starts a new run`, !(await dialogOf(page)) && fresh.week === 1 && fresh.closedWon === 0, `week ${fresh.week}`);
+      await context.close();
+    }
+    const club = STATE.mergeSaved(fixture("end-club"));
+    club.closedWon = 171300; club.story = { v: 2, signed: 4, top: { account: "Velvet Switchboard", value: 70000 }, took: null, tookLargest: false, reversed: false, n: { shots: 1 } };
+    for (const [w, h] of [[667, 375], [844, 390]]) {
+      ({ context, page, errors } = await open(browser, { v5: envelope(club) }, { viewport: { width: w, height: h }, hasTouch: true, isMobile: true }));
+      await page.waitForSelector("dialog[open]", { timeout: 8000 }); await page.waitForTimeout(600);
+      const skip = page.locator("dialog[open] .d-footer .btn.at-start"); if (await skip.count()) { await skip.tap(); await page.waitForTimeout(1200); }
+      const tiles = await page.evaluate(() => [...document.querySelectorAll("dialog[open] .end-fact dt, dialog[open] .end-fact dd")].map(e => ({ t: e.textContent, cut: e.scrollWidth > e.clientWidth + 1 })));
+      check(`a phone on its side (${w}x${h}): no number or name on the ending card's tiles is cut`, tiles.length >= 9 && tiles.every(t => !t.cut) && tiles.some(t => t.t === "$171,300") && tiles.some(t => t.t === "Velvet Switchboard") && !errors.length, tiles.filter(t => t.cut).map(t => t.t).join(", ") || `${tiles.length} labels and values whole`);
+      await context.close();
+    }
   } finally { await browser.close(); }
   const bad = rows.filter(ok => !ok).length;
   console.log(bad ? `\nACTIONS FAILED: ${bad} of ${rows.length} checks` : `\nACTIONS OK: all ${rows.length} checks passed`);

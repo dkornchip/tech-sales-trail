@@ -12,7 +12,7 @@ const read = p => fs.readFileSync(path.join(ROOT, "node_modules", p), "utf8").re
 const version = p => p + " " + JSON.parse(read(p + "/package.json")).version;
 
 const PARTS = [
-  { name: "React and React DOM", version: version("react") + ", " + version("react-dom"), licence: "MIT", used: "the interface", text: read("react/LICENSE") },
+  { name: "React and React DOM", version: version("react") + ", " + version("react-dom") + ", " + version("scheduler"), licence: "MIT", used: "the interface", text: read("react/LICENSE") },
   { name: "Inter", version: version("@fontsource-variable/inter"), licence: "SIL Open Font License 1.1", used: "the interface typeface (bundled as “TST Sans”, a subset)", text: read("@fontsource-variable/inter/LICENSE") },
   { name: "JetBrains Mono", version: version("@expo-google-fonts/jetbrains-mono"), licence: "SIL Open Font License 1.1", used: "the monospace typeface for the log, the numbers and the CRT (bundled as “TST Mono”, a subset)", text: read("@expo-google-fonts/jetbrains-mono/LICENSE_FONT") },
   { name: "Lucide", version: version("lucide-static"), licence: "ISC", used: "the icons", text: read("lucide-static/LICENSE") }

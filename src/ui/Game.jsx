@@ -196,7 +196,9 @@ export function Game({fresh}){
       const words=ENDINGS[id], p={closed:s.closedWon,cash:s.cash,cause};
       const title=words.title(p);
       const body=words.body(p), note=words.note ? words.note(p) : null;
-      const meta={pct:s.quota>0 ? s.closedWon/s.quota : 0, cause, shots:s.coffeesThisWeek||0};
+      // (pct: floored to a whole percent, as the QBR's own line and the card's tile are. The scene rounds what it is
+      // given: with the exact share a run that closed $159,600 played "QUOTA 100%" above a card that said 99%.)
+      const meta={pct:s.quota>0 ? Math.floor(100*s.closedWon/s.quota)/100 : 0, cause, shots:s.coffeesThisWeek||0};
       setOver({id,title,body,note,type,meta});
     }else{
       setOver(null);
