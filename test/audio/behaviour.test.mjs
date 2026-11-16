@@ -21,7 +21,7 @@ const sounds = a => a.plays.map(p => p.name).filter(n => n !== "pa" && n !== "cl
 test("routing: every log tag sounds the way the routing table on file says", () => {
   const now = {};
   for (const tag of Object.keys(LOG)) { const r = map.ruleFor(tag, {}); now[tag] = r ? [r.sfx, r.prio, r.say || null] : null; }
-  now["close.signed >= 45000"] = "bigClose"; now["act.network whale"] = map.ruleFor("act.network", { size: "whale" }).sfx;
+  now["close.signed >= " + map.BIG_CLOSE] = "bigClose"; now["act.network whale"] = map.ruleFor("act.network", { size: "whale" }).sfx;
   for (const [id, key] of Object.entries(map.MODAL_SAY)) now["dialog " + id] = key;
   if (process.env.TST_GOLDEN === "update") { fs.mkdirSync(path.dirname(GOLDEN), { recursive: true }); fs.writeFileSync(GOLDEN, JSON.stringify(now, null, 1) + "\n"); return; }
   assert.deepEqual(now, JSON.parse(fs.readFileSync(GOLDEN, "utf8")), "the sound routing changed: if that was meant, TST_GOLDEN=update");
@@ -79,6 +79,14 @@ test("a batch of lines: a big close is announced, a small one is not; a clAInk r
   assert.deepEqual(sounds(a), ["cash"]); assert.ok(LINES.bigClose.includes(a.speech.said[0].text));
   a.reset();
   a.T.onLogs([line("close.signed", { src: "close", n: 1, won: 12000, keep: 1440 })], {}); a.tick(4000);
+  assert.deepEqual(sounds(a), ["cash"]); assert.equal(a.speech.said.length, 0);
+  // the line is where it has been since v1.14: $45,000 is announced, a dollar less is not
+  assert.equal(map.BIG_CLOSE, 45000);
+  a.reset();
+  a.T.onLogs([line("close.signed", { src: "close", n: 1, won: 45000, keep: 5400 })], {}); a.tick(4000);
+  assert.deepEqual(sounds(a), ["cash"]); assert.ok(LINES.bigClose.includes(a.speech.said[0].text));
+  a.reset();
+  a.T.onLogs([line("close.signed", { src: "close", n: 1, won: 44999, keep: 5400 })], {}); a.tick(4000);
   assert.deepEqual(sounds(a), ["cash"]); assert.equal(a.speech.said.length, 0);
   a.reset();
   a.T.onLogs([line("ck.run", { n: 3, tokens: 1 }), line("ck.strike", { n: 1, of: 3, who: "Finance", line: "x" }), line("pay.repoWarn"), line("ck.mgr.warning", { miracle: false, hit: 9 })], {}); a.tick(4000);
@@ -206,6 +214,14 @@ test("a dialog opening plays its cue and its line", async () => {
     assert.ok(a.plays.some(p => p.name === "modal"), id);
     assert.ok(LINES[key].includes(a.speech.said[0].text), `${id} says ${key}`);
   }
+  // the manager's dialog has two openings (copy/claink.js, CK_QUIP) and the announcer's one line is the opening for
+  // a run that failed: after a run that worked the cue plays and nothing is said or captioned over the dialog's own
+  // words (v2.1 said "Always on Chat GDP, huh?" over a dialog that began "Nice week. ChatGDP do that?")
+  const { CK_QUIP } = await import("../../src/copy/claink.js"), spoken = t => t.replace("ChatGDP", "Chat GDP");
+  a.reset(); a.T.onModal("ck:warning", { miracle: true }); a.tick(900);
+  assert.ok(a.plays.some(p => p.name === "modal")); assert.equal(a.speech.said.length, 0);
+  a.reset(); a.T.onModal("ck:warning", { miracle: false }); a.tick(900);
+  assert.equal(a.speech.said[0].text, spoken(CK_QUIP(false))); assert.deepEqual(LINES.chatgdp, [spoken(CK_QUIP(false))]);
 });
 
 test("a whole quarter of real log lines: never two lines at once, every spoken line captioned as spoken, sound on every move", async () => {

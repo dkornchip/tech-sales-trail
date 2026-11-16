@@ -23,12 +23,20 @@ export const COST = {
   hail: { energy: 10, slots: 1 }
 };
 
+// Stress an action adds as it is taken (actions.js). The Hail Mary adds at least its figure: more when it goes
+// badly. At 100 the run ends on the spot (stress.js), so the interface says when one of these would reach it.
+export const STRESS_COST = { prospect: 2, politics: 2, hail: 4 };
+
 // Friday.
 export const PAY = { salary: 1000, rent: 1600, commission: 0.12 };
 export const RENT_WEEKS = [1, 5, 9];
 export const CASH = { repoAt: -1500, warnAt: -1000 };   // Collections takes the jacket at repoAt or lower; Finance says so at warnAt
 export const FRIDAY = { energy: 15, relief: 4 };   // energy back; stress eased in a week without quad shots
 export const FRIDAY_CLOSE = 0.15;                  // the chance End Week makes a close attempt of its own
+// A week that skips a stage with a queue at it loses some of the queue (week.js): with this many leads and no
+// Discovery, each lead goes stale with chance p; with this many qualified deals and no demo, each slides back to
+// a skeptical lead with chance p.
+export const STALE = { leads: 6, p: 0.20 }, BACKLOG = { qualified: 5, p: 0.18 };
 
 // The chance each waiting deal moves up a stage. (Above 1 means certain: the roll is a number below 1.)
 export const qualifyOdds = s => 0.35 + s.skills.discovery / 200;

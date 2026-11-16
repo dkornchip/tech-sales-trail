@@ -1,0 +1,91 @@
+The seat cannot be cancelled in week 13: a move the rules allowed and the page never offered
+
+== 1. how it was found: verify --release on the build before this fix (the release gate's sessions use the release's own dice)
+  FAILED release       31.8 s
+----- release: the end of its output (all of it: test-results/verify/release.log)
+release: /home/user/tech-sales-trail/dist/index.html
+  ok    the file names no test hook
+  ok    the page's only globals of the game's are the sound engine, the scenes and the toast  (TST_AUDIO, TST_SCENES, TST_TOAST)
+  ok    the sound engine shows what the interface uses and nothing of its insides  (extra: ; missing: )
+  ok    the scenes show what the interface uses  (COLS, ROWS, play, reduced, summaryFor)
+  ok    no errors
+  ok    a planted roll is not rolled: prospecting rolled the run's own dice  (seed 2857830697, 1 deals)
+  ok    a planted seed is not the run's seed, and two runs do not share one  (2857830697, 780993105)
+  FAIL  session 1 (chaos): 51 presses, the page and the source agree after every one  (press 51: the page offers [act:coffee act:crm act:network act:recharge end], the rules allow [act:coffee act:crm act:network act:recharge ck:cancel end])
+  ok    session 2 (balanced): 150 presses, the page and the source agree after every one, through to end:fired, end:fired
+  ok    session 3 (claink-weekly): 150 presses, the page and the source agree after every one, through to end:repo, end:repo, end:club
+  ok    session 4 (risk): 150 presses, the page and the source agree after every one, through to end:club
+  ok    session 5 (referral): 150 presses, the page and the source agree after every one, through to end:fired, end:fired, end:fired
+  ok    session 6 (claink): 150 presses, the page and the source agree after every one, through to end:club, end:repo
+  FAIL  the sessions were worth playing  (801 presses, 790 saved runs compared, 791 offers compared, endings: fired/review, fired/review, repo/claink, repo/claink, club/club, club/club, fired/review, fired/review, fired/review, club/club, repo/claink)
+
+RELEASE FAILED: 2 of 14 checks
+-----
+
+  step         result    time      
+  build        ok           0.2 s  dist/index.html 547 KB raw, 211 KB gzip
+  build-test   ok           0.2 s  dist-test/index.html 548 KB raw, 211 KB gzip
+
+   Session 1 had reached week 13 with a live clAInk seat and the cash to cancel it. The workspace shows no 'Cancel seat'
+   during the quarter-end freeze. It never has: v1.21's source reads `frozen ? null : <Cancel seat>` (test/baseline/v1.21/index.html,
+   line 5380), and v2.0.1 and the 2.1 release candidate, opened on a week-13 run with a live seat, show no link (week 12: they do).
+   But src/game/run.js listed ck:cancel as a legal move, and cancelClaink would have taken the $250.
+   Earlier runs of this gate passed because no session happened to be in that state.
+
+== 2. the fix: src/game/claink.js, clainkCanCancel also requires !clainkFrozen(s)
+@@ -155,7 +155,8 @@ export const clainkCanInstall=(s)=>!!s.claink && s.claink.status==="ad" && !isRu
+ export const clainkFrozen=(s)=>getQuarterInfo(s.week).weekInQuarter>=QUARTER_WEEKS;
+ export const clainkCanDeploy=(s)=>!!s.claink && s.claink.status==="active" && !s.claink.deployed && !isRunOver(s) && !clainkFrozen(s);
+ export const clainkCancelCost=(s)=>CLAINK.CANCEL+((s.claink && s.claink.due)||0);
+-export const clainkCanCancel=(s)=>!!s.claink && s.claink.status==="active" && !isRunOver(s) && s.cash-clainkCancelCost(s)>CLAINK.REPO_AT;
++// (not in the freeze: nothing more will be charged there, and the workspace has never offered it in week 13)
++export const clainkCanCancel=(s)=>!!s.claink && s.claink.status==="active" && !isRunOver(s) && !clainkFrozen(s) && s.cash-clainkCancelCost(s)>CLAINK.REPO_AT;
+ 
+ export const buyClaink=(state)=>{
+   if(!clainkCanInstall(state))return state;
+
+== 3. the gate no longer depends on the dice for this: thirteen fixed states are opened in the release build
+   (test/e2e/release.cjs, section 4). With the fix taken out again (src/game/claink.js as at HEAD), a short run:
+   node test/e2e/release.cjs dist/index.html --sessions 1 --moves 20
+  FAIL  week 13 with a clAInk seat (the quarter-end freeze): the page offers what the rules allow  (the page offers [act:cadence act:close act:coffee act:conference act:crm act:demo act:discovery act:network act:politics act:propose act:prospect act:recharge end hail], the rules allow [act:cadence act:close act:coffee act:conference act:crm act:demo act:discovery act:network act:politics act:propose act:prospect a
+  FAIL  week 13 with a seat on two strikes: the page offers what the rules allow  (the page offers [act:cadence act:close act:coffee act:conference act:crm act:demo act:discovery act:network act:politics act:propose act:prospect act:recharge end], the rules allow [act:cadence act:close act:coffee act:conference act:crm act:demo act:discovery act:network act:politics act:propose act:prospect act:recharge ck:cancel 
+  ok    week 12 with a clAInk seat: the page offers what the rules allow  (clAInk: ck:cancel ck:minimize ck:run)
+  ok    week 13 without clAInk: the page offers what the rules allow  (clAInk: nothing)
+RELEASE FAILED: 3 of 22 checks
+   ('the sessions were worth playing' also fails in that run only because it was cut to 20 presses.)
+   With the fix (evidence 17): RELEASE OK: all 27 checks passed, the two week-13 states among them.
+
+== 4. what else the rule change could have moved, re-run on the fixed source
+-- the published balance runs, again:  node test/sim/run.mjs --policies all --seeds 1000 --from 1   and   --from 5001
+final: seeds 1-1000, 22 policies x 1000 runs: every counted field IDENTICAL to qa/2.1/balance/final.json (run time and label aside)
+heldout-final: seeds 5001-6000, 22 policies x 1000 runs: every counted field IDENTICAL to qa/2.1/balance/heldout-final.json (run time and label aside)
+
+-- node test/engine/tools/integrity-diff.mjs  (the frozen 2.0.1 rules beside the working tree; same counts as evidence 05)
+integrity diff: 22 policies x 300 seeds (1..300), 6600 runs, 198346 moves compared, 58.3 s
+  identical start to finish          4321  65.5%
+  only the last Friday differs        614  9.3%   (under-70% review no longer rolls; the quarter's total is kept)
+  odds effects differ first          1665  25.2%   (the shared number and timer, fixed)
+        1635  a security choice replaced what was already in force (now they add up)
+          26  a second conference in one week stacked its bonus (now it refreshes)
+           3  the total went past 30 points (now held to 30)
+           1  a Friday: the shared timer ended something early or carried it over (now each ends on its own week)
+  anything else                         0  0.0%
+  (the joke stream moved in           837  12.7%   of those runs: clAInk's rewritten reports draw different joke numbers; no rule reads that stream)
+  e.g. novice#6 move 31 dlg:spin (week 7): odds -0.08 -> -0.14, discount 0 -> 0   [a security choice replaced what was already in force (now they add up)]
+  e.g. novice#8 move 6 dlg:spin (week 2): odds -0.08 -> -0.02, discount 0 -> 0   [a security choice replaced what was already in force (now they add up)]
+  e.g. novice#10 move 29 dlg:spin (week 6): odds -0.08 -> -0.14, discount 0 -> 0   [a security choice replaced what was already in force (now they add up)]
+  e.g. novice#15 move 18 dlg:spin (week 5): odds -0.08 -> -0.14, discount 0 -> 0   [a security choice replaced what was already in force (now they add up)]
+  e.g. novice#17 move 33 dlg:spin (week 7): odds -0.08 -> -0.14, discount 0 -> 0   [a security choice replaced what was already in force (now they add up)]
+
+INTEGRITY DIFF OK: every difference from the v2.0.1 rules is one of the fixes
+
+-- python3 test/engine/tools/mutation-check.py  (52 planted mistakes: the 51 of evidence 09 and one new one, the freeze taken out of the cancel rule)
+mutants caught: 49 of 52
+  SURVIVED: ('src/game/actions.js', 'ns.reputation=clamp(ns.reputation+4,0,100);\n\n  const n=randi(1,2);')
+  SURVIVED: ('src/game/claink.js', '  if(!c || c.status!=="active" || isRunOver(state))return state;\n  con')
+  SURVIVED: ('src/game/rules.js', 'if (w < REVIEWS_FROM || w >= QUARTER_WEEKS || !(s.quota > 0)) return 0')
+   The three survivors are the three of evidence 09, each behaviour-neutral (two independent statements swapped; a guard
+   End Week never reaches on a finished run; a guard whose factor is already zero).
+
+-- engine tests: 113 pass (evidence 17). claink.test.mjs, 'cancelling', now also holds: week 13 refuses the move, clAInk
+   offers no move at all in week 13, the rule itself does nothing there, and week 12 still allows it.

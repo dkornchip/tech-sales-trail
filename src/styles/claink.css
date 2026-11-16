@@ -38,6 +38,7 @@
 /* the X asks before it turns the offer off for the run: a strip under the top row, in the ad's own voice */
 .claink-ad-ask{position:relative;z-index:2;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 10px;margin:0 0 10px;padding:9px 10px;border:1px solid var(--ck-line);border-radius:12px;background:#16123a;font-size:13px;line-height:1.35;color:#ddd8ff}
 .claink-ad.is-mini .claink-ad-ask{margin:8px 0 0}
+.claink-ad-ask>span:first-child{flex:1 1 220px}                       /* the question wraps before its buttons leave its row */
 .claink-ad-ask-btns{display:flex;gap:6px;margin-left:auto}
 .claink-ask-yes,.claink-ask-no{min-height:30px;padding:0 12px;border-radius:9px;border:1px solid var(--ck-line);background:transparent;color:#ddd8ff;font:inherit;font-weight:600;cursor:pointer}
 .claink-ask-no{background:var(--ck-p);border-color:var(--ck-p);color:#fff}
@@ -53,16 +54,23 @@
 .claink-ad-pill .ends{overflow:hidden;text-overflow:ellipsis;color:#ffd59e}
 .claink-ad-pill .ends::before{content:"· ";color:var(--ck-mut)}
 .claink-ad.is-mini .claink-ad-btns button{width:28px;height:26px;border-radius:8px}
+/* The announcement and the logo. Where the ad is wide enough for both they share one row, logo first, centred on
+   each other; where it is not, the announcement sits above the logo. (They used to be two inline boxes in a row:
+   on a wide screen the logo ran straight on from the announcement, on the same line and off its centre.)
+   row-reverse + flex-end: the row is packed to the left with the second child (the logo) leading, and when it
+   wraps the first child (the announcement) keeps the first line. */
+.claink-ad-brand{display:flex;flex-direction:row-reverse;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:10px 14px}
 .claink-announce{display:inline-flex;align-items:center;gap:6px;max-width:100%;font-size:13px;font-weight:600;color:#ece6ff;
-  padding:4px 11px;border-radius:999px;border:1px solid #5d4cb5;background:linear-gradient(90deg,#2b2066,#10324c);margin:0 0 12px}
+  padding:4px 11px;border-radius:999px;border:1px solid #5d4cb5;background:linear-gradient(90deg,#2b2066,#10324c);margin:0}
 .claink-announce b{color:var(--ck-c)}
 .claink-headline{font-family:"TST Sans",ui-sans-serif,system-ui,sans-serif;font-size:19px;line-height:1.18;font-weight:800;letter-spacing:-.5px;margin:12px 0 6px;color:#fff}
 .claink-sub{font-size:13px;color:#d3cdf7;margin:0 0 10px}
 .claink-chips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
 .claink-chips span{font-size:13px;font-weight:700;padding:4px 9px;border-radius:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12)}
 .claink-proof{font-size:13px;color:#e2ddff;margin:0 0 10px;font-style:italic}
-.claink-proof span{display:block;margin-top:2px;font-size:13px;font-style:normal;color:var(--ck-mut)}
-.claink-proof span::before{content:"— ";content:"— " / ""}
+.claink-proof>span{display:block;margin-top:2px;font-size:13px;font-style:normal;color:var(--ck-mut)}
+.claink-proof>span::before{content:"— ";content:"— " / ""}
+.claink-proof .aside{display:inline-block}     /* the by-line's aside moves to the next line whole, not broken at a hyphen */
 .claink-price{font-size:13px;padding:8px 10px;border-radius:11px;margin:0 0 10px;color:#dff6ff;
   background:linear-gradient(90deg,#0f2d46,#1c1a4f);border:1px solid rgba(34,211,238,.32)}
 .claink-price b{color:#fff}
@@ -81,7 +89,8 @@
 .claink-policy{margin:0 0 9px;padding:8px 10px 8px;border-radius:11px;background:#100e2a;border:1px solid var(--ck-line);font-size:13px;color:#dcd7fb}
 .claink-policy .hd{display:flex;justify-content:space-between;gap:6px;margin-bottom:3px;font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#c4b5fd}
 .claink-policy .hd span{font-weight:600;letter-spacing:0;text-transform:none;color:var(--ck-mut)}
-.claink-policy ul{margin:0;padding-left:16px}
+.claink-policy ul{margin:0;padding-left:16px;list-style:disc}     /* (the page's reset takes list markers away; five terms need them) */
+.claink-policy li::marker{color:var(--ck-mut)}
 .claink-policy li{margin:2px 0}
 .claink-confirm-row{display:grid;grid-template-columns:2fr 3fr;gap:8px}
 .claink-confirm{padding:11px 8px;border-radius:12px;background:linear-gradient(100deg,var(--ck-v),var(--ck-c))}
@@ -109,7 +118,7 @@
 .claink-tb-btns button{width:28px;height:26px;border-radius:8px;border:1px solid var(--ck-line);background:#161238;color:#ddd8ff;
   cursor:pointer;font-size:13px;line-height:1;padding:0}
 .claink-tb-btns button:hover{border-color:var(--ck-c);color:#fff}
-.claink-body{padding:10px 12px 12px;display:grid;gap:9px}
+.claink-body{padding:10px 12px 22px;display:grid;gap:9px}
 .claink-statusline{font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--ck-mut);outline:none;border-radius:4px}
 .claink-statusline:focus-visible{outline:2px solid var(--ck-c);outline-offset:2px}
 .claink-deploy{width:100%;padding:11px 12px;border-radius:12px;display:flex;align-items:center;justify-content:space-between;gap:8px;
@@ -199,14 +208,48 @@
 /* ---------- v2.0: docked ----------
    clAInk no longer floats over the game. The ad and the workspace sit at the bottom of the right column, in the
    flow of the page; minimised, each is a single bar there. The rules above still draw them. These place them. */
+/* Their share of the column, where the deal list and the log come first. The workspace has 46% and scrolls inside
+   it; ClainkUi.jsx (dockRoom) gives it more, to at most 68%, while the deal list and the log do not need the room,
+   so an early board shows a whole run report and a full board keeps its deals and its log. The ad has whatever the
+   deal list leaves it, to at most 68%, and settles on a layout that fits there (fitAd, and "the ad fits its dock"
+   below); it does not shrink under that layout, the deal list gives way instead. Its 58% here is what it had before
+   it could be measured, and holds only until it has been. */
 .claink-ad,.claink-console{position:relative;inset:auto;width:auto;max-width:none;flex:0 1 auto;min-height:0;max-height:46%;
   border-radius:0 0 11px 11px;box-shadow:none;animation:none}
-.claink-ad{border-top:1px solid var(--ck-line);max-height:58%}
+.claink-ad{border-top:1px solid var(--ck-line);flex:0 0 auto;max-height:58%}
 .claink-ad::before{display:none}                                      /* the gradient frame belonged to the floating card */
+/* ---- the ad fits its dock ----
+   Beside the game the ad has a share of the column (above), and it shows all of what it shows: ClainkAd measures
+   it and settles on the fullest of these layouts that fits (data-fit lists what was done). Nothing is hidden
+   behind a scroll and nothing sits on top of anything else. */
+.claink-ad[data-fit~="tight"]{--ck-pb:10px;padding-top:10px}
+.claink-ad[data-fit~="tight"] .claink-ad-top{margin-bottom:6px}
+.claink-ad[data-fit~="tight"] .claink-headline{margin:8px 0 4px}
+.claink-ad[data-fit~="tight"] .claink-sub,.claink-ad[data-fit~="tight"] .claink-chips,.claink-ad[data-fit~="tight"] .claink-proof,
+.claink-ad[data-fit~="tight"] .claink-price,.claink-ad[data-fit~="tight"] .claink-badges{margin-bottom:8px}
+.claink-ad[data-fit~="announce"] .claink-announce{display:none}
+.claink-ad[data-fit~="chips"] .claink-chips{display:none}
+.claink-ad[data-fit~="badges"] .claink-badges{display:none}
+.claink-ad[data-fit~="proof"] .claink-proof{display:none}
+.claink-ad.confirming[data-fit~="headline"] .claink-headline{display:none}
+.claink-ad.confirming[data-fit~="brand"] .claink-ad-brand{display:none}
+.claink-ad[data-fit~="tight"] .claink-policy{margin-bottom:6px;padding:6px 10px}
+.claink-ad[data-fit~="tight"] .claink-policy li{margin:1px 0}
+/* Beside the game the button is part of the ad's page, not pinned over it. (Pinned, it sat on top of whatever the
+   ad had scrolled under it: the pricing line, the badges.) If a window is too short even for the plainest layout,
+   the ad scrolls like any panel and the button is at its end. */
+@media (min-width:1025px) and (min-height:620px){
+  .claink-actions{position:static;margin:0;padding:0 0 10px;background:none}
+}
+/* The workspace scrolls inside its dock when a run's paperwork is taller than its share of the column. What is
+   below the fold fades out at the edge instead of being sliced there. At the end of the scroll the fade lies over
+   the body's own bottom padding, so the last card is clear of it. */
+.claink-console:not(.is-mini)::after{content:"";display:block;position:sticky;bottom:0;height:22px;margin-top:-22px;pointer-events:none;
+  background:linear-gradient(180deg,rgba(10,10,28,0),#0a0a1c)}
 /* the policy step stands alone: the pitch steps back instead of scrolling behind the pinned policy */
 .claink-ad.confirming .claink-sub,.claink-ad.confirming .claink-chips,.claink-ad.confirming .claink-proof,
 .claink-ad.confirming .claink-price,.claink-ad.confirming .claink-badges,.claink-ad.confirming .claink-fine{display:none}
-.claink-console{border:0;border-top:1px solid var(--ck-line)}
+.claink-console{border:0;border-top:1px solid var(--ck-line);scrollbar-width:thin;scrollbar-color:var(--ck-line) transparent}   /* when it scrolls, a bar in its own colours, like the deal list's in the game's */
 .claink-ad.is-mini,.claink-console.is-mini{width:auto;max-width:none;max-height:none;border-radius:0 0 11px 11px}
 .claink-titlebar{cursor:default;touch-action:auto}
 @media (max-width:1024px), (max-height:619px){ .claink-ad,.claink-console{max-height:none} }

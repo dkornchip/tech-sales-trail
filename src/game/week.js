@@ -1,4 +1,4 @@
-import { FRIDAY, FRIDAY_CLOSE, REVIEWS_FROM, TUNING, expectedAttainment } from "./rules.js";
+import { BACKLOG, FRIDAY, FRIDAY_CLOSE, REVIEWS_FROM, STALE, TUNING, expectedAttainment } from "./rules.js";
 import { billClaink, expireClaink } from "./claink.js";
 import { QUARTER_WEEKS } from "./constants.js";
 import { ageAndGhost, checkRepo, tryCloseSome } from "./deals.js";
@@ -52,10 +52,10 @@ export const endWeek=(s)=>{
     ns=log(addEffect(ns,"neglect","next"),"week.neglected",null,"warn");
   }
 
-  if(!u.discovery && countStage(ns.deals,0)>=6){
+  if(!u.discovery && countStage(ns.deals,0)>=STALE.leads){
     let lost=0;
     ns.deals=ns.deals.filter(d=>{
-      if(d.stage===0 && rnd()<0.20){lost++;return false;}
+      if(d.stage===0 && rnd()<STALE.p){lost++;return false;}
       return true;
     });
     if(lost>0){
@@ -64,10 +64,10 @@ export const endWeek=(s)=>{
     }
   }
 
-  if(!u.demo && countStage(ns.deals,1)>=5){
+  if(!u.demo && countStage(ns.deals,1)>=BACKLOG.qualified){
     let reg=0;
     ns.deals=ns.deals.map(d=>{
-      if(d.stage===1 && rnd()<0.18){
+      if(d.stage===1 && rnd()<BACKLOG.p){
         reg++;
         return {...d,stage:0,mood:"skeptical"};
       }

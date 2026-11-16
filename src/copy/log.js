@@ -102,7 +102,8 @@ export const LOG = {
   "act.propose": p => line(p.n > 0 || !p.of ? `Proposals sent: ${p.n}.`
     : mostly("Proposals sent: 0.", "No proposals sent. The pricing spreadsheet survives another day.", "Proposals: no deals advanced."), fx(p)),
   // size: "whale", "big" or "" (the best referral in the batch)
-  "act.network": p => line(`Referrals: ${p.n} ${p.n === 1 ? "introduction" : "introductions"}.${p.size === "whale" ? " One of them is a whale." : p.size === "big" ? " One of them is substantial." : ""}`, fx(p)),
+  // (one introduction is not "one of them": v2.1 said "1 introduction. One of them is a whale.")
+  "act.network": p => line(`Referrals: ${p.n} ${p.n === 1 ? "introduction" : "introductions"}.${p.size === "whale" ? ` ${p.n === 1 ? "It" : "One of them"} is a whale.` : p.size === "big" ? ` ${p.n === 1 ? "It" : "One of them"} is substantial.` : ""}`, fx(p)),
   // nap: the lucky bonus in percent, 0 when there was none worth mentioning
   "act.recharge": p => line(`Took a break.${p.nap ? ` Exceptional nap (+${p.nap}%).` : ""}`, fx(p)),
   "act.recharge.flat": p => line("Rested. The coffee has filed an objection.", fx(p)),
@@ -178,7 +179,8 @@ export const LOG = {
   "evt.freeze": () => line("A budget freeze is rumored. Every CFO is waiting for the other CFOs.", `${pp(EFFECT.freeze.conv)} next week`),
   // conf: you were at a conference this week or last
   "evt.crud": p => line(p.conf ? "You brought something back from the conference. It isn’t an opportunity." : "Something is circulating around the office. It isn’t pipeline.", fx(p)),
-  "evt.rebalance": p => `Territory optimization: ${p.n} of your largest ${p.n === 1 ? "deal" : "deals"}, ${usd(p.value)}, reassigned.`,
+  // ("of your largest deals" whatever the count: v2.1 wrote "1 of your largest deal")
+  "evt.rebalance": p => `Territory optimization: ${p.n} of your largest deals, ${usd(p.value)}, reassigned.`,
   "evt.pipShred": () => "Your PIP has been withdrawn. Management calls this a coaching success.",
   "evt.favors": p => `Your manager made some calls. ${p.n} warm ${p.n === 1 ? "introduction" : "introductions"}.`,
 

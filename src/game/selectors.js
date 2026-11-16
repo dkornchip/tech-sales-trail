@@ -2,10 +2,10 @@
 // Each one mirrors a rule elsewhere in src/game; none of them draws from the dice or changes state.
 import { QUARTER_WEEKS } from "./constants.js";
 import { isRunOver } from "./log.js";
-import { CLAINK } from "./claink.js";
+import { CLAINK, clainkFrozen } from "./claink.js";
 import { EFFECT } from "./effects.js";
 import { QBR } from "./quarter.js";
-import { CASH, COST, FIRING_FROM, HAIL, TUNING } from "./rules.js";
+import { BACKLOG, CASH, CONFERENCE_STRESS, COST, FIRING_FROM, HAIL, STALE, STRESS_COST, TUNING } from "./rules.js";
 import { STRESS_DANGER } from "./stress.js";
 import { FRIDAY, PACE_GRACE, PAY, PROPOSE_ODDS, RENT_WEEKS, REVIEWS_FROM, closeOdds, crmGain, crmNukeOdds, demoOdds, expectedAttainment, isDeadLead, paceGap, qualifyOdds } from "./rules.js";
 export { RENT_WEEKS, REVIEWS_FROM };
@@ -49,15 +49,62 @@ export const rechargeRange = s => {
   return { energy: [RECHARGE_ENERGY, rechargeMax(RECHARGE_ENERGY)], relief: [relief, rechargeMax(relief)] };
 };
 // actCrm: how many leads it would clear, what the manager makes of it, and the risk he clears a live one too
+// (value: what the dead leads are worth. A lead or qualified deal is "dead" when it is skeptical or five weeks old,
+// whatever its size: the cleanup can take a large deal with it, and the hint has to say how much is going.)
 export const crmPreview = s => {
-  const pruned = s.deals.filter(isDeadLead).length;
+  const dead = s.deals.filter(isDeadLead), pruned = dead.length;
   const atRisk = s.deals.some(d => !isDeadLead(d) && (d.stage === 1 || d.stage === 2));
-  return { pruned, gain: crmGain(pruned), nuke: atRisk ? crmNukeOdds(s.manager) : 0 };
+  return { pruned, value: dead.reduce((sum, d) => sum + d.value, 0), gain: crmGain(pruned), nuke: atRisk ? crmNukeOdds(s.manager) : 0 };
 };
-// endWeek: the parts of Friday that are certain
+// End week, in the order Friday does things (week.js, endWeek): a chance of a close attempt on the late deals, whose
+// commission is paid at once; salary and rent, then Collections is asked; then the coffee crash; last, clAInk's
+// invoice, then Collections again. Nothing between the rent and the invoice changes cash.
+//   cash      what salary and rent leave. `bust`: that is at or under the line where Collections ends the run.
+//   claink    what an active seat will be invoiced (claink.js, billClaink): what is already due if the agents ran this
+//             week, or the idle range if they did not; null with no seat, and in week 13, which is not billed. An
+//             overage may come on top, which only makes it worse.
+//   billCash  what the invoice leaves, at the least it can be (`billBust`: at or under the line, when the rent is not).
+//   melt      this week's quad shots crash on Friday and nothing on a Friday lowers stress in such a week, so a crash
+//             that takes stress to 100 ends the run there.
+//   mayClose  a late deal is on the board: Friday's close attempt (a chance, before the rent) may sign it and pay its
+//             commission first. Then neither bust is certain; the melt still is.
 export const fridayPreview = s => {
-  const shots = s.coffeesThisWeek || 0;
-  return { salary: PAY.salary, rent: rentDueThisWeek(s) ? PAY.rent : 0, energy: FRIDAY.energy, stress: shots > 0 ? CRASH_PER_SHOT * shots : -FRIDAY.relief };
+  const shots = s.coffeesThisWeek || 0, rent = rentDueThisWeek(s) ? PAY.rent : 0, cash = s.cash + PAY.salary - rent;
+  const c = s.claink, seat = c && c.status === "active" && !clainkFrozen(s) ? (c.deployed ? { due: c.due } : { idle: CLAINK.IDLE.slice() }) : null;
+  const bust = cash <= CASH.repoAt, billCash = seat ? cash - (seat.idle ? seat.idle[0] : seat.due) : cash;
+  return { salary: PAY.salary, rent, energy: FRIDAY.energy, stress: shots > 0 ? CRASH_PER_SHOT * shots : -FRIDAY.relief, cash, bust, repoAt: CASH.repoAt, claink: seat,
+    billCash, billBust: !bust && !!seat && billCash <= CASH.repoAt,
+    melt: shots > 0 && s.stress + CRASH_PER_SHOT * shots >= 100, mayClose: lateDeals(s).length > 0 };
+};
+// An action that costs cash (the conference, a quad shot) is charged at once, and Collections is asked at once
+// (actions.js): what paying for it would leave, when that is at or under the line that ends the run. Otherwise null.
+export const purchaseBust = (s, id) => {
+  const price = (COST[id] && COST[id].cash) || 0, cash = s.cash - price;
+  return price > 0 && cash <= CASH.repoAt ? { cash, repoAt: CASH.repoAt } : null;
+};
+// The stress a press is certain to add (the Hail Mary: at least), and whether that reaches 100, where the run ends
+// on the spot (stress.js, checkBurnout; a quad shot ends it itself). id: an action, or "hail".
+export const stressCost = (s, id) => (id === "coffee" ? coffeeStress(s.coffeesThisWeek || 0) : id === "conference" ? CONFERENCE_STRESS : STRESS_COST[id] || 0);
+// A press that is certain to end the run, and why, or null: { why: "stress", add } or { why: "cash", cash, repoAt }.
+// (When both would, the one the rules reach first: a quad shot's heart before its bill, any other bill before the
+// stress check that follows the action.)
+export const fatalPress = (s, id) => {
+  const add = stressCost(s, id), stress = add > 0 && s.stress + add >= 100 ? { why: "stress", add, atLeast: id === "hail" } : null;
+  const bust = purchaseBust(s, id), cash = bust ? { why: "cash", ...bust } : null;
+  return id === "coffee" ? stress || cash : cash || stress;
+};
+// the same press as the rules see it: Proposals with nothing to send and nothing left to count (actions.js)
+export { proposeIdle } from "./actions.js";
+// Proposals with nothing demoed is still on offer while the week's proposal-or-close work is not counted: that mark
+// is all it buys (week.js: three of the four categories make a full-funnel week, one or none with pipeline is a
+// neglected one). In three states the mark cannot change Friday, and the hint says so:
+//   "full"   the other three categories are already worked this week: the bonus is earned without it
+//   "last"   week 13: the quarter ends on Friday, and both the bonus and the penalty are for next week
+//   "alone"  its last slot, and no other category worked: one category or none, the same week either way
+// null: the mark may still matter. (The press is not refused in these states: that would be a second rule change.)
+export const proposeNothing = s => {
+  const u = s.used || {}, others = [u.prospect || u.cadence || u.network, u.discovery, u.demo].filter(Boolean).length;
+  return others >= 3 ? "full" : weekOf(s) >= QUARTER_WEEKS ? "last" : s.slots === 1 && others === 0 ? "alone" : null;
 };
 
 // cost(): why an action can't be taken right now, or null. Same order of checks as the rule.
@@ -81,7 +128,10 @@ export const runFacts = s => {
     cash: s.cash, discounts: s.discounts || 0, pipeline: s.pipeline || 0,
     trip: s.trip || null,
     signed: st ? st.signed : null, top: st ? st.top : null, took: st ? st.took : null,
-    shots: k("shots"), hails: k("hails"), lunches: k("lunches"), cadences: k("cadences"), lost: k("lost"),
+    // (the shot that ends a run is logged as the ending, not as a shot, so the story's count is one short of the
+    // "Shot #3" the scene and the log have just said: it is added here, where the card reads the number)
+    shots: st ? (st.n.shots || 0) + (s.endCause === "caffeine" ? 1 : 0) : null,
+    hails: k("hails"), lunches: k("lunches"), cadences: k("cadences"), lost: k("lost"),
     strikes: ck.strikes || 0, revoked: ck.status === "revoked", billed: ck.billed || 0,
     // what only a story begun under v2.1 can vouch for (null: unknown, and then nothing is said about it)
     conferences: st && st.v === 2 ? st.n.conferences || 0 : null,
@@ -116,6 +166,6 @@ export const handbookFacts = s => ({
   salary: PAY.salary, commission: PAY.commission, rent: PAY.rent, rentWeeks: RENT_WEEKS, repoAt: CASH.repoAt,
   fullFunnel: EFFECT.fullFunnel.conv, neglect: EFFECT.neglect.conv, hailBlast: HAIL.blast, hailWalk: HAIL.walk,
   fridayEnergy: FRIDAY.energy, rechargeEnergy: [RECHARGE_ENERGY, rechargeMax(RECHARGE_ENERGY)], rechargeRelief: [rechargeRelief(0), rechargeMax(rechargeRelief(0))],
-  stressDanger: STRESS_DANGER, crash: CRASH_PER_SHOT,
+  stressDanger: STRESS_DANGER, crash: CRASH_PER_SHOT, staleLeads: STALE.leads, backlogQualified: BACKLOG.qualified,
   offerWeek: CLAINK.OFFER_LAST_WEEK, seat: CLAINK.INSTALL, miracle: CLAINK.MIRACLE_P, strikes: CLAINK.STRIKES, trueUpLo: CLAINK.TRUEUP_OVER[0], trueUpHi: CLAINK.TRUEUP_OVER[1], cancelFee: CLAINK.CANCEL
 });

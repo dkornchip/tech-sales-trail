@@ -12,7 +12,8 @@
 // Each row comes out as one of
 //   applied    every sentence of it is rendered somewhere
 //   noted      not found as written, and docs/2.1/copy-coverage-notes.json says why (retained, typeset, conditional,
-//              instruction, skipped), each with its reason
+//              instruction, skipped, owner: the owner changed the line after the copydeck, or corrected: the deck's
+//              wording said something the rules do not do, and the build says what they do), each with its reason
 //   OPEN       not found and not explained: with --strict this fails
 //
 // This checks that the words exist in the build. It does not prove that every path that could print them was
@@ -89,7 +90,7 @@ const sentences = text => {
   return clean.split(/\s+\/\s+|(?<=[.!?])\s+(?=[A-Z{“])/).map(s => s.trim()).filter(s => s.replace(/\{[^}]*\}/g, "").replace(/[^A-Za-z]/g, "").length >= 6);
 };
 const notes = fs.existsSync(NOTES) ? JSON.parse(fs.readFileSync(NOTES, "utf8")) : {};
-const KINDS = ["retained", "typeset", "conditional", "instruction", "skipped"];
+const KINDS = ["retained", "typeset", "conditional", "instruction", "skipped", "owner", "corrected"];
 const out = [];
 for (const r of rows) {
   const want = r.texts.flatMap(sentences);

@@ -1,31 +1,59 @@
 import React from "react";
 import { isRunOver } from "../../game/log.js";
-import { hailBlock } from "../../game/run.js";
-import { effectChips, fridayPreview, lateDeals, stageCount } from "../../game/selectors.js";
-import { HAIL as HAIL_ODDS } from "../../game/rules.js";
-import { CHIP, HINT, UI } from "../../copy/ui.js";
+import { ACTS, actBlock, hailBlock } from "../../game/run.js";
+import { effectChips, fatalPress, fridayPreview, lateDeals, stageCount } from "../../game/selectors.js";
+import { COST, HAIL as HAIL_ODDS } from "../../game/rules.js";
+import { CARD, CHIP, HINT, UI } from "../../copy/ui.js";
 import { isPhone, noHover } from "../env.js";
+import { describe } from "./ActionGrid.jsx";
+import { ACTIONS } from "./actionList.js";
 import { Icon } from "./Icon.jsx";
 
-// The one thing worth doing next, for when nothing is under the pointer.
+// The one thing worth knowing next, for when nothing is under the pointer: the furthest-along stage with a deal in
+// it. It states what is on the board and never what to do about it; and it does not speak of work as if it could
+// be done when it cannot: with no action that costs energy in reach it says that, and when the stage it names is
+// out of reach for lack of energy it says what that takes.
+const WORK = Object.keys(ACTS).filter(id => COST[id].energy > 0);
 export const idleHint = s => {
   if (isRunOver(s)) return HINT.idle.over();
   if (s.slots <= 0) return HINT.idle.noSlots();
+  if (!WORK.some(id => !actBlock(s, id))) return HINT.idle.tired();
   const late = lateDeals(s).length, demoed = stageCount(s, 2), qualified = stageCount(s, 1), leads = stageCount(s, 0);
-  if (late) return HINT.idle.close(late);
-  if (demoed) return HINT.idle.propose(demoed);
-  if (qualified) return HINT.idle.demo(qualified);
-  if (leads) return HINT.idle.discovery(leads);
-  return HINT.idle.start();
+  const [text, id] = late ? [HINT.idle.close(late), "close"] : demoed ? [HINT.idle.propose(demoed), "propose"] : qualified ? [HINT.idle.demo(qualified), "demo"]
+    : leads ? [HINT.idle.discovery(leads), "discovery"] : [HINT.idle.start(), "network"];      // (no leads: the cheaper of the two ways to find some)
+  const block = actBlock(s, id);
+  return block && block.why === "energy" ? `${text} ${HINT.blocked.energy(block)}` : text;
 };
 
-export const HintBar = ({ hint, s }) => (
-  <div className="hint" role="status" aria-live="polite">
-    <Icon name="info" className="sm" />
-    <span>{hint ? <><strong>{hint.title}.</strong> {hint.text}</> : idleHint(s)}</span>
-    {hint && hint.key ? <kbd>{hint.key}</kbd> : null}
-  </div>
-);
+// Why the Hail Mary cannot be thrown, whether it would end the run, and what the bar says about it.
+const hailWords = s => {
+  const block = hailBlock(s), fatal = block ? null : fatalPress(s, "hail");       // fatal: its least stress would already reach 100
+  return { block, fatal, text: block && block.why !== "none" ? HINT.blocked[block.why](block) : fatal ? HINT.ends(fatal) : HINT.hail(lateDeals(s).length, HAIL_ODDS.blast, HAIL_ODDS.walk, COST.hail) };
+};
+const endWords = s => (isRunOver(s) ? HINT.blocked.over() : HINT.endWeek(fridayPreview(s)));
+
+// A hint names what is under the pointer (an action, the Hail Mary, End week), and its words are read from the run
+// as it is now, not as it was when the pointer arrived: a press changes what its own button would do next, and the
+// pointer is still on it. (v2.1 kept the words it was given: after the last deal was signed the bar went on saying
+// "1 eligible deal" under a card that said there were none.)
+export const hintWords = (hint, s) => {
+  if (!hint) return null;
+  if (hint.act) { const d = describe(ACTIONS.find(a => a.id === hint.act), s); return { title: d.title, text: d.hint, key: hint.key }; }
+  if (hint.ui === "hail") return { title: UI.hail, text: hailWords(s).text, key: "H" };
+  if (hint.ui === "end") return { title: UI.endWeek, text: endWords(s), key: "E" };
+  return hint;
+};
+
+export const HintBar = ({ hint, s }) => {
+  const h = hintWords(hint, s);
+  return (
+    <div className="hint" role="status" aria-live="polite">
+      <Icon name="info" className="sm" />
+      <span>{h ? <><strong>{h.title}.</strong> {h.text}</> : idleHint(s)}</span>
+      {h && h.key ? <kbd>{h.key}</kbd> : null}
+    </div>
+  );
+};
 
 // One chip per effect in force, each with its own clock (game/effects.js): what it does to the signing odds, and a
 // second chip for a discount it carries.
@@ -88,21 +116,24 @@ const Chips = ({ list, onHint }) => {
 export { hailBlock };
 
 export const Foot = ({ s, onHail, onEndWeek, onHint, onBlocked }) => {
-  const late = lateDeals(s).length;
-  const hailBlocked = hailBlock(s);
-  const hailText = hailBlocked && hailBlocked.why !== "none" ? HINT.blocked[hailBlocked.why](hailBlocked) : HINT.hail(late, HAIL_ODDS.blast, HAIL_ODDS.walk);
-  const hailHint = () => onHint({ title: UI.hail, text: hailText, key: "H" });
-  const endHint = () => onHint({ title: UI.endWeek, text: isRunOver(s) ? HINT.blocked.over() : HINT.endWeek(fridayPreview(s)), key: "E" });
+  const { block: hailBlocked, fatal: hailFatal, text: hailText } = hailWords(s);
+  const hailHint = () => onHint({ ui: "hail" });
+  const endHint = () => onHint({ ui: "end" });
   const over = isRunOver(s);
   // no pointer to follow (a touch screen): the hint stays until the next tap, so a blocked button can say why
   const leave = () => { if (!noHover()) onHint(null); };
+  // ...and there a hint is raised by the press itself (a blocked button says why), never by the focus a tap brings
+  // first: on a phone the hint is three or four lines, the bar grew, the button moved from under the finger between
+  // press and release, and the first tap on End week or the Hail Mary did nothing (v2.1; v2.0.1's hint was shorter).
+  const point = show => () => { if (!noHover()) show(); };
   return (
     <div className="foot">
       <Chips list={chips(s)} onHint={onHint} />
-      <button type="button" className="btn" data-ui="hail" aria-disabled={hailBlocked ? "true" : undefined} onClick={() => { if (hailBlocked) { hailHint(); if (onBlocked && noHover()) onBlocked({ title: UI.hail, text: hailText }); return; } onHail(); if (noHover()) onHint(null); }}
-        onMouseEnter={hailHint} onFocus={hailHint} onMouseLeave={leave} onBlur={leave}><Icon name="dices" />{UI.hail}</button>
+      {/* (a throw that is certain to end the run is marked as an action card is: in the risk colour, and said) */}
+      <button type="button" className={"btn" + (hailFatal ? " risk" : "")} data-ui="hail" aria-disabled={hailBlocked ? "true" : undefined} onClick={() => { if (hailBlocked) { hailHint(); if (onBlocked && noHover()) onBlocked({ title: UI.hail, text: hailText }); return; } onHail(); if (noHover()) onHint(null); }}
+        onMouseEnter={point(hailHint)} onFocus={point(hailHint)} onMouseLeave={leave} onBlur={leave}><Icon name="dices" />{UI.hail}{hailFatal ? <span className="sr-only">, {CARD.fatal}</span> : null}</button>
       <button type="button" className="btn primary" data-ui="end" aria-disabled={over ? "true" : undefined} onClick={() => { if (over) return; onEndWeek(); if (noHover()) onHint(null); }}
-        onMouseEnter={endHint} onFocus={endHint} onMouseLeave={leave} onBlur={leave}>{UI.endWeek}<Icon name="arrow-right" /></button>
+        onMouseEnter={point(endHint)} onFocus={point(endHint)} onMouseLeave={leave} onBlur={leave}>{UI.endWeek}<Icon name="arrow-right" /></button>
     </div>
   );
 };

@@ -1,0 +1,82 @@
+{
+ "verdicts": [
+  {
+   "title": "The hint bar keeps what it said before the press while the pointer (or the focus) stays on the button",
+   "reproduced": true,
+   "real": true,
+   "intended": false,
+   "worth_doing": "yes",
+   "why": "Reproduced on the frozen release at 1366×768 with the pointer left where it clicked (my scripts f1-stale.cjs and f1-coffee.cjs in test-results/audit/check-newplayer/). End week from week 4: the bar still reads \"Friday: salary +$1,000, energy +15, stress −4\" under a Cash card that says \"Rent is due Friday\" (f1-end-w4-after.png); from weeks 1 and 5 it keeps a rent that is no longer due. Recharge keeps its offer over a card that says \"Used this week\". Discovery keeps \"1 lead waiting\" with none left. After two quad shots the bar still says \"Shot 1: +18 energy, +12 stress now … Later shots give less and risk more\" beside a card that says \"20% heart risk\" (f1-coffee-after-2.png); only moving away and back gives \"20% chance it ends the run\". The same with focus and Enter. Not intended: CHANGELOG.md:111 promises the opposite (\"The hint bar says what the button under your pointer (or your focus) will do with the numbers as they stand\"). A new player meets it on the first Friday and on the first shot, and the line it hides is the one about the run ending.",
+   "smallest_fix": "Nothing beyond what is already in hand. The 2.1.1 work tree (branch work-211, commit e1a1de0, \"the hint follows the run\") stores which control the hint belongs to and reads the words at render: ActionGrid.jsx onHint({ act, key }), Foot.jsx hintWords(hint, s) for actions, the Hail Mary and End week; the \"+N\" chip stays text. On that tree's candidate build the same presses read correctly (overlap.cjs: week 5 shows the rent, the shots count 1, 2, 3 and the third carries the 20% line). Two files, no copy.",
+   "regression_risk": "Touch is unchanged (a press still clears the bar; a blocked tap's reason stays, now live), and the tests that read the bar keep their text (test/e2e/phone.cjs:82-96, test/e2e/confirm.cjs:119). The bar is role=status with aria-live=polite, so with the focus on a button a screen reader now hears the new hint after each press; not checked with a reader. No rule, copy or save is touched."
+  },
+  {
+   "title": "Nothing says that Collections ends the run, and a conference can take you there in one click",
+   "reproduced": true,
+   "real": true,
+   "intended": false,
+   "worth_doing": "yes",
+   "why": "Reproduced as a brand-new player on the frozen release (f2-collections.cjs): Conference, Conference, End week, Recharge, Conference ends the run in week 2 with \"Jacket repo’d. Cash reached −$1,800.\" (f2-rel-5-after-third.png). At −$1,000 the Conference card was lit with its usual hint while clAInk's button on the same screen said \"Activation unavailable · insufficient cash\" (f2-rel-4-hover-conf.png). All the game had said was \"Collections at −$1,500 cash\", \"Finance would like to discuss the jacket.\" and the handbook's \"Collections take the jacket…\"; no string in src/copy says the run ends, though stress, the shot and quota all say so and a lethal shot asks first (Game.jsx:223). src/game/actions.js:222-234 charges the $800 and calls checkRepo with no guard; claink.js:152 refuses its own $500 at the same line. No document records this as a choice; the README states the rule plainly.",
+   "smallest_fix": "The press is already covered in the work tree (work-211, commit 43562d3: selectors.js fatalPress): the card reads \"Ends the run\", the hint \"Paying for this would leave −$1,800 cash. Collections ends the run at −$1,500.\", and the press asks first; seen on its candidate build (overlap-2-conference.png). End week and the Cash card say the same when Friday's rent would do it. One thing is still open there: src/copy/help.js, Cash row, append \" That ends the run.\" after the approved sentence.",
+   "regression_risk": "The handbook sentence, measured by injecting it on the frozen release and on the candidate (handbook.cjs): the Cash row stays 3 lines from 1025 to 1920 px wide and 4 on a 390 px phone, so no height changes and 1440×900 still does not scroll (the auditor expected it to); one extra line at 768×1024 only. scripts/copy-coverage.mjs matches sentence by sentence, so the approved sentence stays applied, and test/engine/copy.test.mjs looks for \"cash reaches -$1,500 or lower\", which stays. The press: a new confirmation on any cash-fatal press, held by the work tree's test/e2e/actions.cjs; its strings are new copy outside the copydeck."
+  },
+  {
+   "title": "Full-funnel week: a conference is not “lead generation”, and the handbook does not say so",
+   "reproduced": true,
+   "real": true,
+   "intended": false,
+   "worth_doing": "yes",
+   "why": "Reproduced on the committed rules with my own 300 seeds per plan (f3-funnel.mjs): prospect + discovery + demo earns the bonus 300 times in 300, conference + discovery + demo never; conference + discovery is penalised 300 times in 300 where prospect + discovery never is. src/game/week.js:39 counts prospect, cadence and network only. In the browser a week of conferences ended with \"Parts of your funnel have been declared a nature reserve. −6 pp signing odds next week\". Beside a Conference hint that promises \"3–8 warm leads\", the handbook's \"lead generation\" reads the other way, in the one place help.js says may not be misread as a rule. The sentence is the copydeck's (line 280), but nothing records the exclusion as deliberate.",
+   "smallest_fix": "src/copy/help.js, Full-funnel row: append \"A conference does not count.\" The work tree already has it (commit 43562d3). It also rewrites the approved parenthesis to \"prospecting, email cadence or referrals; discovery; demo; proposal/close\", which is why it carries note L280 and a new \"corrected\" kind in scripts/copy-coverage.mjs. The appended sentence alone would have left the approved sentence whole and the gate as it was; both are acceptable, the append is the smaller change.",
+   "regression_risk": "The rule is untouched, so nothing moves in replays, balance or saves. On the frozen build the row goes from 3 to 4 lines at 1025 to 1536 px wide; the handbook already scrolls at 1366×768 (105 px, then 115) and still fits at 1440×900 (849 px, then 859, of 900). If the parenthesis is reworded the copydeck row needs its note, which the work tree has."
+  },
+  {
+   "title": "With no energy for it, the idle hint still names the action",
+   "reproduced": true,
+   "real": true,
+   "intended": false,
+   "worth_doing": "marginal",
+   "why": "Reproduced on the frozen release with 15 energy and 2 slots (f4-idle-1366.png, f4-idle-390.png): the bar says \"1 qualified deal ready for a demo.\" while Demo marathon (28 energy) and eight other cards are dimmed; on the phone, \"1 demoed deal ready for a proposal.\" It is slight: the line is true of the board, and the dimmed cards and the red energy meter already say the rest. But Foot.jsx:10 calls it \"the one thing worth doing next\", and it names something that cannot be done, at the start of most weeks.",
+   "smallest_fix": "Nothing beyond what is in hand: the work tree (commit 43562d3, Foot.jsx idleHint) appends the existing \"Needs 28 energy. You have 15.\" when the stage it names is out of reach, exactly as proposed; seen on its candidate build. It also adds one new line for when nothing that costs energy is in reach (\"Too little energy for any action. Recharge, a quad shot and Friday each restore some.\").",
+   "regression_risk": "Measured by injecting the longer line on the frozen release (hintfit.cjs): one line from 1025 px wide up, two lines on 390 and 320 px phones inside the two the bar reserves there, so nothing moves. The extra \"too little energy\" line is copy the copydeck never saw."
+  },
+  {
+   "title": "QBR is never spelled out in the game",
+   "reproduced": true,
+   "real": true,
+   "intended": true,
+   "worth_doing": "no",
+   "why": "True as stated: no string in src/copy expands it. But nothing is misread for lack of it. The handbook's first row says what happens there (\"Close $160,000 in 13 weeks. At QBR, 100% earns President’s Club … below 70% you are out.\"), the desktop week strip puts the tag under week 13, and week 13 opens with \"Final week. QBR on Friday.\" The wording is the approved copydeck's (docs/2.1/TTST_2.1_Editorial_Copydeck.md:277, \"At QBR, 100% earns President's Club unless rare politics intervene.\"), and the studio put the glossary in the README on purpose (README.md:58-74, \"QBR (quarterly business review): the meeting at the end of the quarter where your number gets judged.\" … \"That is enough to play. The game teaches the rest the hard way.\"). Bare jargon is the voice of the piece; expanding it is a preference.",
+   "smallest_fix": "leave alone",
+   "regression_risk": "If added anyway: the proposed sentence makes The goal 5 lines instead of 4 on a desktop and 7 instead of 5 on a 390 px phone. On the work tree's candidate, whose handbook is already 872 px of 900 at 1440×900, it is the one proposed addition that would start that size scrolling (overflow 0 to 16 px, handbook.cjs)."
+  },
+  {
+   "title": "“pp” is never spelled out, and the first Friday can ask for a choice in it",
+   "reproduced": true,
+   "real": true,
+   "intended": true,
+   "worth_doing": "marginal",
+   "why": "Seen on the test build with one Friday roll scripted (f6-pp.cjs, f6-incident-1366.png): the customer-incident dialog offers \"−15 pp odds for 2 weeks\" against \"−8 pp odds this week\", and no string defines pp, while the Closed card and the pricing dialog write \"percentage points\". It is slight: every use is a signed number beside \"odds\", so direction and size read correctly and the two options can be ranked without the unit. The mixture is the approved copydeck's own (\"pp\" in lines 146-147, 254-255 and 280; \"percentage points\" in 58-59, 246 and 248), so the game says what was approved.",
+   "smallest_fix": "Leave alone; or, only if the handbook is being edited anyway, append \"pp: percentage points.\" to the Full-funnel row in src/copy/help.js. Do not reword the two incident options: those are approved sentences.",
+   "regression_risk": "On the work tree's candidate the fragment fits the row's existing last line from 1025 to 1920 px wide and on a 390 px phone (no height change; one more line at 768×1024). On the 2.1 text it adds a line (3 to 4) at 1025 to 1536 px. It keeps the fragments test/engine/copy.test.mjs looks for (\"+6 pp signing odds next week\", \"gives -6 pp next week\"). A definition in the handbook is not where a player meets the term (the Conference hint, the log, the Friday dialog), so the gain is small."
+  },
+  {
+   "title": "A quad shot takes a slot, and neither its card nor its hint says so",
+   "reproduced": true,
+   "real": true,
+   "intended": false,
+   "worth_doing": "marginal",
+   "why": "Reproduced on the frozen release (f1-coffee.cjs): card \"$6 · +25 stress by Friday\", hint \"Shot 1: +18 energy, +12 stress now, +13 more on Friday. Later shots give less and risk more.\", and each press took a slot (5, 4, 3, 2 left). The hint is where the game states what a press costs (the Conference hint lists its slots) and this one leaves a cost out. It is slight because the tour gives the general rule (\"Most actions use one slot\"), the handbook says it twice (\"Recharge and coffee can restore energy with a slot left\", \"Costs cash and a slot\"), the slot meter shows it on the first press and the energy is kept. The one case that stings is a shot bought with the last slot.",
+   "smallest_fix": "Nothing beyond what is in hand: the work tree (commit 43562d3, src/copy/ui.js) starts both HINT.coffee and HINT.recharge with \"Takes a slot.\"; seen on its candidate build.",
+   "regression_risk": "Measured by injecting the longer hints on the frozen release (hintfit.cjs): at most two lines from 1025 px wide up, which the desktop bar already holds for the Conference hint. It reaches mouse and keyboard players only: on touch a hint cannot be read before the tap (deliberate, CHANGELOG.md:73, \"Hints work by touch\"), and the card has no room for it (already two lines at 390 px). The copydeck gives direction for this hint, not fixed words, so no row opens."
+  }
+ ],
+ "missed": [
+  {
+   "title": "At the usual laptop browser sizes the onboarding memo does not fit, and the pinned button cuts a line in half",
+   "where": "src/styles/dialogs.css:2 and :22 (the dialog scrolls as a whole with its footer pinned over it) and :39-41 (the memo's footer stops being pinned only at 600 px tall or less); src/ui/primitives.jsx:59 (the button is focused without scrolling to it). No gate can see the scrollbar case: Playwright hides scrollbars and nothing under test/ or scripts/ turns them back on.",
+   "evidence": "The auditor checked the memo at 1366×768, which is a screen size, not what a browser leaves of that screen. The memo needs a window 664 px tall. Frozen release, new player, Chromium launched with its scrollbars drawn as Chrome draws them on Windows and Linux (ignoreDefaultArgs: [\"--hide-scrollbars\"]; memo-scrollbar2.cjs in test-results/audit/check-newplayer/). At 1366×657 a 15 px scrollbar appears inside the dialog, the third job line wraps (\"… Nobody has read it. You / should.\") and the chapter line \"Management confirms this is a growth territory…\" is half under the footer (test-results/audit/check-newplayer/memo-rel-1366x657-scrollbars.png). At 1366×625 the word \"should.\" is cut in half by the footer and the chapter line is gone (test-results/audit/check-newplayer/memo-rel-1366x625-scrollbars.png); the same at 1280×609. With scrollbars hidden, which is what every audit picture and every test sees, 1366×657 overflows by 7 px and shows nothing wrong. Two narrower bands with scrollbars hidden (overlay scrollbars, as on macOS): at 601 to 612 px tall the footer covers half of the third job line (memo-1366x601.png); at 581 to 599 px the footer is no longer pinned, \"Start week 1\" is wholly below the dialog's edge and nothing above it is cut, so the dialog looks finished and has no button (memo-1366x593.png). There Enter and Space still work because the hidden button has the focus, until a click anywhere moves the focus to the dialog (memo-short2.cjs); Escape does nothing; a wheel scroll of 59 px finds the button. CHANGELOG.md:78 says the button \"comes after the three lines that state the job instead of covering them\". The work tree's 2.1.1 candidate measures the same.",
+   "proposal": "Cosmetic from 601 px up (the button is always there), so leaving it is defensible. The least change: give the memo's pinned footer the edge phones already get, where the dialog cannot fit, so a covered line reads as text continuing under a bar. One rule in src/styles/dialogs.css: @media (min-width:641px) and (min-height:601px) and (max-height:663px){ dialog[data-dialog=\"welcome\"] .d-footer{border-top:1px solid var(--border)} }. Tried by injecting it into the page (memo-edge-1366x625-scrollbars.png): it reads as a scrolling sheet, though the word stays half covered. Making the memo fit 1366×625 would mean dropping the chapter line there (36 px) plus a few pixels of padding, which is a design decision. I would leave the 581 to 599 px band; raising the 600 px threshold only moves it. Whatever is done, one first-screen check with scrollbars shown would hold it."
+  }
+ ]
+}

@@ -10,6 +10,12 @@
 //   7. a stored run that cannot be opened is not played: a dialog says so, fits the phone, and leaves it where it was
 //   8. a 320px screen: the wordmark makes way for the top bar's buttons; a tall dialog opens at its first line
 //   9. turned on its side: the chips are measured again, and settle (they used to be redrawn on every frame)
+//  11. v2.1.1: a clAInk run tapped from the usual place (End week mid-screen, Run agents below it): its result is told,
+//      in the workspace if that is on the screen, else in the notice; not before the workspace's report has landed, and
+//      not under the manager's warning when the run opens it
+//  10. v2.1.1: a tap near the top edge of End week ends the week (in v2.1 the hint grew under the finger and the tap
+//      was lost); the recovery dialog's buttons stay on a 320px screen; a caption that does not fit one line of the
+//      top bar is shown whole on a tablet and on a phone held sideways
 // Every screen here is a touch screen (no hover, a coarse pointer). Exits 1 if any check fails.
 // (CommonJS on purpose: Playwright only resolves through require() here.)
 "use strict";
@@ -26,20 +32,22 @@ const rows = [];
 const check = (name, ok, detail) => { rows.push(!!ok); console.log("  " + (ok ? "ok  " : "FAIL") + "  " + name + (detail ? "  (" + detail + ")" : "")); return !!ok; };
 const SMALL = { width: 360, height: 640 }, PHONE = { width: 390, height: 664 }, SIDEWAYS = { width: 750, height: 342 };
 
-// o: { viewport, save (raw text for the autosave), first (a brand-new player: the first day is shown) }
+// o: { viewport, save (raw text for the autosave), first (a brand-new player: the first day is shown), extra (more
+// storage keys, set with the save) }
 async function open(browser, o) {
   const context = await browser.newContext({ viewport: o.viewport, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
-  await context.addInitScript(([save, first, key, flag]) => {
+  await context.addInitScript(([save, first, key, flag, extra]) => {
     try {
       window.sessionStorage.setItem("tst-booted", "1");
       if (window.name !== "tst-seeded" && !window.sessionStorage.getItem("__seeded")) {   // once per tab (the tab's name survives a reload)
         window.name = "tst-seeded";
         if (!first) window.localStorage.setItem(flag, "1");
         if (save !== null) window.localStorage.setItem(key, save);
+        for (const k of Object.keys(extra)) window.localStorage.setItem(k, extra[k]);
         window.sessionStorage.setItem("__seeded", "1");
       }
     } catch (e) {}
-  }, [o.save === undefined ? null : o.save, !!o.first, AUTOSAVE, FLAG]);
+  }, [o.save === undefined ? null : o.save, !!o.first, AUTOSAVE, FLAG, o.extra || {}]);
   const page = await context.newPage();
   const errors = [];
   page.on("pageerror", e => errors.push(String(e).slice(0, 200)));
@@ -113,6 +121,14 @@ const wide = page => page.evaluate(() => ({ page: document.documentElement.scrol
     check("when the week turns the page goes back to the top, where the new week is", turned.y <= 2 && turned.week === "Week " + (now.week + 1) && !turned.strip, JSON.stringify(turned));
     const friday = await text(page, ".peek");
     check("and what Friday did is shown, wherever End week was on the screen when it was pressed", !!friday && friday.length > 3, friday);
+    // a tap near the top edge of the button: the tap brings the focus first, and in v2.1 the focus raised a
+    // three-line hint, the bar grew, and the button had moved from under the finger by the time it lifted
+    await page.waitForTimeout(3500);                              // the notice has gone
+    await page.evaluate(() => document.querySelector('[data-ui="end"]').scrollIntoView({ block: "center" })); await page.waitForTimeout(400);
+    const edge = await page.evaluate(() => { const r = document.querySelector('[data-ui="end"]').getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height * 0.15, week: document.querySelector(".quarter-head h2").innerText, hint: Math.round(document.querySelector(".hint").getBoundingClientRect().height) }; });
+    await page.touchscreen.tap(edge.x, edge.y); await page.waitForTimeout(1200);
+    const afterEdge = await page.evaluate(() => document.querySelector(".quarter-head h2").innerText);
+    check("a tap near the top edge of End week ends the week", afterEdge === "Week " + (Number(edge.week.replace(/\D/g, "")) + 1), edge.week + " -> " + afterEdge);
     // a week that ends in a choice: nothing is shown under the dialog, and the week's lines are shown once it is made
     await page.evaluate(() => { window.__TST_RNG = () => 0.1; });
     await page.waitForTimeout(5200);                           // the last notice has gone
@@ -134,6 +150,9 @@ const wide = page => page.evaluate(() => ({ page: document.documentElement.scrol
     await page.evaluate(() => window.TST_AUDIO.say("filler")); await page.waitForTimeout(500);
     const cap = await page.evaluate(() => { const c = document.querySelector(".pa-cap"); if (!c) return null; const r = c.getBoundingClientRect(); const at = u => { const b = document.querySelector('[data-ui="' + u + '"]').getBoundingClientRect(); const e = document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2); return !!e && !!e.closest('[data-ui="' + u + '"]'); }; return { top: Math.round(r.top), bottom: Math.round(r.bottom), vh: window.innerHeight, free: ["rules", "sound", "settings"].every(at) }; });
     check("the announcer's caption is at the bottom of the screen and covers none of the top bar's buttons", !!cap && cap.top > cap.vh / 2 && cap.bottom <= cap.vh && cap.free, JSON.stringify(cap));
+    // v2.1.1: the stacked tier's tighter spacing (1.2) is for a caption in the top bar; the notice keeps v2.1's 1.4
+    const spacing = await page.evaluate(() => { const c = document.querySelector(".pa-text"); if (!c) return null; const cs = getComputedStyle(c); return { lineHeight: parseFloat(cs.lineHeight), fontSize: parseFloat(cs.fontSize) }; });
+    check("the notice at the bottom keeps its line spacing (1.4, as in v2.1)", !!spacing && Math.abs(spacing.lineHeight / spacing.fontSize - 1.4) < 0.02, JSON.stringify(spacing));
     check("no errors", errors.length === 0, errors.join(" | "));
     await context.close();
 
@@ -205,6 +224,75 @@ const wide = page => page.evaluate(() => ({ page: document.documentElement.scrol
     const names = await page.evaluate(() => { const ink = document.createRange(); const n = document.querySelector(".brand-name") || document.querySelector(".brand"); ink.selectNodeContents(n); const box = n.getBoundingClientRect(); return { brandRight: Math.round(Math.min(ink.getBoundingClientRect().right, box.right)), rulesLeft: Math.round(document.querySelector('[data-ui="rules"]').getBoundingClientRect().left), page: document.documentElement.scrollWidth, screen: document.documentElement.clientWidth }; });
     check("at 320px the wordmark does not run under the top bar's buttons, and nothing is wider than the screen", names.brandRight <= names.rulesLeft && names.page <= names.screen, JSON.stringify(names));
     check("no errors", errors.length === 0, errors.join(" | "));
+    await context.close();
+
+    /* ---------- 10. the recovery dialog's buttons, and captions that need two lines ---------- */
+    const old = fixture("midrun-seeded");
+    for (const size of [{ width: 320, height: 568 }, { width: 375, height: 667 }]) {
+      ({ context, page, errors } = await open(browser, { viewport: size, save: old, extra: { "tst-save-v4-3": old, "tst-autosave-v5": "{not json" } }));
+      await page.waitForTimeout(300);
+      const btns = await page.evaluate(() => [...document.querySelectorAll('dialog[open][data-dialog="recovery"] .d-footer .btn')].map(b => { const r = b.getBoundingClientRect(); return { text: b.innerText.replace(/\s+/g, " "), left: Math.round(r.left), right: Math.round(r.right), cut: b.scrollWidth > b.clientWidth + 1 }; }));
+      check(`a damaged run beside two from an earlier version, at ${size.width}px: every button of the dialog is on the screen with its whole label`, btns.length === 3 && btns.every(b => b.left >= 0 && b.right <= size.width && !b.cut) && btns.filter(b => /earlier version/.test(b.text)).length === 2 && !errors.length, JSON.stringify(btns));
+      await context.close();
+    }
+    for (const size of [{ width: 768, height: 1024 }, { width: 740, height: 360 }, { width: 667, height: 375 }]) {
+      ({ context, page, errors } = await open(browser, { viewport: size, save: fixture("midrun-seeded") }));
+      const cut = [];
+      for (const key of ["meetings", "whale", "sqlStorm", "freeze", "hygiene"]) {
+        await page.evaluate(k => window.TST_AUDIO.say(k, { force: true }), key); await page.waitForTimeout(450);
+        const c = await page.evaluate(() => { const t = document.querySelector(".pa-text"), bar = document.querySelector(".topbar"); if (!t) return null; const r = t.getBoundingClientRect(), b = bar.getBoundingClientRect(); return { text: t.textContent, cut: t.scrollWidth > t.clientWidth + 1 || t.scrollHeight > t.clientHeight + 1, inBar: r.top >= b.top && r.bottom <= b.bottom, bar: Math.round(b.height) }; });
+        if (!c || c.cut || !c.inBar || c.bar !== 48) cut.push(key + ": " + JSON.stringify(c));
+      }
+      check(`${size.width}x${size.height}: the announcer's longest lines are shown whole in the top bar, on as many lines as they need`, !cut.length && !errors.length, cut.join(" ; "));
+      await context.close();
+    }
+
+    /* ---------- 11. a clAInk run's result, on a phone ---------- */
+    // The dice are fixed: at 0.5 the run is a strike and nothing opens a dialog; at 0.1 it signs deals and the manager's
+    // clAInk warning opens one (the run's lines then wait for it to close, as every step's lines do under a dialog).
+    const RUN = /clAInk|Strike|strike|outcome|revoked|Revenue verified|signed/;
+    const watch = async (page, polls) => {
+      let early = null, told = null, inView = false, dialog = false;
+      for (let t = 0; t < polls; t++) {
+        await page.waitForTimeout(100);
+        const now = await page.evaluate(() => {
+          const reporting = !!document.querySelector(".claink-console[data-reporting]"), peek = document.querySelector(".peek");
+          const card = document.querySelector(".claink-console .claink-strike, .claink-console .claink-clear, .claink-console .claink-revoked") || document.querySelector(".claink-console .claink-report .net");
+          const r = card && card.getBoundingClientRect(), top = document.querySelector(".strip.on") ? 40 : 0;
+          return { reporting, dialog: !!document.querySelector("dialog[open]"), peek: peek ? peek.textContent : "", card: !!card && r.height > 0 && r.top >= top && r.bottom <= innerHeight };
+        });
+        if (now.dialog) dialog = true;
+        if (now.peek && RUN.test(now.peek) && (now.reporting || now.dialog) && early === null) early = now.peek.slice(0, 80);
+        if (now.peek && RUN.test(now.peek) && told === null) told = now.peek.slice(0, 100);
+        if (!now.reporting && !now.dialog && now.card) inView = true;
+        if (!now.reporting && t > 30 && (told || inView)) break;
+      }
+      return { early, told, inView, dialog };
+    };
+    const runFrom = async (page, dice) => {
+      await page.evaluate(() => document.querySelector('[data-ui="end"]').scrollIntoView({ block: "center" })); await page.waitForTimeout(400);
+      const seen = await page.evaluate(() => { const r = document.querySelector(".claink-deploy").getBoundingClientRect(); return r.top >= 0 && r.bottom <= innerHeight; });
+      if (!seen) { await page.evaluate(() => document.querySelector(".claink-deploy").scrollIntoView({ block: "end" })); await page.waitForTimeout(300); }
+      await page.evaluate(v => { window.__TST_RNG = () => v; }, dice);
+      await page.locator(".claink-deploy").tap();
+    };
+    const said = r => r.early ? "told early: " + r.early : r.told ? "notice: " + r.told : r.inView ? "the result card is on the screen" : "the result was shown nowhere";
+    for (const size of [{ width: 390, height: 664 }, { width: 360, height: 640 }, { width: 412, height: 915 }]) {
+      ({ context, page, errors } = await open(browser, { viewport: size, save: fixture("ck-active-0-strikes") }));
+      await runFrom(page, 0.5);
+      const r = await watch(page, 60);
+      check(`${size.width}x${size.height}: a clAInk run tapped below End week is told, in the workspace or in the notice, and not before its report lands`, !r.early && !r.dialog && (r.told !== null || r.inView) && !errors.length, said(r));
+      await context.close();
+    }
+    ({ context, page, errors } = await open(browser, { viewport: SMALL, save: fixture("ck-active-0-strikes") }));
+    await runFrom(page, 0.1);
+    const underDialog = await watch(page, 40);
+    const button = page.locator('dialog[open][data-dialog="ck:warning"] .d-footer .btn').last();
+    const opened = underDialog.dialog && await button.count() > 0;
+    if (opened) await button.tap();
+    const closed = opened ? await watch(page, 40) : underDialog;
+    check("360x640: when the run opens the manager's warning, its result waits for the dialog and is told once it is closed", opened && !underDialog.told && !closed.early && (closed.told !== null || closed.inView) && !errors.length,
+      opened ? (underDialog.told ? "told under the dialog: " + underDialog.told : said(closed)) : "no warning dialog opened");
     await context.close();
 
     /* ---------- 9. turned on its side ---------- */

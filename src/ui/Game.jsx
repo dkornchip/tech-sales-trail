@@ -1,14 +1,14 @@
 import React from "react";
 import { ENDINGS } from "../copy/endings.js";
 import { EVENT_COPY } from "../copy/events.js";
-import { HELP, HELP_MEMO, HELP_OK, HELP_TITLE } from "../copy/help.js";
+import { HELP, HELP_ABOUT, HELP_MEMO, HELP_OK, HELP_TITLE } from "../copy/help.js";
 import { EVENTS } from "../game/events.js";
 import { causeOf } from "../game/legacy.js";
 import { step, waiting } from "../game/run.js";
 import { isRunOver } from "../game/log.js";
-import { handbookFacts, nextShot } from "../game/selectors.js";
+import { fatalPress, handbookFacts, nextShot } from "../game/selectors.js";
 import { newGame } from "../game/state.js";
-import { CONFIRM, MENU, NAMES, RECOVERY, TOAST } from "../copy/ui.js";
+import { CONFIRM, MENU, NAMES, RECOVERY, TOAST, UI } from "../copy/ui.js";
 import { describe } from "./app/ActionGrid.jsx";
 import { Board } from "./app/Board.jsx";
 import { hailBlock } from "./app/Foot.jsx";
@@ -167,7 +167,7 @@ export function Game({fresh}){
   const shownId=shown ? shown.id : null;
   useEffect(()=>{
     if(!shownId)return;
-    const a=AUDIO(); if(a) a.onModal(shownId);
+    const a=AUDIO(); if(a) a.onModal(shownId, shown.params);
     // an acknowledgement brings the run's result for screen readers (the report behind it is inert by now)
     const L=isAck(shown) && sRef.current.claink ? sRef.current.claink.last : null;
     if(!L || !L.announce)return;
@@ -196,7 +196,9 @@ export function Game({fresh}){
       const words=ENDINGS[id], p={closed:s.closedWon,cash:s.cash,cause};
       const title=words.title(p);
       const body=words.body(p), note=words.note ? words.note(p) : null;
-      const meta={pct:s.quota>0 ? s.closedWon/s.quota : 0, cause, shots:s.coffeesThisWeek||0};
+      // (pct: floored to a whole percent, as the QBR's own line and the card's tile are. The scene rounds what it is
+      // given: with the exact share a run that closed $159,600 played "QUOTA 100%" above a card that said 99%.)
+      const meta={pct:s.quota>0 ? Math.floor(100*s.closedWon/s.quota)/100 : 0, cause, shots:s.coffeesThisWeek||0};
       setOver({id,title,body,note,type,meta});
     }else{
       setOver(null);
@@ -207,8 +209,10 @@ export function Game({fresh}){
   useEffect(()=>{ const a=AUDIO(); if(a) a.setStress(over ? 0 : s.stress); },[s.stress,over]);
 
   // A confirmation is asked only before something that cannot be taken back: a new run while one is being played,
-  // the first Hail Mary of a run, and a quad shot that is certain to end the run. (Dismissing the vendor's offer
-  // asks inside the ad itself.) Answering "no" changes nothing; nothing here is asked twice for the same thing.
+  // the first Hail Mary of a run, and any press that is certain to end the run (selectors.js, fatalPress: the
+  // stress it adds reaches 100, or the cash it costs reaches the line where Collections ends it). (Dismissing the
+  // vendor's offer asks inside the ad itself.) Answering "no" changes nothing; nothing here is asked twice for
+  // the same thing.
   const[confirm,setConfirm]=useState(null);       // { kind, run }
   const hailAsked=useRef(null);                   // a run with no story on file (an old save) is asked once
   const tryOpportunisticClose=()=>{
@@ -216,13 +220,17 @@ export function Game({fresh}){
     if(hailBlock(cur))return;
     const thrown=cur.story && cur.story.n ? cur.story.n.hails||0 : null;
     const first=thrown===null ? hailAsked.current!==cur.runId : thrown===0;
+    const fatal=fatalPress(cur,"hail");
+    if(fatal && !waiting(cur)){ setConfirm({kind:fatal.why,title:UI.hail,run:()=>{ hailAsked.current=cur.runId; if(!hailBlock(sRef.current)) dispatch({t:"hail"}); }}); return; }
     if(first && !waiting(cur)){ setConfirm({kind:"hail",run:()=>{ hailAsked.current=cur.runId; if(!hailBlock(sRef.current)) dispatch({t:"hail"}); }}); return; }
     dispatch({t:"hail"});
   };
   const act=a=>{
     const cur=sRef.current;
-    if(describe(a,cur).block)return;
-    if(a.id==="coffee" && nextShot(cur).lethal && !waiting(cur)){ setConfirm({kind:"coffee",run:()=>{ if(!describe(a,sRef.current).block) dispatch({t:"act",id:a.id}); }}); return; }
+    const d=describe(a,cur);
+    if(d.block)return;
+    const fatal=a.id==="coffee" && nextShot(cur).lethal ? "coffee" : d.fatal ? d.fatal.why : null;
+    if(fatal && !waiting(cur)){ setConfirm({kind:fatal,title:d.title,run:()=>{ if(!describe(a,sRef.current).block) dispatch({t:"act",id:a.id}); }}); return; }
     dispatch({t:"act",id:a.id});
   };
   // New run from the menu: a quarter in progress asks first. (The ending's own New run does not: that run is over.)
@@ -232,7 +240,13 @@ export function Game({fresh}){
     if(!isRunOver(cur) && started){ setConfirm({kind:"newRun",run:onNew}); return; }
     onNew();
   };
-  useShortcuts({ onActKey:act, onEndWeek:()=>endWeek(), onHail:tryOpportunisticClose, onRules:openRules });
+  // A number key on an action that cannot be taken goes to its card instead, which says why (the card shows its
+  // hint when it takes the focus): a press must never be met with silence.
+  const actKey=a=>{
+    if(describe(a,sRef.current).block){ const el=document.querySelector('[data-act="'+a.id+'"]'); if(el) el.focus(); return; }
+    act(a);
+  };
+  useShortcuts({ onActKey:actKey, onEndWeek:()=>endWeek(), onHail:tryOpportunisticClose, onRules:openRules });
 
   // clAInk's report has had its say (it finished, was skipped, or there was nothing to watch): an acknowledgement
   // that the run is waiting on may open now. A run started while one was waiting hides it again until its own report is done.
@@ -261,7 +275,7 @@ export function Game({fresh}){
         title={HELP_TITLE}
         dialogId="help"
         className="help"
-        aside={<button type="button" className="linkbtn" data-ui="memo-again" onClick={()=>{ setShowHelp(false); setHelpOpens(n=>n+1); setFirst("memo-again"); }}>{HELP_MEMO}</button>}
+        aside={<><button type="button" className="linkbtn" data-ui="memo-again" onClick={()=>{ setShowHelp(false); setHelpOpens(n=>n+1); setFirst("memo-again"); }}>{HELP_MEMO}</button><span className="about">{HELP_ABOUT}</span></>}
         onDismiss={()=>setShowHelp(false)}
         actions={[
           {
@@ -279,6 +293,7 @@ export function Game({fresh}){
             </section>
           ))}
         </div>
+        <p className="about">{HELP_ABOUT}</p>
       </Modal>
 
       <Welcome key={"w"+helpOpens} open={!booting && (first==="memo" || first==="memo-again")} again={first==="memo-again"} s={s}
@@ -310,7 +325,7 @@ export function Game({fresh}){
 
       <Modal
         open={!!confirm && !booting && !over}
-        title={confirm ? CONFIRM[confirm.kind].title : ""}
+        title={confirm ? confirm.title || CONFIRM[confirm.kind].title : ""}
         dialogId={confirm ? "confirm:"+confirm.kind : undefined}
         onDismiss={()=>setConfirm(null)}
         actions={confirm ? [

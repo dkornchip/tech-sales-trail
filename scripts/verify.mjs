@@ -20,9 +20,14 @@
 //                (scripts/copy-coverage.mjs --strict; docs/2.1/copy-coverage-notes.json)
 //   fonts        the bundled fonts are what the packages give, and cover what the scenes draw (scripts/fonts.mjs --check)
 //   notices      THIRD-PARTY-NOTICES.md is current         (scripts/notices.mjs --check)
+//   releases     every earlier release kept in the repository is the file that shipped, and ./index.html is still
+//                the one the owner promoted (scripts/check-releases.mjs; test/baseline/releases.json)
 //   engine       the rules, in Node: the dice, invariants after every move, golden seeded replays  (test/engine)
 //   audio        what the sound engine decides: routing, batching, one voice at a time, captions, mute  (test/audio)
-//   sim-smoke    the frozen balance baseline is intact and the simulation kit still measures  (test/sim/smoke.mjs)
+//   sim-smoke    the frozen engines are intact and the simulation kit still measures  (test/sim/smoke.mjs)
+//   equivalence  the rules play as v2.1 did: the frozen v2.1 rules and the working tree, side by side from the
+//                same seeds, are the same run after every move, and a move that is no longer allowed is a decided
+//                correction (test/engine/tools/equivalence.mjs)
 //   scenes       every scene's picture, frame by frame, is v1.21's (test/parity/scenes.cjs --art). The captions
 //                were rewritten for v2.1 (copydeck §11): their words are held by the copy lint and the deck fixture
 //   fixtures     the save fixtures are what v1.21 writes   (test/saves/generate.cjs --check)
@@ -30,14 +35,17 @@
 //   release      the shipped file has no test hook and replays move for move against src/game  (test/e2e/release.cjs)
 //   offline      no network, bundled fonts                 (test/e2e/offline.cjs)
 //   firstday     the onboarding memo and the tour          (test/e2e/firstday.cjs)
-//   confirm      the four confirmations, by real presses   (test/e2e/confirm.cjs): a "no" changes nothing
-//   matrix       eight screen sizes x twelve states        (test/e2e/matrix.cjs): 1440x900 to 320x568, a phone on
-//                its side, 200% zoom; the offer, a choice, an incident, the handbook, six endings; reduced motion
+//   confirm      the confirmations, by real presses        (test/e2e/confirm.cjs): a "no" changes nothing
+//   actions      what a card says is what the press does   (test/e2e/actions.cjs): the count of eligible deals,
+//                "skill only", a card that is off, and what money would end, against the run before and after
+//   matrix       eight screen sizes x thirteen states      (test/e2e/matrix.cjs): 1440x900 to 320x568, a phone on
+//                its side, 200% zoom; the first day, the offer, a choice, an incident, the handbook, six endings;
+//                reduced motion
 //   resilience   a held choice, names, ids, damaged saves  (test/e2e/resilience.cjs)
 //   phone        a touch screen: hints, the strip, the log, captions, sideways endings  (test/e2e/phone.cjs)
 //   keyboard     a whole run with the keyboard only        (test/e2e/keyboard.cjs)
 //   layout       one screen, nothing covered or cut off    (test/e2e/layout.cjs)
-//   released     with --release only: the committed release file (./Tech_Sales_Trail_<major.minor>.html) is exactly
+//   released     with --release only: the committed release file (./Tech_Sales_Trail_<version>.html) is exactly
 //                what the source builds (scripts/build.mjs --check)
 //
 // What is NOT here any more, and why. Up to v2.0.1 the build was held, move for move and sound for sound, to the
@@ -92,12 +100,14 @@ const STEPS = {
   engine: { what: "the rules, in Node", cmd: ["scripts/unit.mjs", "engine", "test/engine"] },
   audio: { what: "what the sound engine decides", cmd: ["scripts/unit.mjs", "audio", "test/audio"] },
   "sim-smoke": { what: "the simulation kit and its baseline", cmd: ["test/sim/smoke.mjs"] },
+  equivalence: { what: "plays as v2.1 did, move for move", cmd: ["test/engine/tools/equivalence.mjs", "--seeds", "20"] },
   saves: { what: "save compatibility", cmd: ["test/saves/run.cjs", "--a", "self", "--b", target, "--workers", workers, ...drv("--b-driver")], needs: target },
   release: { what: "no hooks; the bundle is the source", cmd: ["test/e2e/release.cjs", shipped], needs: shipped },
   offline: { what: "no network, bundled fonts", cmd: ["test/e2e/offline.cjs", shipped], needs: shipped },
   firstday: { what: "a new player's first day", cmd: ["test/e2e/firstday.cjs", shipped], needs: shipped },
   confirm: { what: "the confirmations, by real presses", cmd: ["test/e2e/confirm.cjs", shipped], needs: shipped },
-  matrix: { what: "eight screen sizes x twelve states", cmd: ["test/e2e/matrix.cjs", shipped], needs: shipped },
+  actions: { what: "what a card says is what the press does", cmd: ["test/e2e/actions.cjs", shipped], needs: shipped },
+  matrix: { what: "eight screen sizes x thirteen states", cmd: ["test/e2e/matrix.cjs", shipped], needs: shipped },
   resilience: { what: "reloads, damaged saves, names, ids", cmd: ["test/e2e/resilience.cjs", target], needs: target },
   phone: { what: "a phone: touch, small screens, sideways", cmd: ["test/e2e/phone.cjs", target], needs: target },
   layout: { what: "layout on one screen", cmd: ["test/e2e/layout.cjs", target, "--workers", workers, "--min-font", String(LAYOUT_MIN_FONT), "--expect-fail", LAYOUT_KNOWN.join(","), ...drv("--driver")], needs: target },
@@ -111,11 +121,12 @@ const STEPS = {
   scenes: { what: "the scenes, frame by frame (pictures; v2.1 rewrote the captions)", cmd: ["test/parity/scenes.cjs", "--art", "--b", target], needs: target },
   fonts: { what: "bundled fonts", cmd: ["scripts/fonts.mjs", "--check"] },
   notices: { what: "licence notices", cmd: ["scripts/notices.mjs", "--check"] },
+  releases: { what: "earlier releases and index.html are as recorded", cmd: ["scripts/check-releases.mjs"] },
   fixtures: { what: "save fixtures are the baseline's", cmd: ["test/saves/generate.cjs", "--check"] },
   // with --release: the committed release file is exactly what the source builds
   released: { what: "the release file is current", cmd: ["scripts/build.mjs", "--check"] }
 };
-const DEFAULT = ["build", "build-test", "lint-rng", "lint-copy", "lint-css", "copy-check", "copy-render", "copy-deck", "fonts", "notices", "engine", "audio", "sim-smoke", "scenes", "fixtures", "saves", "release", "offline", "firstday", "confirm", "resilience", "phone", "keyboard", "layout", "matrix"];
+const DEFAULT = ["build", "build-test", "lint-rng", "lint-copy", "lint-css", "copy-check", "copy-render", "copy-deck", "fonts", "notices", "releases", "engine", "audio", "sim-smoke", "equivalence", "scenes", "fixtures", "saves", "release", "offline", "firstday", "confirm", "actions", "resilience", "phone", "keyboard", "layout", "matrix"];
 const order = onlyArg ? onlyArg.split(",").map(s => s.trim()).filter(Boolean) : release ? DEFAULT.concat("released") : DEFAULT;
 for(const s of order) if(!STEPS[s]){ console.error(`verify: unknown step ${s}. steps: ${Object.keys(STEPS).join(", ")}`); process.exit(2); }
 

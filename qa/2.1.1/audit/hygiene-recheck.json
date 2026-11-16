@@ -1,0 +1,65 @@
+{
+ "verdicts": [
+  {
+   "title": "The game carries no fiction or non-affiliation statement; the only one is the last line of the README, and it says neither 'independent' nor 'unaffiliated'",
+   "reproduced": true,
+   "real": true,
+   "intended": false,
+   "worth_doing": "yes",
+   "why": "True of the frozen 2.1.0 build. In it, fiction, satir, parod, endors and coinciden occur 0 times; 'affiliat' occurs only in React's copyright line and 'independent' only in a clAInk report line. The handbook has five sections and two footer buttons, the settings menu has seven entries, and there is no About anywhere (test-results/audit/check-hygiene/handbook-1366.png and settings-1366.png). README.md:257 states fiction only. No document records leaving it out, and README.md:23 offers the file on its own. However, the 2.1.1 work branch (work-211) already answers this: the studio's sentence, word for word, is HELP_ABOUT at src/copy/help.js:27, shown in the handbook's pinned footer above 1024px and under the rules below that, and it is at README.md:259. I opened that branch's build and only looked; I ran none of its checks. The statement is visible without scrolling at 1366x768 and 1440x900 and the handbook is no taller for it (w211-handbook-1440x900.png and w211-handbook-1366x768.png in the same folder).",
+   "smallest_fix": "Nothing beyond what work-211 already carries (src/copy/help.js HELP_ABOUT; src/ui/Game.jsx:276 and :294; src/styles/dialogs.css:123-126; README.md:259). Do not also add the auditor's HELP 'About' entry.",
+   "regression_risk": "I injected the auditor's entry into the frozen build's handbook at six sizes, in the page only (about.cjs, about.out.txt). It renders cleanly but adds 86 to 102px. At 1440x900 the handbook fits today (849px of an 876px cap) and would start to scroll, with the statement's last two lines under the pinned footer. The two columns, equal today, would end about 100px apart. The work branch's footer form costs neither, but it leaves 4px to spare at 1440x900 (872 of 876), so any further handbook line tips that size into scrolling. The sentence is not in the copydeck, so it must stay verbatim; the copydeck gate checks deck to game and passes."
+  },
+  {
+   "title": "In Chrome and Edge the announcer picks an online speech voice over the local ones, so its lines are synthesized by Google's or Microsoft's service",
+   "reproduced": true,
+   "real": true,
+   "intended": false,
+   "worth_doing": "marginal",
+   "why": "I reproduced the choice with my own recorder and voice lists (test-results/audit/check-hygiene/voice.cjs, voice.out.txt). Chrome on Windows gives the announcer 'Google UK English Male' (localService=false) with Microsoft David and Mark on offer. Chrome on macOS gives both voices to Google's. Edge gives 'Microsoft Guy' and 'Microsoft Aria Online (Natural)' with David and Zira on offer. Local-only lists get local voices. voice.js:31 breaks ties only inside one name prefix. The traffic itself cannot be observed here (this Chromium has 0 voices); it follows from what localService=false means. Only canned lines would leave, and the page itself made one request, the document, in my own seven-week session. Two corrections to the auditor: voice.js:17 ('a local voice of the same family wins') describes the code correctly, and the order is deliberate and asserted (test/audio/behaviour.test.mjs:98 expects 'Google UK English Male'). What is wrong is the prose: README.md:220 says the office PA is 'synthesized in the page', and CHANGELOG.md:321 says local voices win over Edge's online ones. No player can tell which service spoke. Re-ranking would change the voice most Chrome and Edge players hear (on Windows, Google UK English Male becomes Microsoft David), and nobody can hear that here (TTST_2.1_QA_REPORT.md:580: 'device voices were not heard'). That is a change of feel, not a surgical fix. One point for the owner's later decision, by simulation only (voice-offline.cjs): offline, a network error is recovered by one retry on the default voice, but an online utterance that never ends (the case voice.js:14-15 describes) leaves that line silent and drops the next ordinary one.",
+   "smallest_fix": "README.md:220 only: say the office PA is read by the browser's own speech voice, which in Chrome and Edge can be an online one, and that switching 'Office announcer' off keeps everything on the device. Leave voice.js alone; the two-line re-ranking is the owner's call after hearing it.",
+   "regression_risk": "README wording: none (no script or test reads it). The code alternative is an audible change for most players that this environment cannot check, and the audio tests would pass either way because their fake voices are all marked local (test/audio/lib/fakes.mjs:37)."
+  },
+  {
+   "title": "Two tracked documents name five people with job titles",
+   "reproduced": true,
+   "real": false,
+   "intended": false,
+   "worth_doing": "no",
+   "why": "Both lines exist as quoted, and only there: not in the build (0 hits), not in any other tracked file, and not among the git authors (the owner and the coding tool only). Whether that is a problem turns on a fact the repository cannot answer. The names read as the by-line of a brief written in a studio's voice, and nothing points to real third parties. A named team does not contradict 'independently developed'. Changing the lines edits the brief the owner supplied and the header of the approved copydeck, and the history keeps the names anyway. I am unsure, so by the rule it is not real.",
+   "smallest_fix": "leave alone. Put one question to the owner in the hand-off: are the five names personas? If they are real people, the auditor's two role-only lines are the right edit.",
+   "regression_risk": "None to the game or its gates (scripts/copy-coverage.mjs reads the copydeck's rows, not its header). It would edit the copydeck file that this pass is told to treat as authoritative."
+  },
+  {
+   "title": "Handed on by itself, the game file lacks one copyright notice (Feather, for 10 of its 56 icons) and every licence text",
+   "reproduced": true,
+   "real": true,
+   "intended": false,
+   "worth_doing": "marginal",
+   "why": "Confirmed in the frozen build. The header has four copyright lines. 'Cole Bemis', 'Feather', 'Permission is hereby granted' and 'Permission to use, copy' each occur 0 times. Ten of the 56 symbols (arrow-right, calendar, check, compass, info, loader, lock, minus, search, x) are on the Feather-derived list in node_modules/lucide-static/LICENSE, which puts them under MIT with 'Copyright (c) 2013-present Cole Bemis'. So the header credits those ten to the wrong holder and licence, and README.md:23 invites taking the file alone. That half is real, slight, and invisible to a player. The other half is the recorded design, not an omission: scripts/notices.mjs:5 says 'The built page itself carries a short notice for each ... this is the long form', and README.md:255 points to THIRD-PARTY-NOTICES.md. A name and a link is what React's own minified builds carry, and the fonts keep their notices in their name tables.",
+   "smallest_fix": "scripts/build.mjs, the Lucide block of notices() (lines 122-127): count the bundled icon names found in the LICENSE's 'derived from the Feather project' list and, when the count is above zero, add 'N of them derived from Feather. Copyright (c) 2013-present Cole Bemis. MIT License.' to the Lucide line, reading that copyright line from the same LICENSE. Do not embed the licence texts.",
+   "regression_risk": "Header bytes only: nothing rendered changes, and the release hash does. The charset guard (build.mjs:225-226) stands at 823 of 1024 bytes and the line needs about 90. The text must hold no '--' or '>' (build.mjs:138); '2013-present' is fine. Reading the list ties the build to the LICENSE's wording, so it should fail loudly if the list is not found."
+  },
+  {
+   "title": "The game has no licence or copyright line of its own",
+   "reproduced": true,
+   "real": true,
+   "intended": false,
+   "worth_doing": "no",
+   "why": "Confirmed: there is no LICENSE or COPYING among the tracked files; package.json has 'private': true and no licence or author field; the header and the README credit only the four bundled works; THIRD-PARTY-NOTICES.md:3 says the game's own code and writing are not covered. No document records a choice. The gap is real for a public distribution, but no player is misled, nothing in the game changes, and the only fix is a licensing decision that names the owner and cannot be withdrawn. That is not an edit for a polish pass.",
+   "smallest_fix": "leave alone; list it as an open decision for the owner in the hand-off.",
+   "regression_risk": "None technical. A licence or a named copyright line chosen by an automated pass cannot be taken back and would publish the owner's name in the file."
+  },
+  {
+   "title": "THIRD-PARTY-NOTICES.md does not name scheduler, which the file's own header lists as bundled",
+   "reproduced": true,
+   "real": true,
+   "intended": false,
+   "worth_doing": "no",
+   "why": "Confirmed: the build's header lists 'react 18.3.1, react-dom 18.3.1, scheduler 0.23.2', and the table in THIRD-PARTY-NOTICES.md lists only the first two (scripts/notices.mjs:15). The three LICENSE files are byte-identical (sha256 52412d7b...cf2bfc85), so the copyright line and text that cover scheduler are already reproduced. The notices file meets its requirement; one package name is absent from one table cell, and nobody is affected.",
+   "smallest_fix": "leave alone. If the notices are regenerated for another reason: scripts/notices.mjs:15, add ', ' + version(\"scheduler\") and run node scripts/notices.mjs.",
+   "regression_risk": "The regenerated THIRD-PARTY-NOTICES.md must be committed with the script change, or the notices gate in scripts/verify.mjs fails."
+  }
+ ],
+ "missed": []
+}

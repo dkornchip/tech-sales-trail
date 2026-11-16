@@ -63,9 +63,17 @@
 .meter > i{display:block;height:100%;border-radius:2px;background:var(--text-2);transition:width .18s var(--ease)}
 .meter.good > i{background:var(--good)} .meter.warn > i{background:var(--warn)} .meter.bad > i{background:var(--bad)}
 .meter .pace{position:absolute;top:-3px;bottom:-3px;width:2px;border-radius:1px;background:var(--text)}
+/* On a stat card the unfilled part of a meter has to be seen: it is how far there is to go (at 4% of quota the
+   fill and the pace mark stood on nothing). The colour the past weeks' ticks already use. */
+.kpi .meter{background:var(--border-strong)}
+/* The cash card has no meter: its line under the amount sits level with the same line in the cards beside it. */
+.kpi[data-kpi="cash"] .value{margin-bottom:8px}
 .delta{position:absolute;right:var(--sp-4);top:var(--sp-4);font-size:var(--fs-1);font-family:var(--mono);padding:1px 6px;border-radius:var(--r-1);animation:deltaFloat 1.6s var(--ease) both;pointer-events:none}
 @keyframes deltaFloat{0%{opacity:0;transform:translateY(4px)}12%{opacity:1;transform:none}75%{opacity:1}100%{opacity:0}}
 .delta.up{color:var(--good);background:var(--good-weak)} .delta.down{color:var(--bad);background:var(--bad-weak)}
+/* With reduced motion every animation is over at once (base.css), and this one ends on nothing: the chip was in the
+   page and never seen. It is shown still, for as long as it is there (Kpis.jsx takes it away). */
+@media (prefers-reduced-motion: reduce){ .delta{animation:none} }
 
 /* ---------- standing and skills ---------- */
 .stats{display:grid;gap:var(--sp-3)}
@@ -110,6 +118,7 @@
 .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--text-on-accent);min-width:132px}
 .btn.primary:hover{background:var(--accent-hover);border-color:var(--accent-hover)}
 .btn.primary .icon{color:var(--text-on-accent)}
+.btn.risk{color:var(--bad);border-color:var(--bad)} .btn.risk .icon{color:var(--bad)}
 .btn .cost{font-family:var(--mono);font-size:var(--fs-1);color:var(--text-3);display:inline-flex;align-items:center;gap:3px}
 .btn .cost .icon{width:12px;height:12px;color:var(--text-3)}
 
@@ -153,7 +162,8 @@
 .line .icon{width:14px;height:14px;margin-top:2px;color:var(--text-3)}
 .line .body{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:var(--sp-4);min-width:0}
 .line p{color:var(--text);flex:1 1 60%;min-width:0}
-.line .deltas{font-family:var(--mono);color:var(--text-3);margin-left:auto}
+.line .deltas{font-family:var(--mono);color:var(--text-3);margin-left:auto;text-align:right}
+.line .deltas .d{white-space:nowrap}
 .line.warn .icon{color:var(--warn)} .line.bad .icon{color:var(--bad)} .line.good .icon{color:var(--good)}
 .line .deltas .up{color:var(--good)} .line .deltas .down{color:var(--bad)}
 /* The newest log lines, shown where you are when the log is off the screen (LogPeek.jsx). A notice, not a control. */
@@ -189,6 +199,24 @@
   .left{align-self:stretch;justify-content:space-between}
   .actions{flex:0 1 auto;grid-auto-rows:minmax(54px,1fr);height:100%;max-height:calc(4 * 80px + 3 * var(--sp-3))}
   .action{height:auto}
+  /* A short window (a laptop with the browser's toolbars showing: 620 to about 750px tall) has less height than
+     the week's card wants, and this page does not scroll: End week used to slide off the bottom of the screen.
+     Instead the card closes up. Its gaps, its padding and the rows of actions ease from their full size at 746px
+     of window height to their smallest at 640px, each in proportion (--short is how far under 746px the window
+     is). At 746px and above nothing changes. */
+  .left{--short:calc(746px - 100dvh);padding-block:clamp(var(--sp-3),calc(var(--sp-5) - var(--short) * .0755),var(--sp-5));gap:clamp(var(--sp-3),calc(var(--sp-5) - var(--short) * .0755),var(--sp-5))}
+  .actions{row-gap:clamp(6px,calc(var(--sp-3) - var(--short) * .0189),var(--sp-3));grid-auto-rows:minmax(clamp(43.4px,calc(54px - (var(--short) + 26px) * .0943),54px),1fr)}
+  /* The hint bar is two lines tall whatever it says, so a hint that needs both lines (more than a third do at 1280
+     wide) is not pressed against the bar's edges, and nothing under it moves when the hint changes. No hint of an
+     action, the Hail Mary or End week needs a third line at any width of this layout (test/e2e/actions.cjs, section
+     8, holds that); the "+N" chip's list of folded chips can need one in the narrowest windows when many chips are
+     folded (as in 2.1). The rows of actions make the room: they start to close up 26px of window height sooner than
+     the rest. Where there is none to make (windows under 641px tall, or under about 1200px wide, where the stat
+     cards wrap and stand taller) the bar is two lines with nothing to spare. */
+  .hint{--two:calc(2.8em + 2 * var(--sp-2) + 2px);--bare:calc(2.8em + 2px);flex:none;line-height:1.4;
+    height:clamp(var(--bare),min(calc(var(--two) - (var(--short) - 105px) * .5),calc(var(--bare) + (100vw - 1180px) * .25)),var(--two))}
+  .kpi{padding-block:clamp(var(--sp-3),calc(var(--sp-4) - var(--short) * .0377),var(--sp-4))}
+  .quarter,.stats{gap:clamp(var(--sp-2),calc(var(--sp-3) - var(--short) * .0377),var(--sp-3))}
 }
 @media (min-width:1500px) and (min-height:900px){ .actions{grid-auto-rows:minmax(62px,1fr);max-height:calc(4 * 88px + 3 * var(--sp-3))} }
 /* stacked: one column, the page scrolls */
@@ -203,6 +231,11 @@
   .activity{flex:0 0 auto}
   .activity .scroll{max-height:360px}
   .topbar:has(.pa-cap) .crumbs{display:none}   /* a caption gets the room the breadcrumbs had */
+  /* ...and more lines when one is not enough (a tablet upright: two; a phone on its side: the longest take three,
+     which the 48px bar just holds). The line used to be cut with an ellipsis, punchline first, and with the sound
+     off the caption is the announcement. */
+  .pa-cap{white-space:normal;line-height:1.2}
+  .pa-text{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3}
 }
 /* a finger, on any screen that stacks (a phone either way up, a tablet): controls a thumb can hit */
 @media (pointer:coarse) and (max-width:1024px), (pointer:coarse) and (max-height:619px){
@@ -247,7 +280,8 @@
      just did (.peek) sits above it when both are up. */
   .pa-line{position:fixed;z-index:36;left:var(--sp-4);right:var(--sp-4);bottom:calc(var(--sp-4) + env(safe-area-inset-bottom,0px));flex:none;overflow:visible;pointer-events:none}
   .pa-cap{max-width:100%;padding:var(--sp-3) var(--sp-4);background:var(--surface-3);border:1px solid var(--border-strong);border-radius:var(--r-3);box-shadow:var(--shadow-overlay);color:var(--text);white-space:normal}
-  .pa-text{overflow:visible}
+  .pa-text{display:block;overflow:visible;-webkit-line-clamp:none}
+  .pa-cap{line-height:1.4}   /* (the notice's own spacing: the stacked tier's tighter one is for the top bar) */
   .app:has(.pa-cap) .peek{--peek-cap:60px}
   html:has(dialog[open]) .pa-cap{visibility:hidden}   /* a dialog shows the announcer's line itself; not dimmed under it as well */
   .btn{height:44px}

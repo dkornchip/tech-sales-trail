@@ -1,0 +1,108 @@
+{
+ "verdicts": [
+  {
+   "title": "Desktop windows shorter than about 746px: the week's card overflows. At 1280x720 Hail Mary and End week hang through the card's border; below 717px they are cut off or off screen, and nothing scrolls",
+   "reproduced": true,
+   "real": true,
+   "intended": false,
+   "worth_doing": "yes",
+   "why": "Re-measured from scratch on the frozen release build (fit.cjs, reach.cjs, older.cjs, tour.cjs in test-results/audit/check-dashboard/). 1280x720 and 1366x720: card 60 to 708, buttons 681.1 to 717.1, so they end 9.1px below the card's outer edge, and End week's keyboard focus ring ends at 721 in a 720 window (f1-1280x720-mid.png, f1-1280x720-end-focus-crop.png). 1536x730 is flush; the card fits from 746. 1366x700: End week cut by 17px; at 680 and below it is entirely off screen. At 1366x657, 1366x625 and 1280x633 six wheel turns, PageDown, End, Space and ArrowDown leave every scrollTop at 0; only Tab moves the body (60 to 92px) and takes the top bar off screen. The E key still ends the week, so a keyboard player is not stuck; a mouse player is. The frozen v2.0.1 file at 1280x720 has the buttons at 668.2 to 704.2, 3.8px inside the same card, so the border crossing is new in 2.1; the cut-off in short windows is in 2.0.1 as well. Not intended: QA report section 4 says 'the one-screen fit at 1280×720 are as in 2.0.1' (it is not), and CHANGELOG v1.21 says 'A window that is too short for the Quarter Map's content scrolls the page as before' (it does not scroll). Two things beyond the auditor's evidence make it worse: a new player's tour in a 1366x657 window leaves the page pushed up 60px with the top bar gone (see missed), and a touch tablet on its side (1133x670, tried with a touch context) is in the same tier with End week at 698 to 734 and nothing to swipe. The game's main button is out of a pointer's reach in ordinary laptop browser windows (which heights real browsers leave is an estimate, not measured here), and the cure is two style rules.",
+   "smallest_fix": "src/styles/app.css, the auditor's two rules, tried again by injection (trial1.cjs, trial3.cjs, scrollbar.cjs, hscroll.cjs, tour.cjs). (1) Inside the one-screen tier at lines 183-192: .left{overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border-strong) transparent} (the scrollbar style .scroll already uses at line 124). (2) After it: @media (min-width:1025px) and (min-height:620px) and (max-height:767px){ .left{padding:var(--sp-4);gap:var(--sp-4)} }. They only work as a pair: rule 1 alone makes the card scroll 26px at the gated 1280x720; rule 2 alone leaves every window under about 702px cut off. With both: 1280x720 buttons end at 695, 12px inside the border, no scroll range, in realistic worst states too (week 13 with nothing closed and −$1,499); 1536x730 the same; 1366x657 the card scrolls 61px and the wheel brings End week to 596-632 of 657; the first-day tour scrolls the card instead of the page and its ring stays in the window; with real scrollbars a 10px thin bar appears and nothing scrolls sideways; the other six gate sizes are unchanged in five states. Do not move the 620px tier boundary instead: it is repeated in claink.css:236, 250, 271 and env.js:13.",
+   "regression_risk": "1280x720 keeps only 2px of slack (644px of content in a 646px card). Once .left can scroll, the layout gate's page-no-scroll asks it too (test/e2e/lib/inpage.cjs:158-163), so anything that later adds height to the card fails the gate at 1280x720: the right alarm, on a thin margin. In the band the left card's inset is 12px beside the right card's 16px. Windows 1025 to about 1152 wide at 768 high in a behind-pace or collections state (stat cards 152.8px tall there) get a 12px scroll where today 12px of padding is eaten; not a gated size. With real scrollbars the card is 10px narrower while it scrolls (nothing rewrapped at 1366x657 or 1366x625). No gate has a desktop size under 720, so the fix is unguarded unless a short size is added, and page-no-scroll as written cannot be asked there. CSS only: no copy, save or seeded behaviour. Firefox and Safari not tried; nothing was built or run through the gates."
+  },
+  {
+   "title": "The hint bar keeps the numbers from before a press while the pointer or focus stays on the button; on Quad shot it goes on describing shot 1 while the card shows 45% heart risk",
+   "reproduced": true,
+   "real": true,
+   "intended": false,
+   "worth_doing": "yes",
+   "why": "Reproduced word for word (stale.cjs, 1366x768, release build). Pointer resting on Quad shot, three presses: the bar says 'Shot 1: +18 energy, +12 stress now, +13 more on Friday. Later shots give less and risk more.' before and after every press, while the card goes to '$6 · 45% heart risk' and energy and stress to 89 and 75; off and back gives 'Shot 4: +14 energy, +21 stress now, +13 more on Friday. 45% chance it ends the run.' Keyboard focus plus Enter does the same. Recharge keeps '+35–52 energy, −12–18 stress…' on a card that now says 'Used this week'; a press that spends the last slot leaves the action's ordinary hint on a card that is now blocked. (My Discovery press only moved 52% to 53%; the auditor's lead-count case depends on the roll.) Not intended: CHANGELOG.md:111 says the bar 'says what the button under your pointer (or your focus) will do with the numbers as they stand'. A player who reads the bar before a fourth shot is told the wrong energy, stress and risk; the card's red cost line is the only correct warning (a certain death is still asked about). It is wider than reported: the End week hint goes stale too (see missed).",
+   "smallest_fix": "No copy, rule or style change. Let a hint's text be a function of the run and have the bar call it with the run it is drawn from: src/ui/app/ActionGrid.jsx:35 passes text: now => describe(a, now).hint; src/ui/app/Foot.jsx:25 renders typeof hint.text === 'function' ? hint.text(s) : hint.text; Foot.jsx:93-95 pass the Hail Mary and End week texts the same way, computed from the run handed in instead of the one captured at hover. About five lines, no new effect or ref. The auditor's ref-and-effect version inside ActionGrid would also work, but it covers the twelve actions only.",
+   "regression_risk": "The bar is role=status aria-live=polite and the log is a live region too (Activity.jsx:31), so with the focus on a button a screen reader hears the refreshed hint after each press as well as the log line. Touch is unchanged: the hint is still cleared after a tap, and a blocked tap's text is the same string. No test reads the bar after a state change without hovering again (confirm.cjs:119 hovers first; phone.cjs:82-96 read a blocked tap). describe() is pure and already runs for all twelve actions on every render, so nothing seeded or saved is touched. Not built or run."
+  },
+  {
+   "title": "Hints that need two lines are squeezed into the one-line hint bar: the text sits 1px from its borders at 1280 and 1366, 2px at 1440 and 1536",
+   "reproduced": true,
+   "real": true,
+   "intended": false,
+   "worth_doing": "marginal",
+   "why": "Reproduced (hints.cjs: fourteen hints, two states, each size). At 1280x720 and 1366x768 the two-line hints (Conference run, CRM cleanup, Recharge, Hail Mary; End week in a rent week, and every week at 1280) sit in a 36px bar with 0.8px above and 1px below; at 1440x900 and 1536x864 the bar is 38.4px with 2 and 2.2px; nothing wraps at 1920x1080; nothing under the bar moves. The text is whole and legible, it only touches the borders (f3-shipped-hail-1366x768.png, f3-1366x768-shipped-hail.png). The auditor did not look below 1280 wide: at 1025 to 1100x768 twelve or thirteen of the fourteen hints are two-liners, at 1152x864 ten. Real but slight: a hover state, cosmetic, nothing cut or misread. The proposed rule does what it says where it applies (bar 46.4px, 6px above and below, action rows 59.5 to 56.9px at 1366x768, nothing moves on hover; f3-1366x768-fix-idle.png) but it cannot apply under 768px tall, which is 1280x720 and most ordinary laptop browser windows, so the squeeze stays where it is worst, and it makes the bar 10px taller for every hint at every size it touches.",
+   "smallest_fix": "If taken: src/styles/app.css, the auditor's rule with a narrower condition, @media (min-width:1280px) and (min-height:768px){ .hint{flex:none;min-height:calc(2.8em + 2 * var(--sp-2) + 2px);padding-block:var(--sp-2)} }. Otherwise leave alone.",
+   "regression_risk": "As proposed (min-width:1025px) it breaks narrow windows: at 1025 to 1152 wide and 768 high in a behind-pace state the stat cards are 152.8px tall and the footer already uses 12px of the card's bottom padding; the extra 10.4px puts Hail Mary and End week 6.3px through the border (with finding 1's rule the card scrolls 22px instead), and at 1200x768 it takes 5px of the padding (trial3.cjs). From 1280 wide it is clean at 768. It changes the dashboard at five of the seven gate sizes (action rows 2.6px shorter at 1366x768, 1280x800 and 1200x800), so the layout gate and the README and QA pictures need another look. No copy, save or seeded behaviour."
+  },
+  {
+   "title": "The cash warning breaks between the minus sign and the amount: 'Collections at −' / '$1,500 cash' at 1366 and 1280",
+   "reproduced": true,
+   "real": true,
+   "intended": false,
+   "worth_doing": "yes",
+   "why": "Reproduced (kpi.cjs): with cash below zero the Cash card's line breaks as 'Collections at −' / '$1,500 cash' at 1280x720 and 1366x768; at 1440 and 1536 the break falls after the amount, and at 1920 it is one line. A minus sign left at the end of a line reads as a dash and the amount under it as a positive one, in the only line on the screen that states the repossession threshold, at the two smallest laptop sizes. Putting U+2060 after the minus in the open page moves the break to 'Collections at ' / '−$1,500 cash'. Not intended: the other two copy modules already do exactly this for this reason (src/copy/clainkUi.js:6-7, 'The word joiner keeps a minus sign on the same line as its amount'; src/copy/help.js:10-11). The visible text still equals the copydeck's tt.collections.",
+   "smallest_fix": "src/copy/ui.js:5: (v < 0 ? \"−⁠$\" : \"$\"), written as clainkUi.js:7 writes it.",
+   "regression_risk": "Very low. KPI.collections is the only place ui.js's usd is handed a negative amount, so no other string changes. The auditor's worry about the End week hint is unfounded: the minus in 'rent −$1,600' is typed in the template at ui.js:103, not produced by usd (that string can still break there in a narrow bar; not seen at laptop sizes, out of scope). The copy-coverage gate and the engine copy tests strip U+2060 before comparing (scripts/copy-coverage.mjs, norm; test/engine/copy.test.mjs:8, plain), the house-style lint already accepts the character in two modules, and no test asserts this string. Not built or run."
+  },
+  {
+   "title": "The Cash card's third line sits 8px above the same line in the three cards beside it",
+   "reproduced": true,
+   "real": true,
+   "intended": false,
+   "worth_doing": "marginal",
+   "why": "Reproduced (kpi.cjs, five sizes): the sub-line is 70.2px from the card top in Energy, Stress and Closed and 62.2px in Cash (73.9 against 65.9 at 1920x1080), because the Cash card has no meter. It is a real stagger in a row of four and can be seen if looked for (f6-fresh-kpis-shipped.png). It has been there since 2.0 (10px in the frozen v2.0.1 file), nobody is misled by it and a player would not notice it. Alignment polish only: harmless to take, harmless to leave.",
+   "smallest_fix": "If taken: src/styles/app.css, .kpi[data-kpi=\"cash\"] .value{margin-bottom:8px} (the meter's 4px plus one 4px gap; the same 8px at every size). Otherwise leave alone.",
+   "regression_risk": "Very low. The Cash card's content grows 8px but stays inside the row height the Closed card sets (119px; with the two-line Collections warning it ends 15px above the card's bottom at 1280). On the phone's two-column grid it shares its row with the taller Closed card; not pictured with the change. The README and QA pictures of the dashboard would differ by those 8px."
+  },
+  {
+   "title": "Meter tracks are effectively invisible (1.08:1), so the quota bar has no visible end to read the fill and the pace mark against",
+   "reproduced": true,
+   "real": true,
+   "intended": false,
+   "worth_doing": "marginal",
+   "why": "Reproduced from computed styles (kpi.cjs): the stat cards' track is rgb(27,31,36) on rgb(21,24,28), 1.08:1; the stat rows' track and the future weeks' ticks are 1.13:1 on the panel. In a clean 2x capture the track can just be made out (f6-fresh-kpis-shipped.png); on a laptop panel it will often vanish, and on a fresh run the Closed card then shows a lone white tick under '$0'. But every meter has its number beside it and the pace is said in words, so nothing the card answers depends on the track, and this is the approved palette applied the same way to every track and tick on the screen (the auditor leaves the equally faint week ticks and stat-row tracks alone). Raising only the three card tracks to --border-strong (1.55:1, tried: f6-fresh-kpis-track.png) reads better and also makes them heavier than the seven 2px tracks below them and the same grey as the past weeks' ticks. That is an art direction choice, not a repair.",
+   "smallest_fix": "Leave alone unless the art director asks for it; then src/styles/app.css, one rule after line 62: .kpi .meter{background:var(--border-strong)}.",
+   "regression_risk": "No layout, copy, save or seeded effect, and the colour lint passes (a token). The risk is to the approved look: three visibly stronger bars on the main screen at every size and on phones, no longer matching the stat rows' tracks, and every committed picture of the dashboard (README, qa/2.1/screenshots) would show the old look."
+  },
+  {
+   "title": "The dashboard never states the quota: the Closed card gives percentages only",
+   "reproduced": true,
+   "real": true,
+   "intended": false,
+   "worth_doing": "no",
+   "why": "Confirmed as an observation (kpi.cjs): the card reads 'Closed this quarter $42,000, 26% / On pace / Expected by Friday: 27% of quota' and '160,000' appears nowhere on the main screen; the amount is in the first-day memo ('Your quota is $160,000. You have 13 weeks.', src/copy/onboarding.js:14) and in the handbook. Nothing is wrong, though. The card says exactly what the copydeck approves for it (section 3: 'quota meter new sublabel | Expected by Friday: {target}% of quota'), the frozen v2.0.1 file shows the same '$42,000 26%', and whether you are on pace is answered in words. No document records leaving the figure out as a decision, but the proposal is new copy on an approved card, which this pass rules out (the copydeck is authoritative; no new features). The auditor says as much.",
+   "smallest_fix": "Leave alone.",
+   "regression_risk": "If done anyway: a string outside the copydeck (the coverage gate would need a note), a longer small label that wraps under the amount on a phone's 140px card, a changed screen-reader label at Kpis.jsx:34, and a facts test for the new number."
+  },
+  {
+   "title": "With two effect chips showing, 'PIP level N' is folded into '+N' at 1440 wide and below",
+   "reproduced": true,
+   "real": true,
+   "intended": false,
+   "worth_doing": "no",
+   "why": "Reproduced (chips.cjs). With two effect chips, a PIP, four shots and a rest: 1280x720 shows 'Close odds +12 pp · this week' and '+4'; 1366x768 and 1440x900 show the two effect chips and '+3' (PIP level 1 · 4 quad shots · Rested); 1536x864 shows the PIP chip. With one effect chip the PIP chip shows at every size. The fold is the designed behaviour (Foot.jsx:45-47; CHANGELOG.md:81), and '+N' names the rest on hover, focus and tap; the order of the chips is not recorded anywhere as a decision. The proposed reorder does not show more, it swaps which warning is hidden: PIP (102px), Close odds (225px) and Discount (197px) with their gaps need 536px, and the row has 448px at 1366 and 492px at 1440, so 'Discount 20% · this week' would fold instead, one of the per-effect chips that 2.1 added (at 1280 it would show two chips where one shows now). A preference about priority in a rare week (two effect chips and a PIP at once), not a defect.",
+   "smallest_fix": "Leave alone.",
+   "regression_risk": "If done anyway: chip order changes for every player on a PIP, phones included, and the discount chip becomes the hidden one at 1366 and 1440 in the same state."
+  },
+  {
+   "title": "End week and Hail Mary have no pressed state: pressed looks exactly like hovered",
+   "reproduced": true,
+   "real": true,
+   "intended": false,
+   "worth_doing": "no",
+   "why": "Confirmed (states.cjs, computed styles with the mouse held down, released off the button): End week is rgb(42,99,214) hovered and pressed, Hail Mary rgb(21,24,28) for both, while an action card does change; app.css:105-112 has :hover rules only. Negligible for a player: both buttons answer at once with a new week, a dialog or the log, so a press is never left unacknowledged, and the auditor calls it optional. The proposed .btn:active rules would also reach every dialog and tour button, which share the class (src/ui/primitives.jsx:87): a wider change than the two buttons named.",
+   "smallest_fix": "Leave alone.",
+   "regression_risk": "If done anyway it has to be scoped to .foot .btn, or every dialog and tour button gets a new pressed look that nobody has pictured."
+  }
+ ],
+ "missed": [
+  {
+   "title": "The End week hint goes stale too: the auditor reported it as not affected",
+   "where": "src/ui/app/Foot.jsx:93-95 (the Hail Mary and End week hints are snapshots taken at hover, like the action hints at ActionGrid.jsx:35)",
+   "evidence": "test-results/audit/check-dashboard/stale2.cjs, 1366x768, frozen release build. Pointer resting on End week: 'Friday: salary +$1,000, energy +15, stress −4. Friday events and collections may change this.' Two quad shots taken with the '-' key (the bar itself advertises the key caps): the bar still says 'stress −4' while the Stress card says 'Crash: +26 on Friday'; moving off and back gives 'stress +26'. Same file: with the pointer on Quad shot and the shots taken by key, the bar stays on 'Shot 1…' beside '$6 · 45% heart risk'; and a press that spends the last slot leaves 'Prospect blitz. Cold calls. Usually 1–4 new leads…' on a card that is now blocked (fresh hover: 'No slots left this week.'). The auditor's 'End week was checked and is not affected' holds only for pressing End week itself.",
+   "proposal": "Make finding 2's fix cover all three places a hint is issued: the hint's text as a function of the current run, called where the bar is drawn (Foot.jsx:25), for the twelve actions, the Hail Mary and End week. A fix inside ActionGrid alone leaves this one."
+  },
+  {
+   "title": "A new player's first day in a short window ends with the page pushed up 60px: the top bar is off screen and cannot be scrolled back",
+   "where": "src/ui/FirstRun.jsx:75 (the tour calls scrollIntoView on each thing it points at) with src/styles/app.css:184 (html,body{overflow:hidden}): the same cause as finding 1",
+   "evidence": "test-results/audit/check-dashboard/tour.cjs, frozen release build, a new player at 1366x657. At the tour's first and third stops body.scrollTop is 60 and the top bar is at −60; after 'Got it' the focus goes to Prospect blitz and the page stays there: no top bar (How it works, sound, settings), the card's border ending above the hint bar, and the hint bar and both footer buttons sitting on the page background below it (tour-shipped-1366x657-after.png). The wheel cannot bring it back. With finding 1's two rules injected the same walk scrolls the card instead (card scrollTop 32, 0, 61; body 0 throughout; ring 592 to 636 in the 657px window; tour-fix-1366x657-step3.png). At 1280x720 the ring round End week ends at 721 in a 720 window as shipped and at 699 with the rules. This also covers the auditor's stated gap: the tour had not been walked with a scrolling card.",
+   "proposal": "Nothing beyond finding 1's two rules. If a short desktop size is added to a gate for that fix, walk the first-day tour at it as well, since this is where a new player meets it."
+  }
+ ]
+}

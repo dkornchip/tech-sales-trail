@@ -1,0 +1,27 @@
+$ node test/engine/tools/equivalence.mjs --seeds 1000 --from 1
+equivalence with v2.1: 22 policies x 1000 seeds (1..1000), 22000 runs, 945669 moves made on both, 1060.0 s
+  the same run after every move       22000 of 22000
+  differs                                 0
+  propose-idle: Proposals with no demoed deal, the week's proposal-or-close work already counted: v2.1 took a slot and 25 energy for it and gave nothing back; refused now
+      v2.1 had it on offer at 11989 steps of 5330 runs. At each one it was made on the v2.1 run: it changed slots, energy, the week's mark and its log line, and nothing else
+  e.g. novice#2 step 19 (week 6): act:propose with 23 deals on the board, none demoed, after Close deals this week: on offer in v2.1, not now
+  e.g. novice#2 step 21 (week 6): act:propose with 23 deals on the board, none demoed, after Close deals this week: on offer in v2.1, not now
+  e.g. novice#4 step 1 (week 1): act:propose with 0 deals on the board, none demoed, after Proposals this week: on offer in v2.1, not now
+  e.g. novice#4 step 2 (week 1): act:propose with 3 deals on the board, none demoed, after Proposals this week: on offer in v2.1, not now
+  e.g. novice#4 step 4 (week 1): act:propose with 5 deals on the board, none demoed, after Proposals this week: on offer in v2.1, not now
+
+EQUIVALENCE OK: every move the working tree allows does what it did in v2.1, and every move it no longer allows is a decided correction
+
+$ node test/engine/tools/equivalence.mjs --seeds 1000 --from 5001
+equivalence with v2.1: 22 policies x 1000 seeds (5001..6000), 22000 runs, 948022 moves made on both, 1041.0 s
+  the same run after every move       22000 of 22000
+  differs                                 0
+  propose-idle: Proposals with no demoed deal, the week's proposal-or-close work already counted: v2.1 took a slot and 25 energy for it and gave nothing back; refused now
+      v2.1 had it on offer at 12201 steps of 5340 runs. At each one it was made on the v2.1 run: it changed slots, energy, the week's mark and its log line, and nothing else
+  e.g. novice#5002 step 22 (week 6): act:propose with 8 deals on the board, none demoed, after Proposals this week: on offer in v2.1, not now
+  e.g. novice#5003 step 21 (week 5): act:propose with 12 deals on the board, none demoed, after Proposals this week: on offer in v2.1, not now
+  e.g. novice#5016 step 9 (week 2): act:propose with 8 deals on the board, none demoed, after Close deals this week: on offer in v2.1, not now
+  e.g. novice#5018 step 26 (week 6): act:propose with 12 deals on the board, none demoed, after Proposals this week: on offer in v2.1, not now
+  e.g. novice#5019 step 1 (week 1): act:propose with 0 deals on the board, none demoed, after Close deals this week: on offer in v2.1, not now
+
+EQUIVALENCE OK: every move the working tree allows does what it did in v2.1, and every move it no longer allows is a decided correction

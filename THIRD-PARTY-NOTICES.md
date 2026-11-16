@@ -4,7 +4,7 @@
 
 | Work | Package | Licence | Used for |
 |---|---|---|---|
-| React and React DOM | react 18.3.1, react-dom 18.3.1 | MIT | the interface |
+| React and React DOM | react 18.3.1, react-dom 18.3.1, scheduler 0.23.2 | MIT | the interface |
 | Inter | @fontsource-variable/inter 5.3.0 | SIL Open Font License 1.1 | the interface typeface (bundled as “TST Sans”, a subset) |
 | JetBrains Mono | @expo-google-fonts/jetbrains-mono 0.4.1 | SIL Open Font License 1.1 | the monospace typeface for the log, the numbers and the CRT (bundled as “TST Mono”, a subset) |
 | Lucide | lucide-static 1.70.0 | ISC | the icons |

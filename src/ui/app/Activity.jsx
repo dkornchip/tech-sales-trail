@@ -1,15 +1,22 @@
 import React from "react";
 import { UI } from "../../copy/ui.js";
 import { Icon } from "./Icon.jsx";
-import { iconFor, legacyText } from "./logLook.js";
+import { chipsOf, iconFor, legacyText, toneFor } from "./logLook.js";
 import { useOverflowFade } from "./useOverflowFade.js";
 
+// What a line changed, chip by chip. A chip is kept whole and its dot stays with it, so a row never breaks in the
+// middle of "+8 pp signing odds this week" or starts with a dot. (The text is the stored text, to the character.)
+export const Chips = ({ dl }) => {
+  const parts = chipsOf(dl);
+  return <span className="deltas">{parts.map((c, i) => <React.Fragment key={i}><span className="d">{c}{i < parts.length - 1 ? " ·" : ""}</span>{i < parts.length - 1 ? " " : ""}</React.Fragment>)}</span>;
+};
+
 const Line = ({ e }) => {
-  const kind = e.kind === "bad" || e.kind === "warn" ? e.kind : "";
+  const kind = toneFor(e);
   return (
     <li className={"line" + (kind ? " " + kind : "")} data-tag={e.tag || undefined}>
       <Icon name={iconFor(e)} />
-      <div className="body"><p>{e.tag ? e.msg : legacyText(e.msg)}</p>{e.dl ? <span className="deltas">{e.dl}</span> : null}</div>
+      <div className="body"><p>{e.tag ? e.msg : legacyText(e.msg)}</p>{e.dl ? <Chips dl={e.dl} /> : null}</div>
     </li>
   );
 };

@@ -2,7 +2,11 @@
 // The hint bar tells you what a button will do with the numbers as they stand, or why it can't.
 const n = (count, one, many) => `${count} ${count === 1 ? one : many || one + "s"}`;
 const pc = p => `${Math.round(p * 100)}%`;
-const usd = v => (v < 0 ? "−$" : "$") + Math.abs(Math.round(v)).toLocaleString("en-US");
+// a range of numbers, kept in one piece when a line wraps (word joiners around the dash)
+const to = (lo, hi) => `${lo}\u2060–\u2060${hi}`;
+// "a 52% chance", "an 85% chance": the article a percentage is said with (eight, eleven, eighteen and the eighties)
+const aPc = p => { const k = Math.round(p * 100); return `${k === 8 || k === 11 || k === 18 || (k >= 80 && k <= 89) ? "an" : "a"} ${k}%`; };
+const usd = v => (v < 0 ? "−\u2060$" : "$") + Math.abs(Math.round(v)).toLocaleString("en-US");   // (a word joiner: the sign never ends a line without its amount)
 
 export const UI = {
   product: "Tech Sales Trail",
@@ -47,10 +51,15 @@ export const KPI = {
   stressCrash: by => `Crash: +${by} on Friday`,
   stressDanger: "Dangerous stress level",
   rentThisWeek: () => "Rent is due Friday",
+  rentBust: () => "Friday’s rent would trigger Collections",   // salary and rent together would leave cash at or under the line
+  billBust: () => "Friday’s clAInk invoice would trigger Collections",   // ...and with the invoice at its least, when the rent alone would not
   rentLater: w => `Rent due in week\u00A0${w}`,          // a no-break space: the number stays with "week"
   rentDone: "Rent is paid up",
   collections: at => `Collections at ${usd(at)} cash`,
-  ofQuota: share => pc(share),
+  // lines: the shares that decide the quarter (70%, 80%, 100%: quarter.js, QBR). The label is rounded like the pace
+  // line beside it, but never up onto one of those lines: at $159,500 of $160,000 it used to say 100%, and the QBR,
+  // which does not round up, then said 99% and ended the run on that.
+  ofQuota: (share, lines = []) => { let p = Math.round(share * 100); for (const l of lines) if (share < l && p >= Math.round(l * 100)) p = Math.round(l * 100) - 1; return `${p}%`; },
   onPace: "On pace",
   ahead: pts => `${n(pts, "percentage point")} ahead of\u00A0pace`,
   behind: pts => `${n(pts, "percentage point")} behind\u00A0pace`,
@@ -70,7 +79,7 @@ export const ACTION = {
   network: { title: "Referrals", cost: energy },
   discovery: { title: "Discovery", cost: energy },
   demo: { title: "Demo marathon", cost: energy },
-  propose: { title: "Proposals", cost: energy },
+  propose: { title: "Proposals", cost: energy, none: "No demoed deals" },
   close: { title: "Close deals", cost: energy },
   conference: { title: "Conference run", cost: c => `${c.energy} energy · ${usd(c.cash)} · ${n(c.slots, "slot")}` },
   crm: { title: "CRM cleanup", cost: c => `${c.energy} energy · once a week`, used: "Done this week" },
@@ -79,33 +88,69 @@ export const ACTION = {
   politics: { title: "Internal politics", cost: energy }
 };
 
+// What a card says beside its cost when the stage it works is empty and the action would only train its skill,
+// and what the count on a card stands for (its tooltip, and what a screen reader says instead of a bare number).
+// (none: Proposals with no demoed deal, which trains nothing; see HINT.propose.)
+// (fatal: a press that is certain to end the run says so in place of its cost.)
+export const CARD = { skillOnly: "skill only", none: "no deals", fatal: "Ends the run", eligible: c => n(c, "eligible deal") };
+
 // The hint bar: what a button would do with the numbers as they stand. Factual first. Every number here is handed
 // in by the interface from the rules (src/game/selectors.js), so a hint cannot promise what the button will not do.
 // An action that would find nothing to work on says so, and says that it would still cost what it costs.
 const fifths = p => { const k = Math.round(p * 5); return Math.abs(p * 5 - k) < 1e-9 && k > 0 && k < 5 ? `${["", "One time", "Two times", "Three times", "Four times"][k]} in five` : `${pc(p)} of the time`; };
 export const HINT = {
-  prospect: () => "Cold calls. Usually 1–4 new leads; occasionally a fifth. Costs time and energy.",
-  cadence: () => "0–3 warmer leads. A week of emails without calls costs manager approval.",
+  prospect: (c, stress) => `Cold calls. Usually ${to(1, 4)} new leads; occasionally a fifth. Costs time and energy. +${stress} stress.`,
+  cadence: () => `${to(0, 3)} warmer leads. A week of emails without calls costs manager approval.`,
   // whale: the chance each introduction is a whale
-  network: (c, whale) => `1–2 introductions, usually small. Each has roughly a ${pc(whale)} chance of being a whale.`,
-  discovery: (c, p) => (c ? `${n(c, "lead")} waiting. Each has a ${pc(p)} chance to qualify. Trains discovery.` : "No eligible deals. You would still spend a slot and energy."),
-  demo: (c, p) => (c ? `${n(c, "qualified deal")} waiting. Each has a ${pc(p)} chance to advance. Trains demos.` : "No eligible deals. You would still spend a slot and energy."),
-  propose: (c, p) => (c ? `${n(c, "demoed deal")} waiting. Each has a ${pc(p)} chance to reach Proposal.` : "No eligible deals. You would still spend a slot and energy."),
-  close: c => (c ? `${n(c, "eligible deal")}; each has its own signing odds. Failed attempts may lose deals.` : "No deals are ready to sign. You would still spend a slot and energy."),
+  network: (c, whale) => `${to(1, 2)} introductions, usually small. Each has roughly ${aPc(whale)} chance of being a whale.`,
+  // With nothing waiting, a press still costs what it costs (the deck's sentence), and an action that trains a
+  // skill keeps its training note, as the deck asks ("only if the action actually trains skill"). Proposals trains
+  // nothing: all an empty press can buy is the week's mark toward a full-funnel week, so its hint says that, and
+  // once the mark is there it buys nothing and is not on offer (blocked.none, below).
+  discovery: (c, p) => (c ? `${n(c, "lead")} waiting. Each has ${aPc(p)} chance to qualify. Trains discovery.` : "No eligible deals. You would still spend a slot and energy. Trains discovery."),
+  demo: (c, p) => (c ? `${n(c, "qualified deal")} waiting. Each has ${aPc(p)} chance to advance. Trains demos.` : "No eligible deals. You would still spend a slot and energy. Trains demos."),
+  // nothing: why the press would buy nothing even though it is on offer (selectors.js, proposeNothing)
+  propose: (c, p, nothing) => (c ? `${n(c, "demoed deal")} waiting. Each has ${aPc(p)} chance to reach Proposal.`
+    : "No eligible deals. You would still spend a slot and energy" + (nothing === "full" ? ", for nothing: this week is already full-funnel."
+      : nothing === "last" ? ", for nothing: the quarter ends on Friday." : nothing === "alone" ? ", for nothing: on your last slot the week cannot reach three categories."
+      : ". It would only count toward a full-funnel week.")),
+  close: c => (c ? `${n(c, "eligible deal")}; each has its own signing odds. Failed attempts may lose deals.` : "No deals are ready to sign. You would still spend a slot and energy. Trains negotiation."),
   // buzz: the chance it also lifts signing odds; lift: by how much (a fraction), this week only
-  conference: (c, stress, buzz, lift) => `3–8 warm leads; some are large. ${n(c.slots, "slot")}, ${c.energy} energy, ${usd(c.cash)}, +${stress} stress. ${pc(buzz)} chance of +${Math.round(lift * 100)} pp signing odds this week.`,
-  crm: (pruned, gain, nuke) => `Removes ${n(pruned, "dead lead")}: +${gain} manager. Once per week.` + (nuke ? ` Your manager may remove a live deal while he’s in the CRM (${pc(nuke)}).` : ""),
-  recharge: r => `+${r.energy[0]}–${r.energy[1]} energy` + (r.relief[1] > 0 ? `, −${r.relief[0]}–${r.relief[1]} stress` : ", no stress relief") + ". Once per week. Coffee reduces relief. A rare great nap approves a trip.",
-  coffee: (shot) => `Shot ${shot.n}: +${shot.energy} energy, +${shot.stress} stress now, +${shot.crash} more on Friday.` + (shot.risk >= 1 ? " This shot reaches 100 stress and ends the run." : shot.risk > 0 ? ` ${pc(shot.risk)} chance it ends the run.` : " Later shots give less and risk more."),
+  conference: (c, stress, buzz, lift) => `${to(3, 8)} warm leads; some are large. ${n(c.slots, "slot")}, ${c.energy} energy, ${usd(c.cash)}, +${stress} stress. ${pc(buzz)} chance of +${Math.round(lift * 100)} pp signing odds this week.`,
+  // (value: what the leads it would remove are worth; v2.1 gave the count only, and a count of 2 could be $180,000)
+  crm: (pruned, gain, nuke, value) => `Removes ${n(pruned, "dead lead")}${pruned && value ? ` (${usd(value)})` : ""}: +${gain} manager. Once per week.` + (nuke ? ` Your manager may remove a live deal while he’s in the CRM (${pc(nuke)}).` : ""),
+  // (a quad shot takes one of the week's slots, which its card has no room to say: bought with the last slot to
+  // power another action, it ends the week instead. Recharge's slot is in the tour.)
+  recharge: r => `+${to(r.energy[0], r.energy[1])} energy` + (r.relief[1] > 0 ? `, −${to(r.relief[0], r.relief[1])} stress` : ", no stress relief") + ". Once per week. Coffee reduces relief. A rare great nap approves a trip.",
+  coffee: (shot) => `Takes a slot. Shot ${shot.n}: +${shot.energy} energy, +${shot.stress} stress now, +${shot.crash} more on Friday.` + (shot.risk >= 1 ? " This shot reaches 100 stress and ends the run." : shot.risk > 0 ? ` ${pc(shot.risk)} chance it ends the run.` : " Later shots give less and risk more."),
   politics: () => "Lunch with leadership. +8 manager · +3 product · −4 reputation · +2 stress.",
-  // blast: the chance nobody walks; walk: the chance each late deal left walks otherwise
-  hail: (c, blast, walk) => (c ? `One close attempt against all proposal/closing deals. ${fifths(1 - blast)}, each remaining late deal then has a ${pc(walk)} chance to walk.` : "No late-stage deals to rescue."),
-  endWeek: f => `Friday: salary +${usd(f.salary)}` + (f.rent ? `, rent −${usd(f.rent)}` : "") + `, energy +${f.energy}, stress ${f.stress < 0 ? "−" + -f.stress : "+" + f.stress}. Friday events and collections may change this.`,
+  // blast: the chance nobody walks; walk: the chance each late deal left walks otherwise; cost: what the throw takes
+  // (its cost is given as the cards give theirs: the energy. With the slot spelled out as well the hint ran to three
+  // lines in the narrowest desktop window; with no slot left the button is off and says so.)
+  hail: (c, blast, walk, cost) => (c ? `One close attempt against all proposal/closing deals. ${cost.energy} energy. ${fifths(1 - blast)}, each remaining late deal then has ${aPc(walk)} chance to walk.` : "No late-stage deals to rescue."),
+  // bust: salary and rent together would leave cash at or under the line where Collections ends the run
+  // claink: the invoice an active seat will get this Friday, as certain as rent (v2.1 left it out of the preview)
+  // In the order Friday comes to them (selectors.js, fridayPreview): the rent, the coffee crash, clAInk's invoice. The
+  // first that would end the run is the one said. Collections is certain unless a late deal may sign first (mayClose).
+  endWeek: f => {
+    const bill = f.claink ? `, clAInk −\u2060${f.claink.idle ? to(usd(f.claink.idle[0]), usd(f.claink.idle[1])) : usd(f.claink.due)}` : "";
+    const unless = f.mayClose ? ", unless a deal signs on Friday first" : "";
+    return `Friday: salary +${usd(f.salary)}` + (f.rent ? `, rent −\u2060${usd(f.rent)}` : "")
+      + (f.bust ? `. That would leave ${usd(f.cash)} cash. Collections ends the run at ${usd(f.repoAt)}${unless}.`
+        : f.melt ? `. The coffee crash adds ${f.stress} stress. That reaches 100 and ends the run.`
+        : f.billBust ? `${bill}. That would leave ${usd(f.billCash)} cash${f.claink.idle ? " or less" : ""}. Collections ends the run at ${usd(f.repoAt)}${unless}.`
+        : `${bill}, energy +${f.energy}, stress ${f.stress < 0 ? "−" + -f.stress : "+" + f.stress}. Friday events and collections may change this.`);
+  },
+  // A press that is certain to end the run says so, and says nothing else (f: selectors.js, fatalPress): the stress
+  // it adds reaches 100, or the cash it costs reaches the line where Collections ends the run.
+  ends: f => (f.why === "stress" ? `This adds ${f.atLeast ? "at least " : ""}${f.add} stress. That reaches 100 and ends the run.`
+    : `Paying for this would leave ${usd(f.cash)} cash. Collections ends the run at ${usd(f.repoAt)}.`),
   blocked: {
     over: () => "The quarter is over.",
     slots: b => (b.need > 1 ? `Needs ${b.need} slots. You have ${b.have}.` : "No slots left this week."),
     energy: b => `Needs ${b.need} energy. You have ${b.have}.`,
     once: () => "Already done this week.",
+    none: () => "No demoed deals, and this week’s proposal or close is already counted. Nothing to gain.",
     rested: () => "You have already used this week’s recharge.",
     waiting: () => "Something needs your answer first.",
   },
@@ -117,6 +162,8 @@ export const HINT = {
     demo: c => `${n(c, "qualified deal")} ready for a demo.`,
     discovery: c => `${n(c, "lead")} ready for discovery.`,
     start: () => "No leads. Prospect or ask for referrals.",
+    // every action that costs energy is out of reach
+    tired: () => "Too little energy for any action. Recharge, a quad shot and Friday each restore some.",
   },
 };
 
@@ -154,7 +201,10 @@ export const CONFIRM = {
   newRun: { title: "New run", body: "Start over? This quarter’s unsaved progress will be lost.", yes: "Start over", no: "Keep playing" },
   dismissAd: { body: "Dismiss the offer for this run? Minimizing keeps it available.", yes: "Dismiss", no: "Keep" },
   hail: { title: "Hail Mary", body: "This may save the week or destroy the pipeline. Continue?", yes: "Throw it", no: "Not yet" },
-  coffee: { title: "Quad shot", body: "This shot reaches 100 stress and ends the run.", yes: "Drink it anyway", no: "Put it down" }
+  coffee: { title: "Quad shot", body: "This shot reaches 100 stress and ends the run.", yes: "Drink it anyway", no: "Put it down" },
+  // any other press that is certain to end the run (the dialog's title is the action's name)
+  stress: { body: "This reaches 100 stress and ends the run.", yes: "Do it anyway", no: "Not now" },
+  cash: { body: "Paying for this takes your cash to the Collections limit and ends the run.", yes: "Pay anyway", no: "Keep the cash" }
 };
 
 // The chapters of the quarter: the name shown beside the week (where there is room), by the week it starts in.
@@ -167,7 +217,9 @@ export const NAMES = { week: "Your week", desk: "Your deals and activity", sound
 // other stored run that does open. slot: "autosave" or "save"; legacy: stored by an earlier version of the game.
 export const RECOVERY = {
   title: "This saved run could not be opened",
-  body: (status, others) => `${status === "newer" ? "It was saved by a newer version of the game." : "The run stored in this browser is damaged."} ${others ? "Start a new run or return to a valid saved run." : "Start a new run."} It will be kept aside, not deleted.`,
+  // (what is kept aside is the run that could not be opened: said before the instruction, so "it" cannot be read
+  // as the new run or the valid one)
+  body: (status, others) => `${status === "newer" ? "It was saved by a newer version of the game." : "The run stored in this browser is damaged."} It will be kept aside, not deleted. ${others ? "Start a new run or return to a valid saved run." : "Start a new run."}`,
   newRun: "Start a new run",
   open: (slot, week, legacy) => `Open ${slot === "save" ? "your saved run" : "the autosave"} · week ${week}${legacy ? " (earlier version)" : ""}`
 };
@@ -185,11 +237,14 @@ export const MOOD = { skeptical: "skeptical", neutral: "neutral", curious: "curi
 // (BOOT.brand is the badge on the monitor's bezel, in the company's capitals.)
 // (BOOT.brand is the badge on the housing, in the company's capitals; UI.peekMore names the Activity panel.)
 export const lint = { exempt: { "sentence-case": ["BOOT.brand", "UI.peekMore"] }, params: {
-  "HINT.network": [{ args: [0, 0.03] }],
-  "HINT.discovery": [{ args: [0, 0.6] }, { args: [1, 0.6] }, { args: [3, 0.6] }], "HINT.demo": [{ args: [0, 0.5] }, { args: [1, 0.5] }, { args: [3, 0.5] }],
-  "HINT.propose": [{ args: [0, 0.55] }, { args: [1, 0.55] }, { args: [3, 0.55] }], "HINT.close": [{ args: [0] }, { args: [1] }, { args: [4] }],
+  "HINT.network": [{ args: [0, 0.03] }], "HINT.prospect": [{ args: [0, 2] }],
+  "HINT.discovery": [{ args: [0, 0.6] }, { args: [1, 0.6] }, { args: [3, 0.85] }], "HINT.demo": [{ args: [0, 0.5] }, { args: [1, 0.5] }, { args: [3, 0.8] }],
+  "HINT.propose": [{ args: [0, 0.55] }, { args: [0, 0.55, "full"] }, { args: [0, 0.55, "last"] }, { args: [0, 0.55, "alone"] }, { args: [1, 0.55] }, { args: [3, 0.55] }], "HINT.close": [{ args: [0] }, { args: [1] }, { args: [4] }],
+  "KPI.ofQuota": [{ args: [0.385, [0.7, 0.8, 1]] }, { args: [0.9997, [0.7, 0.8, 1]] }], "HINT.endWeek": [{ salary: 1000, rent: 0, energy: 15, stress: 26, cash: 1500, bust: false, melt: true, repoAt: -1500 }, { salary: 1000, rent: 0, energy: 15, stress: -4, cash: 1500, bust: false, repoAt: -1500, claink: { idle: [150, 300] } }, { salary: 1000, rent: 0, energy: 15, stress: -4, cash: 1500, bust: false, repoAt: -1500 }, { salary: 1000, rent: 1600, energy: 15, stress: 26, cash: -300, bust: false, repoAt: -1500 }, { salary: 1000, rent: 1600, energy: 15, stress: -4, cash: -1550, bust: true, repoAt: -1500 }, { salary: 1000, rent: 1600, energy: 15, stress: -4, cash: -1550, bust: true, mayClose: true, repoAt: -1500 }, { salary: 1000, rent: 1600, energy: 15, stress: -4, cash: -1300, bust: false, repoAt: -1500, claink: { due: 669 }, billCash: -1969, billBust: true }, { salary: 1000, rent: 0, energy: 15, stress: -4, cash: -1400, bust: false, repoAt: -1500, claink: { idle: [150, 300] }, billCash: -1550, billBust: true, mayClose: true }],
+  "HINT.ends": [{ why: "cash", cash: -1600, repoAt: -1500 }, { why: "stress", add: 2 }, { why: "stress", add: 4, atLeast: true }], "CARD.eligible": [1, 3],
   "HINT.conference": [{ args: [{ energy: 40, slots: 2, cash: 800 }, 5, 0.3, 0.08] }],
-  "HINT.hail": [{ args: [2, 0.2, 0.55] }, { args: [0, 0.2, 0.55] }, { args: [1, 0.25, 0.5] }],
+  "HINT.crm": [{ args: [2, 7, 0.15, 180000] }, { args: [1, 6, 0, 6000] }, { args: [0, 5, 0.25, 0] }],
+  "HINT.hail": [{ args: [2, 0.2, 0.55, { energy: 10, slots: 1 }] }, { args: [0, 0.2, 0.55, { energy: 10, slots: 1 }] }, { args: [1, 0.25, 0.5, { energy: 10, slots: 1 }] }],
   "KPI.collections": [{ args: [-1500] }],
   "CHIP.closeOdds": [{ args: [0.12, 1] }, { args: [-0.15, 2] }],
   "CHIP.discount": [{ args: [0.2, 1] }],

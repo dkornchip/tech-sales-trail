@@ -165,10 +165,21 @@ test("the Friday invoice: a week's run, an idle week, the weekend overage, and n
   assert.deepEqual([r.s.cash, r.s.claink.billed, r.s.claink.due, r.s.claink.deployed, r.s.claink.claims, r.s.claink.lastInvoice], [5000 + 1000 - 669, 669, 0, false, 0, 669]);
   r = await week(s, [0.0999, 0.999999]);                               // ...and one agent that looped all weekend: +600
   l = r.lines.find(x => x.tag === "ck.invoice"); assert.deepEqual([l.d.total, l.d.looped], [1269, true]);
+  // End week's preview names that invoice: what is due after a run, to the dollar (an overage may come on top)
+  const eng = await E(), S = eng.selectors, ui = await import("../../src/copy/ui.js"), plain = t => t.replace(/\u2060/g, "");
+  assert.deepEqual(S.fridayPreview(s).claink, { due: 669 });
+  assert.equal(plain(ui.HINT.endWeek(S.fridayPreview(s))), "Friday: salary +$1,000, clAInk −$669, energy +15, stress −4. Friday events and collections may change this.");
   // an idle week still bills 150-300
   s = await craft({ week: 4, cash: 5000, closedQuarter: 160000, closedWon: 160000, claink: active() });
   r = await week(s, [0, 0.99]); l = r.lines.find(x => x.tag === "ck.invoice.idle"); assert.equal(l.d.total, 150); assert.equal(r.s.cash, 5850);
   r = await week(s, [0.999999, 0, 0]); assert.equal(r.lines.find(x => x.tag === "ck.invoice.idle").d.total, 300 + 200);
+  // ...and the preview gives that range; in a rent week it comes after the rent
+  assert.deepEqual(S.fridayPreview(s).claink, { idle: [150, 300] });
+  assert.equal(plain(ui.HINT.endWeek(S.fridayPreview({ ...s, week: 5 }))), "Friday: salary +$1,000, rent −$1,600, clAInk −$150–$300, energy +15, stress −4. Friday events and collections may change this.");
+  // no seat, a seat that is gone, and week 13 (not billed): nothing is named. A Friday that salary and rent already end says only that
+  for (const c of [undefined, { status: "ad" }, { status: "cancelled" }, { status: "revoked" }]) assert.equal(S.fridayPreview(await craft({ week: 4, claink: c })).claink, null, JSON.stringify(c));
+  assert.equal(S.fridayPreview(await craft({ week: 13, claink: active({ deployed: true, due: 400 }) })).claink, null, "week 13 is not invoiced");
+  assert.ok(!/clAInk/.test(ui.HINT.endWeek(S.fridayPreview(await craft({ week: 5, cash: -900, claink: active() })))), "Collections comes first");
   // week 12 is invoiced; week 13 is not (the review ends the run first), and the seat cannot run there
   r = await week({ ...s, week: 12 }, [0, 0.99]); assert.ok(r.tags.includes("ck.invoice.idle")); assert.equal(r.s.week, 13);
   r = await week({ ...s, week: 13, claink: { ...s.claink, deployed: true, due: 669 } }, [0, 0]);
@@ -203,6 +214,13 @@ test("cancelling: $250 and whatever is already due, only when it can be paid; th
   const poor = await craft({ week: 4, cash: -500, claink: active({ due: 760 }) });
   assert.equal(eng.claink.clainkCanCancel(poor), false); assert.equal((await move(poor, ck("cancel"))).refused, "illegal");
   assert.equal((await move({ ...poor, cash: -489 }, ck("cancel"))).state.cash, -1499);
+  // nor in the quarter-end freeze: nothing more will be charged, and the workspace has never offered it in week 13.
+  // (v2.0.1's rules would have taken the fee there; nothing could ask them to. The front door must not either.)
+  const frozen = await craft({ week: 13, cash: 4000, claink: active() });
+  assert.equal(eng.claink.clainkCanCancel(frozen), false); assert.equal((await move(frozen, ck("cancel"))).refused, "illegal");
+  assert.deepEqual(eng.run.legalMoves(frozen).filter(m => m.t === "ck"), [], "week 13: clAInk offers no move at all");
+  assert.equal(eng.claink.cancelClaink(frozen), frozen, "and the rule itself does nothing there");
+  assert.equal(eng.claink.clainkCanCancel(await craft({ week: 12, cash: 4000, claink: active() })), true, "week 12 is not frozen");
   assert.equal((await move(await craft({ week: 4, claink: active() }), ck("hide"))).refused, "illegal", "only a finished seat's card can be put away");
 });
 

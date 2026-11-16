@@ -1,0 +1,23 @@
+$ node test/e2e/matrix.cjs Tech_Sales_Trail_2.1.1.html --shots qa/2.1.1/screenshots/matrix --keep 1440x900,768x1024,390x844 --jpeg
+matrix: Tech_Sales_Trail_2.1.1.html  (8 sizes x 13 states, file://, network refused)
+  ok    1440x900             125 checks
+  ok    1024x768             125 checks
+  ok    768x1024             125 checks
+  ok    320x568              125 checks
+  ok    375x667              125 checks
+  ok    390x844              125 checks
+  ok    667x375-landscape    125 checks
+  ok    1440x900-zoom200     125 checks
+  ok    reduced motion       120 checks
+
+MATRIX OK: all 1120 checks passed at 8 sizes, 175.5 s
+
+$ node test/e2e/offline.cjs Tech_Sales_Trail_2.1.1.html
+  ok    one action can be played  ("Prospect blitz": energy 95 -> 65, log 0 -> 1 lines)
+  ok    every piece of text on the main screen uses a bundled family  (218 elements)
+  ok    no font face failed  (TST Sans 100 900: loaded, TST Mono 400: loaded, TST Mono 700: loaded)
+  ok    zero requests other than the document  (1 request)
+  ok    zero console errors
+  ok    zero page errors
+
+all 44 checks passed  (Tech_Sales_Trail_2.1.1.html, 557 KB)

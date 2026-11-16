@@ -1,6 +1,6 @@
 {
   "name": "tech-sales-trail",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "private": true,
   "description": "Survive one quarter of enterprise tech sales. A single-file browser game.",
   "type": "module",

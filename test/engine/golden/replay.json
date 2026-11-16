@@ -87,7 +87,7 @@
   "cash": 36893,
   "moves": 74,
   "mech": "0790a803b44172fd3a03",
-  "full": "f666e4364902186b4ede"
+  "full": "a031eb334826b91fbc3b"
  },
  "balanced#14": {
   "ending": "fired",
@@ -127,7 +127,7 @@
   "cash": 3976,
   "moves": 37,
   "mech": "79714421c7d934abebf5",
-  "full": "59b15f41081caf5d5949"
+  "full": "21115d22278ea9b36a5b"
  },
  "referral#12": {
   "ending": "fired",
@@ -167,7 +167,7 @@
   "cash": 41341,
   "moves": 76,
   "mech": "e6ec0737871a6619ac0d",
-  "full": "4a427419ed937a9e0185"
+  "full": "707cf018992c8060a39c"
  },
  "referral#16": {
   "ending": "club",
@@ -177,7 +177,7 @@
   "cash": 33852,
   "moves": 77,
   "mech": "2734ceb7d36231a4e279",
-  "full": "65406398fed5fac2b3d8"
+  "full": "6c7ac8a904f1349395dc"
  },
  "caller#11": {
   "ending": "club",
@@ -317,7 +317,7 @@
   "cash": 59552,
   "moves": 74,
   "mech": "fbb06b5141592e17af10",
-  "full": "25ba289b7c5bfe2faa06"
+  "full": "54093e561af35a06fbb2"
  },
  "risk#13": {
   "ending": "fired",
@@ -327,7 +327,7 @@
   "cash": 12643,
   "moves": 58,
   "mech": "9d97f6c35d0370f115f4",
-  "full": "4948f4ca6f1d9d9d3ae6"
+  "full": "d0ebbde9dd60ae5495db"
  },
  "risk#14": {
   "ending": "club",
@@ -337,7 +337,7 @@
   "cash": 31870,
   "moves": 76,
   "mech": "bd140c8617230d01e5eb",
-  "full": "a61bce4d91cc92e18b35"
+  "full": "48234ebe2ddb9520483f"
  },
  "risk#15": {
   "ending": "fired",
@@ -397,7 +397,7 @@
   "cash": 9250,
   "moves": 65,
   "mech": "db751d29383c452774a8",
-  "full": "352fb5eacbabd970bd50"
+  "full": "a7b6b76f6c9744175d6e"
  },
  "claink#15": {
   "ending": "missed",
@@ -407,7 +407,7 @@
   "cash": 23673,
   "moves": 81,
   "mech": "9c2b482b84b92dc4c81d",
-  "full": "4e81d794649cb357a733"
+  "full": "936a33659b569e9abfe6"
  },
  "claink#16": {
   "ending": "fired",
@@ -517,7 +517,7 @@
   "cash": 5400,
   "moves": 48,
   "mech": "99701a3dea9b099512de",
-  "full": "26fef2c37b8b5d4bc8eb"
+  "full": "84e4bb79b713b15bbec5"
  },
  "ascend#21": {
   "ending": "ascension",

@@ -39,8 +39,22 @@ test("the action hints quote the rules: lunch with leadership, the Hail Mary, th
   for (const [k, v] of Object.entries(want)) assert.equal(r.state[k] - s[k], v, "politics " + k);
   // the Hail Mary: "Four times in five ... 55%"
   assert.equal(R.HAIL.blast, 0.2); assert.equal(R.HAIL.walk, 0.55);
-  assert.match(ui.HINT.hail(2, R.HAIL.blast, R.HAIL.walk), /Four times in five, each remaining late deal then has a 55% chance to walk\./);
-  assert.equal(ui.HINT.hail(0, R.HAIL.blast, R.HAIL.walk), "No late-stage deals to rescue.");
+  assert.match(ui.HINT.hail(2, R.HAIL.blast, R.HAIL.walk, R.COST.hail), /Four times in five, each remaining late deal then has a 55% chance to walk\./);
+  assert.equal(ui.HINT.hail(0, R.HAIL.blast, R.HAIL.walk, R.COST.hail), "No late-stage deals to rescue.");
+  // and what a throw costs, which v2.1 said nowhere: the hint's own numbers are the rule's
+  assert.ok(ui.HINT.hail(2, R.HAIL.blast, R.HAIL.walk, R.COST.hail).includes(` ${R.COST.hail.energy} energy.`));
+  const late = await craft({ deals: [[3, 20000]] }), thrown = withDice([0.1, 0.99], 0.99, () => eng.run.step(late, { t: "hail" })).state;
+  assert.deepEqual([late.slots - thrown.slots, late.energy - thrown.energy], [R.COST.hail.slots, R.COST.hail.energy]);
+  // Prospect blitz: the stress the hint names is the stress the action adds
+  assert.ok(ui.HINT.prospect(R.COST.prospect, R.STRESS_COST.prospect).endsWith(`+${R.STRESS_COST.prospect} stress.`));
+  // the article before a percentage
+  assert.match(ui.HINT.discovery(2, 0.85), /Each has an 85% chance/); assert.match(ui.HINT.discovery(2, 0.52), /Each has a 52% chance/); assert.match(ui.HINT.demo(1, 0.8), /has an 80% chance/);
+  assert.match(ui.HINT.propose(1, 0.11), /an 11% chance/); assert.match(ui.HINT.propose(1, 0.38), /a 38% chance/); assert.match(ui.HINT.demo(1, 0.18), /an 18% chance/); assert.match(ui.HINT.demo(1, 0.08), /an 8% chance/);
+  // the handbook's two queue rules are the thresholds End Week uses
+  const help = await import("../../src/copy/help.js"), facts = eng.selectors.handbookFacts(late);
+  assert.deepEqual([facts.staleLeads, facts.backlogQualified], [R.STALE.leads, R.BACKLOG.qualified]);
+  const pipeline = help.HELP.flatMap(sec => sec.rows).find(row => row.term === "Pipeline.").body(facts);
+  assert.ok(pipeline.includes("six or more leads and no discovery") && pipeline.includes("five or more qualified deals and no demo"), pipeline);
   // referrals: the whale chance
   assert.match(ui.HINT.network(0, R.REFERRAL.whale), /roughly a 3% chance of being a whale/);
   // conference: its real cost, and the real chance and size of the bonus
@@ -213,4 +227,68 @@ test("the churn incident says so to the story, with the damage the rules really 
     }
   }
   assert.ok(found, "a churn incident occurred within 200 seeds");
+});
+
+test("the log tones a signature good and nothing else: a loss stays bad, a warning stays a warning", async () => {
+  const { toneFor } = await import("../../src/ui/app/logLook.js");
+  assert.equal(toneFor({ tag: "close.signed", kind: "info" }), "good");
+  assert.equal(toneFor({ tag: "ck.signed", kind: "info" }), "good");
+  assert.equal(toneFor({ tag: "close.lost", kind: "bad" }), "bad");
+  assert.equal(toneFor({ tag: "close.signed", kind: "warn" }), "warn", "what the rules marked is not repainted");
+  assert.equal(toneFor({ tag: "act.crm", kind: "info" }), "");
+  assert.equal(toneFor({ tag: "toString", kind: "info" }), "");
+  assert.equal(toneFor({ kind: "info", msg: "a line from an old save" }), "");
+  // in whole runs: every line toned good is a signing with money in it, and every signing is toned good
+  const eng = await E(), { POLICIES } = await import("../sim/lib/policies.mjs");
+  let good = 0;
+  for (const name of ["balanced", "claink-weekly"]) for (const seed of [3, 11, 29, 47]) {
+    const s = playRun(eng, seed, POLICIES[name], { salt: name, keepState: true }).state;
+    for (const e of s.logs) {
+      const tone = toneFor(e), signing = e.tag === "close.signed" || e.tag === "ck.signed";
+      assert.equal(tone === "good", signing, `${e.tag} (${e.kind}) is toned "${tone}"`);
+      if (signing) { good++; assert.ok(e.d && e.d.won > 0, "a signing records what was won"); }
+    }
+  }
+  assert.ok(good > 0, "the runs signed something");
+});
+
+test("one is one: a single introduction is not 'one of them', and one reassigned deal is still one of your largest deals", async () => {
+  const { render } = await import("../../src/copy/engine.js"), { LOG } = await import("../../src/copy/log.js");
+  const say = (tag, p) => { const r = render(LOG[tag], p, { week: 3, band: 0, n: 0 }, "x|" + tag, null); return typeof r === "string" ? r : r.text; };
+  assert.equal(say("act.network", { n: 1, size: "whale" }), "Referrals: 1 introduction. It is a whale.");
+  assert.equal(say("act.network", { n: 1, size: "big" }), "Referrals: 1 introduction. It is substantial.");
+  assert.equal(say("act.network", { n: 3, size: "whale" }), "Referrals: 3 introductions. One of them is a whale.");
+  assert.equal(say("act.network", { n: 2, size: "big" }), "Referrals: 2 introductions. One of them is substantial.");
+  assert.equal(say("act.network", { n: 1, size: "" }), "Referrals: 1 introduction.");
+  assert.match(say("evt.rebalance", { n: 1, value: 10157 }), /^Territory optimization: 1 of your largest deals, \$10,157, reassigned\.$/);
+  assert.match(say("evt.rebalance", { n: 2, value: 30000 }), /^Territory optimization: 2 of your largest deals, \$30,000, reassigned\.$/);
+});
+
+test("clAInk's terms: the policy gives the rates and how many outcomes a run bills; at two strikes a deal walks if there is one", async () => {
+  const eng = await E(), { CLAINK } = eng.claink || (await import("../../src/game/claink.js")), ck = await import("../../src/copy/clainkUi.js"), plain = t => t.replace(/\u2060/g, "");
+  const t = { retainer: CLAINK.RETAINER, perOutcome: CLAINK.PER_OUTCOME, outcomes: CLAINK.OUTCOMES, idle: CLAINK.IDLE, overage: CLAINK.OVERAGE, trueUp: CLAINK.TRUEUP_OVER, cancel: CLAINK.CANCEL };
+  const policy = ck.CK_AD.policy(CLAINK.STRIKES, t).map(plain);
+  assert.equal(policy.length, 5);
+  assert.equal(policy[1], "Usage is billed on Fridays: $249 a run plus $140–$280 per outcome (two to five on a $0 run), or $150–$300 for an idle week. Overages of $200–$600 may apply.");
+  assert.equal(policy[4], "The true-up takes your cash and $200–$1,800 more. Cancelling early costs $250 plus usage due.");
+  // the three approved lines are untouched
+  assert.deepEqual([policy[0], policy[2], policy[3]], ["Seat and usage charges are deducted from your cash.", "Every run without closed revenue earns an AI Governance Council strike.", "Strike 3: seat revoked, final token true-up charged. A live deal may also be lost."]);
+  // the third strike always takes the most advanced deal (claink.test.mjs): the warning says so when there is one
+  assert.match(ck.CK_STRIKES.hotHead(3, true), /seat revoked, a deal walks, and the token true-up/);
+  assert.match(ck.CK_STRIKES.hotHead(3, false), /seat revoked, a live deal may walk, and the token true-up/);
+});
+
+test("the quota label never rounds up onto a line that decides the quarter", async () => {
+  const ui = await import("../../src/copy/ui.js"), Q = (await import("../../src/game/quarter.js")).QBR, lines = [Q.floor, Q.safe, Q.club];
+  assert.deepEqual(lines, [0.7, 0.8, 1]);
+  const at = (closed, quota = 160000) => ui.KPI.ofQuota(closed / quota, lines);
+  assert.equal(at(159500), "99%"); assert.equal(at(159999), "99%"); assert.equal(at(160000), "100%"); assert.equal(at(161600), "101%");
+  assert.equal(at(111500), "69%"); assert.equal(at(112000), "70%"); assert.equal(at(127500), "79%"); assert.equal(at(128000), "80%");
+  // away from those lines it is rounded, like the pace line it sits beside
+  assert.equal(at(61600), "39%"); assert.equal(at(60000), "38%"); assert.equal(at(0), "0%"); assert.equal(at(170000), "106%");
+  // and what the label says is on the same side of each line as the QBR's own (floored) figure, for every dollar amount tried
+  for (let closed = 100000; closed <= 170000; closed += 37) {
+    const label = parseInt(at(closed), 10), share = closed / 160000;
+    for (const l of lines) assert.equal(label >= Math.round(l * 100), share >= l, `$${closed} reads ${label}% against the ${l * 100}% line`);
+  }
 });

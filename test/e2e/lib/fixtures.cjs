@@ -5,7 +5,7 @@
  * to land). `expect` is what must be on screen once it is reached; a fixture that does not get there is a broken
  * fixture and stops the test, it is never a layout result.
  */
-const { save, D, HI, LO } = require('../../parity/lib/scenarios.cjs');
+const { save, D, CK, HI, LO } = require('../../parity/lib/scenarios.cjs');
 const { KEYS, readRaw } = require('../../saves/lib/fixtures.cjs');
 
 const his = n => Array(n).fill(HI);
@@ -29,15 +29,25 @@ const reportSave = () => save({
 });
 
 const mixed = () => [D(1, 10000), D(2, 12000), D(3, 15000), D(0, 8000)];
+// Week 2 with the offer still open and ten deals on the board: the deal list, the log and clAInk's ad all want the
+// same column. (The ad gives way to the list; it must still show all of what it shows.)
+const adBoardSave = () => save({ week: 2, cash: 600, claink: CK({ status: 'ad' }),
+  deals: [D(0, 6000), D(0, 7200), D(0, 5400), D(0, 9100), D(1, 11000), D(1, 8300), D(0, 4800), D(2, 14000), D(0, 6600), D(1, 9700)] });
 
 const FIXTURES = [
   { id: 'fresh-ad', what: 'a fresh run with the clAInk ad up', storage: null, steps: [], expect: { dialog: null, dock: 'ad' }, mobile: true },
+  { id: 'ad-board', what: 'the clAInk ad up beside a board of ten deals',
+    storage: autosave(JSON.stringify(adBoardSave())), steps: [], expect: { dialog: null, dock: 'ad' } },
   { id: 'midrun', what: 'mid-run, eight deals, no clAInk window (the plain main screen)',
     storage: autosave(readRaw('fixtures/generated/midrun-seeded.json')), steps: [], expect: { dialog: null, dock: 'none' }, mobile: true },
   { id: 'board-24', what: '24 deals and every status badge, the clAInk workspace open',
     storage: autosave(readRaw('fixtures/generated/board-24-deals.json')), steps: [], expect: { dialog: null, dock: 'workspace' }, mobile: true },
   { id: 'ck-report', what: 'the clAInk workspace with a full run report, a strike card and the manager\'s remark',
     storage: autosave(JSON.stringify(reportSave())), steps: [], expect: { dialog: null, dock: 'workspace+report' } },
+  { id: 'ck-early', what: 'the clAInk workspace with a run report and a strike card on an early board (three deals, a short log)',
+    storage: autosave(readRaw('fixtures/generated/ck-report-strike-hurt.json')), steps: [], expect: { dialog: null, dock: 'workspace+report' } },
+  { id: 'ck-cancel', what: 'the clAInk workspace asking whether to cancel the seat, at the foot of a full run report',
+    storage: autosave(JSON.stringify(reportSave())), steps: [{ m: 'ck:cancel' }], expect: { dialog: null, dock: 'workspace+report' } },
   // End Week with the second event (the competitor's price cut) scripted to fire: a choice dialog
   { id: 'event-dialog', what: 'an event dialog (the competitor cuts prices)',
     storage: autosave(JSON.stringify(save({ deals: mixed() }))), steps: [{ m: 'end', q: [].concat(his(2), [LO], his(90)) }], expect: { dialog: 'evt:competitor' } },
@@ -47,7 +57,9 @@ const FIXTURES = [
     storage: autosave(readRaw('fixtures/generated/end-club.json')), steps: [], rounds: 6, expect: { dialog: 'end:club' } }
 ];
 
-const VIEWPORTS = ['1920x1080', '1920x950', '1536x864', '1366x768', '1280x720', '1280x800', '1200x800'];
+// (The last two are short windows: a 1366x768 laptop with the browser's toolbars showing, and the shortest window
+// that still gets the two-column page. End week used to be off the bottom of both.)
+const VIEWPORTS = ['1920x1080', '1920x950', '1536x864', '1366x768', '1280x720', '1280x800', '1200x800', '1366x657', '1280x620'];
 const PHONE = '390x844';
 const size = v => { const m = /^(\d+)x(\d+)$/.exec(v); if (!m) throw new Error(`bad viewport ${v}`); return { width: Number(m[1]), height: Number(m[2]) }; };
 

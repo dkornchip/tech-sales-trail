@@ -1,0 +1,123 @@
+{
+ "area": "truth: action clarity and player feedback (twelve actions, Hail Mary, End week: rules against card, count badge, hint bar, confirmation, handbook)",
+ "summary": "Every number the cards and hints quote agrees with the engine: costs, stage odds, deal-row signing odds, lead yields, coffee, Recharge, CRM and the Friday preview all matched when I pressed them in the frozen release build and sampled the rules. The problems are in what is left unsaid: what a no-deal press still buys (and no sign of it on the card, so touch and keyboard players are never warned), the Hail Mary's cost, run-ending presses other than the lethal quad shot, and a conference that does not count toward the full-funnel week.",
+ "verified_ok": [
+  "Costs: each card's energy, cash and slot figures equal COST (src/game/rules.js:10-24) and what the press charged in the frozen build: Prospect blitz 30, Email cadence 18, Referrals 16, Discovery 22, Demo marathon 28, Proposals 25, Close deals 28, Conference run 40 energy + $800 + 2 slots, CRM cleanup 15, Internal politics 20, Quad shot $6 (results: test-results/audit/truth/t2-press.txt and t5-more.txt).",
+  "Stage odds: hints quote 52%, 61% and 38% for Discovery, Demo marathon and Proposals; measured 52.9%, 61.3% and 38.1% over 40,000 rolls each (test-results/audit/truth/e1-engine.txt).",
+  "Deal-row odds equal the Close deals sign rate: rows showing 29%, 26% and 5% signed 29.0%, 26.3% and 4.8% of 12,000 presses each; the Hail Mary signed within 0.3 points of the same figures.",
+  "Lead yields as quoted: Prospect blitz 1-4 with a fifth 5.0% of the time, Email cadence 0-3, Referrals 1-2 with a whale in 2.9% of introductions (quoted 3%), Conference run 3-8 with the +8 pp bonus 29.6% of the time (quoted 30%).",
+  "Hail Mary: leaned on the deals 79.8% of the time (quoted four times in five) and 55.0% of the late deals left then walked (quoted 55%). With no late deal it is refused by the rules and dimmed on the page with 'No late-stage deals to rescue.'",
+  "Quad shot: quoted heart risk 0, 0, 20, 45, 75% for shots 1-5, measured 0, 0, 20.2, 44.5, 74.1%; card reads '+25 stress by Friday' for shot 1 and '+28' for shot 2 (12+13, 15+13); a shot that reaches 100 stress is flagged on the card ('100% heart risk'), in the hint and by a confirmation.",
+  "Recharge: quoted 35-52 energy and 12-18 relief, and 10-15, 8-12 and none after 1, 2 and 6 shots; measured ranges identical (test-results/audit/truth/e2-engine.txt).",
+  "CRM cleanup: the dead-lead count, the manager gain and the 15% / 25% chance of losing a live deal are the rule's (measured 15.0% and 25.1%); no risk is quoted when no Qualified or Demoed deal exists.",
+  "End week preview: salary, rent in weeks 1, 5 and 9, energy +15, stress -4 or +13 per shot agreed with the week actually played in 6,000 of 6,000 cases.",
+  "Blocked states: every blocked card is dimmed, aria-disabled and says why with the right numbers ('Needs 28 energy. You have 12.', 'Needs 2 slots. You have 1.', 'No slots left this week.', 'Already done this week.', 'You have already used this week's recharge.') in 26 crafted states (test-results/audit/truth/t1-tables.json).",
+  "With eligible deals the count badge and hint agree with the deal list in every state tried ('3 leads waiting', '2 qualified deals waiting', '1 demoed deal waiting', '3 eligible deals').",
+  "Internal politics hint equals the press (+8 manager, +3 product, -4 reputation, +2 stress); Email cadence's manager penalty is as its hint says.",
+  "Idle hint is right whenever the action it names can be pressed, reads 'No slots left. End the week.' at zero slots, and is blank on a finished run.",
+  "Nit not listed as a finding: at very high skill the stage hints read 'a 85% chance' (article). It needs discovery skill 90+ or a comparably strong demo, which ordinary play does not reach."
+ ],
+ "findings": [
+  {
+   "title": "With nothing eligible, Discovery, Demo marathon and Close deals still buy a skill and a full-funnel tick, Proposals buys only the tick, and all four hints say only what is lost",
+   "kind": "misleading",
+   "where": "src/copy/ui.js:91-94 (zero variants of HINT.discovery, demo, propose, close); rules in src/game/actions.js:43-110 and src/game/week.js:38-80",
+   "evidence": "Frozen release build, week-2 run with no deals, each pressed (test-results/audit/truth/t2-press.txt). Discovery: hint 'No eligible deals. You would still spend a slot and energy.'; result slots 5 to 4, energy 95 to 73, Discovery skill 35 to 37, used.discovery set; log 'Discovery: 0 deals qualified. −22 energy'. Demo marathon: same hint; energy 95 to 67, Demo skill 30 to 32, used.demo set. Proposals: same hint; energy 95 to 70, used.propose set, no skill. Close deals: hint 'No deals are ready to sign. You would still spend a slot and energy.'; energy 95 to 67, Negotiation 25 to 26, used.close set. Weeks played by pressing (t4-more.txt): Close deals + Discovery (no leads) + Demo marathon (no qualified) gave Friday's 'A balanced week. For once, the funnel resembles a funnel. +6 pp signing odds next week'; Prospect blitz + Discovery + Proposals (no demoed) gave the same. Engine, 300 seeds each: 300 of 300 (e1-engine.txt). The used flag also switches off the stale-lead and demo-backlog rules for the week. Proposals pressed again after Close deals in the same week cost a slot and 25 energy and changed nothing else (t5-more.txt). With deals waiting the hints do say 'Trains discovery.' and 'Trains demos.'; the zero variants drop it although the training still happens, and Close deals never says it trains negotiation. Copydeck line 84: 'Add training note only if action actually trains skill.' Classification for every no-deal state: Discovery, Demo marathon, Close deals with nothing at their stage are 'skill only' (+2, +2, +1) plus the funnel flag; Proposals with nothing demoed is 'funnel flag only', and 'nothing' once Proposals or Close deals has been pressed that week; the Hail Mary is refused. With something at their stage all four are 'advances pipeline'.",
+   "proposal": "Change only the four zero-variant strings and keep the approved cost sentence, for example Discovery: 'No leads to qualify. You would still spend a slot and energy. Trains discovery only.' (Demo marathon and Close deals likewise), Proposals: 'No demoed deals. You would still spend a slot and energy, and move nothing.' Decide once whether to name the full-funnel tick, which is true of all four. Do not disable Discovery, Demo marathon or Close deals. If Proposals is to get a disabled state, limit it to the pure no-op (nothing demoed and Proposals or Close deals already pressed this week) and make the rule refuse it too.",
+   "risk": "The zero sentences are approved copydeck text (rows 84-85), so the copy-coverage notes and the lint params at ui.js:189-190 move with them. A disabled state in the page alone fails the release gate, which requires the page to offer exactly what the rules allow (test/e2e/release.cjs:84-91, 151-152, 214-220); putting it in src/game/run.js changes the engine 2.1.1 means to freeze, and disabling an empty Proposals press outright removes a way to earn the +6 pp.",
+   "confidence": "high"
+  },
+  {
+   "title": "A zero count shows nothing on the card, so by touch or number key the slot is spent before any warning can be read",
+   "kind": "misleading",
+   "where": "src/ui/app/ActionGrid.jsx:47 (badge drawn only when the count is above zero) and :38-39 (hint shown on hover or focus, cleared after a tap); src/ui/Game.jsx:222-227 (number keys)",
+   "evidence": "Desktop picture test-results/audit/truth/01-mixed-hover-discovery.png: Discovery, Demo marathon and Close deals carry '2', '1', '2'; Proposals with nothing demoed has no badge and looks like Prospect blitz. Phone, 390x844 touch (t3-touch.txt, pictures 08-phone-leads-only-actions.png and touch-phone-discovery-with-no-leads.png): the card reads 'Discovery / 22 energy'; the hint bar read '1 deal ready for a close attempt.' before the tap and after it; one tap took slots 5 to 4 and energy 95 to 73; the 'No eligible deals' sentence was never on screen; the notice afterwards said 'Discovery: 0 deals qualified. −22 energy'. Proposals the same (25 energy). Keyboard: key 4 with no leads spent the same and the hint bar did not change (t4-more.txt). On touch the hint of any pressable action cannot be read before it runs, because the tap runs it and clears the hint: stage odds, CRM's dead-lead count and risk, and the conference's stress are hover or focus only. The README says 'The hint bar tells you how many are waiting and what chance each one has before you spend anything.'",
+   "proposal": "Draw the badge for the four funnel actions whenever a count exists, zero included (ActionGrid.jsx:47, test for null instead of truthiness), muted at 0, so the card itself says 0. Optionally give the badge a spoken label such as '2 leads waiting' or 'no leads waiting'.",
+   "risk": "Small. The badge sits in its own auto column, so no cost line becomes narrower than it already is when a badge shows, and on a phone it sits beside the title (app.css:266). The layout and phone suites and the README pictures expect cards without a zero badge. Lengthening the cost line instead is riskier: on a desktop it is a single line that ends in an ellipsis (app.css:86).",
+   "confidence": "high"
+  },
+  {
+   "title": "The Hail Mary's cost (one slot, 10 energy) is stated nowhere in the game",
+   "kind": "defect",
+   "where": "src/copy/ui.js:102 and :156; src/ui/app/Foot.jsx:93, 102-103; src/copy/help.js:40; the cost is src/game/rules.js:23",
+   "evidence": "Button in the frozen build: <button class=\"btn\" data-ui=\"hail\">Hail Mary</button> (picture test-results/audit/truth/05-hail-hover.png). Hint: 'One close attempt against all proposal/closing deals. Four times in five, each remaining late deal then has a 55% chance to walk.' Confirmation: 'This may save the week or destroy the pipeline. Continue?' The handbook row gives no cost. Pressing it took slots 5 to 4 and energy 95 to 85 (t2-press.txt). '10 energy' occurs in none of the 1,928 strings in test-results/audit/strings.json. The copydeck (line 91) says 'Show cost, danger, and no-eligible state'; TTST_2.1_QA_REPORT.md:482 and docs/2.1/copy-coverage-notes.json (L91) record 'cost is on the button', which it is not. A player meets the cost only in the blocked hint ('Needs 10 energy. You have 0.') or in the README.",
+   "proposal": "Pass COST.hail to HINT.hail and state it in the conference hint's own form after the first sentence: '… 1 slot, 10 energy.' Correct the note at L91.",
+   "risk": "Low. test/engine/copy.test.mjs:41-43 matches the 'Four times in five…' sentence by pattern and the zero text exactly, and both stay; the lint params at ui.js:192 need the extra argument; the hint is already two lines at 1440 wide and gets a few words longer.",
+   "confidence": "high"
+  },
+  {
+   "title": "Only the lethal quad shot is flagged; other presses that are certain to end the run look ordinary",
+   "kind": "misleading",
+   "where": "src/ui/app/ActionGrid.jsx:23, 28 and src/ui/Game.jsx:225 (risk and confirmation exist for coffee by stress only); src/copy/ui.js:87, 96, 100, 102, 103; rules in src/game/actions.js:22, 213, 227, 164-174, 222-234, 272-285, src/game/deals.js:94-99, src/game/quarter.js:129-139",
+   "evidence": "All pressed in the frozen build (t2-press.txt, t5-more.txt). Stress 98 (picture 06-stress98-prospect-hover.png): the Quad shot card is red, '$6 · 100% heart risk', with 'This shot reaches 100 stress and ends the run.' and a confirmation. Prospect blitz beside it reads '30 energy' and 'Cold calls. Usually 1–4 new leads; occasionally a fifth. Costs time and energy.'; pressing it took stress 98 to 100 and ended the run in Meltdown. Its +2 stress is in no text before the press. Internal politics (+2, in its hint) at 98 and Conference run (+5, in its hint) at 95 also ended the run, unflagged. A plausible road: stress 86, Quad shot (hint '+12 stress now', no warning because 98 is not lethal), then Prospect blitz: Meltdown. Hail Mary at stress 96: the confirmation says 'This may save the week or destroy the pipeline. Continue?'; a deal signed, +4 stress, Meltdown. Cash −$800 (picture 07-cash-800-conference-hover.png): Conference run card '40 energy · $800 · 2 slots' with its ordinary hint; pressing it took cash to −$1,600 and ended the run ('Jacket repo’d'); the Cash card does read 'Collections at −$1,500 cash'. Cash −$1,495: Quad shot '$6 · +25 stress by Friday' took cash to −$1,501 and ended the run. Week 5, cash −$900: End week hint 'Friday: salary +$1,000, rent −$1,600, energy +15, stress −4. Friday events and collections may change this.'; the run ended at −$1,500, while from −$899 it went on at −$1,499.",
+   "proposal": "Reuse the quad shot's pattern, hint first: when an action's known cost takes cash to CASH.repoAt or lower, or its known stress takes stress to 100, end its hint with one plain sentence ('This reaches −$1,500 cash and ends the run.' / 'This reaches 100 stress and ends the run.'), and name the +2 stress in the Prospect blitz hint as Internal politics does. Add the confirmation only if the studio wants it.",
+   "risk": "New hint sentences need the editor (Prospect blitz's is an approved line). It wants one selector beside nextShot so the page asks the rules instead of redoing the sum. No rule changes. Confirmations would add friction, new CONFIRM entries and cases in test/e2e/confirm.cjs.",
+   "confidence": "high"
+  },
+  {
+   "title": "A Conference run does not count as lead generation for the full-funnel rule, and the handbook says 'lead generation'",
+   "kind": "misleading",
+   "where": "src/copy/help.js:36; src/game/week.js:38-53 (only prospect, cadence and network count); src/game/actions.js:218-236 (the conference sets no used flag); README.md tip 'finding leads'",
+   "evidence": "Frozen build (t4-more.txt, t5-more.txt). Conference run (8 leads) + Discovery (7 qualified) + Demo marathon (2 advanced), then End week: no 'balanced week' line and no effect on next week. Conference run + Discovery, then End week: 'Parts of your funnel have been declared a nature reserve. −6 pp signing odds next week', although the handbook says 'One or none while holding pipeline gives −6 pp next week' and the player worked two of the categories as written. Engine, 300 seeds each (e1-engine.txt): conference + discovery + demo earned the bonus 0 of 300 times; prospect + discovery + demo 300 of 300.",
+   "proposal": "Name the actions in the handbook row: 'Work at least three of four categories (Prospect blitz, Email cadence or Referrals; discovery; demo; proposal/close)'. Use the same words in the README tip. Leave the rule alone.",
+   "risk": "The row is approved copydeck text (section 8). copy.test.mjs checks fragments of it ('+6 pp signing odds next week', 'gives -6 pp next week') that stay. The two-column handbook has to keep fitting one screen with the longer row.",
+   "confidence": "high"
+  },
+  {
+   "title": "The idle hint keeps naming an action that is blocked, and a number key on a blocked action says nothing",
+   "kind": "polish",
+   "where": "src/ui/app/Foot.jsx:11-20 (idleHint); src/ui/Game.jsx:222-224 (a blocked key returns silently)",
+   "evidence": "Frozen build (t4-more.txt; pictures 03-idle-close-blocked.png and 04-idle-prospect-blocked.png). Energy 12 with one Proposal deal: '1 deal ready for a close attempt.' while Close deals (28 energy) is dimmed; the only lit way to attempt a close is the Hail Mary. Energy 10 with no deals: 'No leads. Prospect or ask for referrals.' while both are dimmed (30 and 16 energy). Energy 24 with one demoed deal: '1 demoed deal ready for a proposal.' (needs 25). Energy 5 with Recharge used: '1 deal ready for a close attempt.' when only Quad shot can be pressed. Key 7 (Close deals) at energy 12: nothing changes and nothing is said, the hint bar still reads '1 deal ready for a close attempt.'; a click on the same card says 'Close deals. Needs 28 energy. You have 12.'",
+   "proposal": "In idleHint, when the action it names is blocked, add the blocked sentence the game already has: '1 deal ready for a close attempt. Needs 28 energy. You have 12.' For 'No leads', test Referrals, the cheaper of the two. For a key on a blocked action, show the card's own blocked hint, for instance by focusing the card, whose focus handler already shows it.",
+   "risk": "Low; no new sentences. I found no test that asserts the idle text. Focusing the card moves the keyboard focus, which test/e2e/keyboard.cjs watches.",
+   "confidence": "high"
+  },
+  {
+   "title": "CRM cleanup's 'dead leads' can be Qualified deals of any size and mood, and nothing shows which ones",
+   "kind": "polish",
+   "where": "src/game/rules.js:73 (stage Lead or Qualified, and skeptical or five weeks old); src/copy/ui.js:97; src/ui/app/Deals.jsx (no age shown); src/copy/log.js:110-113",
+   "evidence": "Frozen build (t4-more.txt, picture 02-crm-dead-leads-before.png). Rows on screen: 'NebulaSoft | Qualified | happy | $150,000', 'Feral Unicorn | Qualified | skeptical | $30,000', 'ByteBazaar | Demoed | skeptical | $14,000', 'DataRamen | Lead | neutral | $6,000'. Hint: 'Removes 2 dead leads: +7 manager. Once per week. Your manager may remove a live deal while he’s in the CRM (15%).' The press removed NebulaSoft (five weeks old, which no column shows) and Feral Unicorn, $180,000 of a $200,000 pipeline. Log: 'RevOps has improved the denominator. 2 dead leads removed. −15 energy · +7 manager', with no names and no amount.",
+   "proposal": "Add the amount to the hint from crmPreview: 'Removes 2 dead leads ($180,000): +7 manager.' If wanted, the same amount as a chip on the log line.",
+   "risk": "One number added to an approved hint, one field added to crmPreview. My example is contrived (a happy whale left at Qualified for five weeks); the usual case is cheap skeptical or old leads.",
+   "confidence": "medium"
+  },
+  {
+   "title": "Recharge and Quad shot do not say they take a slot, on the card or in the hint",
+   "kind": "polish",
+   "where": "src/copy/ui.js:77-78 and :98-99; src/game/rules.js:20-21",
+   "evidence": "Cards: 'Recharge / Once a week' and 'Quad shot / $6 · +25 stress by Friday'. Neither hint mentions a slot. Each press took slots 5 to 4 (t2-press.txt). The slot is stated in the tour for Recharge only ('Recharge restores energy if you have a slot left.'), in the handbook ('Once per week for one slot', 'Costs cash and a slot') and by the blocked hint once slots run out ('No slots left this week.').",
+   "proposal": "Say it in the hint, where there is room: begin HINT.recharge and HINT.coffee with 'Takes a slot.' Leave the cards as they are.",
+   "risk": "Low: three words on two approved hint lines. On the card the extra words would wrap to three lines on a phone and risk an ellipsis on a narrow desktop (app.css:86, 265). A player learns it in one press, so the gain is modest.",
+   "confidence": "medium"
+  },
+  {
+   "title": "The stale-lead and demo-backlog rules are in the README but not in the game",
+   "kind": "polish",
+   "where": "src/game/week.js:55-80; src/copy/help.js (no row); src/copy/ui.js:103 (HINT.endWeek)",
+   "evidence": "Engine (e1-engine.txt): six leads and no Discovery that week wrote 'raw leads went stale' in 77.8% of 2,000 weeks, and never when Discovery had been pressed; five Qualified deals and no Demo marathon wrote 'cooled off in the demo queue' in 63.8%. Frozen build, six leads: End week hint 'Friday: salary +$1,000, energy +15, stress −4. Friday events and collections may change this.', then '2 raw leads went stale.' The Conference run + Discovery week above also lost a deal to the backlog rule. No string in the game gives either threshold. The README does: 'Six or more unqualified leads in a week with no Discovery, and some go stale. Five or more qualified deals in a week with no demo, and some slide back.'",
+   "proposal": "One conditional sentence on the End week hint while the condition holds ('6 leads and no Discovery this week: some may go stale.' / '5 qualified deals and no demo this week: some may slide back.'), or the README's two sentences as a handbook row.",
+   "risk": "New copy for the editor. The hint is longer in those weeks. Friday events can add or remove leads before the rule runs, so it has to say 'may'.",
+   "confidence": "medium"
+  },
+  {
+   "title": "Hints quote the rule's full amount when a meter cannot take it",
+   "kind": "nit",
+   "where": "src/game/selectors.js:42-56; src/copy/ui.js:97-99",
+   "evidence": "Frozen build (t2-press.txt). Energy 98, stress 3: Recharge hint '+35–52 energy, −12–18 stress'; the press gave +2 energy and −3 stress. Energy 98: Quad shot 'Shot 1: +18 energy'; it gave +2, with the full +12 stress, −$6 and a slot. Manager 97 with six dead leads: CRM hint '+10 manager'; it gave +3. The log reported the real change each time and the handbook says 'capped by actual meters', which is the choice 2.1 made (implementation brief A5).",
+   "proposal": "Leave as is, or cap the quoted energy by the room left on the meter in rechargeRange and nextShot ('+2 energy').",
+   "risk": "Changes numbers in approved hints and their lint params for a case a player can read off the meter.",
+   "confidence": "low"
+  }
+ ],
+ "not_checked": [
+  "Other browsers: only Chromium exists here, so nothing was checked in Firefox or Safari.",
+  "Real phones: the touch findings come from Chromium's touch emulation at 390x844, not a device.",
+  "Screen readers: I did not listen to how the count badge or the hints are announced; the badge is a bare number with no label in the markup.",
+  "clAInk's own moves (buy, deploy, cancel) and its invoice in the Friday preview: outside this area.",
+  "Review, firing and QBR odds in weeks 5-13 and what the player is told about them: not part of this audit.",
+  "Full 13-week play-throughs: states were crafted and single weeks were played by pressing; no run was played start to finish.",
+  "Sound: whether a blocked press makes a sound could not be heard in a headless browser.",
+  "Source against build: the engine samples ran on a copy of src/game taken while the working tree was clean at commit 78bfc3f. I did not rebuild to prove release.html comes from that source; release.html is byte-identical to index.html and Tech_Sales_Trail_2.1.html, and every driven result agreed with the source I read.",
+  "test-results/audit/truth/t1-tables.txt is cut short by my own pipe; the complete table is t1-tables.json beside it."
+ ]
+}

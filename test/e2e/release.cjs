@@ -10,6 +10,10 @@
 //      through its front door) starting from the run the page saved at the start, dice included. So the bundle is
 //      the source, a saved run carries everything needed to continue it, and nothing outside the run decides a roll.
 //      At every press the moves the page offers are also the moves the rules allow.
+//   4. states the dice rarely deal: the sessions are played with the release's own dice, so which states they pass
+//      through is luck. A fixed list of crafted runs (the quarter-end freeze with a clAInk seat, a seat too poor to
+//      cancel, the offer's last week, finished seats, an empty tank) is opened too, and in each the moves the page
+//      offers are the moves the rules allow.
 // Exits 1 if any check fails. (CommonJS on purpose: Playwright only resolves through require() here.)
 "use strict";
 const { chromium } = require("playwright");
@@ -77,6 +81,16 @@ async function plain(browser, init) {
     return (at || "(root)") + ": page " + String(JSON.stringify(a)).slice(0, 90) + " | source " + String(JSON.stringify(b)).slice(0, 90);
   };
 
+  // What the page offers against what the rules allow: null, or how they differ.
+  const offerDiff = (legal, rules) => {
+    const offered = legal.filter(m => !SCREEN_ONLY.includes(m)).map(m => (/^dlg:\d+$/.test(m) ? rules[Number(m.slice(4))] || m : ENGINE[m] || m)).sort();
+    // the page shows clAInk's install and cancel in two presses (the policy, the confirmation); the second
+    // press is the move, so the rules' move is on offer once the first has been made
+    const twoStep = { "ck:buy": legal.includes("ck:cta") || legal.includes("ck:ad-expand"), "ck:cancel": legal.includes("ck:cancel") || legal.includes("ck:expand"), "ck:deploy": legal.includes("ck:expand"), "ck:dismiss": false, "ck:hide": false };
+    const allowed = rules.filter(m => !(twoStep[m] && !offered.includes(m))).sort();
+    return JSON.stringify(offered) !== JSON.stringify(allowed) ? `the page offers [${offered.join(" ")}], the rules allow [${allowed.join(" ")}]` : null;
+  };
+
   const browser = await chromium.launch();
   try {
     /* ---------- 1. no hook in the file or on the page ---------- */
@@ -136,13 +150,9 @@ async function plain(browser, init) {
           }
           // what the page offers is what the rules allow
           const rules = H.legalMoves(E, g);
-          const offered = legal.filter(m => !SCREEN_ONLY.includes(m)).map(m => (/^dlg:\d+$/.test(m) ? rules[Number(m.slice(4))] || m : ENGINE[m] || m)).sort();
-          // the page shows clAInk's install and cancel in two presses (the policy, the confirmation); the second
-          // press is the move, so the rules' move is on offer once the first has been made
-          const twoStep = { "ck:buy": legal.includes("ck:cta") || legal.includes("ck:ad-expand"), "ck:cancel": legal.includes("ck:cancel") || legal.includes("ck:expand"), "ck:deploy": legal.includes("ck:expand"), "ck:dismiss": false, "ck:hide": false };
-          const allowed = rules.filter(m => !(twoStep[m] && !offered.includes(m))).sort();
+          const differ = offerDiff(legal, rules);
           offers++;
-          if (JSON.stringify(offered) !== JSON.stringify(allowed)) { fail = `press ${steps}: the page offers [${offered.join(" ")}], the rules allow [${allowed.join(" ")}]`; break; }
+          if (differ) { fail = `press ${steps}: ${differ}`; break; }
           if (snap.dialog && g.dialog && snap.dialog.id !== g.dialog.id) { fail = `press ${steps}: the page shows ${snap.dialog.id}, the rules are waiting on ${g.dialog.id}`; break; }
           const game = legal.filter(m => !SCREEN_ONLY.includes(m)), poke = legal.filter(m => SCREEN_ONLY.includes(m));
           let ui;
@@ -172,6 +182,43 @@ async function plain(browser, init) {
       check(`session ${n + 1} (${who}): ${steps} presses, the page and the source agree after every one${ended ? ", through to " + ended : ""}`, !fail, fail);
     }
     check("the sessions were worth playing", presses >= SESSIONS * MOVES * 0.9 && endings.length >= 1, `${presses} presses, ${compared} saved runs compared, ${offers} offers compared, endings: ${endings.join(", ") || "none"}`);
+
+    /* ---------- 4. states the dice rarely deal ---------- */
+    // Week 13 with a live clAInk seat went unvisited by the sessions for a long time, and hid a move the rules
+    // allowed that the page has never offered (cancelling the seat during the freeze).
+    const { save, CK, D } = require("../parity/lib/scenarios.cjs");
+    const kept = name => JSON.parse(fs.readFileSync(path.join(ROOT, "test/saves/fixtures/generated", name + ".json"), "utf8"));
+    const CORNERS = [
+      ["week 13 with a clAInk seat (the quarter-end freeze)", save({ week: 13, cash: 4000, claink: CK({ status: "active" }), deals: [D(1, 9000), D(3, 12000)] })],
+      ["week 13 with a seat on two strikes", save({ week: 13, cash: 4000, claink: CK({ status: "active", strikes: 2 }), deals: [D(1, 9000)] })],
+      ["week 12 with a clAInk seat", save({ week: 12, cash: 4000, claink: CK({ status: "active" }), deals: [D(1, 9000), D(3, 12000)] })],
+      ["a seat that has run this week", save({ week: 6, cash: 4000, claink: CK({ status: "active", deployed: true, due: 529 }), deals: [D(1, 9000)] })],
+      ["a seat too poor to cancel", save({ week: 6, cash: -1300, claink: CK({ status: "active", due: 500 }), deals: [D(1, 9000)] })],
+      ["the offer in its last week", save({ week: 3, cash: 1200, claink: CK({ status: "ad" }) })],
+      ["the offer, too poor to take it", save({ week: 2, cash: -1100, claink: CK({ status: "ad" }) })],
+      ["the offer a week too late", save({ week: 4, cash: 1200, claink: CK({ status: "ad" }) })],
+      ["a revoked seat's card", kept("ck-revoked-card")],
+      ["a cancelled seat's card", kept("ck-cancelled")],
+      ["week 13 without clAInk", save({ week: 13, cash: 2000, deals: [D(3, 12000), D(4, 20000)] })],
+      ["no energy and no slots", save({ week: 5, energy: 0, slots: 0, deals: [D(3, 12000)] })],
+      ["a dollar above Collections", save({ week: 5, cash: -1499, deals: [D(1, 9000)] })]
+    ];
+    for (const [what, start] of CORNERS) {
+      const side = new Side({ label: "B", build, driver, seed: 2000, fx: parseFx("seeded"), flavor: 0.5, motion: "full", roundMs: 2000, maxRounds: 8,
+        initScripts: ["window.__drv.pinFlavor = function(){}; window.__drv.soundInstall = function(){};"] });
+      let fail = null, shown = "";
+      try {
+        const snap = await side.open(browser, start);
+        const g = { s: E.state.mergeSaved(await side.page.evaluate(() => window.__drv.readState())), dialog: null };
+        const legal = snap.legal.filter(m => !NOT_PLAYED.includes(m));
+        fail = offerDiff(legal, H.legalMoves(E, g));
+        shown = "clAInk: " + (legal.filter(m => /^ck:/.test(m)).join(" ") || "nothing");
+        const trouble = side.drainTrouble();
+        if (!fail && trouble.length) fail = trouble.join(" ; ");
+      } catch (e) { fail = String(e && e.stack || e).slice(0, 400); }
+      await side.close();
+      check(`${what}: the page offers what the rules allow`, !fail, fail || shown);
+    }
   } finally { await browser.close(); }
   const bad = rows.filter(ok => !ok).length;
   console.log(bad ? `\nRELEASE FAILED: ${bad} of ${rows.length} checks` : `\nRELEASE OK: all ${rows.length} checks passed`);

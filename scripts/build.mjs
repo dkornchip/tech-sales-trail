@@ -1,6 +1,6 @@
 // Builds the whole game into one self-contained index.html that makes no network requests.
 //   node scripts/build.mjs             -> dist/index.html (or $TST_OUT/index.html): the release build
-//   node scripts/build.mjs --release   -> also writes ./Tech_Sales_Trail_<major.minor>.html (the release file)
+//   node scripts/build.mjs --release   -> also writes ./Tech_Sales_Trail_<version>.html (the release file)
 //   node scripts/build.mjs --check     -> fails if that release file is not what the source builds to
 //   node scripts/build.mjs --test      -> dist-test/index.html: the same game with its test hooks compiled in
 //                                         (a seed for a new run, scripted dice, pinned cosmetic rolls, engine
@@ -122,9 +122,22 @@ function notices(packages, iconNames){
   if(iconNames.length){
     const dir = path.join(ROOT, "node_modules/lucide-static"), pkg = JSON.parse(fs.readFileSync(path.join(dir, "package.json"), "utf8"));
     if(pkg.license !== "ISC") fail("lucide-static is now " + pkg.license + "; update its notice in scripts/build.mjs");
-    const copyright = (/^Copyright .+$/m.exec(fs.readFileSync(path.join(dir, "LICENSE"), "utf8")) || [""])[0].trim();
+    const licence = fs.readFileSync(path.join(dir, "LICENSE"), "utf8");
+    const copyright = (/^Copyright .+$/m.exec(licence) || [""])[0].trim();
     if(!copyright) fail("no copyright line found in node_modules/lucide-static/LICENSE");
-    lines.push("Lucide " + pkg.version + " (" + iconNames.length + " icons). " + copyright.replace(/\.$/, "") + ". ISC License.");
+    // Some Lucide icons are derived from Feather and stay under its MIT licence and its author's copyright (Lucide's
+    // LICENSE lists them). The ones this file carries are credited to him here, so the file is right when it is
+    // handed on by itself.
+    const feather = /derived from the Feather project:\s*\n\s*\n([\s\S]*?)\n\s*\n[\s\S]*?^(Copyright .+)$/m.exec(licence);
+    const derived = feather ? new Set(feather[1].split(",").map(s => s.trim()).filter(Boolean)) : new Set();
+    // (the list uses the names the icons had then; some have been renamed since, and lucide-static still ships the
+    // old name as a copy of the same drawing, so an icon counts when its drawing is a listed icon's)
+    const drawing = name => { const f = path.join(dir, "icons", name + ".svg"); return fs.existsSync(f) ? fs.readFileSync(f, "utf8").replace(/\sclass="[^"]*"/g, "").replace(/<!--[\s\S]*?-->/g, "").trim() : null; };
+    const derivedDrawings = new Set([...derived].map(drawing).filter(Boolean));
+    const ours = iconNames.filter(n => derived.has(n) || derivedDrawings.has(drawing(n)));
+    if(/Feather/.test(licence) && !feather) fail("lucide-static's LICENSE mentions Feather in a form this script does not read; update scripts/build.mjs");
+    lines.push("Lucide " + pkg.version + " (" + iconNames.length + " icons). " + copyright.replace(/\.$/, "") + ". ISC License."
+      + (ours.length ? " " + ours.length + " of them derived from Feather. " + feather[2].trim().replace(/\.$/, "") + ". MIT License." : ""));
   }
 
   const pkg = readJSON("package.json");
@@ -233,8 +246,10 @@ const kb = n => (n / 1024).toFixed(0) + " KB";
 const sizes = kb(raw) + " raw, " + kb(gzip) + " gzip";
 if(!dev && raw > MAX_RAW) fail("the output is " + sizes + "; the limit is " + kb(MAX_RAW) + " raw");
 
-// The release file: Tech_Sales_Trail_2.1.html for version 2.1.x.
-const RELEASE_FILE = "Tech_Sales_Trail_" + readJSON("package.json").version.split(".").slice(0, 2).join(".") + ".html";
+// The release file: Tech_Sales_Trail_2.1.html for version 2.1.0, Tech_Sales_Trail_2.1.1.html for 2.1.1. A patch
+// release has a file of its own, so the release before it stays in the repository exactly as it shipped
+// (scripts/check-releases.mjs holds that, and that ./index.html is still the release the owner promoted).
+const RELEASE_FILE = "Tech_Sales_Trail_" + readJSON("package.json").version.replace(/\.0$/, "") + ".html";
 if(args.has("--check")){
   if(PREVIEW) fail("--check compares the game, not a preview: unset TST_ENTRY, TST_CSS and TST_TEMPLATE");
   if(hooks) fail("--check compares the release build: drop --test and --dev");

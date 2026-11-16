@@ -9,7 +9,7 @@ import { getQuarterInfo } from "../game/util.js";
 import { Icon } from "./app/Icon.jsx";
 import { AUDIO, reducedNow } from "./env.js";
 
-const { useState, useEffect, useRef } = React;
+const { useState, useEffect, useLayoutEffect, useRef } = React;
 
 // ---------- v1.20: clAInk UI (ad, agent workspace, end cards) ----------
 // The ad pops up at run start; its close button turns clAInk off for the run. Activating swaps it for the agent
@@ -88,10 +88,87 @@ export const ClainkLogo=({small})=>(
   </span>
 );
 
+// ---- clAInk's window beside the game ----
+// On a desktop the deal list, the log and clAInk's window share one column of fixed height, and the deal list and
+// the log come first. dockSpare is what the column has left for the window once the deal list can show every deal
+// (to its own limit) and the log has `logKeep` of itself (never less than its minimum): at most DOCK_MOST of the
+// column. The workspace and the ad each use it their own way, below.
+// Where the page is stacked (a phone, a narrow window) the stylesheet sets no limit, and neither does any of this.
+const DOCK_MOST=0.68;            // of the column
+const LOG_KEEP=150;              // px of the log beside the workspace: its heading, the week, two lines and the start of a third
+const whole=sec=>{               // a section's height with all of its list showing
+  if(!sec)return 0;
+  let h=sec.offsetHeight-sec.clientHeight;                           // its borders
+  for(const kid of sec.children) h+=kid.classList.contains("scroll") ? kid.scrollHeight : kid.offsetHeight;
+  return h;
+};
+const dockSpare=(el,logKeep)=>{
+  el.style.maxHeight="";                                             // back to the stylesheet's share
+  const col=el.parentElement;
+  if(!col)return null;
+  const H=col.clientHeight, px=v=>/%$/.test(v) ? H*parseFloat(v)/100 : parseFloat(v);
+  const share=px(getComputedStyle(el).maxHeight);
+  if(!(share>0))return null;                                         // "none": minimized, or a stacked page
+  const deals=col.querySelector(".deals"), log=col.querySelector(".activity");
+  const dealsMax=deals ? px(getComputedStyle(deals).maxHeight) : 0, logMin=log ? parseFloat(getComputedStyle(log).minHeight)||0 : 0;
+  const dealsNeed=Math.min(whole(deals), dealsMax>0 ? dealsMax : H), logNeed=Math.max(logMin, Math.min(whole(log), logKeep));
+  return { share, most:H*DOCK_MOST, spare:Math.min(H*DOCK_MOST, H-dealsNeed-logNeed) };
+};
+// The workspace stays for the whole run and cannot leave anything out: it has the share of the column it always had
+// (the stylesheet's), scrolls inside it, and is given more only while there is room to spare. So an early board
+// shows a whole run report, and a full board is never squeezed to make room for it.
+const dockRoom=el=>{
+  if(!el)return;
+  const r=dockSpare(el,LOG_KEEP);
+  if(r && r.spare>r.share) el.style.maxHeight=Math.floor(r.spare)+"px";
+};
+// The ad is a visitor and can say less: it has the room to spare (beside it the log keeps only its minimum), and
+// rather than scroll under itself it settles on the fullest layout that fits there. Tighter spacing first; then,
+// while it is still too tall, parts leave, least missed first (the announcement, the feature chips, the badges and,
+// last, the testimonial); then any part that left on the way and fits after all comes back. data-fit lists what was
+// done and the stylesheet does it (claink.css, "the ad fits its dock"). If even the plainest layout is taller than
+// the room to spare, the ad has what that layout needs and the deal list gives way. Where nothing limits the ad's
+// height it never overflows, so nothing is ever dropped there.
+// (The last step, the headline, is taken only on the policy step, where the pitch has already stepped back and the
+// terms and their two buttons are what must be in sight: on a short window they would not all fit otherwise.)
+// (headline and brand only ever drop on the policy step: its terms are long, and in a window about 1,025px wide and
+// 620 to 660px tall they and Accept would not fit under the pitch's headline and wordmark)
+const AD_DROP=["announce","chips","badges","proof","headline","brand"];
+const fitAd=el=>{
+  if(!el)return;
+  const over=()=>el.scrollHeight>el.clientHeight+1;
+  const set=list=>{ if(list.length) el.setAttribute("data-fit",list.join(" ")); else el.removeAttribute("data-fit"); };
+  set([]);
+  const r=dockSpare(el,0);
+  if(!r)return;
+  el.style.maxHeight=Math.max(0,Math.floor(r.spare))+"px";
+  if(!over())return;
+  let on=["tight"], k=0;
+  set(on);
+  while(over() && k<AD_DROP.length){ on=on.concat(AD_DROP[k++]); set(on); }
+  // the last part to leave was the one that made it fit; the ones before it get another chance, most missed first
+  for(let i=k-2;i>=0;i--){ const back=on.filter(x=>x!==AD_DROP[i]); set(back); if(over()) set(on); else on=back; }
+  if(over()) el.style.maxHeight=Math.floor(Math.min(r.most, el.scrollHeight+el.offsetHeight-el.clientHeight))+"px";
+};
+// Fits clAInk's window after every time it is drawn (a new deal, a step, a report), and again when its column or the
+// browser window changes size, and once the bundled fonts are in (their metrics decide where lines break).
+const useDockFit=(ref,fit)=>{
+  useLayoutEffect(()=>{ fit(ref.current); });
+  useEffect(()=>{
+    const again=()=>fit(ref.current);
+    window.addEventListener("resize",again);
+    const el=ref.current, ro=typeof ResizeObserver==="function" && el && el.parentElement ? new ResizeObserver(again) : null;
+    if(ro) ro.observe(el.parentElement);
+    if(document.fonts && document.fonts.ready) document.fonts.ready.then(again,()=>{});
+    return()=>{ window.removeEventListener("resize",again); if(ro) ro.disconnect(); };
+  },[]);
+};
+
 // v1.21: the ad minimizes to a pill (the – button, or Esc) and expands again from it; × still turns clAInk off for the
 // run. Minimized is a UI preference like the workspace's (it survives a reload, and a new run expands the ad again).
 export const ClainkAd=({s,mini,onToggle,onInstall,onDismiss})=>{
   const ref=useRef(null), ctaRef=useRef(null), notNowRef=useRef(null), toggleRef=useRef(null);
+  useDockFit(ref,fitAd);
   const[step,setStep]=useState(0); // 0: CTA, 1: the AI use policy + confirm
   // The X turns clAInk off for the rest of the run, which cannot be undone: it asks first, inside the ad.
   // (Minimizing is the other button, and loses nothing.)
@@ -144,12 +221,15 @@ export const ClainkAd=({s,mini,onToggle,onInstall,onDismiss})=>{
         </div>
       )}
       <div className="claink-ad-body" id={bodyId} hidden={mini}>
-        <div className="claink-announce"><Icon name="sparkles" /><span>{CK_AD.announce[0]}<b>{CK_AD.announce[1]}</b>{CK_AD.announce[2]}</span><Icon name="arrow-right" /></div>
-        <ClainkLogo/>
+        {/* the announcement and the logo: one row where both fit (the logo leads), the announcement above the logo where they do not */}
+        <div className="claink-ad-brand">
+          <div className="claink-announce"><Icon name="sparkles" /><span>{CK_AD.announce[0]}<b>{CK_AD.announce[1]}</b>{CK_AD.announce[2]}</span><Icon name="arrow-right" /></div>
+          <ClainkLogo/>
+        </div>
         <h3 className="claink-headline">{CK_AD.headline}</h3>
         <p className="claink-sub">{CK_AD.sub}</p>
         <div className="claink-chips">{CK_AD.chips.map(t=><span key={t}>{t}</span>)}</div>
-        <p className="claink-proof">{CK_AD.proof}<span>{CK_AD.proofBy}</span></p>
+        <p className="claink-proof">{CK_AD.proof}<span>{CK_AD.proofBy[0]} <span className="aside">{CK_AD.proofBy[1]}</span></span></p>
         <div className="claink-price"><b>{CK_AD.price[0]}</b>{CK_AD.price[1]}</div>
         <div className="claink-badges">{CK_AD.badges.map(t=><span key={t}>{t}</span>)}<span className="urgent"><Icon name="hourglass" />{ends}</span></div>
         <div className="claink-actions">
@@ -159,7 +239,7 @@ export const ClainkAd=({s,mini,onToggle,onInstall,onDismiss})=>{
             : <>
                 <div className="claink-policy" id={policyId} role="group" aria-labelledby={policyId+"-hd"}>
                   <div className="hd" id={policyId+"-hd"}>{CK_AD.policyTitle} <span>{CK_AD.policyVersion}</span></div>
-                  <ul>{CK_AD.policy(CLAINK.STRIKES).map((t,i)=><li key={i}>{t}</li>)}</ul>
+                  <ul>{CK_AD.policy(CLAINK.STRIKES,{retainer:CLAINK.RETAINER,perOutcome:CLAINK.PER_OUTCOME,outcomes:CLAINK.OUTCOMES,idle:CLAINK.IDLE,overage:CLAINK.OVERAGE,trueUp:CLAINK.TRUEUP_OVER,cancel:CLAINK.CANCEL}).map((t,i)=><li key={i}>{t}</li>)}</ul>
                 </div>
                 <div className="claink-confirm-row">
                   <button type="button" className="claink-confirm" disabled={!can} onClick={onInstall} aria-describedby={policyId}>{CK_AD.accept(CLAINK.INSTALL)}</button>
@@ -180,14 +260,14 @@ export const ckTrueUpRange=(cash,due)=>{
   const lo=CLAINK.RETAINER+CLAINK.OUTCOMES[0]*CLAINK.PER_OUTCOME[0], hi=CLAINK.RETAINER+CLAINK.OUTCOMES[1]*CLAINK.PER_OUTCOME[1];
   return [Math.min(-CLAINK.TRUEUP_OVER[0],cash-(due+lo)), Math.min(-CLAINK.TRUEUP_OVER[1],cash-(due+hi))];
 };
-export const ClainkStrikes=({n,log,cash,due,ran})=>{
+export const ClainkStrikes=({n,log,cash,due,ran,deals})=>{
   const S=CLAINK.STRIKES, hot=n>=S-1;
   let note;
   if(!hot) note=n===0 ? CK_STRIKES.none(S) : CK_STRIKES.some(n,S);
   else{
     // after this week's run the next one waits for Friday's bill and payday, so only the usual range holds
     const [best,worst]=ran ? [-CLAINK.TRUEUP_OVER[0],-CLAINK.TRUEUP_OVER[1]] : ckTrueUpRange(cash,due);
-    const head=CK_STRIKES.hotHead(S);
+    const head=CK_STRIKES.hotHead(S,deals>0);
     note=!ran && best<=CLAINK.REPO_AT ? head+CK_STRIKES.hotCollections : head+CK_STRIKES.hotRange(best,worst,ran,CLAINK.REPO_AT);
   }
   return(
@@ -264,7 +344,21 @@ export const ClainkConsole=({s,ui,setUi,focusOnMount,onDeploy,onCancel,onHide,on
   const end=c.status!=="active";
   const mini=!!ui.mini && !end;
   const ref=useRef(null), statusRef=useRef(null), toggleRef=useRef(null), cancelRef=useRef(null), keepRef=useRef(null);
+  useDockFit(ref,dockRoom);          // the workspace's share of the column (it scrolls inside that when a report is long)
   const[confirmCancel,setConfirmCancel]=useState(false);
+  // "Cancel seat" is at the foot of the workspace and its question opens there, which can be below the fold of the
+  // dock: the workspace scrolls itself to its foot so the question and its two buttons are in sight. (Only its own
+  // scroll moves, never the page's; where the workspace does not scroll there is nothing to do.)
+  useLayoutEffect(()=>{ const el=ref.current; if(confirmCancel && el && el.scrollHeight>el.clientHeight+1) el.scrollTop=el.scrollHeight; },[confirmCancel]);
+  // A run the player has just pressed is followed to its end. Where the workspace is shorter than its report (any
+  // laptop-height window) it scrolls itself, never the page, as each beat lands, so the newest line and then the
+  // strike card, the week's estimate under it and "Cancel seat" are in sight. (v2.1 stayed at the top: at 1280x720
+  // the card that says what the run took, and what Friday will charge for it, landed wholly below the fold.)
+  // When the report is done it rests with the result card's top in sight: on a window so short that the card, the
+  // manager's note, the estimate and "Cancel seat" do not all fit under it, the card's heading wins over the foot.
+  // When the week turns it goes back to the top, where Run agents and the strike boxes are. A reload starts there.
+  const follow=useRef(false);
+  const[,setSettled]=useState(0);     // drawn once more when a report ends, so its foot is followed too
   const focusNext=useRef(focusOnMount ? "status" : null);
   const bodyIdRef=useRef(null);
   if(bodyIdRef.current===null) bodyIdRef.current="claink-body-"+(++clainkMarkSeq);
@@ -287,6 +381,7 @@ export const ClainkConsole=({s,ui,setUi,focusOnMount,onDeploy,onCancel,onHide,on
     r.timers.forEach(clearTimeout); r.timers=[];
     holdH.current=0;
     setBeat(99);
+    setSettled(n=>n+1);
     handOver();
   };
   // one beat's sound and PA line; silent once an ending is playing its own score
@@ -325,6 +420,21 @@ export const ClainkConsole=({s,ui,setUi,focusOnMount,onDeploy,onCancel,onHide,on
     if(out && L.farewell) later(at(beats),()=>cue("lost"));
     later(CK_WORK_MS+beats*CK_BEAT_MS,finishReveal);
   },[c.deploys]);
+  useLayoutEffect(()=>{
+    const el=ref.current;
+    if(!follow.current || !el)return;
+    if(!mini && el.scrollHeight>el.clientHeight+1){
+      const foot=el.scrollHeight-el.clientHeight, card=beat>=99 ? el.querySelector(".claink-strike, .claink-clear") : null;
+      if(card){
+        const bar=el.querySelector(".claink-titlebar"), under=bar ? bar.getBoundingClientRect().bottom : el.getBoundingClientRect().top;
+        el.scrollTop=Math.min(foot,Math.max(0,el.scrollTop+card.getBoundingClientRect().top-under-6));
+      }else el.scrollTop=foot;
+    }
+    if(beat>=99 && !reveal.current.live) follow.current=false;   // the report has had its say: the player has the scroll back
+  });
+  // (a week that turns ends the follow, even mid-report: End week pressed while a report was still playing used to
+  // leave the next week's workspace scrolled away from Run agents)
+  useLayoutEffect(()=>{ follow.current=false; const el=ref.current; if(el) el.scrollTop=0; },[s.week,s.runId]);
   // closed mid-report (the end card's × finishes it first; an unmount here means New Game or Load, and the page drops it)
   useEffect(()=>()=>{ const r=reveal.current; r.timers.forEach(clearTimeout); r.timers=[]; handOver(); },[]);
   // focus follows the control that replaced the one you used (never back to <body>)
@@ -372,7 +482,7 @@ export const ClainkConsole=({s,ui,setUi,focusOnMount,onDeploy,onCancel,onHide,on
   const style=hold ? {minHeight:hold+"px"} : undefined;
   const skip=beat<99 ? finishReveal : null;
   return(
-    <aside ref={ref} style={style} onKeyDown={onKeyDown} aria-label={CK_WORKSPACE.label}
+    <aside ref={ref} style={style} onKeyDown={onKeyDown} aria-label={CK_WORKSPACE.label} data-reporting={beat<99 ? "true" : undefined}
       className={"claink-console"+(mini?" is-mini":"")+(end?" is-end":"")}>
       <div className="claink-titlebar">
         <ClainkMark size={16}/>
@@ -391,11 +501,11 @@ export const ClainkConsole=({s,ui,setUi,focusOnMount,onDeploy,onCancel,onHide,on
         {c.status==="active" && <>
           <div className="claink-statusline" tabIndex={-1} ref={statusRef}><i className="ck-dot" aria-hidden="true" />{frozen ? CK_WORKSPACE.status.frozen : c.deployed ? CK_WORKSPACE.status.ran : CK_WORKSPACE.status.idle}</div>
           <button type="button" className="claink-deploy" disabled={!clainkCanDeploy(s)}
-            onClick={e=>{ focusNext.current="status"; holdH.current=ref.current ? ref.current.offsetHeight : 0; shieldNextClick(e); onDeploy(); }}>
+            onClick={e=>{ focusNext.current="status"; follow.current=true; holdH.current=ref.current ? ref.current.offsetHeight : 0; shieldNextClick(e); onDeploy(); }}>
             <span>{frozen ? <Icon name="lock" /> : c.deployed ? <Icon name="check" /> : <Icon name="play" />}{frozen ? CK_WORKSPACE.run.frozen : c.deployed ? CK_WORKSPACE.run.ran : CK_WORKSPACE.run.go}</span>
             <small>{frozen ? CK_WORKSPACE.runNote.frozen : c.deployed ? (getQuarterInfo(s.week).weekInQuarter>=QUARTER_WEEKS-1 ? CK_WORKSPACE.runNote.last : CK_WORKSPACE.runNote.next) : CK_WORKSPACE.runNote.go}</small>
           </button>
-          <ClainkStrikes n={shownStrikes} log={c.strikeLog} cash={s.cash} due={c.due} ran={c.deployed}/>
+          <ClainkStrikes n={shownStrikes} log={c.strikeLog} cash={s.cash} due={c.due} ran={c.deployed} deals={s.deals.length}/>
         </>}
         {c.status==="revoked" && <div className="claink-statusline" tabIndex={-1} ref={statusRef}><i className="ck-dot" aria-hidden="true" />{endIn ? CK_WORKSPACE.status.revoked : CK_WORKSPACE.status.running}</div>}
         {L && c.status!=="cancelled" && (isRun || L.kind==="onboarded") && <ClainkReport last={L} beat={beat} workTok={workTok} onSkip={skip}/>}
